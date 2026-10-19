@@ -57,11 +57,13 @@ public class ClienteBD
 
         SqlCommand comando = Procedimiento("sp_InsertarCliente");
         AgregarDatosCliente(comando, rtn, empresa, nombre, apellido, telefono, correo, locacionId);
-        comando.Parameters.Add("@cliente_id", SqlDbType.Int).Direction = ParameterDirection.Output;
+        SqlParameter id = new SqlParameter("@cliente_id", SqlDbType.Int);
+        id.Direction = ParameterDirection.Output;
+        comando.Parameters.Add(id);
 
         bool guardado = Ejecutar(comando, out mensaje);
         if (guardado)
-            nuevoId = Convert.ToInt32(comando.Parameters["@cliente_id"].Value);
+            nuevoId = Convert.ToInt32(id.Value);
 
         return guardado;
     }
@@ -178,8 +180,13 @@ public class ClienteBD
 
     private bool Ejecutar(SqlCommand comando, out string mensaje)
     {
-        comando.Parameters.Add("@resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
-        comando.Parameters.Add("@mensaje", SqlDbType.VarChar, 100).Direction = ParameterDirection.Output;
+        SqlParameter resultado = new SqlParameter("@resultado", SqlDbType.Int);
+        resultado.Direction = ParameterDirection.Output;
+        comando.Parameters.Add(resultado);
+
+        SqlParameter textoMensaje = new SqlParameter("@mensaje", SqlDbType.VarChar, 100);
+        textoMensaje.Direction = ParameterDirection.Output;
+        comando.Parameters.Add(textoMensaje);
 
         using (SqlConnection conexion = Conexion.ObtenerConexion())
         {
@@ -187,7 +194,7 @@ public class ClienteBD
             comando.ExecuteNonQuery();
         }
 
-        mensaje = comando.Parameters["@mensaje"].Value.ToString() ?? "";
-        return Convert.ToInt32(comando.Parameters["@resultado"].Value) == 1;
+        mensaje = "" + textoMensaje.Value;
+        return Convert.ToInt32(resultado.Value) == 1;
     }
 }

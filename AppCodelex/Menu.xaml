@@ -122,7 +122,7 @@
             </Button>
 
             <!-- Clientes -->
-            <Button x:Name="btnClientes" Style="{StaticResource ModuleCard}">
+            <Button x:Name="btnClientes" Style="{StaticResource ModuleCard}" Click="Clientes_Click">
                 <DockPanel>
                     <Viewbox Style="{StaticResource CardIcon}">
                         <Canvas Width="48" Height="48">

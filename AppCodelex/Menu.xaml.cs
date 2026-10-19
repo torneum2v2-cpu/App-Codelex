@@ -11,4 +11,10 @@ public partial class Menu : Window
     {
         InitializeComponent();
     }
+
+    private void Clientes_Click(object sender, RoutedEventArgs e)
+    {
+        Clientes ventana = new Clientes();
+        ventana.Show();
+    }
 }

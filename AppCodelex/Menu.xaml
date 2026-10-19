@@ -7,7 +7,7 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="CanMinimize"
         Background="{DynamicResource Bg}"
-        FontFamily="Segoe UI">
+        FontFamily="Segoe UI" Height="642">
     <Window.Resources>
         <SolidColorBrush x:Key="Bg" Color="#F0F0F0"/>
         <SolidColorBrush x:Key="Card" Color="#FFFFFF"/>
@@ -82,7 +82,12 @@
         <!-- Cuando agreguen la imagen del logo al proyecto, reemplazar el contenido
              de este Border por: <Image Source="Imagenes/logo.png" Stretch="Uniform"/> -->
 
-        <Image Height="117" Source="/Image2.png" Stretch="Fill" Width="184"/>
+        <!-- Cuando agreguen la imagen del logo al proyecto, reemplazar el contenido
+             de este Border por: <Image Source="Imagenes/logo.png" Stretch="Uniform"/> -->
+
+        <!-- Cuando agreguen la imagen del logo al proyecto, reemplazar el contenido
+             de este Border por: <Image Source="Imagenes/logo.png" Stretch="Uniform"/> -->
+        <Image Height="155" Source="/Image1.png" Stretch="Fill" Width="248"/>
 
         <TextBlock Text="¿Qué desea hacer?" HorizontalAlignment="Center"
                    Margin="0,20,0,14"

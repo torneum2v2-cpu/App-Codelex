@@ -163,105 +163,46 @@ public partial class Clientes : Window
 
     private bool DatosValidos()
     {
-        string rtn = txtRTN.Text.Trim();
+        string mensaje;
 
-        if (rtn == "")
-        {
-            MessageBox.Show("El RTN / identidad es obligatorio.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
-            txtRTN.Focus();
-            return false;
-        }
+        mensaje = Validaciones.ValidarIdentidad(txtRTN.Text);
+        if (mensaje != "")
+            return Aviso(mensaje, txtRTN);
 
-        foreach (char c in rtn)
-        {
-            if (!char.IsDigit(c))
-            {
-                MessageBox.Show("El RTN / identidad solo puede tener números, sin guiones ni espacios.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
-                txtRTN.Focus();
-                return false;
-            }
-        }
+        mensaje = Validaciones.Obligatorio(txtEmpresa.Text, "Empresa");
+        if (mensaje != "")
+            return Aviso(mensaje, txtEmpresa);
 
-        if (rtn.Length < 13 || rtn.Length > 14)
-        {
-            MessageBox.Show("El RTN / identidad debe tener 13 o 14 dígitos. Tiene " + rtn.Length + ".", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
-            txtRTN.Focus();
-            return false;
-        }
+        mensaje = Validaciones.Obligatorio(txtNombre.Text, "Nombre contacto");
+        if (mensaje != "")
+            return Aviso(mensaje, txtNombre);
 
-        if (txtEmpresa.Text.Trim() == "")
-        {
-            MessageBox.Show("La empresa es obligatoria.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
-            txtEmpresa.Focus();
-            return false;
-        }
+        mensaje = Validaciones.Obligatorio(txtApellido.Text, "Apellido contacto");
+        if (mensaje != "")
+            return Aviso(mensaje, txtApellido);
 
-        if (txtNombre.Text.Trim() == "")
-        {
-            MessageBox.Show("El nombre del contacto es obligatorio.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
-            txtNombre.Focus();
-            return false;
-        }
+        mensaje = Validaciones.ValidarTelefono(txtTelefono.Text);
+        if (mensaje != "")
+            return Aviso(mensaje, txtTelefono);
 
-        if (txtApellido.Text.Trim() == "")
-        {
-            MessageBox.Show("El apellido del contacto es obligatorio.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
-            txtApellido.Focus();
-            return false;
-        }
-
-        string telefono = txtTelefono.Text.Trim();
-
-        if (telefono == "")
-        {
-            MessageBox.Show("El teléfono es obligatorio.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
-            txtTelefono.Focus();
-            return false;
-        }
-
-        foreach (char c in telefono)
-        {
-            if (!char.IsDigit(c))
-            {
-                MessageBox.Show("El teléfono solo puede tener números, sin guiones ni espacios.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
-                txtTelefono.Focus();
-                return false;
-            }
-        }
-
-        if (telefono.Length != 8)
-        {
-            MessageBox.Show("El teléfono debe tener 8 dígitos. Tiene " + telefono.Length + ".", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
-            txtTelefono.Focus();
-            return false;
-        }
-
-        string correo = txtCorreo.Text.Trim();
-
-        if (correo == "")
-        {
-            MessageBox.Show("El correo es obligatorio.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
-            txtCorreo.Focus();
-            return false;
-        }
-
-        if (!correo.Contains("@") || !correo.Contains("."))
-        {
-            MessageBox.Show("El correo no es válido. Ejemplo: nombre@empresa.com", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
-            txtCorreo.Focus();
-            return false;
-        }
+        mensaje = Validaciones.ValidarCorreo(txtCorreo.Text);
+        if (mensaje != "")
+            return Aviso(mensaje, txtCorreo);
 
         return true;
     }
 
+    private bool Aviso(string mensaje, TextBox campo)
+    {
+        MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
+        campo.Focus();
+        return false;
+    }
+
     private void SoloNumeros(object sender, TextCompositionEventArgs e)
     {
-        foreach (char c in e.Text)
-        {
-            if (!char.IsDigit(c))
-                e.Handled = true;
-        }
+        if (!Validaciones.SoloNumeros(e.Text))
+            e.Handled = true;
     }
 
     

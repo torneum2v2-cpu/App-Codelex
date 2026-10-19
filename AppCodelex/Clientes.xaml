@@ -76,7 +76,7 @@
                     <TextBox Grid.Row="3" Grid.Column="1" x:Name="txtApellido" MaxLength="50"/>
 
                     <TextBlock Grid.Row="4" Text="Teléfono: *" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                    <TextBox Grid.Row="4" Grid.Column="1" x:Name="txtTelefono" MaxLength="50"/>
+                    <TextBox Grid.Row="4" Grid.Column="1" x:Name="txtTelefono" MaxLength="8" PreviewTextInput="SoloNumeros"/>
 
                     <TextBlock Grid.Row="5" Text="Correo: *" VerticalAlignment="Center" Margin="8,0,0,0"/>
                     <TextBox Grid.Row="5" Grid.Column="1" x:Name="txtCorreo" MaxLength="50"/>

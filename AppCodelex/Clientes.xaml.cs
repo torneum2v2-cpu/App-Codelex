@@ -210,9 +210,28 @@ public partial class Clientes : Window
             return false;
         }
 
-        if (txtTelefono.Text.Trim() == "")
+        string telefono = txtTelefono.Text.Trim();
+
+        if (telefono == "")
         {
             MessageBox.Show("El teléfono es obligatorio.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
+            txtTelefono.Focus();
+            return false;
+        }
+
+        foreach (char c in telefono)
+        {
+            if (!char.IsDigit(c))
+            {
+                MessageBox.Show("El teléfono solo puede tener números, sin guiones ni espacios.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
+                txtTelefono.Focus();
+                return false;
+            }
+        }
+
+        if (telefono.Length != 8)
+        {
+            MessageBox.Show("El teléfono debe tener 8 dígitos. Tiene " + telefono.Length + ".", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
             txtTelefono.Focus();
             return false;
         }

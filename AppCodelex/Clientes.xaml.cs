@@ -163,10 +163,36 @@ public partial class Clientes : Window
 
     private bool DatosValidos()
     {
-        if (txtRTN.Text.Trim() == "")
+        string rtn = txtRTN.Text.Trim();
+
+        if (rtn == "")
         {
             MessageBox.Show("El RTN / identidad es obligatorio.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
             txtRTN.Focus();
+            return false;
+        }
+
+        foreach (char c in rtn)
+        {
+            if (!char.IsDigit(c))
+            {
+                MessageBox.Show("El RTN / identidad solo puede tener números, sin guiones ni espacios.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
+                txtRTN.Focus();
+                return false;
+            }
+        }
+
+        if (rtn.Length < 13 || rtn.Length > 14)
+        {
+            MessageBox.Show("El RTN / identidad debe tener 13 o 14 dígitos. Tiene " + rtn.Length + ".", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
+            txtRTN.Focus();
+            return false;
+        }
+
+        if (txtEmpresa.Text.Trim() == "")
+        {
+            MessageBox.Show("La empresa es obligatoria.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
+            txtEmpresa.Focus();
             return false;
         }
 
@@ -177,7 +203,46 @@ public partial class Clientes : Window
             return false;
         }
 
+        if (txtApellido.Text.Trim() == "")
+        {
+            MessageBox.Show("El apellido del contacto es obligatorio.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
+            txtApellido.Focus();
+            return false;
+        }
+
+        if (txtTelefono.Text.Trim() == "")
+        {
+            MessageBox.Show("El teléfono es obligatorio.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
+            txtTelefono.Focus();
+            return false;
+        }
+
+        string correo = txtCorreo.Text.Trim();
+
+        if (correo == "")
+        {
+            MessageBox.Show("El correo es obligatorio.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
+            txtCorreo.Focus();
+            return false;
+        }
+
+        if (!correo.Contains("@") || !correo.Contains("."))
+        {
+            MessageBox.Show("El correo no es válido. Ejemplo: nombre@empresa.com", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
+            txtCorreo.Focus();
+            return false;
+        }
+
         return true;
+    }
+
+    private void SoloNumeros(object sender, TextCompositionEventArgs e)
+    {
+        foreach (char c in e.Text)
+        {
+            if (!char.IsDigit(c))
+                e.Handled = true;
+        }
     }
 
     

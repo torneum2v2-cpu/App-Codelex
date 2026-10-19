@@ -64,21 +64,21 @@
                     </Grid.RowDefinitions>
 
                     <TextBlock Grid.Row="0" Text="RTN / identidad: *" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                    <TextBox Grid.Row="0" Grid.Column="1" x:Name="txtRTN" MaxLength="30"/>
+                    <TextBox Grid.Row="0" Grid.Column="1" x:Name="txtRTN" MaxLength="14" PreviewTextInput="SoloNumeros"/>
 
-                    <TextBlock Grid.Row="1" Text="Empresa:" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                    <TextBlock Grid.Row="1" Text="Empresa: *" VerticalAlignment="Center" Margin="8,0,0,0"/>
                     <TextBox Grid.Row="1" Grid.Column="1" x:Name="txtEmpresa" MaxLength="50"/>
 
                     <TextBlock Grid.Row="2" Text="Nombre contacto: *" VerticalAlignment="Center" Margin="8,0,0,0"/>
                     <TextBox Grid.Row="2" Grid.Column="1" x:Name="txtNombre" MaxLength="50"/>
 
-                    <TextBlock Grid.Row="3" Text="Apellido contacto:" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                    <TextBlock Grid.Row="3" Text="Apellido contacto: *" VerticalAlignment="Center" Margin="8,0,0,0"/>
                     <TextBox Grid.Row="3" Grid.Column="1" x:Name="txtApellido" MaxLength="50"/>
 
-                    <TextBlock Grid.Row="4" Text="Teléfono:" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                    <TextBlock Grid.Row="4" Text="Teléfono: *" VerticalAlignment="Center" Margin="8,0,0,0"/>
                     <TextBox Grid.Row="4" Grid.Column="1" x:Name="txtTelefono" MaxLength="50"/>
 
-                    <TextBlock Grid.Row="5" Text="Correo:" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                    <TextBlock Grid.Row="5" Text="Correo: *" VerticalAlignment="Center" Margin="8,0,0,0"/>
                     <TextBox Grid.Row="5" Grid.Column="1" x:Name="txtCorreo" MaxLength="50"/>
 
                     <TextBlock Grid.Row="6" Text="Locación:" VerticalAlignment="Center" Margin="8,0,0,0"/>
@@ -92,7 +92,7 @@
                 </Grid>
             </GroupBox>
 
-            <TextBlock Text="El RTN o la identidad es único: no puede repetirse entre clientes."
+            <TextBlock Text="El RTN o la identidad es único: no puede repetirse entre clientes. Debe tener 13 o 14 dígitos."
                        Foreground="#777777" TextWrapping="Wrap" Margin="2,10,0,0"/>
 
             <TextBlock x:Name="txtModo" Text="Nuevo cliente: llene los datos y presione Crear."

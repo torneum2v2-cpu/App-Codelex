@@ -124,10 +124,14 @@
             <GroupBox Grid.Row="0" Header="Buscar clientes">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Buscar:" VerticalAlignment="Center" Margin="0,0,14,0"/>
-                    <TextBox x:Name="txtBuscar" Width="200" Margin="0,0,16,0" KeyDown="Buscar_KeyDown"/>
-                    <Button x:Name="btnPorRTN" Content="Por RTN" Width="88" Margin="0,0,8,0" Click="PorRTN_Click"/>
-                    <Button x:Name="btnPorNombre" Content="Por nombre" Width="98" Margin="0,0,8,0" Click="PorNombre_Click"/>
-                    <Button x:Name="btnMostrarTodos" Content="Mostrar todos" Width="108" Click="MostrarTodos_Click"/>
+                    <TextBox x:Name="txtBuscar" Width="170" Margin="0,0,12,0" KeyDown="Buscar_KeyDown"/>
+                    <Button x:Name="btnPorRTN" Content="Por RTN" Width="80" Margin="0,0,6,0" Click="PorRTN_Click"/>
+                    <Button x:Name="btnPorNombre" Content="Por nombre" Width="90" Margin="0,0,6,0" Click="PorNombre_Click"/>
+                    <Button x:Name="btnMostrarTodos" Content="Mostrar todos" Width="100" Margin="0,0,20,0" Click="MostrarTodos_Click"/>
+                    <Button x:Name="btnActivos" Content="Activos" Width="80" Margin="0,0,6,0" Click="Activos_Click"
+                            ToolTip="Mostrar solo los clientes activos"/>
+                    <Button x:Name="btnInactivos" Content="Inactivos" Width="80" Click="Inactivos_Click"
+                            ToolTip="Mostrar solo los clientes inactivos"/>
                 </StackPanel>
             </GroupBox>
 
@@ -137,13 +141,9 @@
                           CanUserAddRows="False" SelectionMode="Single"
                           HeadersVisibility="Column" Background="White"
                           BorderBrush="Black" GridLinesVisibility="Horizontal"
-                          HorizontalGridLinesBrush="#E5E5E5">
-                    <DataGrid.RowStyle>
-                        <Style TargetType="DataGridRow">
-                            <Setter Property="Cursor" Value="Hand"/>
-                            <EventSetter Event="PreviewMouseLeftButtonUp" Handler="FilaCliente_Click"/>
-                        </Style>
-                    </DataGrid.RowStyle>
+                          HorizontalGridLinesBrush="#E5E5E5"
+                          Cursor="Hand"
+                          SelectionChanged="dgClientes_SelectionChanged">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="identificacionCliente" Binding="{Binding identificacionCliente}" Width="*"/>
                         <DataGridTextColumn Header="nombreEmpresa" Binding="{Binding nombreEmpresa}" Width="*"/>

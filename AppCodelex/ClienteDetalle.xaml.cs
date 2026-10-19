@@ -9,11 +9,11 @@ namespace AppCodelex;
 /// </summary>
 public partial class ClienteDetalle : Window
 {
-    private readonly ClienteDatos datos = new ClienteDatos();
-    private readonly int clienteId;
+    ClienteBD clienteBD = new ClienteBD();
+    int clienteId;
 
-    // La pantalla de Clientes lo revisa al cerrar para cargar el cliente en el formulario
-    public bool EditarSolicitado { get; private set; }
+    // La pantalla de Clientes lo revisa al cerrar: si es true, carga el cliente en el formulario
+    public bool EditarCliente = false;
 
     public ClienteDetalle(int clienteId)
     {
@@ -25,59 +25,91 @@ public partial class ClienteDetalle : Window
     {
         try
         {
-            DataRow? cliente = datos.Obtener(clienteId);
-            if (cliente == null)
-            {
-                MessageBox.Show("No se encontró el cliente.", "Detalle del cliente",
-                                MessageBoxButton.OK, MessageBoxImage.Warning);
-                Close();
-                return;
-            }
-
-            txtNumero.Text = clienteId.ToString();
-            txtRTN.Text = Texto(cliente, "identificacionCliente");
-            txtEmpresa.Text = Texto(cliente, "nombreEmpresa");
-            txtContacto.Text = Texto(cliente, "nombreCliente");
-            txtApellido.Text = Texto(cliente, "apellidoCliente");
-            txtTelefono.Text = Texto(cliente, "telefonoCliente");
-            txtCorreo.Text = Texto(cliente, "correoCliente");
-            txtEstado.Text = Texto(cliente, "estado");
-
-            Llenar(lstLocaciones, datos.LocacionesPorCliente(clienteId),
-                   "nombreLocacion", "tipoLocacion", "direccion");
-            Llenar(lstOrdenes, datos.OrdenesPorCliente(clienteId),
-                   "orden_id", "servicio", "fecha", "estado");
-            Llenar(lstFacturas, datos.FacturasPorCliente(clienteId),
-                   "factura_id", "fecha", "estado_pago", "monto");
+            CargarDatosCliente();
+            CargarLocaciones();
+            CargarOrdenes();
+            CargarFacturas();
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message, "Detalle del cliente",
-                            MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(ex.Message, "Detalle del cliente", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
-    // Cada fila se muestra como "valor · valor · valor", en el mismo orden del encabezado
-    private static void Llenar(System.Windows.Controls.ListBox lista, DataTable tabla, params string[] columnas)
+    private void CargarDatosCliente()
     {
-        lista.Items.Clear();
+        DataTable tabla = clienteBD.ObtenerCliente(clienteId);
+
+        if (tabla.Rows.Count == 0)
+        {
+            MessageBox.Show("No se encontró el cliente.", "Detalle del cliente", MessageBoxButton.OK, MessageBoxImage.Warning);
+            return;
+        }
+
+        DataRow fila = tabla.Rows[0];
+
+        txtNumero.Text = clienteId.ToString();
+        txtRTN.Text = fila["identificacionCliente"].ToString();
+        txtEmpresa.Text = fila["nombreEmpresa"].ToString();
+        txtContacto.Text = fila["nombreCliente"].ToString();
+        txtApellido.Text = fila["apellidoCliente"].ToString();
+        txtTelefono.Text = fila["telefonoCliente"].ToString();
+        txtCorreo.Text = fila["correoCliente"].ToString();
+        txtEstado.Text = fila["estado"].ToString();
+    }
+
+    // Cada lista muestra los datos en el mismo orden que el texto de arriba de la lista
+
+    private void CargarLocaciones()
+    {
+        DataTable tabla = clienteBD.LocacionesPorCliente(clienteId);
+        lstLocaciones.Items.Clear();
 
         foreach (DataRow fila in tabla.Rows)
-            lista.Items.Add(string.Join(" · ", columnas.Select(c => Texto(fila, c))));
-    }
-
-    private static string Texto(DataRow fila, string columna)
-    {
-        object valor = fila[columna];
-
-        return valor switch
         {
-            DBNull => "—",
-            DateTime fecha => fecha.ToString("dd/MM/yyyy"),
-            decimal monto => "L " + monto.ToString("N2"),
-            _ => valor.ToString() ?? ""
-        };
+            string linea = fila["nombreLocacion"] + " · " + fila["tipoLocacion"] + " · " + fila["direccion"];
+            lstLocaciones.Items.Add(linea);
+        }
     }
+
+    private void CargarOrdenes()
+    {
+        DataTable tabla = clienteBD.OrdenesPorCliente(clienteId);
+        lstOrdenes.Items.Clear();
+
+        foreach (DataRow fila in tabla.Rows)
+        {
+            string linea = fila["orden_id"] + " · " + fila["servicio"] + " · " + Fecha(fila["fecha"]) + " · " + fila["estado"];
+            lstOrdenes.Items.Add(linea);
+        }
+    }
+
+    private void CargarFacturas()
+    {
+        DataTable tabla = clienteBD.FacturasPorCliente(clienteId);
+        lstFacturas.Items.Clear();
+
+        foreach (DataRow fila in tabla.Rows)
+        {
+            string monto = "";
+            if (fila["monto"] != DBNull.Value)
+                monto = "L " + Convert.ToDecimal(fila["monto"]).ToString("N2");
+
+            string linea = fila["factura_id"] + " · " + Fecha(fila["fecha"]) + " · " + fila["estado_pago"] + " · " + monto;
+            lstFacturas.Items.Add(linea);
+        }
+    }
+
+    // Muestra la fecha como día/mes/año (o vacío si no tiene)
+    private string Fecha(object valor)
+    {
+        if (valor == DBNull.Value)
+            return "";
+
+        return Convert.ToDateTime(valor).ToString("dd/MM/yyyy");
+    }
+
+    // ===================== BOTONES =====================
 
     private void NuevaOrden_Click(object sender, RoutedEventArgs e)
     {
@@ -87,7 +119,7 @@ public partial class ClienteDetalle : Window
 
     private void Editar_Click(object sender, RoutedEventArgs e)
     {
-        EditarSolicitado = true;
+        EditarCliente = true;
         Close();
     }
 

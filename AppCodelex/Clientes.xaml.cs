@@ -11,15 +11,16 @@ namespace AppCodelex;
 /// </summary>
 public partial class Clientes : Window
 {
-    private readonly ClienteDatos datos = new ClienteDatos();
+    ClienteBD clienteBD = new ClienteBD();
 
-    // 0 = formulario en modo "nuevo cliente"; mayor que 0 = id del cliente que se está editando
-    private int clienteActualId = 0;
-    private bool clienteActualActivo = true;
+    // Cliente que se está editando. Si es 0, el formulario está en modo "nuevo cliente".
+    int clienteActualId = 0;
+    bool clienteActualActivo = true;
 
-    // Última búsqueda, para refrescar la tabla después de guardar
-    private string ultimoTexto = "";
-    private string? ultimoBuscarPor = null;
+    // Búsqueda actual, para volver a cargar la tabla después de guardar
+    string textoBusqueda = "";
+    string buscarPor = "";
+    string filtroEstado = "TODOS";
 
     public Clientes()
     {
@@ -30,144 +31,148 @@ public partial class Clientes : Window
     {
         CargarLocaciones();
         LimpiarFormulario();
-        CargarClientes("", null);
+        CargarClientes();
     }
 
-    // ---------- Carga de datos ----------
+    // ===================== CARGAR DATOS =====================
 
     private void CargarLocaciones()
     {
         try
         {
-            DataTable tabla = datos.ListarLocaciones();
+            DataTable tabla = clienteBD.ListarLocaciones();
 
-            DataRow sinLocacion = tabla.NewRow();
-            sinLocacion["locacion_id"] = DBNull.Value;
-            sinLocacion["nombreLocacion"] = "(Sin locación)";
-            tabla.Rows.InsertAt(sinLocacion, 0);
+            // Primera opción del combo: sin locación
+            DataRow filaVacia = tabla.NewRow();
+            filaVacia["locacion_id"] = DBNull.Value;
+            filaVacia["nombreLocacion"] = "(Sin locación)";
+            tabla.Rows.InsertAt(filaVacia, 0);
 
             cbLocacion.ItemsSource = tabla.DefaultView;
             cbLocacion.SelectedIndex = 0;
         }
         catch (Exception ex)
         {
-            MostrarError(ex);
+            MessageBox.Show(ex.Message, "Clientes", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
-    private void CargarClientes(string texto, string? buscarPor)
+    private void CargarClientes()
     {
         try
         {
-            ultimoTexto = texto;
-            ultimoBuscarPor = buscarPor;
-            dgClientes.ItemsSource = datos.Buscar(texto, buscarPor).DefaultView;
+            DataTable tabla = clienteBD.BuscarClientes(textoBusqueda, buscarPor, filtroEstado);
+            dgClientes.ItemsSource = tabla.DefaultView;
         }
         catch (Exception ex)
         {
-            MostrarError(ex);
+            MessageBox.Show(ex.Message, "Clientes", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
+    // Pone los datos de un cliente en el formulario para poder editarlo
     private void CargarEnFormulario(int clienteId)
     {
         try
         {
-            DataRow? fila = datos.Obtener(clienteId);
-            if (fila == null)
+            DataTable tabla = clienteBD.ObtenerCliente(clienteId);
+
+            if (tabla.Rows.Count == 0)
             {
-                MessageBox.Show("No se encontró el cliente.", "Clientes",
-                                MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("No se encontró el cliente.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
+
+            DataRow fila = tabla.Rows[0];
 
             clienteActualId = clienteId;
             clienteActualActivo = Convert.ToBoolean(fila["estadoCliente"]);
 
-            txtRTN.Text = Texto(fila, "identificacionCliente");
-            txtEmpresa.Text = Texto(fila, "nombreEmpresa");
-            txtNombre.Text = Texto(fila, "nombreCliente");
-            txtApellido.Text = Texto(fila, "apellidoCliente");
-            txtTelefono.Text = Texto(fila, "telefonoCliente");
-            txtCorreo.Text = Texto(fila, "correoCliente");
-            cbLocacion.SelectedValue = fila["locacion_id"];
-            if (cbLocacion.SelectedIndex < 0)
-                cbLocacion.SelectedIndex = 0;
+            txtRTN.Text = fila["identificacionCliente"].ToString();
+            txtEmpresa.Text = fila["nombreEmpresa"].ToString();
+            txtNombre.Text = fila["nombreCliente"].ToString();
+            txtApellido.Text = fila["apellidoCliente"].ToString();
+            txtTelefono.Text = fila["telefonoCliente"].ToString();
+            txtCorreo.Text = fila["correoCliente"].ToString();
 
-            ActualizarModo();
+            if (fila["locacion_id"] == DBNull.Value)
+                cbLocacion.SelectedIndex = 0;
+            else
+                cbLocacion.SelectedValue = fila["locacion_id"];
+
+            ActualizarBotones();
         }
         catch (Exception ex)
         {
-            MostrarError(ex);
+            MessageBox.Show(ex.Message, "Clientes", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
-    // ---------- Formulario ----------
+    // ===================== FORMULARIO =====================
 
     private void LimpiarFormulario()
     {
         clienteActualId = 0;
         clienteActualActivo = true;
 
-        txtRTN.Clear();
-        txtEmpresa.Clear();
-        txtNombre.Clear();
-        txtApellido.Clear();
-        txtTelefono.Clear();
-        txtCorreo.Clear();
-        if (cbLocacion.Items.Count > 0)
-            cbLocacion.SelectedIndex = 0;
+        txtRTN.Text = "";
+        txtEmpresa.Text = "";
+        txtNombre.Text = "";
+        txtApellido.Text = "";
+        txtTelefono.Text = "";
+        txtCorreo.Text = "";
+        cbLocacion.SelectedIndex = 0;
 
-        dgClientes.SelectedItem = null;
-        ActualizarModo();
+        ActualizarBotones();
         txtRTN.Focus();
     }
 
-    // Habilita los botones según si se está creando un cliente nuevo o editando uno existente
-    private void ActualizarModo()
+    // Activa o desactiva los botones según si se está creando o editando un cliente
+    private void ActualizarBotones()
     {
-        bool editando = clienteActualId > 0;
+        if (clienteActualId == 0)
+        {
+            // Modo nuevo cliente
+            btnCrear.IsEnabled = true;
+            btnActualizar.IsEnabled = false;
+            btnCambiarEstado.IsEnabled = false;
+            btnCambiarEstado.Content = "Desactivar";
+            txtEstado.Text = "—";
+            txtModo.Text = "Nuevo cliente: llene los datos y presione Crear.";
+        }
+        else
+        {
+            // Modo editar cliente
+            btnCrear.IsEnabled = false;
+            btnActualizar.IsEnabled = true;
+            btnCambiarEstado.IsEnabled = true;
+            txtModo.Text = "Editando el cliente N.° " + clienteActualId + ". Presione Actualizar para guardar los cambios.";
 
-        btnCrear.IsEnabled = !editando;
-        btnActualizar.IsEnabled = editando;
-        btnCambiarEstado.IsEnabled = editando;
-        btnCambiarEstado.Content = clienteActualActivo ? "Desactivar" : "Activar";
-
-        txtEstado.Text = editando ? (clienteActualActivo ? "Activo" : "Inactivo") : "—";
-        txtModo.Text = editando
-            ? $"Editando el cliente N.° {clienteActualId}. Presione Actualizar para guardar los cambios."
-            : "Nuevo cliente: llene los datos y presione Crear.";
+            if (clienteActualActivo)
+            {
+                btnCambiarEstado.Content = "Desactivar";
+                txtEstado.Text = "Activo";
+            }
+            else
+            {
+                btnCambiarEstado.Content = "Activar";
+                txtEstado.Text = "Inactivo";
+            }
+        }
     }
 
-    private Cliente LeerFormulario()
+    private bool DatosValidos()
     {
-        return new Cliente
+        if (txtRTN.Text.Trim() == "")
         {
-            ClienteId = clienteActualId,
-            Identificacion = txtRTN.Text.Trim(),
-            Empresa = txtEmpresa.Text.Trim(),
-            Nombre = txtNombre.Text.Trim(),
-            Apellido = txtApellido.Text.Trim(),
-            Telefono = txtTelefono.Text.Trim(),
-            Correo = txtCorreo.Text.Trim(),
-            LocacionId = cbLocacion.SelectedValue is int id ? id : null
-        };
-    }
-
-    private bool ValidarFormulario()
-    {
-        if (string.IsNullOrWhiteSpace(txtRTN.Text))
-        {
-            MessageBox.Show("El RTN / identidad es obligatorio.", "Clientes",
-                            MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("El RTN / identidad es obligatorio.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
             txtRTN.Focus();
             return false;
         }
 
-        if (string.IsNullOrWhiteSpace(txtNombre.Text))
+        if (txtNombre.Text.Trim() == "")
         {
-            MessageBox.Show("El nombre del contacto es obligatorio.", "Clientes",
-                            MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show("El nombre del contacto es obligatorio.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
             txtNombre.Focus();
             return false;
         }
@@ -175,164 +180,220 @@ public partial class Clientes : Window
         return true;
     }
 
-    // ---------- Botones del formulario ----------
+    // Devuelve el id de la locación elegida, o NULL si eligió "(Sin locación)"
+    private object LocacionSeleccionada()
+    {
+        if (cbLocacion.SelectedValue == null)
+            return DBNull.Value;
 
-    // Nuevo: solo limpia el formulario para empezar a registrar otro cliente
+        return cbLocacion.SelectedValue;
+    }
+
+    // ===================== BOTONES DEL FORMULARIO =====================
+
+    // Nuevo: solo limpia el formulario para registrar otro cliente
     private void Nuevo_Click(object sender, RoutedEventArgs e)
     {
         LimpiarFormulario();
     }
 
-    // Crear: guarda en la base de datos lo que está en el formulario como cliente nuevo
+    // Crear: guarda en la base de datos el cliente que está en el formulario
     private void Crear_Click(object sender, RoutedEventArgs e)
     {
-        if (!ValidarFormulario())
+        if (!DatosValidos())
             return;
 
         try
         {
-            var (ok, mensaje, nuevoId) = datos.Insertar(LeerFormulario());
-            MostrarResultado(ok, mensaje);
+            string mensaje;
+            int nuevoId;
 
-            if (ok)
+            bool guardado = clienteBD.InsertarCliente(
+                txtRTN.Text.Trim(), txtEmpresa.Text.Trim(), txtNombre.Text.Trim(), txtApellido.Text.Trim(),
+                txtTelefono.Text.Trim(), txtCorreo.Text.Trim(), LocacionSeleccionada(),
+                out mensaje, out nuevoId);
+
+            if (guardado)
             {
-                CargarClientes(ultimoTexto, ultimoBuscarPor);
+                MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Information);
+                CargarClientes();
                 CargarEnFormulario(nuevoId);
+            }
+            else
+            {
+                MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
         catch (Exception ex)
         {
-            MostrarError(ex);
+            MessageBox.Show(ex.Message, "Clientes", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
+    // Actualizar: guarda los cambios del cliente que se está editando
     private void Actualizar_Click(object sender, RoutedEventArgs e)
     {
-        if (clienteActualId == 0 || !ValidarFormulario())
+        if (clienteActualId == 0)
+            return;
+
+        if (!DatosValidos())
             return;
 
         try
         {
-            var (ok, mensaje) = datos.Actualizar(LeerFormulario());
-            MostrarResultado(ok, mensaje);
+            string mensaje;
 
-            if (ok)
-                CargarClientes(ultimoTexto, ultimoBuscarPor);
+            bool guardado = clienteBD.ActualizarCliente(
+                clienteActualId, txtRTN.Text.Trim(), txtEmpresa.Text.Trim(), txtNombre.Text.Trim(),
+                txtApellido.Text.Trim(), txtTelefono.Text.Trim(), txtCorreo.Text.Trim(), LocacionSeleccionada(),
+                out mensaje);
+
+            if (guardado)
+            {
+                MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Information);
+                CargarClientes();
+            }
+            else
+            {
+                MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
         catch (Exception ex)
         {
-            MostrarError(ex);
+            MessageBox.Show(ex.Message, "Clientes", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
-    // Reemplaza a "Eliminar": el cliente no se borra, solo se activa o desactiva
+    // Activar / Desactivar: reemplaza a "Eliminar". El cliente no se borra.
     private void CambiarEstado_Click(object sender, RoutedEventArgs e)
     {
         if (clienteActualId == 0)
             return;
 
         bool nuevoEstado = !clienteActualActivo;
-        string accion = nuevoEstado ? "activar" : "desactivar";
 
-        if (MessageBox.Show($"¿Desea {accion} el cliente {txtNombre.Text} ({txtRTN.Text})?", "Clientes",
-                            MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+        string pregunta;
+        if (nuevoEstado)
+            pregunta = "¿Desea activar el cliente " + txtNombre.Text + "?";
+        else
+            pregunta = "¿Desea desactivar el cliente " + txtNombre.Text + "?";
+
+        MessageBoxResult respuesta = MessageBox.Show(pregunta, "Clientes", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        if (respuesta != MessageBoxResult.Yes)
             return;
 
         try
         {
-            var (ok, mensaje) = datos.CambiarEstado(clienteActualId, nuevoEstado);
-            MostrarResultado(ok, mensaje);
+            string mensaje;
+            bool guardado = clienteBD.CambiarEstadoCliente(clienteActualId, nuevoEstado, out mensaje);
 
-            if (ok)
+            if (guardado)
             {
+                MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Information);
                 clienteActualActivo = nuevoEstado;
-                ActualizarModo();
-                CargarClientes(ultimoTexto, ultimoBuscarPor);
+                ActualizarBotones();
+                CargarClientes();
+            }
+            else
+            {
+                MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
         catch (Exception ex)
         {
-            MostrarError(ex);
+            MessageBox.Show(ex.Message, "Clientes", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
     private void VerDetalle_Click(object sender, RoutedEventArgs e)
     {
-        int clienteId = clienteActualId;
-
-        if (clienteId == 0 && dgClientes.SelectedItem is DataRowView seleccionado)
-            clienteId = Convert.ToInt32(seleccionado["cliente_id"]);
-
-        if (clienteId == 0)
+        if (clienteActualId == 0)
         {
-            MessageBox.Show("Seleccione un cliente de la tabla.", "Clientes",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show("Seleccione un cliente de la tabla.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
-        AbrirDetalle(clienteId);
+        AbrirDetalle(clienteActualId);
     }
 
-    // ---------- Tabla y búsqueda ----------
+    // ===================== TABLA =====================
 
-    private void FilaCliente_Click(object sender, MouseButtonEventArgs e)
+    // Al hacer clic en un cliente de la tabla se abre su detalle
+    private void dgClientes_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (sender is DataGridRow fila && fila.Item is DataRowView cliente)
-            AbrirDetalle(Convert.ToInt32(cliente["cliente_id"]));
+        if (dgClientes.SelectedItem == null)
+            return;
+
+        DataRowView fila = (DataRowView)dgClientes.SelectedItem;
+        int clienteId = Convert.ToInt32(fila["cliente_id"]);
+
+        AbrirDetalle(clienteId);
+
+        // Se quita la selección para que se pueda volver a hacer clic en el mismo cliente
+        dgClientes.SelectedItem = null;
     }
 
     private void AbrirDetalle(int clienteId)
     {
-        ClienteDetalle detalle = new ClienteDetalle(clienteId) { Owner = this };
+        ClienteDetalle detalle = new ClienteDetalle(clienteId);
+        detalle.Owner = this;
         detalle.ShowDialog();
 
-        if (detalle.EditarSolicitado)
+        // Si en el detalle presionaron "Editar cliente", se carga en el formulario
+        if (detalle.EditarCliente)
             CargarEnFormulario(clienteId);
     }
 
+    // ===================== BÚSQUEDA Y FILTROS =====================
+
     private void PorRTN_Click(object sender, RoutedEventArgs e)
     {
-        CargarClientes(txtBuscar.Text.Trim(), "RTN");
+        textoBusqueda = txtBuscar.Text.Trim();
+        buscarPor = "RTN";
+        CargarClientes();
     }
 
     private void PorNombre_Click(object sender, RoutedEventArgs e)
     {
-        CargarClientes(txtBuscar.Text.Trim(), "NOMBRE");
+        textoBusqueda = txtBuscar.Text.Trim();
+        buscarPor = "NOMBRE";
+        CargarClientes();
     }
 
     private void MostrarTodos_Click(object sender, RoutedEventArgs e)
     {
-        txtBuscar.Clear();
-        CargarClientes("", null);
+        txtBuscar.Text = "";
+        textoBusqueda = "";
+        buscarPor = "";
+        filtroEstado = "TODOS";
+        CargarClientes();
+    }
+
+    private void Activos_Click(object sender, RoutedEventArgs e)
+    {
+        filtroEstado = "ACTIVOS";
+        CargarClientes();
+    }
+
+    private void Inactivos_Click(object sender, RoutedEventArgs e)
+    {
+        filtroEstado = "INACTIVOS";
+        CargarClientes();
     }
 
     // Enter en el buscador: busca en todos los campos
     private void Buscar_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Enter)
-            CargarClientes(txtBuscar.Text.Trim(), null);
+        {
+            textoBusqueda = txtBuscar.Text.Trim();
+            buscarPor = "";
+            CargarClientes();
+        }
     }
 
     private void Salir_Click(object sender, RoutedEventArgs e)
     {
         Close();
-    }
-
-    // ---------- Utilidades ----------
-
-    private static string Texto(DataRow fila, string columna)
-    {
-        return fila[columna] == DBNull.Value ? "" : fila[columna].ToString() ?? "";
-    }
-
-    private static void MostrarResultado(bool ok, string mensaje)
-    {
-        MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK,
-                        ok ? MessageBoxImage.Information : MessageBoxImage.Warning);
-    }
-
-    private static void MostrarError(Exception ex)
-    {
-        MessageBox.Show(ex.Message, "Clientes", MessageBoxButton.OK, MessageBoxImage.Error);
     }
 }

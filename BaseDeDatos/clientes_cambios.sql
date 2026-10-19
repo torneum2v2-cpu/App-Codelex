@@ -3,7 +3,8 @@ GO
 
 /* =====================================================================
    Cambios para las pantallas Clientes y Detalle del cliente.
-   Ejecutar UNA vez, después de procedimientos_avance_semana_1.sql.
+   Ejecutar después de procedimientos_avance_semana_1.sql.
+   Se puede volver a ejecutar sin problema (no duplica nada).
    ===================================================================== */
 
 -- 1. Estado del cliente (1 = Activo, 0 = Inactivo).
@@ -14,11 +15,14 @@ IF COL_LENGTH('CLIENTES', 'estadoCliente') IS NULL
 		CONSTRAINT DF_CLIENTES_estadoCliente DEFAULT 1;
 GO
 
--- 2. Buscar clientes (se modifica para buscar por RTN o por nombre y devolver el estado).
---    @buscarPor: 'RTN', 'NOMBRE' o NULL (busca en todos los campos).
+-- 2. Buscar clientes (se modifica para buscar por RTN o por nombre, filtrar por estado
+--    y devolver el estado).
+--    @buscarPor: 'RTN', 'NOMBRE' o vacío (busca en todos los campos).
+--    @estado:    1 = solo activos, 0 = solo inactivos, NULL = todos.
 CREATE OR ALTER PROCEDURE sp_BuscarClientes
 	@texto VARCHAR(50) = NULL,
-	@buscarPor VARCHAR(10) = NULL
+	@buscarPor VARCHAR(10) = NULL,
+	@estado BIT = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -33,19 +37,20 @@ BEGIN
 		   CASE WHEN c.estadoCliente = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
 	FROM CLIENTES c
 	LEFT JOIN LOCACIONES l ON l.locacion_id = c.locacion_id
-	WHERE @texto = ''
-	   OR (@buscarPor = 'RTN'
-		   AND c.identificacionCliente LIKE '%' + @texto + '%')
-	   OR (@buscarPor = 'NOMBRE'
-		   AND (c.nombreEmpresa LIKE '%' + @texto + '%'
-				OR c.nombreCliente LIKE '%' + @texto + '%'
-				OR c.apellidoCliente LIKE '%' + @texto + '%'
-				OR ISNULL(c.nombreCliente, '') + ' ' + ISNULL(c.apellidoCliente, '') LIKE '%' + @texto + '%'))
-	   OR (@buscarPor NOT IN ('RTN', 'NOMBRE')
-		   AND (c.identificacionCliente LIKE '%' + @texto + '%'
-				OR c.nombreEmpresa LIKE '%' + @texto + '%'
-				OR c.nombreCliente LIKE '%' + @texto + '%'
-				OR c.apellidoCliente LIKE '%' + @texto + '%'))
+	WHERE (@estado IS NULL OR c.estadoCliente = @estado)
+	  AND (@texto = ''
+		   OR (@buscarPor = 'RTN'
+			   AND c.identificacionCliente LIKE '%' + @texto + '%')
+		   OR (@buscarPor = 'NOMBRE'
+			   AND (c.nombreEmpresa LIKE '%' + @texto + '%'
+					OR c.nombreCliente LIKE '%' + @texto + '%'
+					OR c.apellidoCliente LIKE '%' + @texto + '%'
+					OR ISNULL(c.nombreCliente, '') + ' ' + ISNULL(c.apellidoCliente, '') LIKE '%' + @texto + '%'))
+		   OR (@buscarPor NOT IN ('RTN', 'NOMBRE')
+			   AND (c.identificacionCliente LIKE '%' + @texto + '%'
+					OR c.nombreEmpresa LIKE '%' + @texto + '%'
+					OR c.nombreCliente LIKE '%' + @texto + '%'
+					OR c.apellidoCliente LIKE '%' + @texto + '%')))
 	ORDER BY c.nombreEmpresa, c.nombreCliente, c.apellidoCliente;
 END
 GO

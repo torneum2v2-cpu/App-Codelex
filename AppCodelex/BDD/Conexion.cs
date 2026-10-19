@@ -2,9 +2,9 @@ using Microsoft.Data.SqlClient;
 
 namespace AppCodelex.BDD;
 
-public static class Conexion
+public class Conexion
 {
-    // Si la base de datos está en otra computadora, cambiar el nombre del servidor (Server=...).
+    // Si la base de datos está en otra computadora, cambiar el nombre del servidor (Server=...)
     private static string cadenaConexion = "Server=DESKTOP-G6UO5OF\\SQLEXPRESS; Database=Codelex; Integrated Security=true; TrustServerCertificate=True;";
 
     public static SqlConnection ObtenerConexion()
@@ -17,7 +17,6 @@ public static class Conexion
         }
         catch (Exception ex)
         {
-            conexion.Dispose();
             throw new Exception("Error al conectar a la base de datos: " + ex.Message);
         }
     }

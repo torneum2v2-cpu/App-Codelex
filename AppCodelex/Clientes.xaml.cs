@@ -13,11 +13,11 @@ public partial class Clientes : Window
 {
     ClienteBD clienteBD = new ClienteBD();
 
-    // Cliente que se está editando. Si es 0, el formulario está en modo "nuevo cliente".
+    
     int clienteActualId = 0;
     bool clienteActualActivo = true;
 
-    // Búsqueda actual, para volver a cargar la tabla después de guardar
+    
     string textoBusqueda = "";
     string buscarPor = "";
     string filtroEstado = "TODOS";
@@ -34,7 +34,7 @@ public partial class Clientes : Window
         CargarClientes();
     }
 
-    // ===================== CARGAR DATOS =====================
+    
 
     private void CargarLocaciones()
     {
@@ -42,7 +42,7 @@ public partial class Clientes : Window
         {
             DataTable tabla = clienteBD.ListarLocaciones();
 
-            // Primera opción del combo: sin locación
+            
             DataRow filaVacia = tabla.NewRow();
             filaVacia["locacion_id"] = DBNull.Value;
             filaVacia["nombreLocacion"] = "(Sin locación)";
@@ -70,7 +70,7 @@ public partial class Clientes : Window
         }
     }
 
-    // Pone los datos de un cliente en el formulario para poder editarlo
+    
     private void CargarEnFormulario(int clienteId)
     {
         try
@@ -108,7 +108,7 @@ public partial class Clientes : Window
         }
     }
 
-    // ===================== FORMULARIO =====================
+    
 
     private void LimpiarFormulario()
     {
@@ -127,12 +127,12 @@ public partial class Clientes : Window
         txtRTN.Focus();
     }
 
-    // Activa o desactiva los botones según si se está creando o editando un cliente
+    
     private void ActualizarBotones()
     {
         if (clienteActualId == 0)
         {
-            // Modo nuevo cliente
+            
             btnCrear.IsEnabled = true;
             btnActualizar.IsEnabled = false;
             btnCambiarEstado.IsEnabled = false;
@@ -142,7 +142,7 @@ public partial class Clientes : Window
         }
         else
         {
-            // Modo editar cliente
+            
             btnCrear.IsEnabled = false;
             btnActualizar.IsEnabled = true;
             btnCambiarEstado.IsEnabled = true;
@@ -180,7 +180,7 @@ public partial class Clientes : Window
         return true;
     }
 
-    // Devuelve el id de la locación elegida, o NULL si eligió "(Sin locación)"
+    
     private object LocacionSeleccionada()
     {
         if (cbLocacion.SelectedValue == null)
@@ -189,15 +189,13 @@ public partial class Clientes : Window
         return cbLocacion.SelectedValue;
     }
 
-    // ===================== BOTONES DEL FORMULARIO =====================
-
-    // Nuevo: solo limpia el formulario para registrar otro cliente
+    
     private void Nuevo_Click(object sender, RoutedEventArgs e)
     {
         LimpiarFormulario();
     }
 
-    // Crear: guarda en la base de datos el cliente que está en el formulario
+    
     private void Crear_Click(object sender, RoutedEventArgs e)
     {
         if (!DatosValidos())
@@ -230,7 +228,7 @@ public partial class Clientes : Window
         }
     }
 
-    // Actualizar: guarda los cambios del cliente que se está editando
+    
     private void Actualizar_Click(object sender, RoutedEventArgs e)
     {
         if (clienteActualId == 0)
@@ -264,7 +262,7 @@ public partial class Clientes : Window
         }
     }
 
-    // Activar / Desactivar: reemplaza a "Eliminar". El cliente no se borra.
+    
     private void CambiarEstado_Click(object sender, RoutedEventArgs e)
     {
         if (clienteActualId == 0)
@@ -316,9 +314,7 @@ public partial class Clientes : Window
         AbrirDetalle(clienteActualId);
     }
 
-    // ===================== TABLA =====================
-
-    // Al hacer clic en un cliente de la tabla se abre su detalle
+    
     private void dgClientes_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (dgClientes.SelectedItem == null)
@@ -329,7 +325,7 @@ public partial class Clientes : Window
 
         AbrirDetalle(clienteId);
 
-        // Se quita la selección para que se pueda volver a hacer clic en el mismo cliente
+        
         dgClientes.SelectedItem = null;
     }
 
@@ -339,12 +335,12 @@ public partial class Clientes : Window
         detalle.Owner = this;
         detalle.ShowDialog();
 
-        // Si en el detalle presionaron "Editar cliente", se carga en el formulario
+        
         if (detalle.EditarCliente)
             CargarEnFormulario(clienteId);
     }
 
-    // ===================== BÚSQUEDA Y FILTROS =====================
+    
 
     private void PorRTN_Click(object sender, RoutedEventArgs e)
     {
@@ -381,7 +377,7 @@ public partial class Clientes : Window
         CargarClientes();
     }
 
-    // Enter en el buscador: busca en todos los campos
+    
     private void Buscar_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Enter)

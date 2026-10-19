@@ -81,26 +81,8 @@
         <!-- Logo -->
         <!-- Cuando agreguen la imagen del logo al proyecto, reemplazar el contenido
              de este Border por: <Image Source="Imagenes/logo.png" Stretch="Uniform"/> -->
-        <Border Width="140" Height="90" Background="{StaticResource Card}"
-                HorizontalAlignment="Center" Padding="8">
-            <StackPanel VerticalAlignment="Center">
-                <Viewbox Width="56" Height="34" HorizontalAlignment="Center">
-                    <Canvas Width="56" Height="34">
-                        <Ellipse Canvas.Left="2" Canvas.Top="14" Width="52" Height="18"
-                                 Stroke="{StaticResource LogoGreen}" StrokeThickness="3"/>
-                        <Path Fill="{StaticResource LogoBlue}"
-                              Data="M14,18 L28,6 L42,18 L39,18 L28,9 L17,18 Z"/>
-                        <Rectangle Canvas.Left="19" Canvas.Top="15" Width="18" Height="11"
-                                   Fill="{StaticResource LogoBlue}"/>
-                        <Rectangle Canvas.Left="25" Canvas.Top="18" Width="6" Height="5"
-                                   Fill="{StaticResource Hole}"/>
-                    </Canvas>
-                </Viewbox>
-                <TextBlock Text="CODELEX" HorizontalAlignment="Center"
-                           FontSize="22" FontWeight="Black" FontStyle="Italic"
-                           Foreground="{StaticResource LogoGreen}"/>
-            </StackPanel>
-        </Border>
+
+        <Image Height="117" Source="/Image2.png" Stretch="Fill" Width="184"/>
 
         <TextBlock Text="¿Qué desea hacer?" HorizontalAlignment="Center"
                    Margin="0,20,0,14"
@@ -295,5 +277,6 @@
                 </DockPanel>
             </Button>
         </StackPanel>
+        <Image Height="100" Width="100"/>
     </StackPanel>
 </Window>

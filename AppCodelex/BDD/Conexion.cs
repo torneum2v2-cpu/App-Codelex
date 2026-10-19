@@ -4,8 +4,8 @@ namespace AppCodelex.BDD;
 
 public class Conexion
 {
-    // Si la base de datos está en otra computadora, cambiar el nombre del servidor (Server=...)
-    private static string cadenaConexion = "Server=DESKTOP-G6UO5OF\\SQLEXPRESS; Database=Codelex; Integrated Security=true; TrustServerCertificate=True;";
+    // Si la base de datos está en otra computadora, cambiar el nombre del servidor (Server=...).
+    private static string cadenaConexion = "Server=localhost\\SQLEXPRESS; Database=Codelex; Integrated Security=true; TrustServerCertificate=True;";
 
     public static SqlConnection ObtenerConexion()
     {

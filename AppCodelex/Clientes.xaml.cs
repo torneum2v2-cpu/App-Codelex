@@ -53,7 +53,7 @@ public partial class Clientes : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message, "Clientes", MessageBoxButton.OK, MessageBoxImage.Error);
+            MostrarError(ex);
         }
     }
 
@@ -66,7 +66,7 @@ public partial class Clientes : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message, "Clientes", MessageBoxButton.OK, MessageBoxImage.Error);
+            MostrarError(ex);
         }
     }
 
@@ -104,7 +104,7 @@ public partial class Clientes : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message, "Clientes", MessageBoxButton.OK, MessageBoxImage.Error);
+            MostrarError(ex);
         }
     }
 
@@ -161,47 +161,9 @@ public partial class Clientes : Window
         }
     }
 
-    private bool DatosValidos()
-    {
-        string mensaje;
-
-        mensaje = Validaciones.ValidarIdentidad(txtRTN.Text);
-        if (mensaje != "")
-            return Aviso(mensaje, txtRTN);
-
-        mensaje = Validaciones.Obligatorio(txtEmpresa.Text, "Empresa");
-        if (mensaje != "")
-            return Aviso(mensaje, txtEmpresa);
-
-        mensaje = Validaciones.Obligatorio(txtNombre.Text, "Nombre contacto");
-        if (mensaje != "")
-            return Aviso(mensaje, txtNombre);
-
-        mensaje = Validaciones.Obligatorio(txtApellido.Text, "Apellido contacto");
-        if (mensaje != "")
-            return Aviso(mensaje, txtApellido);
-
-        mensaje = Validaciones.ValidarTelefono(txtTelefono.Text);
-        if (mensaje != "")
-            return Aviso(mensaje, txtTelefono);
-
-        mensaje = Validaciones.ValidarCorreo(txtCorreo.Text);
-        if (mensaje != "")
-            return Aviso(mensaje, txtCorreo);
-
-        return true;
-    }
-
-    private bool Aviso(string mensaje, TextBox campo)
-    {
-        MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
-        campo.Focus();
-        return false;
-    }
-
     private void SoloNumeros(object sender, TextCompositionEventArgs e)
     {
-        if (!Validaciones.SoloNumeros(e.Text))
+        if (!clienteBD.SoloNumeros(e.Text))
             e.Handled = true;
     }
 
@@ -223,33 +185,27 @@ public partial class Clientes : Window
     
     private void Crear_Click(object sender, RoutedEventArgs e)
     {
-        if (!DatosValidos())
-            return;
-
         try
         {
             string mensaje;
             int nuevoId;
 
             bool guardado = clienteBD.InsertarCliente(
-                txtRTN.Text.Trim(), txtEmpresa.Text.Trim(), txtNombre.Text.Trim(), txtApellido.Text.Trim(),
-                txtTelefono.Text.Trim(), txtCorreo.Text.Trim(), LocacionSeleccionada(),
+                txtRTN.Text, txtEmpresa.Text, txtNombre.Text, txtApellido.Text,
+                txtTelefono.Text, txtCorreo.Text, LocacionSeleccionada(),
                 out mensaje, out nuevoId);
+
+            MostrarMensaje(guardado, mensaje);
 
             if (guardado)
             {
-                MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Information);
                 CargarClientes();
                 CargarEnFormulario(nuevoId);
-            }
-            else
-            {
-                MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message, "Clientes", MessageBoxButton.OK, MessageBoxImage.Error);
+            MostrarError(ex);
         }
     }
 
@@ -259,31 +215,25 @@ public partial class Clientes : Window
         if (clienteActualId == 0)
             return;
 
-        if (!DatosValidos())
-            return;
-
         try
         {
             string mensaje;
 
             bool guardado = clienteBD.ActualizarCliente(
-                clienteActualId, txtRTN.Text.Trim(), txtEmpresa.Text.Trim(), txtNombre.Text.Trim(),
-                txtApellido.Text.Trim(), txtTelefono.Text.Trim(), txtCorreo.Text.Trim(), LocacionSeleccionada(),
+                clienteActualId, txtRTN.Text, txtEmpresa.Text, txtNombre.Text,
+                txtApellido.Text, txtTelefono.Text, txtCorreo.Text, LocacionSeleccionada(),
                 out mensaje);
+
+            MostrarMensaje(guardado, mensaje);
 
             if (guardado)
             {
-                MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Information);
                 CargarClientes();
-            }
-            else
-            {
-                MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message, "Clientes", MessageBoxButton.OK, MessageBoxImage.Error);
+            MostrarError(ex);
         }
     }
 
@@ -310,21 +260,18 @@ public partial class Clientes : Window
             string mensaje;
             bool guardado = clienteBD.CambiarEstadoCliente(clienteActualId, nuevoEstado, out mensaje);
 
+            MostrarMensaje(guardado, mensaje);
+
             if (guardado)
             {
-                MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Information);
                 clienteActualActivo = nuevoEstado;
                 ActualizarBotones();
                 CargarClientes();
             }
-            else
-            {
-                MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.Message, "Clientes", MessageBoxButton.OK, MessageBoxImage.Error);
+            MostrarError(ex);
         }
     }
 
@@ -416,5 +363,18 @@ public partial class Clientes : Window
     private void Salir_Click(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    private void MostrarMensaje(bool correcto, string mensaje)
+    {
+        if (correcto)
+            MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Information);
+        else
+            MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
+    }
+
+    private void MostrarError(Exception ex)
+    {
+        MessageBox.Show(ex.Message, "Clientes", MessageBoxButton.OK, MessageBoxImage.Error);
     }
 }

@@ -6,7 +6,7 @@ Proyecto WPF (.NET 10) con SQL Server. La solución es `Codelex.slnx` y el proye
 - Usar **solo procedimientos almacenados**. Nada de consultas SQL escritas en el código (`SELECT`, `INSERT`, `UPDATE`, `DELETE`).
 - Si falta un procedimiento, crearlo en un script `.sql` dentro de `BaseDeDatos/` y avisar para que lo ejecuten en la base.
 - El acceso a la base va en las clases de `Codelex/Clases_BDD/` (por ejemplo `Cliente.cs`), usando `Conexion.ObtenerConexion()`.
-- Orden de los scripts: `CodelexBD2.sql`, `procedimientos_avance_semana_1.sql`, `BaseDeDatos/clientes_cambios.sql`, `BaseDeDatos/empleados_cambios.sql`, `BaseDeDatos/clientes_llave_rtn.sql`.
+- Orden de los scripts: `CodelexBD2.sql`, `procedimientos_avance_semana_1.sql`, `BaseDeDatos/cambios_base_de_datos.sql`. Los cambios nuevos se agregan al final de `cambios_base_de_datos.sql`, de forma que se pueda volver a ejecutar sin duplicar nada.
 - La llave de `CLIENTES` es `identificacionCliente` (RTN). Las locaciones y las órdenes apuntan al cliente con `identificacionCliente`; ya no existe `cliente_id` ni `CLIENTES.locacion_id`.
 
 ## Diseño

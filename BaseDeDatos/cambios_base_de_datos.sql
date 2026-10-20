@@ -2,24 +2,47 @@ USE Codelex
 GO
 
 /* =====================================================================
-   CLIENTES: la llave primaria pasa a ser identificacionCliente (RTN).
-   - Se borra cliente_id de CLIENTES.
-   - Se borra locacion_id de CLIENTES: ahora cada locación guarda a qué
-     cliente pertenece (LOCACIONES.identificacionCliente), así un cliente
-     puede tener varias locaciones.
-   - ORDENES.cliente_id se cambia por ORDENES.identificacionCliente.
-   - Se actualizan los procedimientos de clientes y locaciones.
+   CAMBIOS DE LA BASE DE DATOS (todo lo que se hizo después de
+   procedimientos_avance_semana_1.sql)
 
-   Ejecutar después de:
+   Ejecutar en este orden:
      1. CodelexBD2.sql
      2. procedimientos_avance_semana_1.sql
-     3. clientes_cambios.sql
-     4. empleados_cambios.sql
-   Se puede volver a ejecutar sin problema: si los cambios de tablas ya se
-   hicieron, solo vuelve a crear los procedimientos.
+     3. Este archivo
+
+   Qué hace:
+     - CLIENTES: agrega estadoCliente (Activo / Inactivo).
+     - Crea sp_ExisteCorreoEmpleado (recuperar contraseña).
+     - CLIENTES: identificacionCliente (RTN) pasa a ser la llave primaria;
+       se borran cliente_id y locacion_id.
+     - LOCACIONES y ORDENES apuntan al cliente con identificacionCliente.
+     - Crea o actualiza todos los procedimientos de clientes y locaciones.
+
+   Se puede ejecutar aunque ya hayan ejecutado antes clientes_cambios.sql,
+   empleados_cambios.sql o clientes_llave_rtn.sql: no duplica nada.
    ===================================================================== */
 
--- 1. Cambios de tablas (solo si CLIENTES todavía tiene cliente_id)
+-- 1. Estado del cliente (1 = Activo, 0 = Inactivo)
+IF COL_LENGTH('CLIENTES', 'estadoCliente') IS NULL
+	ALTER TABLE CLIENTES
+	ADD estadoCliente BIT NOT NULL
+		CONSTRAINT DF_CLIENTES_estadoCliente DEFAULT 1;
+GO
+
+-- 2. Revisa si existe un empleado con ese correo (pantalla Ingresar correo)
+CREATE OR ALTER PROCEDURE sp_ExisteCorreoEmpleado
+	@correo VARCHAR(50)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT COUNT(1) AS cantidad
+	FROM EMPLEADOS
+	WHERE correoEmpleado = LTRIM(RTRIM(@correo));
+END
+GO
+
+-- 3. Cambios de tablas de CLIENTES, LOCACIONES y ORDENES (solo si CLIENTES todavía tiene cliente_id)
 IF COL_LENGTH('CLIENTES', 'cliente_id') IS NOT NULL
 BEGIN
 	IF EXISTS (SELECT 1 FROM CLIENTES
@@ -88,7 +111,7 @@ BEGIN
 END
 GO
 
--- 2. Procedimientos de clientes
+-- 4. Procedimientos de clientes
 
 CREATE OR ALTER PROCEDURE sp_InsertarCliente
 	@identificacionCliente VARCHAR(30),
@@ -276,7 +299,7 @@ BEGIN
 END
 GO
 
--- 3. Procedimientos de locaciones (ahora cada locación es de un cliente)
+-- 5. Procedimientos de locaciones (ahora cada locación es de un cliente)
 
 CREATE OR ALTER PROCEDURE sp_ListarLocacionesPorCliente
 	@identificacionCliente VARCHAR(30)

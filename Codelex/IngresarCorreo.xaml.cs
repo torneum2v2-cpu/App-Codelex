@@ -1,0 +1,63 @@
+﻿using Codelex.Clases_BDD;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+
+namespace Codelex
+{
+    /// <summary>
+    /// Lógica de interacción para IngresarCorreo.xaml
+    /// </summary>
+    public partial class IngresarCorreo : Window
+    {
+        public IngresarCorreo()
+        {
+            InitializeComponent();
+        }
+        private void ShowCodeError(string message)
+        {
+            txtError1.Text = message;
+            txtError1.Visibility = Visibility.Visible;
+        }
+
+
+        private void DragWindow(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                DragMove();
+        }
+        private void Minimize_Click(object sender, RoutedEventArgs e) =>
+         WindowState = WindowState.Minimized;
+
+        private void Close_Click(object sender, RoutedEventArgs e) => Close();
+
+        private void BackToLogin_Click(Object sender, RoutedEventArgs e)
+        {
+            MainWindow m = new MainWindow();
+            m.Show();
+            Close();
+        }
+        private void Next_Click(Object sender, RoutedEventArgs e)
+        {
+            Empleado emp = new Empleado();
+
+            if (!emp.ExisteCorreo(txtEmail.Text))
+            {
+                ShowCodeError("El correo ingresado no tiene una cuenta registrada");
+                return;
+            }
+            IngresarCodigo ingresar = new IngresarCodigo(txtEmail.Text);
+            ingresar.Show();
+            Close();
+        }
+
+    }
+}

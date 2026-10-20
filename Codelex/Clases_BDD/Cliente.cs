@@ -14,205 +14,199 @@ namespace Codelex.Clases_BDD
         {
 
         }
+
         public DataTable BuscarClientes(string texto, string buscarPor, string filtroEstado)
         {
-            DataTable tabla = new DataTable();
+            object estado = DBNull.Value;
+            if (filtroEstado == "ACTIVOS")
+                estado = true;
+            else if (filtroEstado == "INACTIVOS")
+                estado = false;
 
-            using (SqlConnection conexion = Conexion.ObtenerConexion())
-            {
-                using (SqlCommand comando = new SqlCommand("sp_BuscarClientes", conexion))
-                {
-                    comando.CommandType = CommandType.StoredProcedure;
-                    comando.Parameters.AddWithValue("@texto", texto);
-                    comando.Parameters.AddWithValue("@buscarPor", buscarPor);
-
-                    if (filtroEstado == "ACTIVOS")
-                        comando.Parameters.AddWithValue("@estado", true);
-                    else if (filtroEstado == "INACTIVOS")
-                        comando.Parameters.AddWithValue("@estado", false);
-                    else
-                        comando.Parameters.AddWithValue("@estado", DBNull.Value);
-
-                    SqlDataAdapter adaptador = new SqlDataAdapter(comando);
-                    adaptador.Fill(tabla);
-                }
-            }
-
-            return tabla;
+            SqlCommand comando = Procedimiento("sp_BuscarClientes");
+            comando.Parameters.AddWithValue("@texto", texto);
+            comando.Parameters.AddWithValue("@buscarPor", buscarPor);
+            comando.Parameters.AddWithValue("@estado", estado);
+            return Consultar(comando);
         }
 
-        // Devuelve una tabla con una sola fila (o vacía si no existe el cliente)
         public DataTable ObtenerCliente(int clienteId)
         {
-            DataTable tabla = new DataTable();
-
-            using (SqlConnection conexion = Conexion.ObtenerConexion())
-            {
-                using (SqlCommand comando = new SqlCommand("sp_ObtenerCliente", conexion))
-                {
-                    comando.CommandType = CommandType.StoredProcedure;
-                    comando.Parameters.AddWithValue("@cliente_id", clienteId);
-
-                    SqlDataAdapter adaptador = new SqlDataAdapter(comando);
-                    adaptador.Fill(tabla);
-                }
-            }
-
-            return tabla;
+            return ConsultarPorCliente("sp_ObtenerCliente", clienteId);
         }
 
-        // Devuelve true si se guardó. En "mensaje" queda lo que respondió el procedimiento
-        // y en "nuevoId" el número del cliente creado.
+        public DataTable ListarLocaciones()
+        {
+            return Consultar(Procedimiento("sp_ListarLocaciones"));
+        }
+
+        public DataTable LocacionesPorCliente(int clienteId)
+        {
+            return ConsultarPorCliente("sp_ListarLocacionesPorCliente", clienteId);
+        }
+
+        public DataTable OrdenesPorCliente(int clienteId)
+        {
+            return ConsultarPorCliente("sp_ListarOrdenesPorCliente", clienteId);
+        }
+
+        public DataTable FacturasPorCliente(int clienteId)
+        {
+            return ConsultarPorCliente("sp_ListarFacturasPorCliente", clienteId);
+        }
+
         public bool InsertarCliente(string rtn, string empresa, string nombre, string apellido,
                                     string telefono, string correo, object locacionId,
                                     out string mensaje, out int nuevoId)
         {
-            using (SqlConnection conexion = Conexion.ObtenerConexion())
-            {
-                using (SqlCommand comando = new SqlCommand("sp_InsertarCliente", conexion))
-                {
-                    comando.CommandType = CommandType.StoredProcedure;
-                    comando.Parameters.AddWithValue("@identificacionCliente", rtn);
-                    comando.Parameters.AddWithValue("@nombreEmpresa", ValorONulo(empresa));
-                    comando.Parameters.AddWithValue("@nombreCliente", nombre);
-                    comando.Parameters.AddWithValue("@apellidoCliente", ValorONulo(apellido));
-                    comando.Parameters.AddWithValue("@telefonoCliente", ValorONulo(telefono));
-                    comando.Parameters.AddWithValue("@correoCliente", ValorONulo(correo));
-                    comando.Parameters.AddWithValue("@locacion_id", locacionId);
+            nuevoId = 0;
 
-                    comando.Parameters.Add("@cliente_id", SqlDbType.Int).Direction = ParameterDirection.Output;
-                    comando.Parameters.Add("@resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
-                    comando.Parameters.Add("@mensaje", SqlDbType.VarChar, 100).Direction = ParameterDirection.Output;
+            mensaje = ValidarCliente(rtn, empresa, nombre, apellido, telefono, correo);
+            if (mensaje != "")
+                return false;
 
-                    comando.ExecuteNonQuery();
+            SqlCommand comando = Procedimiento("sp_InsertarCliente");
+            AgregarDatosCliente(comando, rtn, empresa, nombre, apellido, telefono, correo, locacionId);
 
-                    mensaje = comando.Parameters["@mensaje"].Value.ToString() ?? "";
-                    int resultado = Convert.ToInt32(comando.Parameters["@resultado"].Value);
+            SqlParameter id = new SqlParameter("@cliente_id", SqlDbType.Int);
+            id.Direction = ParameterDirection.Output;
+            comando.Parameters.Add(id);
 
-                    if (resultado == 1)
-                    {
-                        nuevoId = Convert.ToInt32(comando.Parameters["@cliente_id"].Value);
-                        return true;
-                    }
+            bool guardado = Ejecutar(comando, out mensaje);
+            if (guardado)
+                nuevoId = Convert.ToInt32(id.Value);
 
-                    nuevoId = 0;
-                    return false;
-                }
-            }
+            return guardado;
         }
 
         public bool ActualizarCliente(int clienteId, string rtn, string empresa, string nombre, string apellido,
                                       string telefono, string correo, object locacionId, out string mensaje)
         {
-            using (SqlConnection conexion = Conexion.ObtenerConexion())
-            {
-                using (SqlCommand comando = new SqlCommand("sp_ActualizarCliente", conexion))
-                {
-                    comando.CommandType = CommandType.StoredProcedure;
-                    comando.Parameters.AddWithValue("@cliente_id", clienteId);
-                    comando.Parameters.AddWithValue("@identificacionCliente", rtn);
-                    comando.Parameters.AddWithValue("@nombreEmpresa", ValorONulo(empresa));
-                    comando.Parameters.AddWithValue("@nombreCliente", nombre);
-                    comando.Parameters.AddWithValue("@apellidoCliente", ValorONulo(apellido));
-                    comando.Parameters.AddWithValue("@telefonoCliente", ValorONulo(telefono));
-                    comando.Parameters.AddWithValue("@correoCliente", ValorONulo(correo));
-                    comando.Parameters.AddWithValue("@locacion_id", locacionId);
+            mensaje = ValidarCliente(rtn, empresa, nombre, apellido, telefono, correo);
+            if (mensaje != "")
+                return false;
 
-                    comando.Parameters.Add("@resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
-                    comando.Parameters.Add("@mensaje", SqlDbType.VarChar, 100).Direction = ParameterDirection.Output;
+            SqlCommand comando = Procedimiento("sp_ActualizarCliente");
+            comando.Parameters.AddWithValue("@cliente_id", clienteId);
+            AgregarDatosCliente(comando, rtn, empresa, nombre, apellido, telefono, correo, locacionId);
 
-                    comando.ExecuteNonQuery();
-
-                    mensaje = comando.Parameters["@mensaje"].Value.ToString() ?? "";
-                    int resultado = Convert.ToInt32(comando.Parameters["@resultado"].Value);
-                    return resultado == 1;
-                }
-            }
+            return Ejecutar(comando, out mensaje);
         }
 
-        // activo = true para activar, false para desactivar (no se borra nada)
         public bool CambiarEstadoCliente(int clienteId, bool activo, out string mensaje)
         {
-            using (SqlConnection conexion = Conexion.ObtenerConexion())
-            {
-                using (SqlCommand comando = new SqlCommand("sp_CambiarEstadoCliente", conexion))
-                {
-                    comando.CommandType = CommandType.StoredProcedure;
-                    comando.Parameters.AddWithValue("@cliente_id", clienteId);
-                    comando.Parameters.AddWithValue("@estadoCliente", activo);
+            SqlCommand comando = Procedimiento("sp_CambiarEstadoCliente");
+            comando.Parameters.AddWithValue("@cliente_id", clienteId);
+            comando.Parameters.AddWithValue("@estadoCliente", activo);
 
-                    comando.Parameters.Add("@resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
-                    comando.Parameters.Add("@mensaje", SqlDbType.VarChar, 100).Direction = ParameterDirection.Output;
-
-                    comando.ExecuteNonQuery();
-
-                    mensaje = comando.Parameters["@mensaje"].Value.ToString() ?? "";
-                    int resultado = Convert.ToInt32(comando.Parameters["@resultado"].Value);
-                    return resultado == 1;
-                }
-            }
+            return Ejecutar(comando, out mensaje);
         }
 
-        public DataTable ListarLocaciones()
+        public bool SoloNumeros(string texto)
+        {
+            foreach (char c in texto)
+            {
+                if (!char.IsDigit(c))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private string ValidarCliente(string rtn, string empresa, string nombre, string apellido,
+                                      string telefono, string correo)
+        {
+            rtn = rtn.Trim();
+            telefono = telefono.Trim();
+            correo = correo.Trim();
+
+            if (rtn == "")
+                return "El RTN / identidad es obligatorio.";
+            if (!SoloNumeros(rtn))
+                return "El RTN / identidad solo puede tener números, sin guiones ni espacios.";
+            if (rtn.Length < 13 || rtn.Length > 14)
+                return "El RTN / identidad debe tener 13 o 14 dígitos. Tiene " + rtn.Length + ".";
+
+            if (empresa.Trim() == "")
+                return "La empresa es obligatoria.";
+            if (nombre.Trim() == "")
+                return "El nombre del contacto es obligatorio.";
+            if (apellido.Trim() == "")
+                return "El apellido del contacto es obligatorio.";
+
+            if (telefono == "")
+                return "El teléfono es obligatorio.";
+            if (!SoloNumeros(telefono))
+                return "El teléfono solo puede tener números, sin guiones ni espacios.";
+            if (telefono.Length != 8)
+                return "El teléfono debe tener 8 dígitos. Tiene " + telefono.Length + ".";
+
+            if (correo == "")
+                return "El correo es obligatorio.";
+            if (!correo.Contains("@") || !correo.Contains("."))
+                return "El correo no es válido. Ejemplo: nombre@empresa.com";
+
+            return "";
+        }
+
+        private void AgregarDatosCliente(SqlCommand comando, string rtn, string empresa, string nombre, string apellido,
+                                         string telefono, string correo, object locacionId)
+        {
+            comando.Parameters.AddWithValue("@identificacionCliente", rtn.Trim());
+            comando.Parameters.AddWithValue("@nombreEmpresa", empresa.Trim());
+            comando.Parameters.AddWithValue("@nombreCliente", nombre.Trim());
+            comando.Parameters.AddWithValue("@apellidoCliente", apellido.Trim());
+            comando.Parameters.AddWithValue("@telefonoCliente", telefono.Trim());
+            comando.Parameters.AddWithValue("@correoCliente", correo.Trim());
+            comando.Parameters.AddWithValue("@locacion_id", locacionId);
+        }
+
+        private SqlCommand Procedimiento(string nombre)
+        {
+            SqlCommand comando = new SqlCommand(nombre);
+            comando.CommandType = CommandType.StoredProcedure;
+            return comando;
+        }
+
+        private DataTable ConsultarPorCliente(string procedimiento, int clienteId)
+        {
+            SqlCommand comando = Procedimiento(procedimiento);
+            comando.Parameters.AddWithValue("@cliente_id", clienteId);
+            return Consultar(comando);
+        }
+
+        private DataTable Consultar(SqlCommand comando)
         {
             DataTable tabla = new DataTable();
 
             using (SqlConnection conexion = Conexion.ObtenerConexion())
             {
-                using (SqlCommand comando = new SqlCommand("sp_ListarLocaciones", conexion))
-                {
-                    comando.CommandType = CommandType.StoredProcedure;
-
-                    SqlDataAdapter adaptador = new SqlDataAdapter(comando);
-                    adaptador.Fill(tabla);
-                }
+                comando.Connection = conexion;
+                SqlDataAdapter adaptador = new SqlDataAdapter(comando);
+                adaptador.Fill(tabla);
             }
 
             return tabla;
         }
 
-        public DataTable LocacionesPorCliente(int clienteId)
+        private bool Ejecutar(SqlCommand comando, out string mensaje)
         {
-            return ListarPorCliente("sp_ListarLocacionesPorCliente", clienteId);
-        }
+            SqlParameter resultado = new SqlParameter("@resultado", SqlDbType.Int);
+            resultado.Direction = ParameterDirection.Output;
+            comando.Parameters.Add(resultado);
 
-        public DataTable OrdenesPorCliente(int clienteId)
-        {
-            return ListarPorCliente("sp_ListarOrdenesPorCliente", clienteId);
-        }
-
-        public DataTable FacturasPorCliente(int clienteId)
-        {
-            return ListarPorCliente("sp_ListarFacturasPorCliente", clienteId);
-        }
-
-        // Ejecuta un procedimiento que solo recibe @cliente_id y devuelve una tabla
-        private DataTable ListarPorCliente(string procedimiento, int clienteId)
-        {
-            DataTable tabla = new DataTable();
+            SqlParameter textoMensaje = new SqlParameter("@mensaje", SqlDbType.VarChar, 100);
+            textoMensaje.Direction = ParameterDirection.Output;
+            comando.Parameters.Add(textoMensaje);
 
             using (SqlConnection conexion = Conexion.ObtenerConexion())
             {
-                using (SqlCommand comando = new SqlCommand(procedimiento, conexion))
-                {
-                    comando.CommandType = CommandType.StoredProcedure;
-                    comando.Parameters.AddWithValue("@cliente_id", clienteId);
-
-                    SqlDataAdapter adaptador = new SqlDataAdapter(comando);
-                    adaptador.Fill(tabla);
-                }
+                comando.Connection = conexion;
+                comando.ExecuteNonQuery();
             }
 
-            return tabla;
-        }
-
-        // Si el texto está vacío se guarda NULL en la base de datos
-        private object ValorONulo(string texto)
-        {
-            if (texto == "")
-                return DBNull.Value;
-
-            return texto;
+            mensaje = "" + textoMensaje.Value;
+            return Convert.ToInt32(resultado.Value) == 1;
         }
     }
 }

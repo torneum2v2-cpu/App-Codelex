@@ -2,6 +2,7 @@
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 
 namespace Codelex.Clases_BDD
@@ -9,23 +10,24 @@ namespace Codelex.Clases_BDD
     class Empleado
     {
         public Empleado() { }
+
         public bool ExisteCorreo(string correo)
         {
-            if (string.IsNullOrWhiteSpace(correo))
+            if (correo.Trim() == "")
                 return false;
-
-            const string consulta =
-                "SELECT COUNT(1) FROM EMPLEADOS WHERE correoEmpleado = @correo";
 
             try
             {
                 using (SqlConnection conexion = Conexion.ObtenerConexion())
-                using (SqlCommand comando = new SqlCommand(consulta, conexion))
                 {
-                    comando.Parameters.AddWithValue("@correo", correo.Trim());
+                    using (SqlCommand comando = new SqlCommand("sp_ExisteCorreoEmpleado", conexion))
+                    {
+                        comando.CommandType = CommandType.StoredProcedure;
+                        comando.Parameters.AddWithValue("@correo", correo.Trim());
 
-                    int cantidad = (int)comando.ExecuteScalar();
-                    return cantidad > 0;
+                        int cantidad = Convert.ToInt32(comando.ExecuteScalar());
+                        return cantidad > 0;
+                    }
                 }
             }
             catch (Exception ex)

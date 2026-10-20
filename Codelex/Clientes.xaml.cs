@@ -242,7 +242,7 @@ namespace Codelex
             AbrirDetalle(clienteActual);
         }
 
-        private void dgClientes_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void dgClientes_Click(object sender, MouseButtonEventArgs e)
         {
             if (dgClientes.SelectedItem == null)
                 return;

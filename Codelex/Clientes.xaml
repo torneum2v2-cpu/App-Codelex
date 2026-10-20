@@ -215,12 +215,18 @@
             <Setter Property="CellStyle">
                 <Setter.Value>
                     <Style TargetType="DataGridCell">
+                        <Setter Property="Foreground" Value="{StaticResource DarkText}"/>
                         <Setter Property="Template">
                             <Setter.Value>
                                 <ControlTemplate TargetType="DataGridCell">
-                                    <Border Background="Transparent" Padding="12,0">
+                                    <Border x:Name="bd" Background="Transparent" Padding="12,0">
                                         <ContentPresenter VerticalAlignment="Center"/>
                                     </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="{StaticResource Pill}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
@@ -420,7 +426,7 @@
                                 <DataGrid x:Name="dgClientes" Style="{StaticResource Tabla}"
                                           AutoGenerateColumns="False" IsReadOnly="True"
                                           CanUserAddRows="False" SelectionMode="Single"
-                                          SelectionChanged="dgClientes_SelectionChanged">
+                                          PreviewMouseLeftButtonUp="dgClientes_Click">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="identificacionCliente" Binding="{Binding identificacionCliente}" Width="*"/>
                                         <DataGridTextColumn Header="nombreEmpresa" Binding="{Binding nombreEmpresa}" Width="*"/>

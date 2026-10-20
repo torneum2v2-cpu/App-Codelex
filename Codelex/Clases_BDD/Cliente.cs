@@ -30,73 +30,42 @@ namespace Codelex.Clases_BDD
             return Consultar(comando);
         }
 
-        public DataTable ObtenerCliente(int clienteId)
+        public DataTable ObtenerCliente(string rtn)
         {
-            return ConsultarPorCliente("sp_ObtenerCliente", clienteId);
+            return ConsultarPorCliente("sp_ObtenerCliente", rtn);
         }
 
-        public DataTable ListarLocaciones()
+        public DataTable LocacionesPorCliente(string rtn)
         {
-            return Consultar(Procedimiento("sp_ListarLocaciones"));
+            return ConsultarPorCliente("sp_ListarLocacionesPorCliente", rtn);
         }
 
-        public DataTable LocacionesPorCliente(int clienteId)
+        public DataTable OrdenesPorCliente(string rtn)
         {
-            return ConsultarPorCliente("sp_ListarLocacionesPorCliente", clienteId);
+            return ConsultarPorCliente("sp_ListarOrdenesPorCliente", rtn);
         }
 
-        public DataTable OrdenesPorCliente(int clienteId)
+        public DataTable FacturasPorCliente(string rtn)
         {
-            return ConsultarPorCliente("sp_ListarOrdenesPorCliente", clienteId);
-        }
-
-        public DataTable FacturasPorCliente(int clienteId)
-        {
-            return ConsultarPorCliente("sp_ListarFacturasPorCliente", clienteId);
+            return ConsultarPorCliente("sp_ListarFacturasPorCliente", rtn);
         }
 
         public bool InsertarCliente(string rtn, string empresa, string nombre, string apellido,
-                                    string telefono, string correo, object locacionId,
-                                    out string mensaje, out int nuevoId)
+                                    string telefono, string correo, out string mensaje)
         {
-            nuevoId = 0;
-
-            mensaje = ValidarCliente(rtn, empresa, nombre, apellido, telefono, correo);
-            if (mensaje != "")
-                return false;
-
-            SqlCommand comando = Procedimiento("sp_InsertarCliente");
-            AgregarDatosCliente(comando, rtn, empresa, nombre, apellido, telefono, correo, locacionId);
-
-            SqlParameter id = new SqlParameter("@cliente_id", SqlDbType.Int);
-            id.Direction = ParameterDirection.Output;
-            comando.Parameters.Add(id);
-
-            bool guardado = Ejecutar(comando, out mensaje);
-            if (guardado)
-                nuevoId = Convert.ToInt32(id.Value);
-
-            return guardado;
+            return GuardarCliente("sp_InsertarCliente", rtn, empresa, nombre, apellido, telefono, correo, out mensaje);
         }
 
-        public bool ActualizarCliente(int clienteId, string rtn, string empresa, string nombre, string apellido,
-                                      string telefono, string correo, object locacionId, out string mensaje)
+        public bool ActualizarCliente(string rtn, string empresa, string nombre, string apellido,
+                                      string telefono, string correo, out string mensaje)
         {
-            mensaje = ValidarCliente(rtn, empresa, nombre, apellido, telefono, correo);
-            if (mensaje != "")
-                return false;
-
-            SqlCommand comando = Procedimiento("sp_ActualizarCliente");
-            comando.Parameters.AddWithValue("@cliente_id", clienteId);
-            AgregarDatosCliente(comando, rtn, empresa, nombre, apellido, telefono, correo, locacionId);
-
-            return Ejecutar(comando, out mensaje);
+            return GuardarCliente("sp_ActualizarCliente", rtn, empresa, nombre, apellido, telefono, correo, out mensaje);
         }
 
-        public bool CambiarEstadoCliente(int clienteId, bool activo, out string mensaje)
+        public bool CambiarEstadoCliente(string rtn, bool activo, out string mensaje)
         {
             SqlCommand comando = Procedimiento("sp_CambiarEstadoCliente");
-            comando.Parameters.AddWithValue("@cliente_id", clienteId);
+            comando.Parameters.AddWithValue("@identificacionCliente", rtn.Trim());
             comando.Parameters.AddWithValue("@estadoCliente", activo);
 
             return Ejecutar(comando, out mensaje);
@@ -149,16 +118,22 @@ namespace Codelex.Clases_BDD
             return "";
         }
 
-        private void AgregarDatosCliente(SqlCommand comando, string rtn, string empresa, string nombre, string apellido,
-                                         string telefono, string correo, object locacionId)
+        private bool GuardarCliente(string procedimiento, string rtn, string empresa, string nombre, string apellido,
+                                    string telefono, string correo, out string mensaje)
         {
+            mensaje = ValidarCliente(rtn, empresa, nombre, apellido, telefono, correo);
+            if (mensaje != "")
+                return false;
+
+            SqlCommand comando = Procedimiento(procedimiento);
             comando.Parameters.AddWithValue("@identificacionCliente", rtn.Trim());
             comando.Parameters.AddWithValue("@nombreEmpresa", empresa.Trim());
             comando.Parameters.AddWithValue("@nombreCliente", nombre.Trim());
             comando.Parameters.AddWithValue("@apellidoCliente", apellido.Trim());
             comando.Parameters.AddWithValue("@telefonoCliente", telefono.Trim());
             comando.Parameters.AddWithValue("@correoCliente", correo.Trim());
-            comando.Parameters.AddWithValue("@locacion_id", locacionId);
+
+            return Ejecutar(comando, out mensaje);
         }
 
         private SqlCommand Procedimiento(string nombre)
@@ -168,10 +143,10 @@ namespace Codelex.Clases_BDD
             return comando;
         }
 
-        private DataTable ConsultarPorCliente(string procedimiento, int clienteId)
+        private DataTable ConsultarPorCliente(string procedimiento, string rtn)
         {
             SqlCommand comando = Procedimiento(procedimiento);
-            comando.Parameters.AddWithValue("@cliente_id", clienteId);
+            comando.Parameters.AddWithValue("@identificacionCliente", rtn.Trim());
             return Consultar(comando);
         }
 

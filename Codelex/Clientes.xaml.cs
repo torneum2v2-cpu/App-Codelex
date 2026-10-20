@@ -21,10 +21,8 @@ namespace Codelex
     {
         Cliente clienteBD = new Cliente();
 
-
-        int clienteActualId = 0;
+        string clienteActual = "";
         bool clienteActualActivo = true;
-
 
         string textoBusqueda = "";
         string buscarPor = "";
@@ -37,32 +35,8 @@ namespace Codelex
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            CargarLocaciones();
             LimpiarFormulario();
             CargarClientes();
-        }
-
-
-
-        private void CargarLocaciones()
-        {
-            try
-            {
-                DataTable tabla = clienteBD.ListarLocaciones();
-
-
-                DataRow filaVacia = tabla.NewRow();
-                filaVacia["locacion_id"] = DBNull.Value;
-                filaVacia["nombreLocacion"] = "(Sin locación)";
-                tabla.Rows.InsertAt(filaVacia, 0);
-
-                cbLocacion.ItemsSource = tabla.DefaultView;
-                cbLocacion.SelectedIndex = 0;
-            }
-            catch (Exception ex)
-            {
-                MostrarError(ex);
-            }
         }
 
         private void CargarClientes()
@@ -78,12 +52,11 @@ namespace Codelex
             }
         }
 
-
-        private void CargarEnFormulario(int clienteId)
+        private void CargarEnFormulario(string rtn)
         {
             try
             {
-                DataTable tabla = clienteBD.ObtenerCliente(clienteId);
+                DataTable tabla = clienteBD.ObtenerCliente(rtn);
 
                 if (tabla.Rows.Count == 0)
                 {
@@ -93,20 +66,15 @@ namespace Codelex
 
                 DataRow fila = tabla.Rows[0];
 
-                clienteActualId = clienteId;
+                clienteActual = "" + fila["identificacionCliente"];
                 clienteActualActivo = Convert.ToBoolean(fila["estadoCliente"]);
 
-                txtRTN.Text = fila["identificacionCliente"].ToString();
+                txtRTN.Text = clienteActual;
                 txtEmpresa.Text = fila["nombreEmpresa"].ToString();
                 txtNombre.Text = fila["nombreCliente"].ToString();
                 txtApellido.Text = fila["apellidoCliente"].ToString();
                 txtTelefono.Text = fila["telefonoCliente"].ToString();
                 txtCorreo.Text = fila["correoCliente"].ToString();
-
-                if (fila["locacion_id"] == DBNull.Value)
-                    cbLocacion.SelectedIndex = 0;
-                else
-                    cbLocacion.SelectedValue = fila["locacion_id"];
 
                 ActualizarBotones();
             }
@@ -116,11 +84,9 @@ namespace Codelex
             }
         }
 
-
-
         private void LimpiarFormulario()
         {
-            clienteActualId = 0;
+            clienteActual = "";
             clienteActualActivo = true;
 
             txtRTN.Text = "";
@@ -129,18 +95,16 @@ namespace Codelex
             txtApellido.Text = "";
             txtTelefono.Text = "";
             txtCorreo.Text = "";
-            cbLocacion.SelectedIndex = 0;
 
             ActualizarBotones();
             txtRTN.Focus();
         }
 
-
         private void ActualizarBotones()
         {
-            if (clienteActualId == 0)
+            if (clienteActual == "")
             {
-
+                txtRTN.IsReadOnly = false;
                 btnCrear.IsEnabled = true;
                 btnActualizar.IsEnabled = false;
                 btnCambiarEstado.IsEnabled = false;
@@ -150,11 +114,11 @@ namespace Codelex
             }
             else
             {
-
+                txtRTN.IsReadOnly = true;
                 btnCrear.IsEnabled = false;
                 btnActualizar.IsEnabled = true;
                 btnCambiarEstado.IsEnabled = true;
-                txtModo.Text = "Editando el cliente N.° " + clienteActualId + ". Presione Actualizar para guardar los cambios.";
+                txtModo.Text = "Editando el cliente " + clienteActual + ". Presione Actualizar para guardar los cambios.";
 
                 if (clienteActualActivo)
                 {
@@ -175,40 +139,27 @@ namespace Codelex
                 e.Handled = true;
         }
 
-
-        private object LocacionSeleccionada()
-        {
-            if (cbLocacion.SelectedValue == null)
-                return DBNull.Value;
-
-            return cbLocacion.SelectedValue;
-        }
-
-
         private void Nuevo_Click(object sender, RoutedEventArgs e)
         {
             LimpiarFormulario();
         }
-
 
         private void Crear_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 string mensaje;
-                int nuevoId;
 
                 bool guardado = clienteBD.InsertarCliente(
                     txtRTN.Text, txtEmpresa.Text, txtNombre.Text, txtApellido.Text,
-                    txtTelefono.Text, txtCorreo.Text, LocacionSeleccionada(),
-                    out mensaje, out nuevoId);
+                    txtTelefono.Text, txtCorreo.Text, out mensaje);
 
                 MostrarMensaje(guardado, mensaje);
 
                 if (guardado)
                 {
                     CargarClientes();
-                    CargarEnFormulario(nuevoId);
+                    CargarEnFormulario(txtRTN.Text.Trim());
                 }
             }
             catch (Exception ex)
@@ -217,10 +168,9 @@ namespace Codelex
             }
         }
 
-
         private void Actualizar_Click(object sender, RoutedEventArgs e)
         {
-            if (clienteActualId == 0)
+            if (clienteActual == "")
                 return;
 
             try
@@ -228,9 +178,8 @@ namespace Codelex
                 string mensaje;
 
                 bool guardado = clienteBD.ActualizarCliente(
-                    clienteActualId, txtRTN.Text, txtEmpresa.Text, txtNombre.Text,
-                    txtApellido.Text, txtTelefono.Text, txtCorreo.Text, LocacionSeleccionada(),
-                    out mensaje);
+                    clienteActual, txtEmpresa.Text, txtNombre.Text, txtApellido.Text,
+                    txtTelefono.Text, txtCorreo.Text, out mensaje);
 
                 MostrarMensaje(guardado, mensaje);
 
@@ -245,10 +194,9 @@ namespace Codelex
             }
         }
 
-
         private void CambiarEstado_Click(object sender, RoutedEventArgs e)
         {
-            if (clienteActualId == 0)
+            if (clienteActual == "")
                 return;
 
             bool nuevoEstado = !clienteActualActivo;
@@ -266,7 +214,7 @@ namespace Codelex
             try
             {
                 string mensaje;
-                bool guardado = clienteBD.CambiarEstadoCliente(clienteActualId, nuevoEstado, out mensaje);
+                bool guardado = clienteBD.CambiarEstadoCliente(clienteActual, nuevoEstado, out mensaje);
 
                 MostrarMensaje(guardado, mensaje);
 
@@ -285,15 +233,14 @@ namespace Codelex
 
         private void VerDetalle_Click(object sender, RoutedEventArgs e)
         {
-            if (clienteActualId == 0)
+            if (clienteActual == "")
             {
                 MessageBox.Show("Seleccione un cliente de la tabla.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            AbrirDetalle(clienteActualId);
+            AbrirDetalle(clienteActual);
         }
-
 
         private void dgClientes_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -301,26 +248,22 @@ namespace Codelex
                 return;
 
             DataRowView fila = (DataRowView)dgClientes.SelectedItem;
-            int clienteId = Convert.ToInt32(fila["cliente_id"]);
+            string rtn = "" + fila["identificacionCliente"];
 
-            AbrirDetalle(clienteId);
-
+            AbrirDetalle(rtn);
 
             dgClientes.SelectedItem = null;
         }
 
-        private void AbrirDetalle(int clienteId)
+        private void AbrirDetalle(string rtn)
         {
-            ClienteDetalle detalle = new ClienteDetalle(clienteId);
+            ClienteDetalle detalle = new ClienteDetalle(rtn);
             detalle.Owner = this;
             detalle.ShowDialog();
 
-
             if (detalle.EditarCliente)
-                CargarEnFormulario(clienteId);
+                CargarEnFormulario(rtn);
         }
-
-
 
         private void PorRTN_Click(object sender, RoutedEventArgs e)
         {
@@ -357,7 +300,6 @@ namespace Codelex
             CargarClientes();
         }
 
-
         private void Buscar_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -366,6 +308,17 @@ namespace Codelex
                 buscarPor = "";
                 CargarClientes();
             }
+        }
+
+        private void DragWindow(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                DragMove();
+        }
+
+        private void Minimizar_Click(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
         }
 
         private void Salir_Click(object sender, RoutedEventArgs e)

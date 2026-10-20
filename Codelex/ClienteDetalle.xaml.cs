@@ -20,15 +20,15 @@ namespace Codelex
     public partial class ClienteDetalle : Window
     {
         Cliente clienteBD = new Cliente();
-        int clienteId;
+        string rtn;
 
         // La pantalla de Clientes lo revisa al cerrar: si es true, carga el cliente en el formulario
         public bool EditarCliente = false;
 
-        public ClienteDetalle(int clienteId)
+        public ClienteDetalle(string rtn)
         {
             InitializeComponent();
-            this.clienteId = clienteId;
+            this.rtn = rtn;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -48,7 +48,7 @@ namespace Codelex
 
         private void CargarDatosCliente()
         {
-            DataTable tabla = clienteBD.ObtenerCliente(clienteId);
+            DataTable tabla = clienteBD.ObtenerCliente(rtn);
 
             if (tabla.Rows.Count == 0)
             {
@@ -58,7 +58,6 @@ namespace Codelex
 
             DataRow fila = tabla.Rows[0];
 
-            txtNumero.Text = clienteId.ToString();
             txtRTN.Text = fila["identificacionCliente"].ToString();
             txtEmpresa.Text = fila["nombreEmpresa"].ToString();
             txtContacto.Text = fila["nombreCliente"].ToString();
@@ -72,7 +71,7 @@ namespace Codelex
 
         private void CargarLocaciones()
         {
-            DataTable tabla = clienteBD.LocacionesPorCliente(clienteId);
+            DataTable tabla = clienteBD.LocacionesPorCliente(rtn);
             lstLocaciones.Items.Clear();
 
             foreach (DataRow fila in tabla.Rows)
@@ -84,7 +83,7 @@ namespace Codelex
 
         private void CargarOrdenes()
         {
-            DataTable tabla = clienteBD.OrdenesPorCliente(clienteId);
+            DataTable tabla = clienteBD.OrdenesPorCliente(rtn);
             lstOrdenes.Items.Clear();
 
             foreach (DataRow fila in tabla.Rows)
@@ -96,7 +95,7 @@ namespace Codelex
 
         private void CargarFacturas()
         {
-            DataTable tabla = clienteBD.FacturasPorCliente(clienteId);
+            DataTable tabla = clienteBD.FacturasPorCliente(rtn);
             lstFacturas.Items.Clear();
 
             foreach (DataRow fila in tabla.Rows)
@@ -136,6 +135,12 @@ namespace Codelex
         private void Cerrar_Click(object sender, RoutedEventArgs e)
         {
             Close();
+        }
+
+        private void DragWindow(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+                DragMove();
         }
     }
 

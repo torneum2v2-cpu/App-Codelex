@@ -4,131 +4,366 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Codelex"
-                Title="Detalle del cliente - Codelex" Height="600" Width="900"
+        mc:Ignorable="d"
+        Title="Codelex - Detalle del cliente" Width="1000" Height="700"
         WindowStartupLocation="CenterOwner"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize"
-        Background="#F0F0F0"
-        FontFamily="Segoe UI" FontSize="12"
+        FontFamily="Segoe UI"
         Loaded="Window_Loaded">
     <Window.Resources>
-        <Style TargetType="Button">
-            <Setter Property="Height" Value="32"/>
+        <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
+        <SolidColorBrush x:Key="PrimaryLight" Color="#5FE0D2"/>
+        <SolidColorBrush x:Key="Ink" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="Label" Color="#D6F5F0"/>
+        <SolidColorBrush x:Key="Muted" Color="#8FC4BD"/>
+        <SolidColorBrush x:Key="DarkText" Color="#0A3737"/>
+        <SolidColorBrush x:Key="SoftText" Color="#5B7C78"/>
+        <SolidColorBrush x:Key="Surface" Color="#F4F8F8"/>
+        <SolidColorBrush x:Key="CardLine" Color="#DDEAE8"/>
+        <SolidColorBrush x:Key="Hover" Color="#F3FCFA"/>
+        <SolidColorBrush x:Key="Pill" Color="#E3F7F4"/>
+        <SolidColorBrush x:Key="PillText" Color="#14837A"/>
+
+        <LinearGradientBrush x:Key="BgGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#0F4A40" Offset="0"/>
+            <GradientStop Color="#0A3737" Offset="0.5"/>
+            <GradientStop Color="#062529" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="ButtonGradient" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#1FAFA5" Offset="0"/>
+            <GradientStop Color="#2CC5B4" Offset="1"/>
+        </LinearGradientBrush>
+
+        <Style x:Key="Card" TargetType="Border">
             <Setter Property="Background" Value="White"/>
-            <Setter Property="BorderBrush" Value="#C8C8C8"/>
+            <Setter Property="BorderBrush" Value="{StaticResource CardLine}"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect BlurRadius="16" ShadowDepth="2" Opacity="0.08" Color="#0A3737"/>
+                </Setter.Value>
+            </Setter>
         </Style>
-        <!-- Campos solo de lectura -->
-        <Style TargetType="TextBox">
-            <Setter Property="Height" Value="24"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Padding" Value="4,0"/>
-            <Setter Property="IsReadOnly" Value="True"/>
-            <Setter Property="Background" Value="#F7F7F7"/>
+
+        <Style x:Key="TituloCard" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource DarkText}"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
         </Style>
-        <Style TargetType="GroupBox">
-            <Setter Property="BorderBrush" Value="#D5D5D5"/>
-            <Setter Property="Padding" Value="8"/>
-        </Style>
+
         <Style x:Key="Etiqueta" TargetType="TextBlock">
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="8,0,0,0"/>
+            <Setter Property="Foreground" Value="{StaticResource SoftText}"/>
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
         </Style>
-        <Style x:Key="Columnas" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#777777"/>
-            <Setter Property="Margin" Value="4,0,0,6"/>
+
+        <Style x:Key="Nota" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource SoftText}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="Foreground" Value="{StaticResource DarkText}"/>
+            <Setter Property="CaretBrush" Value="{StaticResource Primary}"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="bd" Background="White" BorderBrush="{StaticResource CardLine}"
+                                BorderThickness="1.5" CornerRadius="10" Padding="12,0">
+                            <ScrollViewer x:Name="PART_ContentHost" Focusable="False" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource Primary}"/>
+                            </Trigger>
+                            <Trigger Property="IsReadOnly" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{StaticResource Surface}"/>
+                                <Setter Property="Foreground" Value="{StaticResource SoftText}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Foreground" Value="#06282B"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{StaticResource ButtonGradient}" CornerRadius="10" Padding="14,0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{StaticResource PrimaryLight}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{StaticResource DarkText}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="White" BorderBrush="{StaticResource CardLine}"
+                                BorderThickness="1.5" CornerRadius="10" Padding="14,0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="BorderBrush" Value="{StaticResource Primary}"/>
+                                <Setter TargetName="bd" Property="Background" Value="{StaticResource Hover}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="bd" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="WindowButton" TargetType="Button">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="Transparent" CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#26FFFFFF"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="Lista" TargetType="ListBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource DarkText}"/>
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="ItemContainerStyle">
+                <Setter.Value>
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="ListBoxItem">
+                                    <Border x:Name="bd" Background="White" CornerRadius="8" Padding="10,8" Margin="0,0,0,4">
+                                        <ContentPresenter/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="{StaticResource Hover}"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="{StaticResource Pill}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 
-    <Grid Margin="20,12,20,16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <Grid Margin="16">
+        <Border CornerRadius="14" Background="{StaticResource Surface}">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="24" ShadowDepth="0" Opacity="0.35" Color="#000000"/>
+            </Border.Effect>
 
-        <TextBlock Text="Detalle del cliente" FontSize="20" FontWeight="Bold" Margin="4,0,0,12"/>
-
-        <!-- Datos del cliente -->
-        <GroupBox Grid.Row="1" Header="Datos del cliente">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="125"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="25"/>
-                    <ColumnDefinition Width="100"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="32"/>
-                    <RowDefinition Height="32"/>
-                    <RowDefinition Height="32"/>
-                    <RowDefinition Height="32"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Text="N.° de cliente:" Style="{StaticResource Etiqueta}"/>
-                <TextBox Grid.Row="0" Grid.Column="1" x:Name="txtNumero"/>
-                <TextBlock Grid.Row="0" Grid.Column="3" Text="RTN / identidad:" Style="{StaticResource Etiqueta}"/>
-                <TextBox Grid.Row="0" Grid.Column="4" x:Name="txtRTN"/>
+                <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{StaticResource BgGradient}"
+                        Padding="28,18,14,18" MouseLeftButtonDown="DragWindow">
+                    <Grid>
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="42" Height="42" CornerRadius="12" Background="{StaticResource ButtonGradient}">
+                                <Path Data="M4,4 H20 A2,2 0 0 1 22,6 V18 A2,2 0 0 1 20,20 H4 A2,2 0 0 1 2,18 V6 A2,2 0 0 1 4,4 Z M7,9 A2,2 0 1 0 11,9 A2,2 0 1 0 7,9 M5,16 A4,4 0 0 1 13,16 M15,9 H19 M15,13 H19" Stroke="White" StrokeThickness="1.8" StrokeLineJoin="Round"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stretch="Uniform"
+                                      Width="22" Height="22"/>
+                            </Border>
+                            <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Detalle del cliente" Foreground="White" FontSize="22" FontWeight="Bold"/>
+                                <TextBlock Text="Datos, locaciones, órdenes y facturas del cliente." Foreground="{StaticResource Muted}" FontSize="13"/>
+                            </StackPanel>
+                        </StackPanel>
 
-                <TextBlock Grid.Row="1" Text="Empresa:" Style="{StaticResource Etiqueta}"/>
-                <TextBox Grid.Row="1" Grid.Column="1" x:Name="txtEmpresa"/>
-                <TextBlock Grid.Row="1" Grid.Column="3" Text="Contacto:" Style="{StaticResource Etiqueta}"/>
-                <TextBox Grid.Row="1" Grid.Column="4" x:Name="txtContacto"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                            <Button Style="{StaticResource WindowButton}" Click="Cerrar_Click" ToolTip="Cerrar">
+                                <Path Data="M0,0 L10,10 M10,0 L0,10"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      StrokeThickness="1.6"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
 
-                <TextBlock Grid.Row="2" Text="Apellido contacto:" Style="{StaticResource Etiqueta}"/>
-                <TextBox Grid.Row="2" Grid.Column="1" x:Name="txtApellido"/>
-                <TextBlock Grid.Row="2" Grid.Column="3" Text="Teléfono:" Style="{StaticResource Etiqueta}"/>
-                <TextBox Grid.Row="2" Grid.Column="4" x:Name="txtTelefono"/>
+                <Grid Grid.Row="1" Margin="24,20,24,22">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="3" Text="Correo electrónico:" Style="{StaticResource Etiqueta}"/>
-                <TextBox Grid.Row="3" Grid.Column="1" x:Name="txtCorreo"/>
-                <TextBlock Grid.Row="3" Grid.Column="3" Text="Estado:" Style="{StaticResource Etiqueta}"/>
-                <TextBox Grid.Row="3" Grid.Column="4" x:Name="txtEstado"/>
+                    <Border Grid.Row="0" Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="Datos del cliente" Style="{StaticResource TituloCard}" Margin="0,0,0,14"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="16"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,12">
+                                    <TextBlock Text="RTN / identidad" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="txtRTN" IsReadOnly="True"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,12">
+                                    <TextBlock Text="Empresa" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="txtEmpresa" IsReadOnly="True"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="0" Grid.Column="4" Margin="0,0,0,12">
+                                    <TextBlock Text="Estado" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="txtEstado" IsReadOnly="True"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,12">
+                                    <TextBlock Text="Contacto" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="txtContacto" IsReadOnly="True"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,12">
+                                    <TextBlock Text="Apellido contacto" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="txtApellido" IsReadOnly="True"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.Column="4" Margin="0,0,0,12">
+                                    <TextBlock Text="Teléfono" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="txtTelefono" IsReadOnly="True"/>
+                                </StackPanel>
+                                <StackPanel Grid.Row="2" Grid.Column="0">
+                                    <TextBlock Text="Correo electrónico" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="txtCorreo" IsReadOnly="True"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Grid Grid.Row="1" Margin="0,16,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="Locaciones" Style="{StaticResource TituloCard}"/>
+                            <TextBlock DockPanel.Dock="Top" Text="nombreLocacion · tipoLocacion · direccion" Style="{StaticResource Nota}" Margin="0,4,0,10"/>
+                            <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource CardLine}"
+                                    BorderThickness="1.5" CornerRadius="10" Padding="4">
+                                <ListBox x:Name="lstLocaciones" Style="{StaticResource Lista}"/>
+                            </Border>
+                        </DockPanel>
+                    </Border>
+                    <Border Grid.Column="1" Style="{StaticResource Card}" Margin="8,0,8,0">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="Órdenes" Style="{StaticResource TituloCard}"/>
+                            <TextBlock DockPanel.Dock="Top" Text="orden_id · servicio · fecha · estado" Style="{StaticResource Nota}" Margin="0,4,0,10"/>
+                            <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource CardLine}"
+                                    BorderThickness="1.5" CornerRadius="10" Padding="4">
+                                <ListBox x:Name="lstOrdenes" Style="{StaticResource Lista}"/>
+                            </Border>
+                        </DockPanel>
+                    </Border>
+                    <Border Grid.Column="2" Style="{StaticResource Card}" Margin="8,0,0,0">
+                        <DockPanel>
+                            <TextBlock DockPanel.Dock="Top" Text="Facturas" Style="{StaticResource TituloCard}"/>
+                            <TextBlock DockPanel.Dock="Top" Text="factura_id · fecha · estado_pago · monto" Style="{StaticResource Nota}" Margin="0,4,0,10"/>
+                            <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource CardLine}"
+                                    BorderThickness="1.5" CornerRadius="10" Padding="4">
+                                <ListBox x:Name="lstFacturas" Style="{StaticResource Lista}"/>
+                            </Border>
+                        </DockPanel>
+                    </Border>
+                    </Grid>
+
+                    <Grid Grid.Row="2" Margin="0,16,0,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Button x:Name="btnNuevaOrden" Content="Nueva orden para este cliente" Width="230"
+                                    Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Click="NuevaOrden_Click"/>
+                            <Button x:Name="btnEditar" Content="Editar cliente" Width="140"
+                                    Style="{StaticResource SecondaryButton}" Click="Editar_Click"/>
+                        </StackPanel>
+                        <Button x:Name="btnCerrar" Content="Cerrar" Width="110" HorizontalAlignment="Right"
+                                Style="{StaticResource SecondaryButton}" Click="Cerrar_Click"/>
+                    </Grid>
+                </Grid>
             </Grid>
-        </GroupBox>
-
-        <!-- Locaciones, órdenes y facturas -->
-        <Grid Grid.Row="2" Margin="0,14,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <GroupBox Grid.Column="0" Header="Locaciones" Margin="0,0,6,0">
-                <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="nombreLocacion · tipoLocacion · direccion"
-                               Style="{StaticResource Columnas}"/>
-                    <ListBox x:Name="lstLocaciones" BorderBrush="#7A7A7A"/>
-                </DockPanel>
-            </GroupBox>
-
-            <GroupBox Grid.Column="1" Header="Órdenes" Margin="6,0,6,0">
-                <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="orden_id · servicio · fecha · estado"
-                               Style="{StaticResource Columnas}"/>
-                    <ListBox x:Name="lstOrdenes" BorderBrush="#7A7A7A"/>
-                </DockPanel>
-            </GroupBox>
-
-            <GroupBox Grid.Column="2" Header="Facturas" Margin="6,0,0,0">
-                <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="factura_id · fecha · estado_pago · monto"
-                               Style="{StaticResource Columnas}"/>
-                    <ListBox x:Name="lstFacturas" BorderBrush="#7A7A7A"/>
-                </DockPanel>
-            </GroupBox>
-        </Grid>
-
-        <!-- Botones -->
-        <Grid Grid.Row="3" Margin="0,16,0,0">
-            <StackPanel Orientation="Horizontal">
-                <Button x:Name="btnNuevaOrden" Content="Nueva orden para este cliente" Width="208"
-                        Margin="0,0,12,0" Click="NuevaOrden_Click"/>
-                <Button x:Name="btnEditar" Content="Editar cliente" Width="128" Click="Editar_Click"/>
-            </StackPanel>
-            <Button x:Name="btnCerrar" Content="Cerrar" Width="98" HorizontalAlignment="Right"
-                    Click="Cerrar_Click"/>
-        </Grid>
+        </Border>
     </Grid>
 </Window>

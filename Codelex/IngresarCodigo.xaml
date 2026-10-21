@@ -11,11 +11,9 @@
           ResizeMode="NoResize"
           FontFamily="Segoe UI">
     <Window.Resources>
-        <!-- Paleta Codelex (igual que MainWindow) -->
         <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
         <SolidColorBrush x:Key="PrimaryLight" Color="#5FE0D2"/>
         <SolidColorBrush x:Key="Ink" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="Label" Color="#D6F5F0"/>
         <SolidColorBrush x:Key="Muted" Color="#8FC4BD"/>
         <SolidColorBrush x:Key="Line" Color="#33FFFFFF"/>
         <SolidColorBrush x:Key="Field" Color="#1AFFFFFF"/>
@@ -32,39 +30,6 @@
             <GradientStop Color="#2CC5B4" Offset="1"/>
         </LinearGradientBrush>
 
-        <!-- Contenedor de campo: cambia al recibir foco -->
-        <Style x:Key="FieldBorder" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource Field}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
-            <Setter Property="BorderThickness" Value="1.5"/>
-            <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="Height" Value="42"/>
-            <Setter Property="Padding" Value="14,0"/>
-            <Style.Triggers>
-                <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                    <Setter Property="BorderBrush" Value="{StaticResource Primary}"/>
-                    <Setter Property="Background" Value="#26FFFFFF"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <!-- TextBox sin cromo (el borde lo pone FieldBorder) -->
-        <Style x:Key="FlatTextBox" TargetType="TextBox">
-            <Setter Property="Foreground" Value="{StaticResource Ink}"/>
-            <Setter Property="CaretBrush" Value="{StaticResource Primary}"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <ScrollViewer x:Name="PART_ContentHost" Focusable="False"
-                                    VerticalAlignment="Center"/>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Casilla individual del código de 5 dígitos -->
         <Style x:Key="CodeBox" TargetType="TextBox">
             <Setter Property="Width" Value="54"/>
             <Setter Property="Height" Value="62"/>
@@ -96,18 +61,6 @@
             </Setter>
         </Style>
 
-        <!-- Icono de línea dentro de los campos -->
-        <Style x:Key="FieldIcon" TargetType="Path">
-            <Setter Property="Stroke" Value="{StaticResource Muted}"/>
-            <Setter Property="StrokeThickness" Value="1.6"/>
-            <Setter Property="StrokeLineJoin" Value="Round"/>
-            <Setter Property="Stretch" Value="Uniform"/>
-            <Setter Property="Width" Value="18"/>
-            <Setter Property="Height" Value="18"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-        </Style>
-
-        <!-- Botón principal -->
         <Style x:Key="PrimaryButton" TargetType="Button">
             <Setter Property="Foreground" Value="#06282B"/>
             <Setter Property="FontSize" Value="15"/>
@@ -149,7 +102,6 @@
             </Setter>
         </Style>
 
-        <!-- Botones de ventana (minimizar / cerrar) -->
         <Style x:Key="WindowButton" TargetType="Button">
             <Setter Property="Width" Value="32"/>
             <Setter Property="Height" Value="32"/>
@@ -203,7 +155,6 @@
                      FontSize="13" Foreground="{StaticResource Muted}"
                      TextAlignment="Center" TextWrapping="Wrap" Margin="0,6,0,20"/>
 
-                <!-- 5 casillas -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <TextBox x:Name="txtC1" Style="{StaticResource CodeBox}"
                         PreviewTextInput="Code_PreviewTextInput"
@@ -235,7 +186,6 @@
                      Style="{StaticResource PrimaryButton}"
                         Click="Verify_Click"/>
 
-                <!-- Reenviar código (con cuenta regresiva) -->
                 <TextBlock x:Name="txtCountdown" HorizontalAlignment="Center"
                      Margin="0,16,0,0" FontSize="12.5"
                      Foreground="{StaticResource Muted}"/>

@@ -9,10 +9,7 @@
         ResizeMode="NoResize"
         FontFamily="Segoe UI">
     <Window.Resources>
-        <!-- Paleta (misma del login) -->
         <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
-        <SolidColorBrush x:Key="PrimaryLight" Color="#5FE0D2"/>
-        <SolidColorBrush x:Key="Ink" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="Label" Color="#D6F5F0"/>
         <SolidColorBrush x:Key="Muted" Color="#8FC4BD"/>
         <SolidColorBrush x:Key="DarkText" Color="#0A3737"/>
@@ -31,7 +28,6 @@
             <GradientStop Color="#2CC5B4" Offset="1"/>
         </LinearGradientBrush>
 
-        <!-- Icono de línea del menú lateral (toma el color del botón) -->
         <Style x:Key="NavIcon" TargetType="Path">
             <Setter Property="Stroke" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
             <Setter Property="StrokeThickness" Value="1.7"/>
@@ -44,7 +40,6 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
-        <!-- Icono blanco dentro de las tarjetas -->
         <Style x:Key="CardIcon" TargetType="Path">
             <Setter Property="Stroke" Value="White"/>
             <Setter Property="StrokeThickness" Value="1.8"/>
@@ -58,7 +53,6 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
-        <!-- Botón del menú lateral -->
         <Style x:Key="NavButton" TargetType="Button">
             <Setter Property="Foreground" Value="{StaticResource Label}"/>
             <Setter Property="FontSize" Value="14"/>
@@ -94,13 +88,11 @@
             </Setter>
         </Style>
 
-        <!-- Botón de cerrar sesión -->
         <Style x:Key="LogoutButton" TargetType="Button" BasedOn="{StaticResource NavButton}">
             <Setter Property="Foreground" Value="{StaticResource Muted}"/>
             <Setter Property="Margin" Value="0"/>
         </Style>
 
-        <!-- Tarjeta de módulo -->
         <Style x:Key="CardButton" TargetType="Button">
             <Setter Property="Margin" Value="8"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -134,7 +126,6 @@
             </Setter>
         </Style>
 
-        <!-- Botones de ventana (minimizar / cerrar) -->
         <Style x:Key="WindowButton" TargetType="Button">
             <Setter Property="Width" Value="32"/>
             <Setter Property="Height" Value="32"/>
@@ -159,7 +150,6 @@
         </Style>
     </Window.Resources>
 
-    <!-- Margen para que se vea la sombra de la ventana -->
     <Grid Margin="16">
         <Border CornerRadius="14" Background="{StaticResource Surface}" MouseLeftButtonDown="DragWindow">
             <Border.Effect>
@@ -172,11 +162,9 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- ============ PANEL LATERAL ============ -->
                 <Border Grid.Column="0" CornerRadius="14,0,0,14" Background="{StaticResource BgGradient}">
                     <DockPanel Margin="18,26,18,22">
 
-                        <!-- Marca -->
                         <StackPanel DockPanel.Dock="Top" Margin="6,0,0,0">
                             <StackPanel Orientation="Horizontal">
                                 <Border Width="38" Height="38" CornerRadius="10"
@@ -191,7 +179,6 @@
                                        FontWeight="SemiBold" Margin="2,34,0,10"/>
                         </StackPanel>
 
-                        <!-- Cerrar sesión (abajo) -->
                         <StackPanel DockPanel.Dock="Bottom">
                             <Border Height="1" Background="#26FFFFFF" Margin="0,0,0,12"/>
                             <Button Style="{StaticResource LogoutButton}" Click="Logout_Click">
@@ -203,7 +190,6 @@
                             </Button>
                         </StackPanel>
 
-                        <!-- Opciones -->
                         <StackPanel>
                             <Button Style="{StaticResource NavButton}" Click="Inventario_Click">
                                 <StackPanel Orientation="Horizontal">
@@ -237,14 +223,12 @@
                     </DockPanel>
                 </Border>
 
-                <!-- ============ CONTENIDO ============ -->
                 <Grid Grid.Column="1">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Encabezado -->
                     <StackPanel Grid.Row="0" Margin="40,36,40,0">
                         <TextBlock x:Name="txtFecha" Foreground="{StaticResource SoftText}" FontSize="13"/>
                         <TextBlock Text="Panel principal" Foreground="{StaticResource DarkText}"
@@ -253,7 +237,6 @@
                                    Foreground="{StaticResource SoftText}" FontSize="14" Margin="0,4,0,0"/>
                     </StackPanel>
 
-                    <!-- Tarjetas -->
                     <UniformGrid Grid.Row="1" Rows="2" Columns="2" Margin="32,18,32,28">
 
                         <Button Style="{StaticResource CardButton}" Click="Inventario_Click">
@@ -321,7 +304,6 @@
                         </Button>
                     </UniformGrid>
 
-                    <!-- Minimizar / cerrar -->
                     <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right"
                                 VerticalAlignment="Top" Margin="0,10,10,0" Panel.ZIndex="1">
                         <Button Style="{StaticResource WindowButton}" Click="Minimize_Click" ToolTip="Minimizar">

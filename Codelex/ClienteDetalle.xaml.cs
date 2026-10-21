@@ -1,28 +1,15 @@
 ﻿using Codelex.Clases_BDD;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Codelex
 {
-    /// <summary>
-    /// Lógica de interacción para ClienteDetalle.xaml
-    /// </summary>
     public partial class ClienteDetalle : Window
     {
         Cliente clienteBD = new Cliente();
         string rtn;
 
-        // La pantalla de Clientes lo revisa al cerrar: si es true, carga el cliente en el formulario
         public bool EditarCliente = false;
 
         public ClienteDetalle(string rtn)
@@ -67,8 +54,6 @@ namespace Codelex
             txtEstado.Text = fila["estado"].ToString();
         }
 
-        // Cada lista muestra los datos en el mismo orden que el texto de arriba de la lista
-
         private void CargarLocaciones()
         {
             DataTable tabla = clienteBD.LocacionesPorCliente(rtn);
@@ -109,7 +94,6 @@ namespace Codelex
             }
         }
 
-        // Muestra la fecha como día/mes/año (o vacío si no tiene)
         private string Fecha(object valor)
         {
             if (valor == DBNull.Value)
@@ -117,8 +101,6 @@ namespace Codelex
 
             return Convert.ToDateTime(valor).ToString("dd/MM/yyyy");
         }
-
-        // ===================== BOTONES =====================
 
         private void NuevaOrden_Click(object sender, RoutedEventArgs e)
         {
@@ -143,6 +125,4 @@ namespace Codelex
                 DragMove();
         }
     }
-
 }
-

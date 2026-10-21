@@ -1,5 +1,4 @@
-﻿using Codelex;
-using Codelex.BDD;
+﻿using Codelex.BDD;
 using System.Windows;
 using System.Windows.Input;
 
@@ -13,7 +12,6 @@ namespace Codelex
             Loaded += (_, _) => txtUser.Focus();
         }
 
-        
         private void DragWindow(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
@@ -25,7 +23,6 @@ namespace Codelex
 
         private void Close_Click(object sender, RoutedEventArgs e) => Close();
 
-        // Mostrar / ocultar contraseña
         private void ShowPassword_Changed(object sender, RoutedEventArgs e)
         {
             if (btnShowPassword.IsChecked == true)
@@ -63,15 +60,12 @@ namespace Codelex
 
             try
             {
-
                 Usuario usuarioDAL = new Usuario();
-
 
                 bool esValido = usuarioDAL.ValidarLogin(usuario, password);
 
                 if (esValido)
                 {
-
                     Menu win = new Menu();
                     win.Show();
                     Close();
@@ -85,8 +79,6 @@ namespace Codelex
             {
                 ShowError("Error al conectar con la base de datos: " + ex.Message);
             }
-
-
         }
 
         private void ShowError(string message)

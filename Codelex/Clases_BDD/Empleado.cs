@@ -1,16 +1,11 @@
 ﻿using Codelex.BDD;
 using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Text;
 
 namespace Codelex.Clases_BDD
 {
     class Empleado
     {
-        public Empleado() { }
-
         public bool ExisteCorreo(string correo)
         {
             if (correo.Trim() == "")

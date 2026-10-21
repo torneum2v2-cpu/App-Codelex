@@ -1,20 +1,11 @@
 ﻿using Codelex.BDD;
 using Microsoft.Data.SqlClient;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Text;
 
 namespace Codelex.Clases_BDD
 {
     class Cliente
     {
-
-        public Cliente()
-        {
-
-        }
-
         public DataTable BuscarClientes(string texto, string buscarPor, string filtroEstado)
         {
             object estado = DBNull.Value;

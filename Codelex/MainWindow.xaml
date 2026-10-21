@@ -18,7 +18,6 @@
         <SolidColorBrush x:Key="Field" Color="#1AFFFFFF"/>
         <SolidColorBrush x:Key="Danger" Color="#FF8F8F"/>
 
-        
         <LinearGradientBrush x:Key="BgGradient" StartPoint="0,0" EndPoint="1,1">
             <GradientStop Color="#0F4A40" Offset="0"/>
             <GradientStop Color="#0A3737" Offset="0.5"/>
@@ -45,7 +44,6 @@
             </Style.Triggers>
         </Style>
 
-        
         <Style x:Key="FlatTextBox" TargetType="TextBox">
             <Setter Property="Foreground" Value="{StaticResource Ink}"/>
             <Setter Property="CaretBrush" Value="{StaticResource Primary}"/>
@@ -76,7 +74,6 @@
             </Setter>
         </Style>
 
-        <!-- Icono de línea dentro de los campos -->
         <Style x:Key="FieldIcon" TargetType="Path">
             <Setter Property="Stroke" Value="{StaticResource Muted}"/>
             <Setter Property="StrokeThickness" Value="1.6"/>
@@ -87,7 +84,6 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
-        <!-- Botón principal -->
         <Style x:Key="PrimaryButton" TargetType="Button">
             <Setter Property="Foreground" Value="#06282B"/>
             <Setter Property="FontSize" Value="15"/>
@@ -129,7 +125,6 @@
             </Setter>
         </Style>
 
-        <!-- Botones de ventana (minimizar / cerrar) -->
         <Style x:Key="WindowButton" TargetType="Button">
             <Setter Property="Width" Value="32"/>
             <Setter Property="Height" Value="32"/>
@@ -154,7 +149,6 @@
             </Setter>
         </Style>
 
-        <!-- Botón de mostrar/ocultar contraseña -->
         <Style x:Key="EyeToggle" TargetType="ToggleButton">
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Focusable" Value="False"/>
@@ -186,7 +180,6 @@
         </Style>
     </Window.Resources>
 
-    <!-- Tarjeta principal con sombra, toda en verde oscuro -->
     <Border Margin="20" CornerRadius="18" Background="{StaticResource BgGradient}"
             MouseLeftButtonDown="DragWindow">
         <Border.Effect>
@@ -194,10 +187,7 @@
         </Border.Effect>
 
         <Grid>
-            <!-- Burbujas decorativas (lejos de las esquinas redondeadas) -->
           
-
-            <!-- Controles de ventana -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                         VerticalAlignment="Top" Margin="0,10,10,0" Panel.ZIndex="1">
                 <Button Style="{StaticResource WindowButton}" Click="Minimize_Click"
@@ -215,7 +205,6 @@
             </StackPanel>
 
             <StackPanel Margin="44,26,44,26">
-                <!-- Logo arriba -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,30">
                     <Viewbox Height="46" Stretch="Uniform" VerticalAlignment="Center">
                         <Canvas Width="32.9" Height="41.8">
@@ -237,7 +226,6 @@
                                Margin="2,0,0,0"/>
                 </StackPanel>
 
-                <!-- Usuario y contraseña, lado a lado -->
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -245,7 +233,6 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Usuario -->
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Usuario" FontSize="13" FontWeight="SemiBold"
                                    Foreground="{StaticResource Label}" Margin="0,0,0,6"/>
@@ -263,7 +250,6 @@
                         </Border>
                     </StackPanel>
 
-                    <!-- Contraseña -->
                     <StackPanel Grid.Column="2">
                         <TextBlock Text="Contraseña" FontSize="13" FontWeight="SemiBold"
                                    Foreground="{StaticResource Label}" Margin="0,0,0,6"/>
@@ -290,7 +276,6 @@
                     </StackPanel>
                 </Grid>
 
-                <!-- Recordarme / Olvidé mi contraseña -->
                 <Grid Margin="0,14,0,0">
                     <CheckBox x:Name="chkRemember" Content="Recordarme"
                               Foreground="{StaticResource Label}" FontSize="12.5"
@@ -302,7 +287,6 @@
                     </TextBlock>
                 </Grid>
 
-                <!-- Mensaje de error -->
                 <TextBlock x:Name="txtError" Foreground="{StaticResource Danger}"
                            FontSize="13" Margin="0,12,0,0" TextWrapping="Wrap"
                            Visibility="Collapsed"/>

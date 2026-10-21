@@ -1,35 +1,12 @@
 USE Codelex
 GO
 
-/* =====================================================================
-   CAMBIOS DE LA BASE DE DATOS (todo lo que se hizo después de
-   procedimientos_avance_semana_1.sql)
-
-   Ejecutar en este orden:
-     1. CodelexBD2.sql
-     2. procedimientos_avance_semana_1.sql
-     3. Este archivo
-
-   Qué hace:
-     - CLIENTES: agrega estadoCliente (Activo / Inactivo).
-     - Crea sp_ExisteCorreoEmpleado (recuperar contraseña).
-     - CLIENTES: identificacionCliente (RTN) pasa a ser la llave primaria;
-       se borran cliente_id y locacion_id.
-     - LOCACIONES y ORDENES apuntan al cliente con identificacionCliente.
-     - Crea o actualiza todos los procedimientos de clientes y locaciones.
-
-   Se puede ejecutar aunque ya hayan ejecutado antes clientes_cambios.sql,
-   empleados_cambios.sql o clientes_llave_rtn.sql: no duplica nada.
-   ===================================================================== */
-
--- 1. Estado del cliente (1 = Activo, 0 = Inactivo)
 IF COL_LENGTH('CLIENTES', 'estadoCliente') IS NULL
 	ALTER TABLE CLIENTES
 	ADD estadoCliente BIT NOT NULL
 		CONSTRAINT DF_CLIENTES_estadoCliente DEFAULT 1;
 GO
 
--- 2. Revisa si existe un empleado con ese correo (pantalla Ingresar correo)
 CREATE OR ALTER PROCEDURE sp_ExisteCorreoEmpleado
 	@correo VARCHAR(50)
 AS
@@ -42,7 +19,6 @@ BEGIN
 END
 GO
 
--- 3. Cambios de tablas de CLIENTES, LOCACIONES y ORDENES (solo si CLIENTES todavía tiene cliente_id)
 IF COL_LENGTH('CLIENTES', 'cliente_id') IS NOT NULL
 BEGIN
 	IF EXISTS (SELECT 1 FROM CLIENTES
@@ -60,11 +36,9 @@ BEGIN
 	BEGIN TRY
 		BEGIN TRANSACTION;
 
-		-- Nuevas columnas
 		EXEC('ALTER TABLE LOCACIONES ADD identificacionCliente VARCHAR(30) NULL');
 		EXEC('ALTER TABLE ORDENES ADD identificacionCliente VARCHAR(30) NULL');
 
-		-- Pasar los datos que ya existen
 		EXEC('UPDATE l SET l.identificacionCliente = c.identificacionCliente
 			  FROM LOCACIONES l
 			  INNER JOIN CLIENTES c ON c.locacion_id = l.locacion_id');
@@ -73,7 +47,6 @@ BEGIN
 			  FROM ORDENES o
 			  INNER JOIN CLIENTES c ON c.cliente_id = o.cliente_id');
 
-		-- Quitar las llaves viejas de CLIENTES y las que apuntan a CLIENTES
 		DECLARE @sql NVARCHAR(MAX) = N'';
 
 		SELECT @sql = @sql + N'ALTER TABLE ' + QUOTENAME(OBJECT_NAME(parent_object_id))
@@ -88,12 +61,10 @@ BEGIN
 
 		EXEC sp_executesql @sql;
 
-		-- Borrar las columnas que ya no se usan
 		EXEC('ALTER TABLE ORDENES DROP COLUMN cliente_id');
 		EXEC('ALTER TABLE CLIENTES DROP COLUMN locacion_id');
 		EXEC('ALTER TABLE CLIENTES DROP COLUMN cliente_id');
 
-		-- Nueva llave primaria y llaves foráneas
 		EXEC('ALTER TABLE CLIENTES ALTER COLUMN identificacionCliente VARCHAR(30) NOT NULL');
 		EXEC('ALTER TABLE CLIENTES ADD CONSTRAINT PK_CLIENTES PRIMARY KEY (identificacionCliente)');
 		EXEC('ALTER TABLE LOCACIONES ADD CONSTRAINT FK_LOCACIONES_CLIENTES
@@ -110,8 +81,6 @@ BEGIN
 	END CATCH
 END
 GO
-
--- 4. Procedimientos de clientes
 
 CREATE OR ALTER PROCEDURE sp_InsertarCliente
 	@identificacionCliente VARCHAR(30),
@@ -298,8 +267,6 @@ BEGIN
 	ORDER BY f.fechaFactura DESC, f.factura_id DESC;
 END
 GO
-
--- 5. Procedimientos de locaciones (ahora cada locación es de un cliente)
 
 CREATE OR ALTER PROCEDURE sp_ListarLocacionesPorCliente
 	@identificacionCliente VARCHAR(30)

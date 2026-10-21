@@ -14,8 +14,6 @@
     <Window.Resources>
         <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
         <SolidColorBrush x:Key="PrimaryLight" Color="#5FE0D2"/>
-        <SolidColorBrush x:Key="Ink" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="Label" Color="#D6F5F0"/>
         <SolidColorBrush x:Key="Muted" Color="#8FC4BD"/>
         <SolidColorBrush x:Key="DarkText" Color="#0A3737"/>
         <SolidColorBrush x:Key="SoftText" Color="#5B7C78"/>

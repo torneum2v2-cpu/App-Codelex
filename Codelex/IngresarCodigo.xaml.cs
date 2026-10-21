@@ -1,27 +1,13 @@
-﻿using Codelex.Clases_BDD;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Net;
+﻿using System.Net;
 using System.Net.Mail;
 using System.Security.Cryptography;
-using System.Text;
-using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 
 namespace Codelex
 {
-    /// <summary>
-    /// Lógica de interacción para IngresarCodigo.xaml
-    /// </summary>
     public partial class IngresarCodigo : Window
     {
         private const int CodeLength = 5;
@@ -30,9 +16,8 @@ namespace Codelex
         private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(1) };
 
         private string _email = "";
-        private string _codigo = "";   // código generado (en producción, guárdalo en el servidor)
+        private string _codigo = "";
         private int _seconds;
-
 
         public IngresarCodigo(string email)
         {
@@ -43,7 +28,6 @@ namespace Codelex
             _boxes = new[] { txtC1, txtC2, txtC3, txtC4, txtC5 };
             foreach (var box in _boxes)
                 DataObject.AddPastingHandler(box, Code_Paste);
-
 
             _timer.Tick += Timer_Tick;
             GenerarYEnviarCodigo();        
@@ -94,7 +78,6 @@ namespace Codelex
 
             _timer.Stop();
 
-            // TODO: aquí abre el siguiente paso (definir una nueva contraseña).
             new NuevaContra().Show();
             Close();
         }
@@ -102,7 +85,6 @@ namespace Codelex
         {
             try
             {
-                
                 _codigo = RandomNumberGenerator.GetInt32(0, 100000).ToString("D5");
 
                 const string p = "vkds dwtb vmtk dldo";
@@ -128,9 +110,6 @@ namespace Codelex
                 _codigo = "";
                 ShowCodeError("No se pudo enviar el correo: " + ex.Message);
             }
-
-
-
         }
         private void Timer_Tick(object? sender, EventArgs e)
         {
@@ -175,11 +154,11 @@ namespace Codelex
 
         private void Code_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            e.Handled = true;   // controlamos nosotros el contenido
+            e.Handled = true;
 
             if (sender is not TextBox box || e.Text.Length != 1) return;
             char c = e.Text[0];
-            if (c < '0' || c > '9') return;   // solo dígitos
+            if (c < '0' || c > '9') return;
 
             box.Text = e.Text;
             int i = IndexOf(box);
@@ -224,7 +203,6 @@ namespace Codelex
             }
         }
 
-        // Pegar el código completo (Ctrl+V) reparte los dígitos en las casillas
         private void Code_Paste(object sender, DataObjectPastingEventArgs e)
         {
             e.CancelCommand();
@@ -246,6 +224,5 @@ namespace Codelex
 
             _boxes[Math.Min(last + 1, CodeLength - 1)].Focus();
         }
-
     }
 }

@@ -4,9 +4,6 @@ using System.Windows.Input;
 
 namespace Codelex
 {
-    /// <summary>
-    /// Lógica de interacción para Menu.xaml
-    /// </summary>
     public partial class Menu : Window
     {
         public Menu()
@@ -28,7 +25,6 @@ namespace Codelex
 
         private void Close_Click(object sender, RoutedEventArgs e) => Close();
 
-        // Abre una ventana, oculta el menú y lo vuelve a mostrar al cerrarla
         private void AbrirModulo(Window ventana)
         {
             ventana.Closed += (_, _) => Show();
@@ -43,21 +39,18 @@ namespace Codelex
 
         private void Inventario_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: AbrirModulo(new Inventario());
             MessageBox.Show("El módulo de Inventario estará disponible pronto.",
                             "Codelex", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void Ordenes_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: AbrirModulo(new Ordenes());
             MessageBox.Show("El módulo de Órdenes estará disponible pronto.",
                             "Codelex", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void Empleados_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: AbrirModulo(new Empleados());
             MessageBox.Show("El módulo de Empleados estará disponible pronto.",
                             "Codelex", MessageBoxButton.OK, MessageBoxImage.Information);
         }

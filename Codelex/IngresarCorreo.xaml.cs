@@ -1,21 +1,9 @@
 ﻿using Codelex.Clases_BDD;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Codelex
 {
-    /// <summary>
-    /// Lógica de interacción para IngresarCorreo.xaml
-    /// </summary>
     public partial class IngresarCorreo : Window
     {
         public IngresarCorreo()
@@ -27,7 +15,6 @@ namespace Codelex
             txtError1.Text = message;
             txtError1.Visibility = Visibility.Visible;
         }
-
 
         private void DragWindow(object sender, MouseButtonEventArgs e)
         {
@@ -58,6 +45,5 @@ namespace Codelex
             ingresar.Show();
             Close();
         }
-
     }
 }

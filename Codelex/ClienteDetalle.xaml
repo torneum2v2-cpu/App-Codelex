@@ -14,8 +14,6 @@
     <Window.Resources>
         <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
         <SolidColorBrush x:Key="PrimaryLight" Color="#5FE0D2"/>
-        <SolidColorBrush x:Key="Ink" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="Label" Color="#D6F5F0"/>
         <SolidColorBrush x:Key="Muted" Color="#8FC4BD"/>
         <SolidColorBrush x:Key="DarkText" Color="#0A3737"/>
         <SolidColorBrush x:Key="SoftText" Color="#5B7C78"/>
@@ -23,7 +21,6 @@
         <SolidColorBrush x:Key="CardLine" Color="#DDEAE8"/>
         <SolidColorBrush x:Key="Hover" Color="#F3FCFA"/>
         <SolidColorBrush x:Key="Pill" Color="#E3F7F4"/>
-        <SolidColorBrush x:Key="PillText" Color="#14837A"/>
 
         <LinearGradientBrush x:Key="BgGradient" StartPoint="0,0" EndPoint="1,1">
             <GradientStop Color="#0F4A40" Offset="0"/>

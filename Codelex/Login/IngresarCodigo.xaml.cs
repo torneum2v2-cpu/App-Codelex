@@ -30,8 +30,35 @@ namespace Codelex
                 DataObject.AddPastingHandler(box, Code_Paste);
 
             _timer.Tick += Timer_Tick;
-            GenerarYEnviarCodigo();        
-            StartCooldown(ResendSeconds);
+            ContentRendered += VentanaLista;
+        }
+        private void VentanaLista(object sender, EventArgs e)
+        {
+            ContentRendered -= VentanaLista;
+            EnviarYContar();
+        }
+
+        private async void EnviarYContar()
+        {
+            IsEnabled = false;
+            Cargando cargando = Cargando.Iniciar(this, "Enviando código...");
+
+            await GenerarYEnviarCodigo();
+
+            cargando.Terminar();
+            IsEnabled = true;
+
+            if (_codigo != "")
+            {
+                StartCooldown(ResendSeconds);
+            }
+            else
+            {
+                _seconds = 0;
+                UpdateCooldownUi();
+            }
+
+            txtC1.Focus();
         }
 
         private void ShowCodeError(string message)
@@ -61,6 +88,12 @@ namespace Codelex
         {
             txtError2.Visibility = Visibility.Collapsed;
 
+            if (_codigo == "")
+            {
+                ShowCodeError("Aún no se ha enviado un código. Usa la opción de reenviar.");
+                return;
+            }
+
             string ingresado = string.Concat(Array.ConvertAll(_boxes, b => b.Text));
             if (ingresado.Length < CodeLength)
             {
@@ -78,10 +111,10 @@ namespace Codelex
 
             _timer.Stop();
 
-            new NuevaContra().Show();
+            new NuevaContra(_email).Show();
             Close();
         }
-        private void GenerarYEnviarCodigo()
+        private async Task GenerarYEnviarCodigo()
         {
             try
             {
@@ -102,7 +135,7 @@ namespace Codelex
                     smtp.UseDefaultCredentials = false;
                     smtp.Credentials = new NetworkCredential("codelex1hn@gmail.com", p);
                     smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
-                    smtp.Send(message);
+                    await smtp.SendMailAsync(message);
                 }
             }
             catch (Exception ex)
@@ -133,11 +166,9 @@ namespace Codelex
         }
         private void Resend_Click(object sender, RoutedEventArgs e)
         {
-            GenerarYEnviarCodigo();
             ClearCode();
             txtError2.Visibility = Visibility.Collapsed;
-            StartCooldown(ResendSeconds);
-            txtC1.Focus();
+            EnviarYContar();
         }
 
         private int IndexOf(TextBox box) => Array.IndexOf(_boxes, box);

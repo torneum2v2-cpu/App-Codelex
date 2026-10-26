@@ -1,0 +1,43 @@
+﻿<Window x:Class="Codelex.Cargando"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Codelex"
+        Width="260" SizeToContent="Height"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize" ShowInTaskbar="False" ShowActivated="False" Topmost="True"
+        FontFamily="Segoe UI">
+    <Window.Resources>
+        <SolidColorBrush x:Key="PrimaryLight" Color="#5FE0D2"/>
+        <SolidColorBrush x:Key="Label" Color="#D6F5F0"/>
+
+        <LinearGradientBrush x:Key="BgGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#0F4A40" Offset="0"/>
+            <GradientStop Color="#0A3737" Offset="0.5"/>
+            <GradientStop Color="#062529" Offset="1"/>
+        </LinearGradientBrush>
+    </Window.Resources>
+
+    <Border Margin="20" CornerRadius="18" Background="{StaticResource BgGradient}">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" BlurRadius="24" ShadowDepth="0" Opacity="0.45"/>
+        </Border.Effect>
+
+        <StackPanel Margin="20,26">
+            <Grid Width="48" Height="48" HorizontalAlignment="Center"
+                  RenderTransformOrigin="0.5,0.5">
+                <Grid.RenderTransform>
+                    <RotateTransform x:Name="giro" Angle="0"/>
+                </Grid.RenderTransform>
+                <Ellipse Width="48" Height="48" Stroke="#33FFFFFF" StrokeThickness="4"/>
+                <Path Data="M 24,2 A 22,22 0 0 1 46,24"
+                      Stroke="{StaticResource PrimaryLight}" StrokeThickness="4"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+            </Grid>
+
+            <TextBlock x:Name="txtTexto" Text="Cargando..." Margin="0,16,0,0"
+                       Foreground="{StaticResource Label}" FontSize="14" FontWeight="SemiBold"
+                       HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
+        </StackPanel>
+    </Border>
+</Window>

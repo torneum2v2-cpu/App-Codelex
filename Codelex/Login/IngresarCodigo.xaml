@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Codelex"
           Title="Codelex - Recuperar contraseña"
           Width="580" SizeToContent="Height"
-          WindowStartupLocation="CenterScreen" 
+          WindowStartupLocation="CenterScreen"
           WindowStyle="None" AllowsTransparency="True" Background="Transparent"
           ResizeMode="NoResize"
           FontFamily="Segoe UI">
@@ -126,7 +126,7 @@
             </Setter>
         </Style>
     </Window.Resources>
-    
+
     <Border Margin="20" CornerRadius="18" Background="{StaticResource BgGradient}" MouseLeftButtonDown="DragWindow">
         <Border.Effect>
             <DropShadowEffect BlurRadius="30" ShadowDepth="8" Opacity="0.45" Color="#000000"/>
@@ -170,7 +170,7 @@
                             GotKeyboardFocus="Code_GotKeyboardFocus"/>
                     <TextBox x:Name="txtC4" Style="{StaticResource CodeBox}" Margin="10,0,0,0"
                         PreviewTextInput="Code_PreviewTextInput"
-                         PreviewKeyDown="Code_PreviewKeyDown"    
+                         PreviewKeyDown="Code_PreviewKeyDown"
                          GotKeyboardFocus="Code_GotKeyboardFocus"/>
                     <TextBox x:Name="txtC5" Style="{StaticResource CodeBox}" Margin="10,0,0,0"
                             PreviewTextInput="Code_PreviewTextInput"
@@ -203,7 +203,7 @@
                 </TextBlock>
             </StackPanel>
         </Grid>
-      
+
     </Border>
-    
+
 </Window>

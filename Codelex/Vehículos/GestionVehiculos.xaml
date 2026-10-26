@@ -1,11 +1,11 @@
-﻿<Window x:Class="Codelex.Clientes"
+﻿<Window x:Class="Codelex.GestionVehiculos"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Codelex"
         mc:Ignorable="d"
-        Title="Codelex - Clientes" Width="1220" Height="760"
+        Title="Codelex - Gestionar vehículos" Width="1220" Height="760"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize"
@@ -261,14 +261,22 @@
                         Padding="28,18,14,18" MouseLeftButtonDown="DragWindow">
                     <Grid>
                         <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Volver"
+                                    Width="44" Height="38" Margin="0,0,14,0" VerticalAlignment="Center">
+                                <Path Data="M30,12 H2 M10,20 L2,12 L10,4"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                      StrokeLineJoin="Round" Stretch="Uniform" Width="26" Height="15"/>
+                            </Button>
                             <Border Width="42" Height="42" CornerRadius="12" Background="{StaticResource ButtonGradient}">
-                                <Path Data="M5,7 A4,4 0 1 0 13,7 A4,4 0 1 0 5,7 M2,21 V19 A4,4 0 0 1 6,15 H12 A4,4 0 0 1 16,19 V21 M16,3.1 A4,4 0 0 1 16,10.9 M22,21 V19 A4,4 0 0 0 19,15.1" Stroke="White" StrokeThickness="1.8" StrokeLineJoin="Round"
+                                <Path Data="M1,3 H16 V16 H1 Z M16,8 H20 L23,11 V16 H16 Z M3,18.5 A2.5,2.5 0 1 0 8,18.5 A2.5,2.5 0 1 0 3,18.5 M16,18.5 A2.5,2.5 0 1 0 21,18.5 A2.5,2.5 0 1 0 16,18.5"
+                                      Stroke="White" StrokeThickness="1.8" StrokeLineJoin="Round"
                                       StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stretch="Uniform"
                                       Width="22" Height="22"/>
                             </Border>
                             <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
-                                <TextBlock Text="Clientes" Foreground="White" FontSize="22" FontWeight="Bold"/>
-                                <TextBlock Text="Administra tu cartera de clientes y sus datos." Foreground="{StaticResource Muted}" FontSize="13"/>
+                                <TextBlock Text="Gestionar vehículos" Foreground="White" FontSize="22" FontWeight="Bold"/>
+                                <TextBlock Text="Consulta, edita y controla los vehículos registrados." Foreground="{StaticResource Muted}" FontSize="13"/>
                             </StackPanel>
                         </StackPanel>
 
@@ -295,9 +303,12 @@
 
                     <Border Grid.Column="0" Style="{StaticResource Card}" VerticalAlignment="Top">
                         <StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                                <TextBlock Text="Datos del cliente" Style="{StaticResource TituloCard}"/>
-                                <TextBlock Text="  * obligatorio" Style="{StaticResource Nota}" VerticalAlignment="Bottom"/>
+                            <TextBlock Text="Datos del vehículo" Style="{StaticResource TituloCard}" Margin="0,0,0,16"/>
+
+                            <StackPanel Margin="0,0,0,12">
+                                <TextBlock Text="Placa *" Style="{StaticResource Etiqueta}"/>
+                                <TextBox x:Name="txtPlaca" MaxLength="15" CharacterCasing="Upper"
+                                         PreviewTextInput="SoloPlaca"/>
                             </StackPanel>
 
                             <Grid>
@@ -306,41 +317,15 @@
                                     <ColumnDefinition Width="12"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
 
-                                <StackPanel Grid.Row="0" Grid.ColumnSpan="3" Margin="0,0,0,12">
-                                    <TextBlock Text="RTN / identidad *" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtRTN" MaxLength="14" PreviewTextInput="SoloNumeros"/>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Marca *" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="txtMarca" MaxLength="20"/>
                                 </StackPanel>
 
-                                <StackPanel Grid.Row="1" Grid.ColumnSpan="3" Margin="0,0,0,12">
-                                    <TextBlock Text="Empresa *" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtEmpresa" MaxLength="50"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,12">
-                                    <TextBlock Text="Nombre contacto *" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtNombre" MaxLength="50"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,12">
-                                    <TextBlock Text="Apellido contacto *" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtApellido" MaxLength="50"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Row="3" Grid.Column="0">
-                                    <TextBlock Text="Teléfono *" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtTelefono" MaxLength="8" PreviewTextInput="SoloNumeros"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Row="3" Grid.Column="2">
-                                    <TextBlock Text="Correo *" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtCorreo" MaxLength="50"/>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="Modelo *" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="txtModelo" MaxLength="25"/>
                                 </StackPanel>
                             </Grid>
 
@@ -353,29 +338,27 @@
                                 </Border>
                             </StackPanel>
 
-                            <TextBlock Text="El RTN o la identidad es único: no puede repetirse entre clientes. Debe tener 13 o 14 dígitos."
+                            <TextBlock Text="La placa es única: no puede repetirse entre vehículos. Un vehículo desactivado no se borra, solo deja de estar disponible."
                                        Style="{StaticResource Nota}" Margin="0,14,0,0"/>
 
-                            <TextBlock x:Name="txtModo" Text="Nuevo cliente: llene los datos y presione Crear."
+                            <TextBlock x:Name="txtModo" Text="Seleccione un vehículo de la tabla para editarlo."
                                        Foreground="{StaticResource PillText}" FontSize="12.5" FontWeight="SemiBold"
                                        TextWrapping="Wrap" Margin="0,8,0,0"/>
 
-                            <Button x:Name="btnVerDetalle" Content="Ver detalle" Style="{StaticResource SecondaryButton}"
-                                    Margin="0,18,0,0" Click="VerDetalle_Click"/>
+                            <Button x:Name="btnRegistrar" Content="Registrar vehículo nuevo" Style="{StaticResource SecondaryButton}"
+                                    Margin="0,18,0,0" Click="Registrar_Click"
+                                    ToolTip="Abre la ventana para registrar un vehículo"/>
 
-                            <UniformGrid Columns="4" Margin="0,10,0,0">
-                                <Button x:Name="btnNuevo" Content="Nuevo" Style="{StaticResource SecondaryButton}"
-                                        Margin="0,0,5,0" Click="Nuevo_Click"
-                                        ToolTip="Limpia el formulario para registrar un cliente nuevo"/>
-                                <Button x:Name="btnCrear" Content="Crear" Style="{StaticResource PrimaryButton}"
-                                        Margin="5,0,5,0" Click="Crear_Click"
-                                        ToolTip="Guarda los datos del formulario como un cliente nuevo"/>
+                            <UniformGrid Columns="3" Margin="0,10,0,0">
+                                <Button x:Name="btnLimpiar" Content="Limpiar" Style="{StaticResource SecondaryButton}"
+                                        Margin="0,0,5,0" Click="Limpiar_Click"
+                                        ToolTip="Deja de editar y vacía el formulario"/>
                                 <Button x:Name="btnActualizar" Content="Actualizar" Style="{StaticResource PrimaryButton}"
                                         Margin="5,0,5,0" Click="Actualizar_Click"
-                                        ToolTip="Guarda los cambios del cliente que se está editando"/>
+                                        ToolTip="Guarda los cambios del vehículo que se está editando"/>
                                 <Button x:Name="btnCambiarEstado" Content="Desactivar" Style="{StaticResource SecondaryButton}"
                                         Margin="5,0,0,0" Click="CambiarEstado_Click"
-                                        ToolTip="Activa o desactiva el cliente (no se borra)"/>
+                                        ToolTip="Activa o desactiva el vehículo (no se borra)"/>
                             </UniformGrid>
                         </StackPanel>
                     </Border>
@@ -389,7 +372,7 @@
 
                         <Border Grid.Row="0" Style="{StaticResource Card}">
                             <StackPanel>
-                                <TextBlock Text="Buscar clientes" Style="{StaticResource TituloCard}" Margin="0,0,0,12"/>
+                                <TextBlock Text="Buscar vehículos" Style="{StaticResource TituloCard}" Margin="0,0,0,12"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -397,50 +380,44 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBox x:Name="txtBuscar" Grid.Column="0" Margin="0,0,10,0" KeyDown="Buscar_KeyDown"
-                                             ToolTip="Escriba y presione Enter para buscar en todos los campos"/>
-                                    <Button x:Name="btnPorRTN" Grid.Column="1" Content="Por RTN"
-                                            Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" Click="PorRTN_Click"/>
-                                    <Button x:Name="btnPorNombre" Grid.Column="2" Content="Por nombre"
-                                            Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" Click="PorNombre_Click"/>
-                                    <Button x:Name="btnMostrarTodos" Grid.Column="3" Content="Mostrar todos"
+                                             ToolTip="Escriba y presione Enter para buscar por placa, marca o modelo"/>
+                                    <Button x:Name="btnBuscar" Grid.Column="1" Content="Buscar"
+                                            Style="{StaticResource PrimaryButton}" Margin="0,0,6,0" Click="Buscar_Click"/>
+                                    <Button x:Name="btnMostrarTodos" Grid.Column="2" Content="Mostrar todos"
                                             Style="{StaticResource SecondaryButton}" Margin="0,0,16,0" Click="MostrarTodos_Click"/>
-                                    <Button x:Name="btnActivos" Grid.Column="4" Content="Activos"
+                                    <Button x:Name="btnActivos" Grid.Column="3" Content="Activos"
                                             Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" Click="Activos_Click"
-                                            ToolTip="Mostrar solo los clientes activos"/>
-                                    <Button x:Name="btnInactivos" Grid.Column="5" Content="Inactivos"
+                                            ToolTip="Mostrar solo los vehículos activos"/>
+                                    <Button x:Name="btnInactivos" Grid.Column="4" Content="Inactivos"
                                             Style="{StaticResource SecondaryButton}" Click="Inactivos_Click"
-                                            ToolTip="Mostrar solo los clientes inactivos"/>
+                                            ToolTip="Mostrar solo los vehículos inactivos"/>
                                 </Grid>
                             </StackPanel>
                         </Border>
 
                         <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0,16,0,0">
                             <DockPanel>
-                                <TextBlock DockPanel.Dock="Top" Text="Clientes registrados"
+                                <TextBlock DockPanel.Dock="Top" Text="Vehículos registrados"
                                            Style="{StaticResource TituloCard}" Margin="0,0,0,12"/>
-                                <DataGrid x:Name="dgClientes" Style="{StaticResource Tabla}"
+                                <DataGrid x:Name="dgVehiculos" Style="{StaticResource Tabla}"
                                           AutoGenerateColumns="False" IsReadOnly="True"
                                           CanUserAddRows="False" SelectionMode="Single"
-                                          PreviewMouseLeftButtonUp="dgClientes_Click">
+                                          PreviewMouseLeftButtonUp="dgVehiculos_Click">
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Header="identificacionCliente" Binding="{Binding identificacionCliente}" Width="*"/>
-                                        <DataGridTextColumn Header="nombreEmpresa" Binding="{Binding nombreEmpresa}" Width="*"/>
-                                        <DataGridTextColumn Header="nombreCliente" Binding="{Binding nombreCliente}" Width="*"/>
-                                        <DataGridTextColumn Header="telefonoCliente" Binding="{Binding telefonoCliente}" Width="*"/>
-                                        <DataGridTextColumn Header="estado" Binding="{Binding estado}" Width="90"/>
+                                        <DataGridTextColumn Header="Placa" Binding="{Binding placa}" Width="*"/>
+                                        <DataGridTextColumn Header="Marca" Binding="{Binding marcaVehiculo}" Width="*"/>
+                                        <DataGridTextColumn Header="Modelo" Binding="{Binding modeloVehiculo}" Width="*"/>
+                                        <DataGridTextColumn Header="Estado" Binding="{Binding estado}" Width="100"/>
                                     </DataGrid.Columns>
                                 </DataGrid>
                             </DockPanel>
                         </Border>
 
                         <Grid Grid.Row="2" Margin="0,14,0,0">
-                            <TextBlock Text="Haga clic en un cliente de la tabla para ver su detalle."
-                                       Style="{StaticResource Nota}" VerticalAlignment="Center"/>
-                            <Button x:Name="btnSalir" Content="Salir" Width="110" HorizontalAlignment="Right"
-                                    Style="{StaticResource SecondaryButton}" Click="Salir_Click"/>
+                            <TextBlock Text="Haga clic en un vehículo de la tabla para editarlo."
+                                Style="{StaticResource Nota}" VerticalAlignment="Center"/>
                         </Grid>
                     </Grid>
                 </Grid>

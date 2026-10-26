@@ -48,7 +48,7 @@ namespace Codelex
 
                 if (tabla.Rows.Count == 0)
                 {
-                    MessageBox.Show("No se encontró el cliente.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MensajeCodelex.Mostrar(this, "Clientes", "No se encontró el cliente.", false);
                     return;
                 }
 
@@ -317,14 +317,14 @@ namespace Codelex
         private void MostrarMensaje(bool correcto, string mensaje)
         {
             if (correcto)
-                MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Information);
+               MensajeCodelex.Mostrar(this,"Clientes", mensaje, true);
             else
-                MessageBox.Show(mensaje, "Clientes", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MensajeCodelex.Mostrar(this, "Clientes", mensaje, false);
         }
 
         private void MostrarError(Exception ex)
         {
-            MessageBox.Show(ex.Message, "Clientes", MessageBoxButton.OK, MessageBoxImage.Error);
+            MensajeCodelex.Mostrar(this, "Clientes", ex.Message, false);
         }
     }
 }

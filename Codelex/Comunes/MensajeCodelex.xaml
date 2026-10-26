@@ -1,0 +1,107 @@
+﻿<Window x:Class="Codelex.MensajeCodelex"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Codelex"
+        Width="440" SizeToContent="Height"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize" ShowInTaskbar="False"
+        FontFamily="Segoe UI">
+    <Window.Resources>
+        <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
+        <SolidColorBrush x:Key="PrimaryLight" Color="#5FE0D2"/>
+        <SolidColorBrush x:Key="Ink" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="Label" Color="#D6F5F0"/>
+        <SolidColorBrush x:Key="Field" Color="#1AFFFFFF"/>
+        <SolidColorBrush x:Key="Danger" Color="#FF8F8F"/>
+
+        <LinearGradientBrush x:Key="BgGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#0F4A40" Offset="0"/>
+            <GradientStop Color="#0A3737" Offset="0.5"/>
+            <GradientStop Color="#062529" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="ButtonGradient" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#1FAFA5" Offset="0"/>
+            <GradientStop Color="#2CC5B4" Offset="1"/>
+        </LinearGradientBrush>
+
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Foreground" Value="#06282B"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Height" Value="44"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{StaticResource ButtonGradient}"
+                                CornerRadius="10">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#000000" BlurRadius="16"
+                                                  ShadowDepth="4" Opacity="0.35"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background"
+                                        Value="{StaticResource PrimaryLight}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Margin="20" CornerRadius="18" Background="{StaticResource BgGradient}"
+            MouseLeftButtonDown="DragWindow">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" BlurRadius="24" ShadowDepth="0" Opacity="0.45"/>
+        </Border.Effect>
+
+        <StackPanel Margin="30,32,30,28">
+            <Grid Width="72" Height="72" HorizontalAlignment="Center">
+                <Ellipse x:Name="elIcono" Fill="{StaticResource Field}"
+                         Stroke="{StaticResource Primary}" StrokeThickness="2"/>
+                <Path x:Name="pathCheck" Data="M0,7 L6,13 L17,0"
+                      Stroke="{StaticResource Primary}" StrokeThickness="3.2"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                      StrokeLineJoin="Round" Stretch="Uniform"
+                      Width="30" Height="24"
+                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Path x:Name="pathX" Data="M0,0 L14,14 M14,0 L0,14"
+                      Stroke="{StaticResource Danger}" StrokeThickness="3.2"
+                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                      Stretch="Uniform" Width="24" Height="24"
+                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                      Visibility="Collapsed"/>
+            </Grid>
+
+            <TextBlock x:Name="txtTitulo" Text="Título" Margin="0,20,0,0"
+                       Foreground="{StaticResource Ink}" FontSize="22" FontWeight="Bold"
+                       HorizontalAlignment="Center" TextAlignment="Center"
+                       TextWrapping="Wrap"/>
+
+            <TextBlock x:Name="txtMensaje" Text="Mensaje" Margin="0,10,0,0"
+                       Foreground="{StaticResource Label}" FontSize="14"
+                       HorizontalAlignment="Center" TextAlignment="Center"
+                       TextWrapping="Wrap"/>
+
+            <Button Content="Aceptar" Margin="0,28,0,0"
+                    Style="{StaticResource PrimaryButton}"
+                    IsDefault="True" IsCancel="True"
+                    Click="Aceptar_Click"/>
+        </StackPanel>
+    </Border>
+</Window>

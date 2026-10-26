@@ -29,7 +29,7 @@
         </LinearGradientBrush>
 
         <Style x:Key="NavIcon" TargetType="Path">
-            <Setter Property="Stroke" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+            <Setter Property="Stroke" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ButtonBase}}"/>
             <Setter Property="StrokeThickness" Value="1.7"/>
             <Setter Property="StrokeLineJoin" Value="Round"/>
             <Setter Property="StrokeStartLineCap" Value="Round"/>
@@ -47,18 +47,55 @@
             <Setter Property="StrokeStartLineCap" Value="Round"/>
             <Setter Property="StrokeEndLineCap" Value="Round"/>
             <Setter Property="Stretch" Value="Uniform"/>
-            <Setter Property="Width" Value="26"/>
-            <Setter Property="Height" Value="26"/>
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="24"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="NavRadio" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{StaticResource Label}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="bd" Background="Transparent" CornerRadius="10">
+                            <Grid>
+                                <Border x:Name="bar" Width="3" Height="20" CornerRadius="2"
+                                        HorizontalAlignment="Left" Opacity="0"
+                                        Background="{StaticResource Primary}"/>
+                                <ContentPresenter Margin="18,0,12,0" VerticalAlignment="Center"
+                                                  HorizontalAlignment="Left"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#1FFFFFFF"/>
+                                <Setter TargetName="bar" Property="Opacity" Value="1"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#33FFFFFF"/>
+                                <Setter TargetName="bar" Property="Opacity" Value="1"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="NavButton" TargetType="Button">
             <Setter Property="Foreground" Value="{StaticResource Label}"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Height" Value="46"/>
-            <Setter Property="Margin" Value="0,0,0,6"/>
+            <Setter Property="Height" Value="42"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="Template">
@@ -94,7 +131,7 @@
         </Style>
 
         <Style x:Key="CardButton" TargetType="Button">
-            <Setter Property="Margin" Value="8"/>
+            <Setter Property="Margin" Value="5"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
             <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
@@ -102,7 +139,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="bd" Background="White" BorderBrush="{StaticResource CardLine}"
-                                BorderThickness="1.5" CornerRadius="16" Padding="24">
+                                BorderThickness="1.5" CornerRadius="16" Padding="14">
                             <Border.Effect>
                                 <DropShadowEffect BlurRadius="16" ShadowDepth="2" Opacity="0.08" Color="#0A3737"/>
                             </Border.Effect>
@@ -151,7 +188,7 @@
     </Window.Resources>
 
     <Grid Margin="16">
-        <Border CornerRadius="14" Background="{StaticResource Surface}" MouseLeftButtonDown="DragWindow">
+        <Border CornerRadius="14" MouseLeftButtonDown="DragWindow">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="24" ShadowDepth="0" Opacity="0.35" Color="#000000"/>
             </Border.Effect>
@@ -176,11 +213,11 @@
                                            VerticalAlignment="Center" Margin="12,0,0,0"/>
                             </StackPanel>
                             <TextBlock Text="MENÚ" Foreground="{StaticResource Muted}" FontSize="11"
-                                       FontWeight="SemiBold" Margin="2,34,0,10"/>
+                                       FontWeight="SemiBold" Margin="2,28,0,8"/>
                         </StackPanel>
 
                         <StackPanel DockPanel.Dock="Bottom">
-                            <Border Height="1" Background="#26FFFFFF" Margin="0,0,0,12"/>
+                            <Border Height="1" Background="#26FFFFFF" Margin="0,0,0,10"/>
                             <Button Style="{StaticResource LogoutButton}" Click="Logout_Click">
                                 <StackPanel Orientation="Horizontal">
                                     <Path Style="{StaticResource NavIcon}"
@@ -190,39 +227,75 @@
                             </Button>
                         </StackPanel>
 
-                        <StackPanel>
-                            <Button Style="{StaticResource NavButton}" Click="Inventario_Click">
+                        <StackPanel x:Name="panelNav">
+                            <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="inicio"
+                                         IsChecked="True" Click="Nav_Click">
                                 <StackPanel Orientation="Horizontal">
                                     <Path Style="{StaticResource NavIcon}"
-                                          Data="M3,7 L12,3 L21,7 L21,17 L12,21 L3,17 Z M3,7 L12,11 L21,7 M12,11 L12,21"/>
-                                    <TextBlock Text="Inventario" Margin="14,0,0,0" VerticalAlignment="Center"/>
+                                          Data="M3,9 L12,2 L21,9 V20 A2,2 0 0 1 19,22 H5 A2,2 0 0 1 3,20 Z M9,22 V12 H15 V22"/>
+                                    <TextBlock Text="Panel principal" Margin="14,0,0,0" VerticalAlignment="Center"/>
                                 </StackPanel>
-                            </Button>
-                            <Button Style="{StaticResource NavButton}" Click="Ordenes_Click">
+                            </RadioButton>
+                            <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="facturacion" Click="Nav_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Style="{StaticResource NavIcon}"
+                                          Data="M14,2 H6 A2,2 0 0 0 4,4 V20 A2,2 0 0 0 6,22 H18 A2,2 0 0 0 20,20 V8 Z M14,2 V8 H20 M16,13 H8 M16,17 H8 M10,9 H8"/>
+                                    <TextBlock Text="Facturación" Margin="14,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </RadioButton>
+                            <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="reportes" Click="Nav_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Style="{StaticResource NavIcon}"
+                                          Data="M18,20 V10 M12,20 V4 M6,20 V14"/>
+                                    <TextBlock Text="Reportes" Margin="14,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </RadioButton>
+                            <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="ordenes" Click="Nav_Click">
                                 <StackPanel Orientation="Horizontal">
                                     <Path Style="{StaticResource NavIcon}"
                                           Data="M9,4 H7 A2,2 0 0 0 5,6 V20 A2,2 0 0 0 7,22 H17 A2,2 0 0 0 19,20 V6 A2,2 0 0 0 17,4 H15 M9,2 H15 V6 H9 Z M9,12 H15 M9,16 H13"/>
                                     <TextBlock Text="Órdenes" Margin="14,0,0,0" VerticalAlignment="Center"/>
                                 </StackPanel>
-                            </Button>
-                            <Button Style="{StaticResource NavButton}" Click="Clientes_Click">
+                            </RadioButton>
+                            <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="vehiculos" Click="Nav_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Style="{StaticResource NavIcon}"
+                                          Data="M1,3 H16 V16 H1 Z M16,8 H20 L23,11 V16 H16 Z M3,18.5 A2.5,2.5 0 1 0 8,18.5 A2.5,2.5 0 1 0 3,18.5 M16,18.5 A2.5,2.5 0 1 0 21,18.5 A2.5,2.5 0 1 0 16,18.5"/>
+                                    <TextBlock Text="Vehículos" Margin="14,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </RadioButton>
+                            <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="clientes" Click="Nav_Click">
                                 <StackPanel Orientation="Horizontal">
                                     <Path Style="{StaticResource NavIcon}"
                                           Data="M5,7 A4,4 0 1 0 13,7 A4,4 0 1 0 5,7 M2,21 V19 A4,4 0 0 1 6,15 H12 A4,4 0 0 1 16,19 V21 M16,3.1 A4,4 0 0 1 16,10.9 M22,21 V19 A4,4 0 0 0 19,15.1"/>
                                     <TextBlock Text="Clientes" Margin="14,0,0,0" VerticalAlignment="Center"/>
                                 </StackPanel>
-                            </Button>
-                            <Button Style="{StaticResource NavButton}" Click="Empleados_Click">
+                            </RadioButton>
+                            <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="empleados" Click="Nav_Click">
                                 <StackPanel Orientation="Horizontal">
                                     <Path Style="{StaticResource NavIcon}"
                                           Data="M4,4 H20 A2,2 0 0 1 22,6 V18 A2,2 0 0 1 20,20 H4 A2,2 0 0 1 2,18 V6 A2,2 0 0 1 4,4 Z M7,9 A2,2 0 1 0 11,9 A2,2 0 1 0 7,9 M5,16 A4,4 0 0 1 13,16 M15,9 H19 M15,13 H19"/>
                                     <TextBlock Text="Empleados" Margin="14,0,0,0" VerticalAlignment="Center"/>
                                 </StackPanel>
-                            </Button>
+                            </RadioButton>
+                            <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="inventario" Click="Nav_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Style="{StaticResource NavIcon}"
+                                          Data="M3,7 L12,3 L21,7 L21,17 L12,21 L3,17 Z M3,7 L12,11 L21,7 M12,11 L12,21"/>
+                                    <TextBlock Text="Inventario" Margin="14,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </RadioButton>
+                            <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="usuarios" Click="Nav_Click">
+                                <StackPanel Orientation="Horizontal">
+                                    <Path Style="{StaticResource NavIcon}"
+                                          Data="M20,21 V19 A4,4 0 0 0 16,15 H8 A4,4 0 0 0 4,19 V21 M8,7 A4,4 0 1 0 16,7 A4,4 0 1 0 8,7"/>
+                                    <TextBlock Text="Usuarios" Margin="14,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </RadioButton>
                         </StackPanel>
                     </DockPanel>
                 </Border>
-
+                <Border Grid.Column="1" CornerRadius="0,14,14,0" Background="{StaticResource Surface}"/>
                 <Grid Grid.Column="1">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -231,78 +304,45 @@
 
                     <StackPanel Grid.Row="0" Margin="40,36,40,0">
                         <TextBlock x:Name="txtFecha" Foreground="{StaticResource SoftText}" FontSize="13"/>
-                        <TextBlock Text="Panel principal" Foreground="{StaticResource DarkText}"
+                        <TextBlock x:Name="txtTitulo" Text="Panel principal" Foreground="{StaticResource DarkText}"
                                    FontSize="30" FontWeight="Bold" Margin="0,4,0,0"/>
-                        <TextBlock Text="Selecciona un módulo para comenzar."
+                        <TextBlock x:Name="txtSubtitulo" Text="Selecciona un módulo para comenzar."
                                    Foreground="{StaticResource SoftText}" FontSize="14" Margin="0,4,0,0"/>
                     </StackPanel>
 
-                    <UniformGrid Grid.Row="1" Rows="2" Columns="2" Margin="32,18,32,28">
-
-                        <Button Style="{StaticResource CardButton}" Click="Inventario_Click">
-                            <StackPanel>
-                                <Border Width="52" Height="52" CornerRadius="14" HorizontalAlignment="Left"
-                                        Background="{StaticResource ButtonGradient}">
-                                    <Path Style="{StaticResource CardIcon}"
-                                          Data="M3,7 L12,3 L21,7 L21,17 L12,21 L3,17 Z M3,7 L12,11 L21,7 M12,11 L12,21"/>
-                                </Border>
-                                <TextBlock Text="Inventario" FontSize="19" FontWeight="Bold"
-                                           Foreground="{StaticResource DarkText}" Margin="0,16,0,4"/>
-                                <TextBlock Text="Controla productos, existencias y movimientos."
-                                           TextWrapping="Wrap" FontSize="13" Foreground="{StaticResource SoftText}"/>
-                                <TextBlock Text="Abrir  →" FontSize="13" FontWeight="SemiBold"
-                                           Foreground="{StaticResource Primary}" Margin="0,12,0,0"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button Style="{StaticResource CardButton}" Click="Ordenes_Click">
-                            <StackPanel>
-                                <Border Width="52" Height="52" CornerRadius="14" HorizontalAlignment="Left"
-                                        Background="{StaticResource ButtonGradient}">
-                                    <Path Style="{StaticResource CardIcon}"
-                                          Data="M9,4 H7 A2,2 0 0 0 5,6 V20 A2,2 0 0 0 7,22 H17 A2,2 0 0 0 19,20 V6 A2,2 0 0 0 17,4 H15 M9,2 H15 V6 H9 Z M9,12 H15 M9,16 H13"/>
-                                </Border>
-                                <TextBlock Text="Órdenes" FontSize="19" FontWeight="Bold"
-                                           Foreground="{StaticResource DarkText}" Margin="0,16,0,4"/>
-                                <TextBlock Text="Crea y da seguimiento a las órdenes de tus clientes."
-                                           TextWrapping="Wrap" FontSize="13" Foreground="{StaticResource SoftText}"/>
-                                <TextBlock Text="Abrir  →" FontSize="13" FontWeight="SemiBold"
-                                           Foreground="{StaticResource Primary}" Margin="0,12,0,0"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button Style="{StaticResource CardButton}" Click="Clientes_Click">
-                            <StackPanel>
-                                <Border Width="52" Height="52" CornerRadius="14" HorizontalAlignment="Left"
-                                        Background="{StaticResource ButtonGradient}">
-                                    <Path Style="{StaticResource CardIcon}"
-                                          Data="M5,7 A4,4 0 1 0 13,7 A4,4 0 1 0 5,7 M2,21 V19 A4,4 0 0 1 6,15 H12 A4,4 0 0 1 16,19 V21 M16,3.1 A4,4 0 0 1 16,10.9 M22,21 V19 A4,4 0 0 0 19,15.1"/>
-                                </Border>
-                                <TextBlock Text="Clientes" FontSize="19" FontWeight="Bold"
-                                           Foreground="{StaticResource DarkText}" Margin="0,16,0,4"/>
-                                <TextBlock Text="Administra tu cartera de clientes y sus datos."
-                                           TextWrapping="Wrap" FontSize="13" Foreground="{StaticResource SoftText}"/>
-                                <TextBlock Text="Abrir  →" FontSize="13" FontWeight="SemiBold"
-                                           Foreground="{StaticResource Primary}" Margin="0,12,0,0"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button Style="{StaticResource CardButton}" Click="Empleados_Click">
-                            <StackPanel>
-                                <Border Width="52" Height="52" CornerRadius="14" HorizontalAlignment="Left"
-                                        Background="{StaticResource ButtonGradient}">
-                                    <Path Style="{StaticResource CardIcon}"
-                                          Data="M4,4 H20 A2,2 0 0 1 22,6 V18 A2,2 0 0 1 20,20 H4 A2,2 0 0 1 2,18 V6 A2,2 0 0 1 4,4 Z M7,9 A2,2 0 1 0 11,9 A2,2 0 1 0 7,9 M5,16 A4,4 0 0 1 13,16 M15,9 H19 M15,13 H19"/>
-                                </Border>
-                                <TextBlock Text="Empleados" FontSize="19" FontWeight="Bold"
-                                           Foreground="{StaticResource DarkText}" Margin="0,16,0,4"/>
-                                <TextBlock Text="Gestiona el personal y sus accesos al sistema."
-                                           TextWrapping="Wrap" FontSize="13" Foreground="{StaticResource SoftText}"/>
-                                <TextBlock Text="Abrir  →" FontSize="13" FontWeight="SemiBold"
-                                           Foreground="{StaticResource Primary}" Margin="0,12,0,0"/>
-                            </StackPanel>
-                        </Button>
-                    </UniformGrid>
+                    <ScrollViewer Grid.Row="1" Margin="32,14,32,24" VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl x:Name="listaOpciones">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Style="{StaticResource CardButton}" Width="300" Height="104"
+                                            Tag="{Binding Destino}" Click="Opcion_Click">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Border Width="48" Height="48" CornerRadius="12" VerticalAlignment="Center"
+                                                    Background="{StaticResource ButtonGradient}">
+                                                <Path Style="{StaticResource CardIcon}" Data="{Binding Icono}"/>
+                                            </Border>
+                                            <StackPanel Grid.Column="1" Margin="14,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Titulo}" FontSize="16" FontWeight="Bold"
+                                                           Foreground="{StaticResource DarkText}" TextWrapping="Wrap"/>
+                                                <TextBlock Text="{Binding Descripcion}" FontSize="12.5" TextWrapping="Wrap"
+                                                           Foreground="{StaticResource SoftText}" Margin="0,2,0,0"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
 
                     <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right"
                                 VerticalAlignment="Top" Margin="0,10,10,0" Panel.ZIndex="1">

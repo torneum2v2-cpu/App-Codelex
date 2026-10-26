@@ -4,7 +4,7 @@ namespace Codelex.BDD
 {
     public class Conexion
     {
-        private static string cadenaConexion = "Data Source=localhost\\SQLEXPRESS;Initial Catalog=Codelex;Integrated Security=True;Encrypt=False";
+        private static string cadenaConexion = "Data Source=localhost;Initial Catalog=Codelex;Integrated Security=True;Encrypt=False";
 
         public static SqlConnection ObtenerConexion()
         {

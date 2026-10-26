@@ -32,7 +32,8 @@ CREATE TABLE EMPLEADOS
 	identidad VARCHAR(30) UNIQUE NOT NULL,
 	telefonoEmpleado Varchar(50),
 	correoEmpleado VARCHAR(50),
-	huella_id VARCHAR(50) UNIQUE NOT NULL
+	huella_id VARCHAR(50) UNIQUE NOT NULL,
+	estadoEmpleado BIT NOT NULL CONSTRAINT DF_EMPLEADOS_estadoEmpleado DEFAULT 1
 )
 GO
 
@@ -69,27 +70,27 @@ CREATE TABLE ASISTENCIAS
 )
 GO
 
+IF OBJECT_ID('CLIENTES') IS NULL
+CREATE TABLE CLIENTES
+(
+	identificacionCliente VARCHAR(30) NOT NULL CONSTRAINT PK_CLIENTES PRIMARY KEY,
+	nombreEmpresa VARCHAR(50),
+	nombreCliente VARCHAR(50),
+	apellidoCliente VARCHAR(50),
+	telefonoCliente VARCHAR(50),
+	correoCliente VARCHAR(50),
+	estadoCliente BIT NOT NULL CONSTRAINT DF_CLIENTES_estadoCliente DEFAULT 1
+)
+GO
+
 IF OBJECT_ID('LOCACIONES') IS NULL
 CREATE TABLE LOCACIONES
 (
 	locacion_id INT PRIMARY KEY IDENTITY,
 	nombreLocacion VARCHAR(60),
 	direccion VARCHAR(80),
-	tipoLocacion VARCHAR(25)
-)
-GO
-
-IF OBJECT_ID('CLIENTES') IS NULL
-CREATE TABLE CLIENTES
-(
-	cliente_id INT IDENTITY PRIMARY KEY,
-	locacion_id INT FOREIGN KEY REFERENCES LOCACIONES(locacion_id),
-	nombreEmpresa VARCHAR(50),
-	nombreCliente VARCHAR(50),
-	apellidoCliente VARCHAR(50),
-	telefonoCliente VARCHAR(50),
-	identificacionCliente VARCHAR(30) UNIQUE,
-	correoCliente VARCHAR(50)
+	tipoLocacion VARCHAR(25),
+	identificacionCliente VARCHAR(30) CONSTRAINT FK_LOCACIONES_CLIENTES REFERENCES CLIENTES(identificacionCliente)
 )
 GO
 
@@ -107,7 +108,8 @@ CREATE TABLE VEHICULOS
 	vehiculo_id INT PRIMARY KEY IDENTITY,
 	placa VARCHAR(15) UNIQUE,
 	marcaVehiculo varchar(20),
-	modeloVehiculo Varchar(25)
+	modeloVehiculo Varchar(25),
+	estadoVehiculo BIT NOT NULL CONSTRAINT DF_VEHICULOS_estadoVehiculo DEFAULT 1
 )
 GO
 
@@ -123,7 +125,7 @@ IF OBJECT_ID('ORDENES') IS NULL
 CREATE TABLE ORDENES
 (
 	orden_id VARCHAR(50) PRIMARY KEY NOT NULL,
-	cliente_id INT FOREIGN KEY REFERENCES CLIENTES(cliente_id),
+	identificacionCliente VARCHAR(30) CONSTRAINT FK_ORDENES_CLIENTES REFERENCES CLIENTES(identificacionCliente),
 	locacion_id INT FOREIGN KEY REFERENCES LOCACIONES(locacion_id),
 	servicio_id INT FOREIGN KEY REFERENCES SERVICIOS(servicio_id),
 	supervisor_id INT FOREIGN KEY REFERENCES EMPLEADOS(empleado_id),
@@ -131,7 +133,7 @@ CREATE TABLE ORDENES
 	fecha_solicitud DATE,
 	fecha_servicio DATE,
 	estado_orden_id INT FOREIGN KEY REFERENCES ESTADO_ORDENES(estado_orden_id),
-	observaciones VARCHAR(50),
+	observaciones VARCHAR(200),
 	conformidad_cliente BIT
 )
 GO
@@ -181,7 +183,8 @@ GO
 IF OBJECT_ID('COMPRAS_PRODUCTOS') IS NULL
 CREATE TABLE COMPRAS_PRODUCTOS
 (
-	compra_id INT PRIMARY KEY FOREIGN KEY REFERENCES COMPRAS(compra_id),
+	compra_producto_id INT IDENTITY CONSTRAINT PK_COMPRAS_PRODUCTOS PRIMARY KEY,
+	compra_id INT NOT NULL FOREIGN KEY REFERENCES COMPRAS(compra_id),
 	producto_id INT FOREIGN KEY REFERENCES PRODUCTOS(producto_id),
 	cantidad INT,
 	precio_unitario MONEY
@@ -211,39 +214,43 @@ GO
 IF OBJECT_ID('ORDEN_EMPLEADOS') IS NULL
 CREATE TABLE ORDEN_EMPLEADOS
 (
-	orden_id VARCHAR(50) PRIMARY KEY FOREIGN KEY REFERENCES ORDENES(orden_id),
-	empleado_id INT FOREIGN KEY REFERENCES EMPLEADOS(empleado_id),
+	orden_id VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES ORDENES(orden_id),
+	empleado_id INT NOT NULL FOREIGN KEY REFERENCES EMPLEADOS(empleado_id),
 	turno VARCHAR(20),
-	piso_area VARCHAR(20)
+	piso_area VARCHAR(20),
+	CONSTRAINT PK_ORDEN_EMPLEADOS PRIMARY KEY (orden_id, empleado_id)
 )
 GO
 
 IF OBJECT_ID('ORDEN_PRODUCTOS') IS NULL
 CREATE TABLE ORDEN_PRODUCTOS
 (
-	orden_id VARCHAR(50) PRIMARY KEY FOREIGN KEY REFERENCES ORDENES(orden_id),
-	producto_id INT FOREIGN KEY REFERENCES PRODUCTOS(producto_id),
-	cantidad INT
+	orden_id VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES ORDENES(orden_id),
+	producto_id INT NOT NULL FOREIGN KEY REFERENCES PRODUCTOS(producto_id),
+	cantidad INT,
+	CONSTRAINT PK_ORDEN_PRODUCTOS PRIMARY KEY (orden_id, producto_id)
 )
 GO
 
 IF OBJECT_ID('ORDEN_EQUIPOS') IS NULL
 CREATE TABLE ORDEN_EQUIPOS
 (
-	orden_id varchar(50) PRIMARY KEY FOREIGN KEY REFERENCES ORDENES(orden_id),
-	equipo_id INT FOREIGN KEY REFERENCES EQUIPOS(equipo_id),
+	orden_id VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES ORDENES(orden_id),
+	equipo_id INT NOT NULL FOREIGN KEY REFERENCES EQUIPOS(equipo_id),
 	fecha_asignacion DATE,
-	devuelto BIT
+	devuelto BIT,
+	CONSTRAINT PK_ORDEN_EQUIPOS PRIMARY KEY (orden_id, equipo_id)
 )
 GO
 
 IF OBJECT_ID('ORDEN_ACTIVIDADES') IS NULL
 CREATE TABLE ORDEN_ACTIVIDADES
 (
-	orden_id varchar(50) PRIMARY KEY FOREIGN KEY REFERENCES ORDENES(orden_id),
-	actividad_id INT FOREIGN KEY REFERENCES ACTIVIDADES(actividad_id),
+	orden_id VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES ORDENES(orden_id),
+	actividad_id INT NOT NULL FOREIGN KEY REFERENCES ACTIVIDADES(actividad_id),
 	estado BIT,
-	duracion_min INT
+	duracion_min INT,
+	CONSTRAINT PK_ORDEN_ACTIVIDADES PRIMARY KEY (orden_id, actividad_id)
 )
 GO
 
@@ -274,7 +281,8 @@ GO
 IF OBJECT_ID('COMPRAS_EQUIPOS') IS NULL
 CREATE TABLE COMPRAS_EQUIPOS
 (
-	compra_id INT PRIMARY KEY FOREIGN KEY REFERENCES COMPRAS(compra_id),
+	compra_equipo_id INT IDENTITY CONSTRAINT PK_COMPRAS_EQUIPOS PRIMARY KEY,
+	compra_id INT NOT NULL FOREIGN KEY REFERENCES COMPRAS(compra_id),
 	equipo_id INT FOREIGN KEY REFERENCES EQUIPOS(equipo_id),
 	precio_unitario MONEY
 )
@@ -310,6 +318,237 @@ CREATE TABLE CUOTAS
 		CHECK (estado_cuota IN ('Pendiente', 'Parcial', 'Pagada', 'Vencida')),
 	CONSTRAINT UQ_CUOTAS_cuenta_numero UNIQUE (cuenta_id, numero_cuota)
 )
+GO
+
+-- Tipos de tabla que usan los procedimientos
+
+IF TYPE_ID('dbo.tipo_lista_actividades') IS NULL
+	CREATE TYPE dbo.tipo_lista_actividades AS TABLE (actividad_id INT NOT NULL PRIMARY KEY);
+GO
+
+IF TYPE_ID('dbo.tipo_lista_empleados') IS NULL
+	CREATE TYPE dbo.tipo_lista_empleados AS TABLE (empleado_id INT NOT NULL PRIMARY KEY);
+GO
+
+IF TYPE_ID('dbo.tipo_lista_productos') IS NULL
+	CREATE TYPE dbo.tipo_lista_productos AS TABLE (producto_id INT NOT NULL PRIMARY KEY, cantidad INT NOT NULL);
+GO
+
+IF TYPE_ID('dbo.tipo_lista_equipos') IS NULL
+	CREATE TYPE dbo.tipo_lista_equipos AS TABLE (equipo_id INT NOT NULL PRIMARY KEY);
+GO
+
+IF TYPE_ID('dbo.tipo_ingreso_productos') IS NULL
+	CREATE TYPE dbo.tipo_ingreso_productos AS TABLE
+	(
+		producto_id INT,
+		cantidad INT,
+		precio_unitario MONEY
+	);
+GO
+
+IF TYPE_ID('dbo.tipo_ingreso_equipos') IS NULL
+	CREATE TYPE dbo.tipo_ingreso_equipos AS TABLE
+	(
+		nombreEquipo VARCHAR(50),
+		tipoEquipo VARCHAR(50),
+		marcaEquipo VARCHAR(50),
+		modeloEquipo VARCHAR(50),
+		cantidad INT,
+		precio_unitario MONEY
+	);
+GO
+
+-- Datos iniciales
+
+IF NOT EXISTS (SELECT 1 FROM CARGOS)
+	INSERT INTO CARGOS (nombreCargo) VALUES ('Administrador'), ('Operario'), ('Supervisor');
+GO
+
+INSERT INTO ESTADO_ORDENES (nombreEstadoOrden)
+SELECT v.nombre
+FROM (VALUES ('Pendiente'), ('En proceso'), ('Completada'), ('Cancelada')) v(nombre)
+WHERE NOT EXISTS (SELECT 1 FROM ESTADO_ORDENES e WHERE e.nombreEstadoOrden = v.nombre);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM ESTADO_EQUIPOS WHERE nombreEstadoEquipo = 'Disponible')
+	INSERT INTO ESTADO_EQUIPOS (nombreEstadoEquipo) VALUES ('Disponible');
+GO
+
+-- Actualización de bases creadas con versiones anteriores (si la base ya está al día, no cambia nada)
+
+IF COL_LENGTH('CLIENTES', 'estadoCliente') IS NULL
+	ALTER TABLE CLIENTES
+	ADD estadoCliente BIT NOT NULL
+		CONSTRAINT DF_CLIENTES_estadoCliente DEFAULT 1;
+GO
+
+IF COL_LENGTH('CLIENTES', 'cliente_id') IS NOT NULL
+BEGIN
+	IF EXISTS (SELECT 1 FROM CLIENTES
+			   WHERE identificacionCliente IS NULL OR LTRIM(RTRIM(identificacionCliente)) = '')
+	BEGIN
+		RAISERROR('Hay clientes sin RTN / identidad. Póngales uno antes de ejecutar este script.', 16, 1);
+		SET NOEXEC ON;
+	END
+END
+GO
+
+IF COL_LENGTH('CLIENTES', 'cliente_id') IS NOT NULL
+BEGIN
+	SET XACT_ABORT ON;
+	BEGIN TRY
+		BEGIN TRANSACTION;
+
+		-- Nuevas columnas
+		EXEC('ALTER TABLE LOCACIONES ADD identificacionCliente VARCHAR(30) NULL');
+		EXEC('ALTER TABLE ORDENES ADD identificacionCliente VARCHAR(30) NULL');
+
+		-- Pasar los datos que ya existen
+		EXEC('UPDATE l SET l.identificacionCliente = c.identificacionCliente
+			  FROM LOCACIONES l
+			  INNER JOIN CLIENTES c ON c.locacion_id = l.locacion_id');
+
+		EXEC('UPDATE o SET o.identificacionCliente = c.identificacionCliente
+			  FROM ORDENES o
+			  INNER JOIN CLIENTES c ON c.cliente_id = o.cliente_id');
+
+		-- Quitar las llaves viejas de CLIENTES y las que apuntan a CLIENTES
+		DECLARE @sql NVARCHAR(MAX) = N'';
+
+		SELECT @sql = @sql + N'ALTER TABLE ' + QUOTENAME(OBJECT_NAME(parent_object_id))
+					+ N' DROP CONSTRAINT ' + QUOTENAME(name) + N'; '
+		FROM sys.foreign_keys
+		WHERE referenced_object_id = OBJECT_ID('CLIENTES')
+		   OR parent_object_id = OBJECT_ID('CLIENTES');
+
+		SELECT @sql = @sql + N'ALTER TABLE CLIENTES DROP CONSTRAINT ' + QUOTENAME(name) + N'; '
+		FROM sys.key_constraints
+		WHERE parent_object_id = OBJECT_ID('CLIENTES');
+
+		EXEC sp_executesql @sql;
+
+		-- Borrar las columnas que ya no se usan
+		EXEC('ALTER TABLE ORDENES DROP COLUMN cliente_id');
+		EXEC('ALTER TABLE CLIENTES DROP COLUMN locacion_id');
+		EXEC('ALTER TABLE CLIENTES DROP COLUMN cliente_id');
+
+		-- Nueva llave primaria y llaves foráneas
+		EXEC('ALTER TABLE CLIENTES ALTER COLUMN identificacionCliente VARCHAR(30) NOT NULL');
+		EXEC('ALTER TABLE CLIENTES ADD CONSTRAINT PK_CLIENTES PRIMARY KEY (identificacionCliente)');
+		EXEC('ALTER TABLE LOCACIONES ADD CONSTRAINT FK_LOCACIONES_CLIENTES
+			  FOREIGN KEY (identificacionCliente) REFERENCES CLIENTES(identificacionCliente)');
+		EXEC('ALTER TABLE ORDENES ADD CONSTRAINT FK_ORDENES_CLIENTES
+			  FOREIGN KEY (identificacionCliente) REFERENCES CLIENTES(identificacionCliente)');
+
+		COMMIT TRANSACTION;
+	END TRY
+	BEGIN CATCH
+		IF @@TRANCOUNT > 0
+			ROLLBACK TRANSACTION;
+		THROW;
+	END CATCH
+END
+GO
+
+IF COL_LENGTH('EMPLEADOS', 'estadoEmpleado') IS NULL
+	ALTER TABLE EMPLEADOS
+	ADD estadoEmpleado BIT NOT NULL
+		CONSTRAINT DF_EMPLEADOS_estadoEmpleado DEFAULT 1;
+GO
+
+IF COL_LENGTH('VEHICULOS', 'estadoVehiculo') IS NULL
+	ALTER TABLE VEHICULOS
+	ADD estadoVehiculo BIT NOT NULL
+		CONSTRAINT DF_VEHICULOS_estadoVehiculo DEFAULT 1;
+GO
+
+IF COL_LENGTH('ORDENES', 'observaciones') < 200
+	ALTER TABLE ORDENES ALTER COLUMN observaciones VARCHAR(200) NULL;
+GO
+
+DECLARE @detalle TABLE (tabla SYSNAME, columna SYSNAME);
+INSERT INTO @detalle VALUES ('ORDEN_ACTIVIDADES', 'actividad_id'),
+							('ORDEN_EMPLEADOS', 'empleado_id'),
+							('ORDEN_PRODUCTOS', 'producto_id'),
+							('ORDEN_EQUIPOS', 'equipo_id');
+
+DECLARE @tabla SYSNAME, @columna SYSNAME, @pk SYSNAME, @sql NVARCHAR(MAX);
+
+DECLARE cursorDetalle CURSOR LOCAL FAST_FORWARD FOR
+	SELECT tabla, columna FROM @detalle;
+
+OPEN cursorDetalle;
+FETCH NEXT FROM cursorDetalle INTO @tabla, @columna;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+	SET @pk = NULL;
+
+	SELECT @pk = kc.name
+	FROM sys.key_constraints kc
+	WHERE kc.parent_object_id = OBJECT_ID(@tabla)
+	  AND kc.type = 'PK'
+	  AND (SELECT COUNT(1) FROM sys.index_columns ic
+		   WHERE ic.object_id = kc.parent_object_id
+			 AND ic.index_id = kc.unique_index_id) = 1;
+
+	IF @pk IS NOT NULL
+	BEGIN
+		SET @sql = 'ALTER TABLE ' + @tabla + ' DROP CONSTRAINT ' + QUOTENAME(@pk);
+		EXEC (@sql);
+
+		SET @sql = 'ALTER TABLE ' + @tabla + ' ALTER COLUMN ' + @columna + ' INT NOT NULL';
+		EXEC (@sql);
+
+		SET @sql = 'ALTER TABLE ' + @tabla + ' ADD CONSTRAINT ' + QUOTENAME('PK_' + @tabla)
+				 + ' PRIMARY KEY (orden_id, ' + @columna + ')';
+		EXEC (@sql);
+	END
+
+	FETCH NEXT FROM cursorDetalle INTO @tabla, @columna;
+END
+
+CLOSE cursorDetalle;
+DEALLOCATE cursorDetalle;
+GO
+
+IF COL_LENGTH('ORDEN_ACTIVIDADES', 'orden_actividad_id') IS NOT NULL
+	ALTER TABLE ORDEN_ACTIVIDADES DROP COLUMN orden_actividad_id;
+IF COL_LENGTH('ORDEN_EMPLEADOS', 'orden_empleado_id') IS NOT NULL
+	ALTER TABLE ORDEN_EMPLEADOS DROP COLUMN orden_empleado_id;
+IF COL_LENGTH('ORDEN_PRODUCTOS', 'orden_producto_id') IS NOT NULL
+	ALTER TABLE ORDEN_PRODUCTOS DROP COLUMN orden_producto_id;
+IF COL_LENGTH('ORDEN_EQUIPOS', 'orden_equipo_id') IS NOT NULL
+	ALTER TABLE ORDEN_EQUIPOS DROP COLUMN orden_equipo_id;
+GO
+
+IF EXISTS (SELECT 1 FROM sys.key_constraints k
+		   INNER JOIN sys.index_columns ic ON ic.object_id = k.parent_object_id AND ic.index_id = k.unique_index_id
+		   INNER JOIN sys.columns c ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+		   WHERE k.parent_object_id = OBJECT_ID('COMPRAS_PRODUCTOS') AND k.type = 'PK' AND c.name = 'compra_id')
+   AND COL_LENGTH('COMPRAS_PRODUCTOS', 'compra_producto_id') IS NULL
+BEGIN
+	DECLARE @pkProductos SYSNAME = (SELECT name FROM sys.key_constraints
+									WHERE parent_object_id = OBJECT_ID('COMPRAS_PRODUCTOS') AND type = 'PK');
+	EXEC('ALTER TABLE COMPRAS_PRODUCTOS DROP CONSTRAINT ' + @pkProductos);
+	EXEC('ALTER TABLE COMPRAS_PRODUCTOS ADD compra_producto_id INT IDENTITY(1,1)
+		  CONSTRAINT PK_COMPRAS_PRODUCTOS PRIMARY KEY');
+END
+GO
+
+IF EXISTS (SELECT 1 FROM sys.key_constraints k
+		   INNER JOIN sys.index_columns ic ON ic.object_id = k.parent_object_id AND ic.index_id = k.unique_index_id
+		   INNER JOIN sys.columns c ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+		   WHERE k.parent_object_id = OBJECT_ID('COMPRAS_EQUIPOS') AND k.type = 'PK' AND c.name = 'compra_id')
+   AND COL_LENGTH('COMPRAS_EQUIPOS', 'compra_equipo_id') IS NULL
+BEGIN
+	DECLARE @pkEquipos SYSNAME = (SELECT name FROM sys.key_constraints
+								  WHERE parent_object_id = OBJECT_ID('COMPRAS_EQUIPOS') AND type = 'PK');
+	EXEC('ALTER TABLE COMPRAS_EQUIPOS DROP CONSTRAINT ' + @pkEquipos);
+	EXEC('ALTER TABLE COMPRAS_EQUIPOS ADD compra_equipo_id INT IDENTITY(1,1)
+		  CONSTRAINT PK_COMPRAS_EQUIPOS PRIMARY KEY');
+END
 GO
 
 -- Login y recuperación de contraseña
@@ -425,14 +664,6 @@ BEGIN
 END
 GO
 
--- 1. Estado del cliente (1 = Activo, 0 = Inactivo)
-IF COL_LENGTH('CLIENTES', 'estadoCliente') IS NULL
-	ALTER TABLE CLIENTES
-	ADD estadoCliente BIT NOT NULL
-		CONSTRAINT DF_CLIENTES_estadoCliente DEFAULT 1;
-GO
-
--- 2. Correo del empleado (pantalla Ingresar correo)
 CREATE OR ALTER PROCEDURE sp_ExisteCorreoEmpleado
 	@correo VARCHAR(50)
 AS
@@ -445,76 +676,7 @@ BEGIN
 END
 GO
 
--- 3. Cambios de tablas de CLIENTES, LOCACIONES y ORDENES (solo si CLIENTES todavía tiene cliente_id)
-IF COL_LENGTH('CLIENTES', 'cliente_id') IS NOT NULL
-BEGIN
-	IF EXISTS (SELECT 1 FROM CLIENTES
-			   WHERE identificacionCliente IS NULL OR LTRIM(RTRIM(identificacionCliente)) = '')
-	BEGIN
-		RAISERROR('Hay clientes sin RTN / identidad. Póngales uno antes de ejecutar este script.', 16, 1);
-		SET NOEXEC ON;
-	END
-END
-GO
-
-IF COL_LENGTH('CLIENTES', 'cliente_id') IS NOT NULL
-BEGIN
-	SET XACT_ABORT ON;
-	BEGIN TRY
-		BEGIN TRANSACTION;
-
-		-- Nuevas columnas
-		EXEC('ALTER TABLE LOCACIONES ADD identificacionCliente VARCHAR(30) NULL');
-		EXEC('ALTER TABLE ORDENES ADD identificacionCliente VARCHAR(30) NULL');
-
-		-- Pasar los datos que ya existen
-		EXEC('UPDATE l SET l.identificacionCliente = c.identificacionCliente
-			  FROM LOCACIONES l
-			  INNER JOIN CLIENTES c ON c.locacion_id = l.locacion_id');
-
-		EXEC('UPDATE o SET o.identificacionCliente = c.identificacionCliente
-			  FROM ORDENES o
-			  INNER JOIN CLIENTES c ON c.cliente_id = o.cliente_id');
-
-		-- Quitar las llaves viejas de CLIENTES y las que apuntan a CLIENTES
-		DECLARE @sql NVARCHAR(MAX) = N'';
-
-		SELECT @sql = @sql + N'ALTER TABLE ' + QUOTENAME(OBJECT_NAME(parent_object_id))
-					+ N' DROP CONSTRAINT ' + QUOTENAME(name) + N'; '
-		FROM sys.foreign_keys
-		WHERE referenced_object_id = OBJECT_ID('CLIENTES')
-		   OR parent_object_id = OBJECT_ID('CLIENTES');
-
-		SELECT @sql = @sql + N'ALTER TABLE CLIENTES DROP CONSTRAINT ' + QUOTENAME(name) + N'; '
-		FROM sys.key_constraints
-		WHERE parent_object_id = OBJECT_ID('CLIENTES');
-
-		EXEC sp_executesql @sql;
-
-		-- Borrar las columnas que ya no se usan
-		EXEC('ALTER TABLE ORDENES DROP COLUMN cliente_id');
-		EXEC('ALTER TABLE CLIENTES DROP COLUMN locacion_id');
-		EXEC('ALTER TABLE CLIENTES DROP COLUMN cliente_id');
-
-		-- Nueva llave primaria y llaves foráneas
-		EXEC('ALTER TABLE CLIENTES ALTER COLUMN identificacionCliente VARCHAR(30) NOT NULL');
-		EXEC('ALTER TABLE CLIENTES ADD CONSTRAINT PK_CLIENTES PRIMARY KEY (identificacionCliente)');
-		EXEC('ALTER TABLE LOCACIONES ADD CONSTRAINT FK_LOCACIONES_CLIENTES
-			  FOREIGN KEY (identificacionCliente) REFERENCES CLIENTES(identificacionCliente)');
-		EXEC('ALTER TABLE ORDENES ADD CONSTRAINT FK_ORDENES_CLIENTES
-			  FOREIGN KEY (identificacionCliente) REFERENCES CLIENTES(identificacionCliente)');
-
-		COMMIT TRANSACTION;
-	END TRY
-	BEGIN CATCH
-		IF @@TRANCOUNT > 0
-			ROLLBACK TRANSACTION;
-		THROW;
-	END CATCH
-END
-GO
-
--- 4. Procedimientos de clientes
+-- Clientes
 
 CREATE OR ALTER PROCEDURE sp_InsertarCliente
 	@identificacionCliente VARCHAR(30),
@@ -702,7 +864,7 @@ BEGIN
 END
 GO
 
--- 5. Procedimientos de locaciones (ahora cada locación es de un cliente)
+-- Locaciones
 
 CREATE OR ALTER PROCEDURE sp_ListarLocacionesPorCliente
 	@identificacionCliente VARCHAR(30)
@@ -804,17 +966,7 @@ BEGIN
 END
 GO
 
--- 6. Empleados: estado, cargos y procedimientos del módulo
-
-IF COL_LENGTH('EMPLEADOS', 'estadoEmpleado') IS NULL
-	ALTER TABLE EMPLEADOS
-	ADD estadoEmpleado BIT NOT NULL
-		CONSTRAINT DF_EMPLEADOS_estadoEmpleado DEFAULT 1;
-GO
-
-IF NOT EXISTS (SELECT 1 FROM CARGOS)
-	INSERT INTO CARGOS (nombreCargo) VALUES ('Administrador'), ('Operario'), ('Supervisor');
-GO
+-- Empleados
 
 CREATE OR ALTER PROCEDURE sp_ListarCargos
 AS
@@ -1052,94 +1204,7 @@ BEGIN
 END
 GO
 
--- 7. Vehículos: estado del vehículo (1 = Activo, 0 = Inactivo)
-
-IF COL_LENGTH('VEHICULOS', 'estadoVehiculo') IS NULL
-	ALTER TABLE VEHICULOS
-	ADD estadoVehiculo BIT NOT NULL
-		CONSTRAINT DF_VEHICULOS_estadoVehiculo DEFAULT 1;
-GO
-
--- 8. Órdenes: estados, llaves de las tablas de detalle y procedimientos
-
-INSERT INTO ESTADO_ORDENES (nombreEstadoOrden)
-SELECT v.nombre
-FROM (VALUES ('Pendiente'), ('En proceso'), ('Completada'), ('Cancelada')) v(nombre)
-WHERE NOT EXISTS (SELECT 1 FROM ESTADO_ORDENES e WHERE e.nombreEstadoOrden = v.nombre);
-GO
-
-IF COL_LENGTH('ORDENES', 'observaciones') < 200
-	ALTER TABLE ORDENES ALTER COLUMN observaciones VARCHAR(200) NULL;
-GO
-
-DECLARE @detalle TABLE (tabla SYSNAME, columna SYSNAME);
-INSERT INTO @detalle VALUES ('ORDEN_ACTIVIDADES', 'actividad_id'),
-							('ORDEN_EMPLEADOS', 'empleado_id'),
-							('ORDEN_PRODUCTOS', 'producto_id'),
-							('ORDEN_EQUIPOS', 'equipo_id');
-
-DECLARE @tabla SYSNAME, @columna SYSNAME, @pk SYSNAME, @sql NVARCHAR(MAX);
-
-DECLARE cursorDetalle CURSOR LOCAL FAST_FORWARD FOR
-	SELECT tabla, columna FROM @detalle;
-
-OPEN cursorDetalle;
-FETCH NEXT FROM cursorDetalle INTO @tabla, @columna;
-
-WHILE @@FETCH_STATUS = 0
-BEGIN
-	SET @pk = NULL;
-
-	SELECT @pk = kc.name
-	FROM sys.key_constraints kc
-	WHERE kc.parent_object_id = OBJECT_ID(@tabla)
-	  AND kc.type = 'PK'
-	  AND (SELECT COUNT(1) FROM sys.index_columns ic
-		   WHERE ic.object_id = kc.parent_object_id
-			 AND ic.index_id = kc.unique_index_id) = 1;
-
-	IF @pk IS NOT NULL
-	BEGIN
-		SET @sql = 'ALTER TABLE ' + @tabla + ' DROP CONSTRAINT ' + QUOTENAME(@pk);
-		EXEC (@sql);
-
-		SET @sql = 'ALTER TABLE ' + @tabla + ' ALTER COLUMN ' + @columna + ' INT NOT NULL';
-		EXEC (@sql);
-
-		SET @sql = 'ALTER TABLE ' + @tabla + ' ADD CONSTRAINT ' + QUOTENAME('PK_' + @tabla)
-				 + ' PRIMARY KEY (orden_id, ' + @columna + ')';
-		EXEC (@sql);
-	END
-
-	FETCH NEXT FROM cursorDetalle INTO @tabla, @columna;
-END
-
-CLOSE cursorDetalle;
-DEALLOCATE cursorDetalle;
-GO
-
-IF COL_LENGTH('ORDEN_ACTIVIDADES', 'orden_actividad_id') IS NOT NULL
-	ALTER TABLE ORDEN_ACTIVIDADES DROP COLUMN orden_actividad_id;
-IF COL_LENGTH('ORDEN_EMPLEADOS', 'orden_empleado_id') IS NOT NULL
-	ALTER TABLE ORDEN_EMPLEADOS DROP COLUMN orden_empleado_id;
-IF COL_LENGTH('ORDEN_PRODUCTOS', 'orden_producto_id') IS NOT NULL
-	ALTER TABLE ORDEN_PRODUCTOS DROP COLUMN orden_producto_id;
-IF COL_LENGTH('ORDEN_EQUIPOS', 'orden_equipo_id') IS NOT NULL
-	ALTER TABLE ORDEN_EQUIPOS DROP COLUMN orden_equipo_id;
-GO
-
-IF TYPE_ID('dbo.tipo_lista_actividades') IS NULL
-	CREATE TYPE dbo.tipo_lista_actividades AS TABLE (actividad_id INT NOT NULL PRIMARY KEY);
-GO
-IF TYPE_ID('dbo.tipo_lista_empleados') IS NULL
-	CREATE TYPE dbo.tipo_lista_empleados AS TABLE (empleado_id INT NOT NULL PRIMARY KEY);
-GO
-IF TYPE_ID('dbo.tipo_lista_productos') IS NULL
-	CREATE TYPE dbo.tipo_lista_productos AS TABLE (producto_id INT NOT NULL PRIMARY KEY, cantidad INT NOT NULL);
-GO
-IF TYPE_ID('dbo.tipo_lista_equipos') IS NULL
-	CREATE TYPE dbo.tipo_lista_equipos AS TABLE (equipo_id INT NOT NULL PRIMARY KEY);
-GO
+-- Órdenes
 
 CREATE OR ALTER PROCEDURE sp_ListarEstadosOrden
 AS
@@ -1327,60 +1392,7 @@ BEGIN
 END
 GO
 
--- 9. Inventario: compras de productos y equipos, existencias y valor
-
-IF EXISTS (SELECT 1 FROM sys.key_constraints k
-		   INNER JOIN sys.index_columns ic ON ic.object_id = k.parent_object_id AND ic.index_id = k.unique_index_id
-		   INNER JOIN sys.columns c ON c.object_id = ic.object_id AND c.column_id = ic.column_id
-		   WHERE k.parent_object_id = OBJECT_ID('COMPRAS_PRODUCTOS') AND k.type = 'PK' AND c.name = 'compra_id')
-   AND COL_LENGTH('COMPRAS_PRODUCTOS', 'compra_producto_id') IS NULL
-BEGIN
-	DECLARE @pkProductos SYSNAME = (SELECT name FROM sys.key_constraints
-									WHERE parent_object_id = OBJECT_ID('COMPRAS_PRODUCTOS') AND type = 'PK');
-	EXEC('ALTER TABLE COMPRAS_PRODUCTOS DROP CONSTRAINT ' + @pkProductos);
-	EXEC('ALTER TABLE COMPRAS_PRODUCTOS ADD compra_producto_id INT IDENTITY(1,1)
-		  CONSTRAINT PK_COMPRAS_PRODUCTOS PRIMARY KEY');
-END
-GO
-
-IF EXISTS (SELECT 1 FROM sys.key_constraints k
-		   INNER JOIN sys.index_columns ic ON ic.object_id = k.parent_object_id AND ic.index_id = k.unique_index_id
-		   INNER JOIN sys.columns c ON c.object_id = ic.object_id AND c.column_id = ic.column_id
-		   WHERE k.parent_object_id = OBJECT_ID('COMPRAS_EQUIPOS') AND k.type = 'PK' AND c.name = 'compra_id')
-   AND COL_LENGTH('COMPRAS_EQUIPOS', 'compra_equipo_id') IS NULL
-BEGIN
-	DECLARE @pkEquipos SYSNAME = (SELECT name FROM sys.key_constraints
-								  WHERE parent_object_id = OBJECT_ID('COMPRAS_EQUIPOS') AND type = 'PK');
-	EXEC('ALTER TABLE COMPRAS_EQUIPOS DROP CONSTRAINT ' + @pkEquipos);
-	EXEC('ALTER TABLE COMPRAS_EQUIPOS ADD compra_equipo_id INT IDENTITY(1,1)
-		  CONSTRAINT PK_COMPRAS_EQUIPOS PRIMARY KEY');
-END
-GO
-
-IF NOT EXISTS (SELECT 1 FROM ESTADO_EQUIPOS WHERE nombreEstadoEquipo = 'Disponible')
-	INSERT INTO ESTADO_EQUIPOS (nombreEstadoEquipo) VALUES ('Disponible');
-GO
-
-IF TYPE_ID('dbo.tipo_ingreso_productos') IS NULL
-	CREATE TYPE dbo.tipo_ingreso_productos AS TABLE
-	(
-		producto_id INT,
-		cantidad INT,
-		precio_unitario MONEY
-	);
-GO
-
-IF TYPE_ID('dbo.tipo_ingreso_equipos') IS NULL
-	CREATE TYPE dbo.tipo_ingreso_equipos AS TABLE
-	(
-		nombreEquipo VARCHAR(50),
-		tipoEquipo VARCHAR(50),
-		marcaEquipo VARCHAR(50),
-		modeloEquipo VARCHAR(50),
-		cantidad INT,
-		precio_unitario MONEY
-	);
-GO
+-- Inventario
 
 CREATE OR ALTER PROCEDURE sp_BuscarInventario
 	@texto VARCHAR(50) = NULL,

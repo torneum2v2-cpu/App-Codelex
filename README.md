@@ -18,7 +18,13 @@ Sistema de escritorio de Codelex (WPF, .NET 10 y SQL Server).
 
 ## Base de datos
 
-Ejecutar `BaseDeDatos/Codelex_base_completa.sql` en SQL Server. Sirve para crear la base desde cero y también para actualizar una base que ya existe: se puede ejecutar varias veces sin duplicar nada.
+| Archivo | Contenido | Cuándo usarlo |
+|---|---|---|
+| `BaseDeDatos/Codelex_tablas.sql` | Creación de la base, las tablas, los tipos de tabla y los datos iniciales | Para crear la base desde cero |
+| `BaseDeDatos/Codelex_procedimientos.sql` | Solo los procedimientos almacenados | Después de `Codelex_tablas.sql`, o cada vez que cambie un procedimiento |
+| `BaseDeDatos/Codelex_base_completa.sql` | Todo junto: tablas, cambios para bases de versiones anteriores y procedimientos | Para crear la base o para poner al día una base que ya existe |
+
+Los tres se pueden ejecutar varias veces sin errores y sin duplicar datos. Cada cambio en la base se agrega en los tres archivos.
 
 ## Ejecutar
 

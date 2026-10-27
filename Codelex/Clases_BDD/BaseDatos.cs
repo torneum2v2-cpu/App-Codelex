@@ -6,7 +6,8 @@ namespace Codelex.Clases_BDD
 {
     class BaseDatos
     {
-
+        //hola
+        //hola
         protected SqlCommand Procedimiento(string nombre)
         {
             SqlCommand comando = new SqlCommand(nombre);

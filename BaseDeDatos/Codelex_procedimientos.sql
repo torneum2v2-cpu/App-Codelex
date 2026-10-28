@@ -725,6 +725,151 @@ BEGIN
 END
 GO
 
+-- Vehículos
+
+CREATE OR ALTER PROCEDURE sp_InsertarVehiculo
+	@placa VARCHAR(15),
+	@marcaVehiculo VARCHAR(20),
+	@modeloVehiculo VARCHAR(25),
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	SET @placa = UPPER(LTRIM(RTRIM(ISNULL(@placa, ''))));
+
+	IF @placa = ''
+	BEGIN
+		SET @mensaje = 'La placa es obligatoria.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM VEHICULOS WHERE placa = @placa)
+	BEGIN
+		SET @mensaje = 'Ya existe un vehiculo con esa placa.';
+		RETURN;
+	END
+
+	INSERT INTO VEHICULOS (placa, marcaVehiculo, modeloVehiculo)
+	VALUES (@placa, @marcaVehiculo, @modeloVehiculo);
+
+	SET @resultado = 1;
+	SET @mensaje = 'Vehiculo registrado correctamente.';
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ActualizarVehiculo
+	@vehiculo_id INT,
+	@placa VARCHAR(15),
+	@marcaVehiculo VARCHAR(20),
+	@modeloVehiculo VARCHAR(25),
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	SET @placa = UPPER(LTRIM(RTRIM(ISNULL(@placa, ''))));
+
+	IF NOT EXISTS (SELECT 1 FROM VEHICULOS WHERE vehiculo_id = @vehiculo_id)
+	BEGIN
+		SET @mensaje = 'El vehiculo no existe.';
+		RETURN;
+	END
+
+	IF @placa = ''
+	BEGIN
+		SET @mensaje = 'La placa es obligatoria.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM VEHICULOS WHERE placa = @placa AND vehiculo_id <> @vehiculo_id)
+	BEGIN
+		SET @mensaje = 'Ya existe otro vehiculo con esa placa.';
+		RETURN;
+	END
+
+	UPDATE VEHICULOS
+	SET placa = @placa,
+		marcaVehiculo = @marcaVehiculo,
+		modeloVehiculo = @modeloVehiculo
+	WHERE vehiculo_id = @vehiculo_id;
+
+	SET @resultado = 1;
+	SET @mensaje = 'Vehiculo actualizado correctamente.';
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_CambiarEstadoVehiculo
+	@vehiculo_id INT,
+	@estadoVehiculo BIT,
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	IF NOT EXISTS (SELECT 1 FROM VEHICULOS WHERE vehiculo_id = @vehiculo_id)
+	BEGIN
+		SET @mensaje = 'El vehiculo no existe.';
+		RETURN;
+	END
+
+	UPDATE VEHICULOS
+	SET estadoVehiculo = @estadoVehiculo
+	WHERE vehiculo_id = @vehiculo_id;
+
+	SET @resultado = 1;
+	SET @mensaje = CASE WHEN @estadoVehiculo = 1
+						THEN 'Vehiculo activado correctamente.'
+						ELSE 'Vehiculo desactivado correctamente.' END;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_BuscarVehiculos
+	@texto VARCHAR(50) = NULL,
+	@estado BIT = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
+
+	SELECT v.vehiculo_id, v.placa, v.marcaVehiculo, v.modeloVehiculo, v.estadoVehiculo,
+		   CASE WHEN v.estadoVehiculo = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
+	FROM VEHICULOS v
+	WHERE (@estado IS NULL OR v.estadoVehiculo = @estado)
+	  AND (@texto = ''
+		   OR v.placa LIKE '%' + @texto + '%'
+		   OR v.marcaVehiculo LIKE '%' + @texto + '%'
+		   OR v.modeloVehiculo LIKE '%' + @texto + '%')
+	ORDER BY v.placa;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ObtenerVehiculo
+	@vehiculo_id INT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT v.vehiculo_id, v.placa, v.marcaVehiculo, v.modeloVehiculo, v.estadoVehiculo,
+		   CASE WHEN v.estadoVehiculo = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
+	FROM VEHICULOS v
+	WHERE v.vehiculo_id = @vehiculo_id;
+END
+GO
+
 -- Órdenes
 
 CREATE OR ALTER PROCEDURE sp_ListarEstadosOrden

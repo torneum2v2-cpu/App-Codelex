@@ -37,6 +37,14 @@ CREATE TABLE EMPLEADOS
 )
 GO
 
+IF OBJECT_ID('ROLES') IS NULL
+CREATE TABLE ROLES
+(
+	rol_id INT PRIMARY KEY IDENTITY,
+	nombreRol VARCHAR(50) UNIQUE NOT NULL
+)
+GO
+
 IF OBJECT_ID('USUARIOS') IS NULL
 CREATE TABLE USUARIOS
 (
@@ -45,7 +53,9 @@ CREATE TABLE USUARIOS
 	usuario VARCHAR(50) UNIQUE NOT NULL,
 	contrasena_hash VARCHAR(255),
 	passkey_id VARBINARY(1023) NULL,
-	passkey_clave VARBINARY(1024) NULL
+	passkey_clave VARBINARY(1024) NULL,
+	rol_id INT NULL CONSTRAINT FK_USUARIOS_ROLES REFERENCES ROLES(rol_id),
+	estadoUsuario BIT NOT NULL CONSTRAINT DF_USUARIOS_estadoUsuario DEFAULT 1
 )
 GO
 
@@ -363,6 +373,12 @@ GO
 
 -- Datos iniciales
 
+INSERT INTO ROLES (nombreRol)
+SELECT v.nombre
+FROM (VALUES ('Usuario Básico'), ('Usuario Medio'), ('Usuario Avanzado')) v(nombre)
+WHERE NOT EXISTS (SELECT 1 FROM ROLES r WHERE r.nombreRol = v.nombre);
+GO
+
 IF NOT EXISTS (SELECT 1 FROM CARGOS)
 	INSERT INTO CARGOS (nombreCargo) VALUES ('Administrador'), ('Operario'), ('Supervisor');
 GO
@@ -559,6 +575,18 @@ GO
 
 IF COL_LENGTH('USUARIOS', 'passkey_clave') IS NULL
 	ALTER TABLE USUARIOS ADD passkey_clave VARBINARY(1024) NULL;
+GO
+
+IF COL_LENGTH('USUARIOS', 'rol_id') IS NULL
+	ALTER TABLE USUARIOS
+	ADD rol_id INT NULL
+		CONSTRAINT FK_USUARIOS_ROLES REFERENCES ROLES(rol_id);
+GO
+
+IF COL_LENGTH('USUARIOS', 'estadoUsuario') IS NULL
+	ALTER TABLE USUARIOS
+	ADD estadoUsuario BIT NOT NULL
+		CONSTRAINT DF_USUARIOS_estadoUsuario DEFAULT 1;
 GO
 
 -- Login y recuperación de contraseña
@@ -1275,6 +1303,151 @@ BEGIN
 	WHERE oe.empleado_id = @empleado_id
 	  AND o.fecha_servicio BETWEEN @desde AND @hasta
 	ORDER BY o.fecha_servicio, o.orden_id;
+END
+GO
+
+-- Vehículos
+
+CREATE OR ALTER PROCEDURE sp_InsertarVehiculo
+	@placa VARCHAR(15),
+	@marcaVehiculo VARCHAR(20),
+	@modeloVehiculo VARCHAR(25),
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	SET @placa = UPPER(LTRIM(RTRIM(ISNULL(@placa, ''))));
+
+	IF @placa = ''
+	BEGIN
+		SET @mensaje = 'La placa es obligatoria.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM VEHICULOS WHERE placa = @placa)
+	BEGIN
+		SET @mensaje = 'Ya existe un vehiculo con esa placa.';
+		RETURN;
+	END
+
+	INSERT INTO VEHICULOS (placa, marcaVehiculo, modeloVehiculo)
+	VALUES (@placa, @marcaVehiculo, @modeloVehiculo);
+
+	SET @resultado = 1;
+	SET @mensaje = 'Vehiculo registrado correctamente.';
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ActualizarVehiculo
+	@vehiculo_id INT,
+	@placa VARCHAR(15),
+	@marcaVehiculo VARCHAR(20),
+	@modeloVehiculo VARCHAR(25),
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	SET @placa = UPPER(LTRIM(RTRIM(ISNULL(@placa, ''))));
+
+	IF NOT EXISTS (SELECT 1 FROM VEHICULOS WHERE vehiculo_id = @vehiculo_id)
+	BEGIN
+		SET @mensaje = 'El vehiculo no existe.';
+		RETURN;
+	END
+
+	IF @placa = ''
+	BEGIN
+		SET @mensaje = 'La placa es obligatoria.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM VEHICULOS WHERE placa = @placa AND vehiculo_id <> @vehiculo_id)
+	BEGIN
+		SET @mensaje = 'Ya existe otro vehiculo con esa placa.';
+		RETURN;
+	END
+
+	UPDATE VEHICULOS
+	SET placa = @placa,
+		marcaVehiculo = @marcaVehiculo,
+		modeloVehiculo = @modeloVehiculo
+	WHERE vehiculo_id = @vehiculo_id;
+
+	SET @resultado = 1;
+	SET @mensaje = 'Vehiculo actualizado correctamente.';
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_CambiarEstadoVehiculo
+	@vehiculo_id INT,
+	@estadoVehiculo BIT,
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	IF NOT EXISTS (SELECT 1 FROM VEHICULOS WHERE vehiculo_id = @vehiculo_id)
+	BEGIN
+		SET @mensaje = 'El vehiculo no existe.';
+		RETURN;
+	END
+
+	UPDATE VEHICULOS
+	SET estadoVehiculo = @estadoVehiculo
+	WHERE vehiculo_id = @vehiculo_id;
+
+	SET @resultado = 1;
+	SET @mensaje = CASE WHEN @estadoVehiculo = 1
+						THEN 'Vehiculo activado correctamente.'
+						ELSE 'Vehiculo desactivado correctamente.' END;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_BuscarVehiculos
+	@texto VARCHAR(50) = NULL,
+	@estado BIT = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
+
+	SELECT v.vehiculo_id, v.placa, v.marcaVehiculo, v.modeloVehiculo, v.estadoVehiculo,
+		   CASE WHEN v.estadoVehiculo = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
+	FROM VEHICULOS v
+	WHERE (@estado IS NULL OR v.estadoVehiculo = @estado)
+	  AND (@texto = ''
+		   OR v.placa LIKE '%' + @texto + '%'
+		   OR v.marcaVehiculo LIKE '%' + @texto + '%'
+		   OR v.modeloVehiculo LIKE '%' + @texto + '%')
+	ORDER BY v.placa;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ObtenerVehiculo
+	@vehiculo_id INT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT v.vehiculo_id, v.placa, v.marcaVehiculo, v.modeloVehiculo, v.estadoVehiculo,
+		   CASE WHEN v.estadoVehiculo = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
+	FROM VEHICULOS v
+	WHERE v.vehiculo_id = @vehiculo_id;
 END
 GO
 

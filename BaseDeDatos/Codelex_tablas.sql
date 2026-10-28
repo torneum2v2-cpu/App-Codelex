@@ -37,6 +37,14 @@ CREATE TABLE EMPLEADOS
 )
 GO
 
+IF OBJECT_ID('ROLES') IS NULL
+CREATE TABLE ROLES
+(
+	rol_id INT PRIMARY KEY IDENTITY,
+	nombreRol VARCHAR(50) UNIQUE NOT NULL
+)
+GO
+
 IF OBJECT_ID('USUARIOS') IS NULL
 CREATE TABLE USUARIOS
 (
@@ -45,7 +53,9 @@ CREATE TABLE USUARIOS
 	usuario VARCHAR(50) UNIQUE NOT NULL,
 	contrasena_hash VARCHAR(255),
 	passkey_id VARBINARY(1023) NULL,
-	passkey_clave VARBINARY(1024) NULL
+	passkey_clave VARBINARY(1024) NULL,
+	rol_id INT NULL CONSTRAINT FK_USUARIOS_ROLES REFERENCES ROLES(rol_id),
+	estadoUsuario BIT NOT NULL CONSTRAINT DF_USUARIOS_estadoUsuario DEFAULT 1
 )
 GO
 
@@ -362,6 +372,12 @@ IF TYPE_ID('dbo.tipo_ingreso_equipos') IS NULL
 GO
 
 -- Datos iniciales
+
+INSERT INTO ROLES (nombreRol)
+SELECT v.nombre
+FROM (VALUES ('Usuario Básico'), ('Usuario Medio'), ('Usuario Avanzado')) v(nombre)
+WHERE NOT EXISTS (SELECT 1 FROM ROLES r WHERE r.nombreRol = v.nombre);
+GO
 
 IF NOT EXISTS (SELECT 1 FROM CARGOS)
 	INSERT INTO CARGOS (nombreCargo) VALUES ('Administrador'), ('Operario'), ('Supervisor');

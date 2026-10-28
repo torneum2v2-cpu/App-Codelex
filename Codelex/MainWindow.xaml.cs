@@ -66,8 +66,8 @@ namespace Codelex
 
                 if (esValido)
                 {
-                    Menu win = new Menu();
-                    win.Show();
+                    DobleFactor verificacion = new DobleFactor(usuarioDAL);
+                    verificacion.Show();
                     Close();
                 }
                 else

@@ -20,6 +20,8 @@ BEGIN
 		   u.empleado_id,
 		   u.usuario,
 		   u.contrasena_hash,
+		   u.totp_secreto,
+		   u.totp_activo,
 		   e.nombreEmpleado,
 		   e.apellidoEmpleado,
 		   c.nombreCargo
@@ -118,6 +120,61 @@ BEGIN
 
 	SET @resultado = 1;
 	SET @mensaje = 'Contrasena cambiada correctamente.';
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ActivarDobleFactor
+	@usuario_id INT,
+	@totp_secreto VARCHAR(64),
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE usuario_id = @usuario_id)
+	BEGIN
+		SET @mensaje = 'El usuario no existe.';
+		RETURN;
+	END
+
+	UPDATE USUARIOS
+	SET totp_secreto = @totp_secreto,
+		totp_activo = 1
+	WHERE usuario_id = @usuario_id;
+
+	SET @resultado = 1;
+	SET @mensaje = 'Verificación en dos pasos activada.';
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_DesactivarDobleFactor
+	@usuario VARCHAR(50),
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE usuario = @usuario)
+	BEGIN
+		SET @mensaje = 'El usuario no existe.';
+		RETURN;
+	END
+
+	UPDATE USUARIOS
+	SET totp_secreto = NULL,
+		totp_activo = 0
+	WHERE usuario = @usuario;
+
+	SET @resultado = 1;
+	SET @mensaje = 'Verificación en dos pasos desactivada.';
 END
 GO
 

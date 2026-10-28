@@ -66,7 +66,7 @@ namespace Codelex
 
                 if (esValido)
                 {
-                    DobleFactor verificacion = new DobleFactor(usuarioDAL);
+                    VerificarTelefono verificacion = new VerificarTelefono(usuarioDAL);
                     verificacion.Show();
                     Close();
                 }

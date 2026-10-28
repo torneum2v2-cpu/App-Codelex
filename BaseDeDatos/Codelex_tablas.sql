@@ -43,7 +43,9 @@ CREATE TABLE USUARIOS
 	usuario_id INT PRIMARY KEY IDENTITY,
 	empleado_id INT FOREIGN KEY REFERENCES EMPLEADOS(empleado_id) NOT NULL UNIQUE,
 	usuario VARCHAR(50) UNIQUE NOT NULL,
-	contrasena_hash VARCHAR(255)
+	contrasena_hash VARCHAR(255),
+	passkey_id VARBINARY(1023) NULL,
+	passkey_clave VARBINARY(1024) NULL
 )
 GO
 

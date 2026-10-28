@@ -20,6 +20,8 @@ BEGIN
 		   u.empleado_id,
 		   u.usuario,
 		   u.contrasena_hash,
+		   u.passkey_id,
+		   u.passkey_clave,
 		   e.nombreEmpleado,
 		   e.apellidoEmpleado,
 		   c.nombreCargo
@@ -118,6 +120,68 @@ BEGIN
 
 	SET @resultado = 1;
 	SET @mensaje = 'Contrasena cambiada correctamente.';
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_GuardarPasskey
+	@usuario_id INT,
+	@passkey_id VARBINARY(1023),
+	@passkey_clave VARBINARY(1024),
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE usuario_id = @usuario_id)
+	BEGIN
+		SET @mensaje = 'El usuario no existe.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM USUARIOS WHERE usuario_id = @usuario_id AND passkey_id IS NOT NULL)
+	BEGIN
+		SET @mensaje = 'Este usuario ya tiene un teléfono registrado.';
+		RETURN;
+	END
+
+	UPDATE USUARIOS
+	SET passkey_id = @passkey_id,
+		passkey_clave = @passkey_clave
+	WHERE usuario_id = @usuario_id;
+
+	SET @resultado = 1;
+	SET @mensaje = 'Teléfono registrado correctamente.';
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_EliminarPasskey
+	@usuario VARCHAR(50),
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE usuario = @usuario)
+	BEGIN
+		SET @mensaje = 'El usuario no existe.';
+		RETURN;
+	END
+
+	UPDATE USUARIOS
+	SET passkey_id = NULL,
+		passkey_clave = NULL
+	WHERE usuario = @usuario;
+
+	SET @resultado = 1;
+	SET @mensaje = 'Teléfono eliminado. Al entrar deberá registrar uno nuevo.';
 END
 GO
 

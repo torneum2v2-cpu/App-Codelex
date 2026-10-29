@@ -92,7 +92,6 @@ namespace Codelex
             btnActualizar.IsEnabled = editando;
             btnBuscarEmpleado.IsEnabled = !editando;
             btnCambiarEstado.IsEnabled = editando;
-            btnEliminar.IsEnabled = editando;
 
             btnCambiarEstado.Content = usuarioActivo ? "Desactivar" : "Activar";
 
@@ -338,38 +337,6 @@ namespace Codelex
                     usuarioActivo = nuevoEstado;
                     ActualizarBotones();
                     CargarUsuarios();
-                }
-            }
-            catch (Exception ex)
-            {
-                MostrarError(ex);
-            }
-        }
-
-        private void Eliminar_Click(object sender, RoutedEventArgs e)
-        {
-            if (usuarioActual == 0)
-                return;
-
-            MessageBoxResult respuesta = MessageBox.Show(
-                "¿Desea eliminar el usuario " + txtUsuario.Text + "?\n\n" +
-                "Se le quitará el acceso al sistema. El empleado no se borra.",
-                "Usuarios", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-
-            if (respuesta != MessageBoxResult.Yes)
-                return;
-
-            try
-            {
-                string mensaje;
-                bool eliminado = usuarioBD.EliminarUsuario(usuarioActual, out mensaje);
-
-                MostrarMensaje(eliminado, mensaje);
-
-                if (eliminado)
-                {
-                    CargarUsuarios();
-                    LimpiarFormulario();
                 }
             }
             catch (Exception ex)

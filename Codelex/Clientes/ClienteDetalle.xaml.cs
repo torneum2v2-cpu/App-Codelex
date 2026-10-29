@@ -104,8 +104,7 @@ namespace Codelex
 
         private void NuevaOrden_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("El módulo de Órdenes todavía no está disponible.", "Detalle del cliente",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+            new IngresarOrden().Show();
         }
 
         private void Editar_Click(object sender, RoutedEventArgs e)

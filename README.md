@@ -6,7 +6,7 @@ Sistema de escritorio de Codelex (WPF, .NET 10 y SQL Server).
 
 | Carpeta | Contenido |
 |---|---|
-| `Codelex/Login` | Recuperación de contraseña (correo, código y nueva contraseña) |
+| `Codelex/Login` | Verificación con el teléfono (passkeys) y recuperación de contraseña |
 | `Codelex/Clientes` | Clientes y detalle del cliente |
 | `Codelex/Empleados` | Empleados y reporte de asistencia y órdenes |
 | `Codelex/Inventario` | Consulta de inventario, ingreso de compras, productos, equipos y proveedores |
@@ -25,6 +25,20 @@ Sistema de escritorio de Codelex (WPF, .NET 10 y SQL Server).
 | `BaseDeDatos/Codelex_base_completa.sql` | Todo junto: tablas, cambios para bases de versiones anteriores y procedimientos | Para crear la base o para poner al día una base que ya existe |
 
 Los tres se pueden ejecutar varias veces sin errores y sin duplicar datos. Cada cambio en la base se agrega en los tres archivos.
+
+## Verificación con el teléfono
+
+Después de la contraseña, Codelex pide confirmar con el teléfono (iPhone o Android) usando una llave de acceso (passkey). El teléfono siempre pide Face ID, huella o reconocimiento facial.
+
+- La computadora necesita Windows 11 con Bluetooth encendido, y el teléfono Bluetooth e internet.
+- La primera vez cada usuario registra su teléfono escaneando el código QR que muestra Windows.
+- Si alguien pierde el teléfono: `EXEC sp_EliminarPasskey 'usuario', NULL, NULL;` y la próxima vez registra uno nuevo.
+
+## Borradores
+
+| Archivo | Contenido |
+|---|---|
+| `Borradores/Codelex_google_authenticator.zip` | Versión con verificación en dos pasos por código de 6 dígitos (Google Authenticator). También está en la rama `borrador-google-authenticator`. |
 
 ## Ejecutar
 

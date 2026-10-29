@@ -66,8 +66,8 @@ namespace Codelex
 
                 if (esValido)
                 {
-                    Menu win = new Menu();
-                    win.Show();
+                    VerificarTelefono verificacion = new VerificarTelefono(usuarioDAL);
+                    verificacion.Show();
                     Close();
                 }
                 else

@@ -197,6 +197,273 @@ BEGIN
 END
 GO
 
+-- Usuarios
+
+CREATE OR ALTER PROCEDURE sp_ListarRoles
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT rol_id, nombreRol
+	FROM ROLES
+	ORDER BY rol_id;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_BuscarUsuarios
+	@texto VARCHAR(50) = NULL,
+	@buscarPor VARCHAR(10) = NULL,
+	@estado BIT = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
+	SET @buscarPor = UPPER(LTRIM(RTRIM(ISNULL(@buscarPor, ''))));
+
+	SELECT u.usuario_id, u.empleado_id, u.usuario, u.rol_id, u.estadoUsuario,
+		   e.nombreEmpleado, e.apellidoEmpleado, e.correoEmpleado, e.telefonoEmpleado,
+		   r.nombreRol AS rol,
+		   CASE WHEN u.estadoUsuario = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
+	FROM USUARIOS u
+	INNER JOIN EMPLEADOS e ON e.empleado_id = u.empleado_id
+	LEFT JOIN ROLES r ON r.rol_id = u.rol_id
+	WHERE (@estado IS NULL OR u.estadoUsuario = @estado)
+	  AND (@texto = ''
+		   OR (@buscarPor = 'NOMBRE'
+			   AND (e.nombreEmpleado LIKE '%' + @texto + '%'
+					OR e.apellidoEmpleado LIKE '%' + @texto + '%'
+					OR ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '') LIKE '%' + @texto + '%'))
+		   OR (@buscarPor = 'USUARIO'
+			   AND u.usuario LIKE '%' + @texto + '%')
+		   OR (@buscarPor = 'CORREO'
+			   AND e.correoEmpleado LIKE '%' + @texto + '%')
+		   OR (@buscarPor = 'ROL'
+			   AND r.nombreRol LIKE '%' + @texto + '%')
+		   OR (@buscarPor NOT IN ('NOMBRE', 'USUARIO', 'CORREO', 'ROL')
+			   AND (u.usuario LIKE '%' + @texto + '%'
+					OR e.nombreEmpleado LIKE '%' + @texto + '%'
+					OR e.apellidoEmpleado LIKE '%' + @texto + '%'
+					OR e.correoEmpleado LIKE '%' + @texto + '%'
+					OR r.nombreRol LIKE '%' + @texto + '%')))
+	ORDER BY e.nombreEmpleado, e.apellidoEmpleado;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_BuscarEmpleadosSinUsuario
+	@texto VARCHAR(50) = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
+
+	SELECT e.empleado_id, e.nombreEmpleado, e.apellidoEmpleado, e.identidad,
+		   e.telefonoEmpleado, e.correoEmpleado, c.nombreCargo
+	FROM EMPLEADOS e
+	LEFT JOIN CARGOS c ON c.cargo_id = e.cargo_id
+	WHERE NOT EXISTS (SELECT 1 FROM USUARIOS u WHERE u.empleado_id = e.empleado_id)
+	  AND (@texto = ''
+		   OR e.identidad LIKE '%' + @texto + '%'
+		   OR e.nombreEmpleado LIKE '%' + @texto + '%'
+		   OR e.apellidoEmpleado LIKE '%' + @texto + '%'
+		   OR ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '') LIKE '%' + @texto + '%')
+	ORDER BY e.nombreEmpleado, e.apellidoEmpleado;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ExisteUsuario
+	@usuario VARCHAR(50),
+	@excluirUsuarioId INT = 0
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT COUNT(1) AS cantidad
+	FROM USUARIOS
+	WHERE usuario = LTRIM(RTRIM(@usuario))
+	  AND usuario_id <> @excluirUsuarioId;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_InsertarUsuario
+	@empleado_id INT,
+	@usuario VARCHAR(50),
+	@contrasena_hash VARCHAR(255),
+	@rol_id INT,
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	SET @usuario = LTRIM(RTRIM(ISNULL(@usuario, '')));
+
+	IF @usuario = ''
+	BEGIN
+		SET @mensaje = 'El usuario es obligatorio.';
+		RETURN;
+	END
+
+	IF NOT EXISTS (SELECT 1 FROM EMPLEADOS WHERE empleado_id = @empleado_id)
+	BEGIN
+		SET @mensaje = 'El empleado no existe.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM USUARIOS WHERE empleado_id = @empleado_id)
+	BEGIN
+		SET @mensaje = 'Ese empleado ya tiene un usuario.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM USUARIOS WHERE usuario = @usuario)
+	BEGIN
+		SET @mensaje = 'Ya existe un usuario con ese nombre.';
+		RETURN;
+	END
+
+	IF NOT EXISTS (SELECT 1 FROM ROLES WHERE rol_id = @rol_id)
+	BEGIN
+		SET @mensaje = 'El rol seleccionado no existe.';
+		RETURN;
+	END
+
+	INSERT INTO USUARIOS (empleado_id, usuario, contrasena_hash, rol_id)
+	VALUES (@empleado_id, @usuario, @contrasena_hash, @rol_id);
+
+	SET @resultado = 1;
+	SET @mensaje = 'Usuario creado correctamente.';
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ActualizarUsuario
+	@usuario_id INT,
+	@usuario VARCHAR(50),
+	@contrasena_hash VARCHAR(255) = NULL,
+	@rol_id INT,
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	SET @usuario = LTRIM(RTRIM(ISNULL(@usuario, '')));
+
+	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE usuario_id = @usuario_id)
+	BEGIN
+		SET @mensaje = 'El usuario no existe.';
+		RETURN;
+	END
+
+	IF @usuario = ''
+	BEGIN
+		SET @mensaje = 'El usuario es obligatorio.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM USUARIOS
+			   WHERE usuario = @usuario
+				 AND usuario_id <> @usuario_id)
+	BEGIN
+		SET @mensaje = 'Ya existe otro usuario con ese nombre.';
+		RETURN;
+	END
+
+	IF NOT EXISTS (SELECT 1 FROM ROLES WHERE rol_id = @rol_id)
+	BEGIN
+		SET @mensaje = 'El rol seleccionado no existe.';
+		RETURN;
+	END
+
+	-- Si la contraseña viene vacia, se deja la que ya tenia
+	UPDATE USUARIOS
+	SET usuario = @usuario,
+		rol_id = @rol_id,
+		contrasena_hash = CASE WHEN ISNULL(@contrasena_hash, '') = ''
+							   THEN contrasena_hash
+							   ELSE @contrasena_hash END
+	WHERE usuario_id = @usuario_id;
+
+	SET @resultado = 1;
+	SET @mensaje = CASE WHEN ISNULL(@contrasena_hash, '') = ''
+						THEN 'Usuario actualizado correctamente.'
+						ELSE 'Usuario y contraseña actualizados correctamente.' END;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_CambiarEstadoUsuario
+	@usuario_id INT,
+	@estadoUsuario BIT,
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE usuario_id = @usuario_id)
+	BEGIN
+		SET @mensaje = 'El usuario no existe.';
+		RETURN;
+	END
+
+	UPDATE USUARIOS
+	SET estadoUsuario = @estadoUsuario
+	WHERE usuario_id = @usuario_id;
+
+	SET @resultado = 1;
+	SET @mensaje = CASE WHEN @estadoUsuario = 1
+						THEN 'Usuario activado correctamente.'
+						ELSE 'Usuario desactivado correctamente.' END;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_EliminarUsuario
+	@usuario_id INT,
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE usuario_id = @usuario_id)
+	BEGIN
+		SET @mensaje = 'El usuario no existe.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM BITACORAS WHERE usuario_id = @usuario_id)
+	BEGIN
+		SET @mensaje = 'No se puede eliminar: tiene registros en la bitácora. Desactívelo en su lugar.';
+		RETURN;
+	END
+
+	BEGIN TRY
+		DELETE FROM USUARIOS
+		WHERE usuario_id = @usuario_id;
+
+		SET @resultado = 1;
+		SET @mensaje = 'Usuario eliminado correctamente.';
+	END TRY
+	BEGIN CATCH
+		SET @resultado = 0;
+		SET @mensaje = 'No se puede eliminar: tiene registros asociados. Desactívelo en su lugar.';
+	END CATCH
+END
+GO
+
 -- Clientes
 
 CREATE OR ALTER PROCEDURE sp_InsertarCliente

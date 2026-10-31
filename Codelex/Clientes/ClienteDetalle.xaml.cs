@@ -104,7 +104,54 @@ namespace Codelex
 
         private void NuevaOrden_Click(object sender, RoutedEventArgs e)
         {
-            new IngresarOrden().Show();
+            AbrirOrden();
+        }
+
+        private void AgregarOrden_Click(object sender, RoutedEventArgs e)
+        {
+            AbrirOrden();
+        }
+
+        private void AbrirOrden()
+        {
+            IngresarOrden ventana = new IngresarOrden(rtn);
+            ventana.Owner = this;
+            ventana.ShowDialog();
+
+            try
+            {
+                CargarOrdenes();
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void AgregarLocacion_Click(object sender, RoutedEventArgs e)
+        {
+            IngresarLocacion ventana = new IngresarLocacion(rtn);
+            ventana.Owner = this;
+            ventana.ShowDialog();
+
+            try
+            {
+                CargarLocaciones();
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
+        }
+
+        private void AgregarFactura_Click(object sender, RoutedEventArgs e)
+        {
+            MensajeCodelex.Mostrar(this, "Facturas", "Próximamente", true);
+        }
+
+        private void MostrarError(Exception ex)
+        {
+            MensajeCodelex.Mostrar(this, "Detalle del cliente", ex.Message, false);
         }
 
         private void Editar_Click(object sender, RoutedEventArgs e)

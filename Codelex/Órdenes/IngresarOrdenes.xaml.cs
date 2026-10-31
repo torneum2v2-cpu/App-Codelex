@@ -15,6 +15,7 @@ namespace Codelex
         public int Stock = 0;
         public int Cantidad = 0;
 
+
         public ItemLista(int id, string texto, string tipo)
         {
             Id = id;
@@ -39,6 +40,8 @@ namespace Codelex
         DataTable empleados = new DataTable();
         DataTable locacionesCliente = new DataTable();
 
+        string rtnInicial = "";
+
         public IngresarOrden()
         {
             InitializeComponent();
@@ -54,6 +57,26 @@ namespace Codelex
             txtCantidad.PreviewTextInput += SoloNumeros;
             Loaded += Window_Loaded;
         }
+        public IngresarOrden(string rtn) : this()
+        {
+            rtnInicial = rtn;
+        }
+
+        private void SeleccionarClienteInicial()
+        {
+            txtBuscarCliente.Text = rtnInicial;
+
+            foreach (DataRowView fila in dgClientes.Items)
+            {
+                if ("" + fila["identificacionCliente"] == rtnInicial)
+                {
+                    dgClientes.SelectedItem = fila;
+                    return;
+                }
+            }
+
+            Aviso("El cliente está inactivo, no se pueden crear órdenes para él.");
+        }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -61,6 +84,9 @@ namespace Codelex
             {
                 CargarListas();
                 NuevaOrden();
+
+                if (rtnInicial != "")
+                    SeleccionarClienteInicial();
             }
             catch (Exception ex)
             {

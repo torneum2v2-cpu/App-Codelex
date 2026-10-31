@@ -7,6 +7,7 @@ namespace Codelex
 {
     public partial class Menu : Window
     {
+        private const string IconoLocaciones = "M21,10 C21,17 12,23 12,23 C12,23 3,17 3,10 A9,9 0 0 1 21,10 Z M9,10 A3,3 0 1 0 15,10 A3,3 0 1 0 9,10";
         private const string IconoIngresarOrden = "M14,2 H6 A2,2 0 0 0 4,4 V20 A2,2 0 0 0 6,22 H18 A2,2 0 0 0 20,20 V8 Z M14,2 V8 H20 M12,18 V12 M9,15 H15";
         private const string IconoVehiculos = "M1,3 H16 V16 H1 Z M16,8 H20 L23,11 V16 H16 Z M3,18.5 A2.5,2.5 0 1 0 8,18.5 A2.5,2.5 0 1 0 3,18.5 M16,18.5 A2.5,2.5 0 1 0 21,18.5 A2.5,2.5 0 1 0 16,18.5";
         private const string IconoGestionOrdenes = "M9,4 H7 A2,2 0 0 0 5,6 V20 A2,2 0 0 0 7,22 H17 A2,2 0 0 0 19,20 V6 A2,2 0 0 0 17,4 H15 M9,2 H15 V6 H9 Z M9,14 L11,16 L15,12";
@@ -100,7 +101,7 @@ namespace Codelex
                 opciones.Add(new OpcionMenu("Reportes", "Consulta reportes de órdenes, asistencia y empleados.", IconoReportes, "reportes"));
                 opciones.Add(new OpcionMenu("Órdenes", "Ingresa y gestiona las órdenes de tus clientes.", IconoOrdenes, "ordenes"));
                 opciones.Add(new OpcionMenu("Vehículos", "Registra y gestiona los vehículos de la empresa.", IconoVehiculos, "vehiculos"));
-                opciones.Add(new OpcionMenu("Clientes", "Administra tu cartera de clientes y sus datos.", IconoClientes, "clientes"));
+                opciones.Add(new OpcionMenu("Clientes", "Administra tus clientes y sus locaciones.", IconoClientes, "clientes"));
                 opciones.Add(new OpcionMenu("Empleados", "Gestiona el personal y sus accesos al sistema.", IconoEmpleados, "empleados"));
                 opciones.Add(new OpcionMenu("Inventario", "Controla productos, existencias y movimientos.", IconoInventario, "inventario"));
                 opciones.Add(new OpcionMenu("Usuarios", "Administra las cuentas de acceso al sistema.", IconoUsuarios, "usuarios"));
@@ -132,6 +133,7 @@ namespace Codelex
             {
                 Encabezado("Clientes", "Elige qué deseas gestionar.");
                 opciones.Add(new OpcionMenu("Clientes", "Consulta y administra los clientes y su detalle.", IconoClientes, "Clientes"));
+                opciones.Add(new OpcionMenu("Locaciones", "Registra las locaciones donde se presta el servicio.", IconoLocaciones, "Locaciones"));
             }
             else if (clave == "empleados")
             {
@@ -180,6 +182,8 @@ namespace Codelex
                 AbrirModulo(new Inventario());
             else if (destino == "Empleados")
                 AbrirModulo(new Empleados());
+            else if (destino == "Locaciones")
+                AbrirModulo(new IngresarLocacion());
             else
                 MensajeCodelex.Mostrar(this, "Próximamente", "Destino recibido: [" + destino + "]", true);
         }

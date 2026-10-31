@@ -215,6 +215,41 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="BotonMas" TargetType="Button">
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Margin" Value="0,-8,-8,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="White" BorderBrush="{StaticResource Primary}"
+                                BorderThickness="2" CornerRadius="16">
+                            <Path x:Name="mas" Data="M0,6 H12 M6,0 V12" Stroke="{StaticResource Primary}"
+                                  StrokeThickness="2.2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                  Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="{StaticResource Primary}"/>
+                                <Setter TargetName="mas" Property="Stroke" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="0.94" ScaleY="0.94"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="16">
@@ -317,36 +352,47 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0">
-                        <DockPanel>
-                            <TextBlock DockPanel.Dock="Top" Text="Locaciones" Style="{StaticResource TituloCard}"/>
-                            <TextBlock DockPanel.Dock="Top" Text="nombreLocacion · tipoLocacion · direccion" Style="{StaticResource Nota}" Margin="0,4,0,10"/>
-                            <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource CardLine}"
-                                    BorderThickness="1.5" CornerRadius="10" Padding="4">
-                                <ListBox x:Name="lstLocaciones" Style="{StaticResource Lista}"/>
-                            </Border>
-                        </DockPanel>
-                    </Border>
-                    <Border Grid.Column="1" Style="{StaticResource Card}" Margin="8,0,8,0">
-                        <DockPanel>
-                            <TextBlock DockPanel.Dock="Top" Text="Órdenes" Style="{StaticResource TituloCard}"/>
-                            <TextBlock DockPanel.Dock="Top" Text="orden_id · servicio · fecha · estado" Style="{StaticResource Nota}" Margin="0,4,0,10"/>
-                            <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource CardLine}"
-                                    BorderThickness="1.5" CornerRadius="10" Padding="4">
-                                <ListBox x:Name="lstOrdenes" Style="{StaticResource Lista}"/>
-                            </Border>
-                        </DockPanel>
-                    </Border>
-                    <Border Grid.Column="2" Style="{StaticResource Card}" Margin="8,0,0,0">
-                        <DockPanel>
-                            <TextBlock DockPanel.Dock="Top" Text="Facturas" Style="{StaticResource TituloCard}"/>
-                            <TextBlock DockPanel.Dock="Top" Text="factura_id · fecha · estado_pago · monto" Style="{StaticResource Nota}" Margin="0,4,0,10"/>
-                            <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource CardLine}"
-                                    BorderThickness="1.5" CornerRadius="10" Padding="4">
-                                <ListBox x:Name="lstFacturas" Style="{StaticResource Lista}"/>
-                            </Border>
-                        </DockPanel>
-                    </Border>
+                        <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0">
+                            <Grid>
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Top" Text="Locaciones" Style="{StaticResource TituloCard}"/>
+                                    <TextBlock DockPanel.Dock="Top" Text="nombreLocacion · tipoLocacion · direccion" Style="{StaticResource Nota}" Margin="0,4,0,10"/>
+                                    <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource CardLine}"
+                                            BorderThickness="1.5" CornerRadius="10" Padding="4">
+                                        <ListBox x:Name="lstLocaciones" Style="{StaticResource Lista}"/>
+                                    </Border>
+                                </DockPanel>
+                                <Button Style="{StaticResource BotonMas}" ToolTip="Agregar locación" Click="AgregarLocacion_Click"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Column="1" Style="{StaticResource Card}" Margin="8,0,8,0">
+                            <Grid>
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Top" Text="Órdenes" Style="{StaticResource TituloCard}"/>
+                                    <TextBlock DockPanel.Dock="Top" Text="orden_id · servicio · fecha · estado" Style="{StaticResource Nota}" Margin="0,4,0,10"/>
+                                    <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource CardLine}"
+                                            BorderThickness="1.5" CornerRadius="10" Padding="4">
+                                        <ListBox x:Name="lstOrdenes" Style="{StaticResource Lista}"/>
+                                    </Border>
+                                </DockPanel>
+                                <Button Style="{StaticResource BotonMas}" ToolTip="Agregar orden" Click="AgregarOrden_Click"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Column="2" Style="{StaticResource Card}" Margin="8,0,0,0">
+                            <Grid>
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Top" Text="Facturas" Style="{StaticResource TituloCard}"/>
+                                    <TextBlock DockPanel.Dock="Top" Text="factura_id · fecha · estado_pago · monto" Style="{StaticResource Nota}" Margin="0,4,0,10"/>
+                                    <Border Background="{StaticResource Surface}" BorderBrush="{StaticResource CardLine}"
+                                            BorderThickness="1.5" CornerRadius="10" Padding="4">
+                                        <ListBox x:Name="lstFacturas" Style="{StaticResource Lista}"/>
+                                    </Border>
+                                </DockPanel>
+                                <Button Style="{StaticResource BotonMas}" ToolTip="Agregar factura" Click="AgregarFactura_Click"/>
+                            </Grid>
+                        </Border>
                     </Grid>
 
                     <Grid Grid.Row="2" Margin="0,16,0,0">

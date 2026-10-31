@@ -8,11 +8,15 @@ namespace Codelex
     public partial class VerificarTelefono : Window
     {
         private Usuario usuario;
+        private readonly bool _recordar;
+        private readonly string _password;
 
-        public VerificarTelefono(Usuario usuarioLogin)
+        public VerificarTelefono(Usuario usuarioLogin, bool recordar = false, string password = "")
         {
             InitializeComponent();
             usuario = usuarioLogin;
+            _recordar = recordar;
+            _password = password;
 
             if (usuario.TieneLlave)
             {
@@ -59,6 +63,10 @@ namespace Codelex
                 txtError.Visibility = Visibility.Visible;
                 return;
             }
+
+            // La verificación salió bien: ahora sí se guarda la cuenta si marcó "Recordarme".
+            if (_recordar)
+                CuentasRecordadas.Guardar(usuario.NombreUsuario, usuario.NombreCompleto, _password);
 
             if (primeraVez)
                 MensajeCodelex.Mostrar(this, "Teléfono registrado", "Tu teléfono quedó registrado. La próxima vez solo tendrás que confirmar con él.", true);

@@ -66,7 +66,20 @@ namespace Codelex
 
                 if (esValido)
                 {
-                    VerificarTelefono verificacion = new VerificarTelefono(usuarioDAL);
+                    bool recordar = chkRemember.IsChecked == true;
+
+                    // Cuenta ya recordada en este equipo: entra directo, sin verificar con el teléfono.
+                    if (CuentasRecordadas.Existe(usuarioDAL.NombreUsuario))
+                    {
+                        if (recordar)
+                            CuentasRecordadas.Guardar(usuarioDAL.NombreUsuario, usuarioDAL.NombreCompleto, password);
+
+                        new Menu().Show();
+                        Close();
+                        return;
+                    }
+
+                    VerificarTelefono verificacion = new VerificarTelefono(usuarioDAL, recordar, password);
                     verificacion.Show();
                     Close();
                 }

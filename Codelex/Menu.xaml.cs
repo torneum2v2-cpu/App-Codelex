@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Codelex.BDD;
 
 namespace Codelex
 {
@@ -51,10 +52,13 @@ namespace Codelex
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
-            new MainWindow().Show();
+            if (CuentasRecordadas.Listar().Count > 0)
+                new SeleccionarCuenta().Show();
+            else
+                new MainWindow().Show();
+
             Close();
         }
-
         private void Nav_Click(object sender, RoutedEventArgs e)
         {
             RadioButton boton = (RadioButton)sender;

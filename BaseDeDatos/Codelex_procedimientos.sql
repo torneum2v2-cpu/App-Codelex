@@ -1,6 +1,109 @@
 USE Codelex
 GO
 
+-- Reporte de órdenes
+CREATE OR ALTER PROCEDURE sp_ReporteOrdenes
+	@desde DATE,
+	@hasta DATE,
+	@estado_orden_id INT = NULL,
+	@servicio_id INT = NULL,
+	@cliente VARCHAR(50) = ''
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @cliente = LTRIM(RTRIM(ISNULL(@cliente, '')));
+
+	SELECT o.orden_id,
+		   ISNULL(c.nombreEmpresa, o.identificacionCliente) AS cliente,
+		   ISNULL(s.nombreServicio, 'Sin servicio') AS nombreServicio,
+		   LTRIM(ISNULL(sup.nombreEmpleado, '') + ' ' + ISNULL(sup.apellidoEmpleado, '')) AS supervisor,
+		   COALESCE(o.fecha_servicio, o.fecha_solicitud) AS fecha,
+		   ISNULL(eo.nombreEstadoOrden, 'Sin estado') AS nombreEstadoOrden,
+		   o.conformidad_cliente,
+		   CASE WHEN o.conformidad_cliente IS NULL THEN 'Sin evaluar'
+				WHEN o.conformidad_cliente = 1 THEN 'Conforme'
+				ELSE 'No conforme' END AS conformidad
+	FROM ORDENES o
+	LEFT JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
+	LEFT JOIN SERVICIOS s ON s.servicio_id = o.servicio_id
+	LEFT JOIN EMPLEADOS sup ON sup.empleado_id = o.supervisor_id
+	LEFT JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
+	WHERE COALESCE(o.fecha_servicio, o.fecha_solicitud) BETWEEN @desde AND @hasta
+	  AND (@estado_orden_id IS NULL OR o.estado_orden_id = @estado_orden_id)
+	  AND (@servicio_id IS NULL OR o.servicio_id = @servicio_id)
+	  AND (@cliente = ''
+		   OR c.nombreEmpresa LIKE '%' + @cliente + '%'
+		   OR (c.nombreCliente + ' ' + c.apellidoCliente) LIKE '%' + @cliente + '%'
+		   OR o.identificacionCliente LIKE '%' + @cliente + '%')
+	ORDER BY COALESCE(o.fecha_servicio, o.fecha_solicitud), o.orden_id;
+END
+GO
+
+-- Reporte de asistencia
+CREATE OR ALTER PROCEDURE sp_ReporteAsistencia
+	@desde DATE,
+	@hasta DATE,
+	@empleado_id INT = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT a.empleado_id,
+		   LTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')) AS empleado,
+		   ISNULL(c.nombreCargo, 'Sin cargo') AS nombreCargo,
+		   a.fechaAsistencia,
+		   CONVERT(VARCHAR(5), a.hora_entrada, 108) AS hora_entrada,
+		   CONVERT(VARCHAR(5), a.hora_salida, 108) AS hora_salida,
+		   CASE WHEN a.hora_entrada IS NOT NULL AND a.hora_salida IS NOT NULL
+				THEN CAST(DATEDIFF(MINUTE, a.hora_entrada, a.hora_salida) / 60.0 AS DECIMAL(6, 2))
+				ELSE 0 END AS horas
+	FROM ASISTENCIAS a
+	INNER JOIN EMPLEADOS e ON e.empleado_id = a.empleado_id
+	LEFT JOIN CARGOS c ON c.cargo_id = e.cargo_id
+	WHERE a.fechaAsistencia BETWEEN @desde AND @hasta
+	  AND (@empleado_id IS NULL OR a.empleado_id = @empleado_id)
+	ORDER BY a.fechaAsistencia, e.nombreEmpleado, e.apellidoEmpleado;
+END
+GO
+
+-- Reporte de empleados
+CREATE OR ALTER PROCEDURE sp_ReporteEmpleados
+	@desde DATE,
+	@hasta DATE,
+	@cargo_id INT = NULL,
+	@estado BIT = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT e.empleado_id,
+		   LTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')) AS nombreCompleto,
+		   ISNULL(c.nombreCargo, 'Sin cargo') AS nombreCargo,
+		   CASE WHEN e.estadoEmpleado = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado,
+		   (SELECT COUNT(*)
+			FROM ORDEN_EMPLEADOS oe
+			INNER JOIN ORDENES o ON o.orden_id = oe.orden_id
+			WHERE oe.empleado_id = e.empleado_id
+			  AND o.fecha_servicio BETWEEN @desde AND @hasta) AS ordenes,
+		   (SELECT COUNT(*)
+			FROM ASISTENCIAS a
+			WHERE a.empleado_id = e.empleado_id
+			  AND a.fechaAsistencia BETWEEN @desde AND @hasta) AS dias,
+		   (SELECT CAST(ISNULL(SUM(CASE WHEN a.hora_entrada IS NOT NULL AND a.hora_salida IS NOT NULL
+										 THEN DATEDIFF(MINUTE, a.hora_entrada, a.hora_salida)
+										 ELSE 0 END), 0) / 60.0 AS DECIMAL(10, 2))
+			FROM ASISTENCIAS a
+			WHERE a.empleado_id = e.empleado_id
+			  AND a.fechaAsistencia BETWEEN @desde AND @hasta) AS horas
+	FROM EMPLEADOS e
+	LEFT JOIN CARGOS c ON c.cargo_id = e.cargo_id
+	WHERE (@cargo_id IS NULL OR e.cargo_id = @cargo_id)
+	  AND (@estado IS NULL OR e.estadoEmpleado = @estado)
+	ORDER BY e.nombreEmpleado, e.apellidoEmpleado;
+END
+GO
+
 IF DB_NAME() <> 'Codelex'
 BEGIN
 	RAISERROR('No se pudo usar la base Codelex.', 16, 1);

@@ -188,6 +188,8 @@ namespace Codelex
                 AbrirModulo(new Empleados());
             else if (destino == "Locaciones")
                 AbrirModulo(new IngresarLocacion());
+            else if (destino == "Reportes")
+                AbrirModulo(new Reportes());
             else
                 MensajeCodelex.Mostrar(this, "Próximamente", "Destino recibido: [" + destino + "]", true);
         }

@@ -74,6 +74,7 @@ namespace Codelex
                         if (recordar)
                             CuentasRecordadas.Guardar(usuarioDAL.NombreUsuario, usuarioDAL.NombreCompleto, password);
 
+                        Sesion.Iniciar(usuarioDAL);
                         new Menu().Show();
                         Close();
                         return;

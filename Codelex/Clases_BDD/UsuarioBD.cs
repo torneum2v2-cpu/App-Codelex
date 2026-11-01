@@ -10,6 +10,7 @@ namespace Codelex.Clases_BDD
     class UsuarioBD
     {
 
+
         public UsuarioBD()
         {
 

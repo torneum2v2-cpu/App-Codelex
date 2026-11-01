@@ -81,6 +81,7 @@ namespace Codelex
                 return;
             }
 
+            Sesion.Iniciar(usuario);
             new Menu().Show();
             Close();
         }

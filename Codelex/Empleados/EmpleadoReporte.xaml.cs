@@ -6,6 +6,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Codelex.BDD;
 
 namespace Codelex
 {
@@ -23,6 +24,11 @@ namespace Codelex
         {
             InitializeComponent();
             Height = Math.Min(Height, SystemParameters.WorkArea.Height - 10);
+
+           
+            if (Sesion.Nivel == NivelAcceso.Basico)
+                empleadoId = Sesion.EmpleadoId;
+
             empleadoInicial = empleadoId;
         }
 
@@ -34,7 +40,15 @@ namespace Codelex
 
             try
             {
-                cmbEmpleado.ItemsSource = empleadoBD.BuscarEmpleados("", "", "TODOS").DefaultView;
+                DataTable empleados = empleadoBD.BuscarEmpleados("", "", "TODOS");
+
+                if (Sesion.Nivel == NivelAcceso.Basico)
+                {
+                    empleados.DefaultView.RowFilter = "empleado_id = " + empleadoInicial;
+                    cmbEmpleado.IsEnabled = false;
+                }
+
+                cmbEmpleado.ItemsSource = empleados.DefaultView;
                 cmbEmpleado.SelectedValue = empleadoInicial;
             }
             catch (Exception ex)

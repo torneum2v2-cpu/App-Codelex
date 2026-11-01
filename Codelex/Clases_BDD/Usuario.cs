@@ -12,6 +12,8 @@ namespace Codelex.BDD
     public class Usuario
     {
         private const string SitioCodelex = "codelex.hn";
+        public int EmpleadoId { get; set; }
+        public string Rol { get; set; } = "";
 
         public int UsuarioId { get; set; }
         public string NombreUsuario { get; set; } = "";
@@ -45,6 +47,8 @@ namespace Codelex.BDD
                 return false;
 
             UsuarioId = Convert.ToInt32(fila["usuario_id"]);
+            EmpleadoId = Convert.ToInt32(fila["empleado_id"]);
+            Rol = "" + fila["rol"];
             NombreUsuario = "" + fila["usuario"];
             NombreCompleto = fila["nombreEmpleado"] + " " + fila["apellidoEmpleado"];
             TieneLlave = fila["passkey_id"] != DBNull.Value;

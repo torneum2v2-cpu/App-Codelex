@@ -64,13 +64,14 @@ namespace Codelex
                 return;
             }
 
-            // La verificación salió bien: ahora sí se guarda la cuenta si marcó "Recordarme".
+            
             if (_recordar)
                 CuentasRecordadas.Guardar(usuario.NombreUsuario, usuario.NombreCompleto, _password);
 
             if (primeraVez)
                 MensajeCodelex.Mostrar(this, "Teléfono registrado", "Tu teléfono quedó registrado. La próxima vez solo tendrás que confirmar con él.", true);
 
+            Sesion.Iniciar(usuario);
             Menu menu = new Menu();
             menu.Show();
             Close();

@@ -22,6 +22,45 @@ namespace Codelex
         private const string IconoUsuarios = "M20,21 V19 A4,4 0 0 0 16,15 H8 A4,4 0 0 0 4,19 V21 M8,7 A4,4 0 1 0 16,7 A4,4 0 1 0 8,7";
 
         private const string IconoGestionVehiculos = "M8,6 H21 M8,12 H21 M8,18 H21 M3,6 H3.01 M3,12 H3.01 M3,18 H3.01";
+
+        // Nivel mínimo de rol para ver cada sección del Panel principal.
+        private static readonly Dictionary<string, NivelAcceso> NivelPorSeccion = new Dictionary<string, NivelAcceso>
+        {
+            { "inicio", NivelAcceso.Basico },
+            { "mitrabajo", NivelAcceso.Basico },
+
+            { "ordenes", NivelAcceso.Medio },
+            { "vehiculos", NivelAcceso.Medio },
+            { "clientes", NivelAcceso.Medio },
+            { "empleados", NivelAcceso.Medio },
+            { "inventario", NivelAcceso.Medio },
+            { "usuarios", NivelAcceso.Medio },
+
+            { "facturacion", NivelAcceso.Avanzado },
+            { "reportes", NivelAcceso.Avanzado }
+        };
+
+        // Nivel mínimo de rol para abrir cada módulo.
+        private static readonly Dictionary<string, NivelAcceso> NivelPorDestino = new Dictionary<string, NivelAcceso>
+        {
+            { "MisDatos", NivelAcceso.Basico },
+            { "MisOrdenes", NivelAcceso.Basico },
+
+            { "IngresarOrden", NivelAcceso.Medio },
+            { "GestionOrdenes", NivelAcceso.Medio },
+            { "Vehiculos", NivelAcceso.Medio },
+            { "GestionVehiculos", NivelAcceso.Medio },
+            { "Clientes", NivelAcceso.Medio },
+            { "Locaciones", NivelAcceso.Medio },
+            { "Empleados", NivelAcceso.Medio },
+            { "Inventario", NivelAcceso.Medio },
+            { "Usuarios", NivelAcceso.Medio },
+
+            { "Cotizaciones", NivelAcceso.Avanzado },
+            { "Facturas", NivelAcceso.Avanzado },
+            { "Reportes", NivelAcceso.Avanzado }
+        };
+
         private string _seccionActual = "inicio";
 
         public Menu()
@@ -31,7 +70,35 @@ namespace Codelex
             string fecha = DateTime.Now.ToString("dddd, d 'de' MMMM 'de' yyyy", new CultureInfo("es"));
             txtFecha.Text = char.ToUpper(fecha[0]) + fecha.Substring(1);
 
-            MostrarSeccion("inicio");
+            if (Sesion.NombreCompleto != "")
+                txtFecha.Text += "  ·  " + Sesion.NombreCompleto + " (" + Sesion.Rol + ")";
+
+            AplicarRol();
+
+
+            MostrarSeccion(Sesion.Nivel == NivelAcceso.Basico ? "mitrabajo" : "inicio");
+        }
+
+        private static bool PuedeSeccion(string clave)
+        {
+            return NivelPorSeccion.TryGetValue(clave, out NivelAcceso minimo) && Sesion.Permite(minimo);
+        }
+
+        private static bool PuedeDestino(string destino)
+        {
+            return NivelPorDestino.TryGetValue(destino, out NivelAcceso minimo) && Sesion.Permite(minimo);
+        }
+
+        private static bool PuedeAbrir(string seccionActual, string destino)
+        {
+            return seccionActual == "inicio" ? PuedeSeccion(destino) : PuedeDestino(destino);
+        }
+
+
+        private void AplicarRol()
+        {
+            foreach (RadioButton boton in panelNav.Children)
+                boton.Visibility = PuedeSeccion("" + boton.Tag) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private void DragWindow(object sender, MouseButtonEventArgs e)
@@ -52,6 +119,8 @@ namespace Codelex
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
+            Sesion.Cerrar();
+
             if (CuentasRecordadas.Listar().Count > 0)
                 new SeleccionarCuenta().Show();
             else
@@ -59,6 +128,7 @@ namespace Codelex
 
             Close();
         }
+
         private void Nav_Click(object sender, RoutedEventArgs e)
         {
             RadioButton boton = (RadioButton)sender;
@@ -93,6 +163,16 @@ namespace Codelex
 
         private void MostrarSeccion(string clave)
         {
+            if (Sesion.Nivel == NivelAcceso.SinRol)
+            {
+                Encabezado("Sin acceso", "Tu usuario no tiene un rol asignado. Contacta al administrador.");
+                listaOpciones.ItemsSource = new List<OpcionMenu>();
+                return;
+            }
+
+            if (!PuedeSeccion(clave))
+                clave = "inicio";
+
             _seccionActual = clave;
             MarcarBoton(clave);
 
@@ -101,6 +181,7 @@ namespace Codelex
             if (clave == "inicio")
             {
                 Encabezado("Panel principal", "Selecciona un módulo para comenzar.");
+                opciones.Add(new OpcionMenu("Mi trabajo", "Consulta tus datos y las órdenes en las que estás asignado.", IconoUsuarios, "mitrabajo"));
                 opciones.Add(new OpcionMenu("Cotizaciones y facturación", "Genera cotizaciones y facturas para tus clientes.", IconoFacturacion, "facturacion"));
                 opciones.Add(new OpcionMenu("Reportes", "Consulta reportes de órdenes, asistencia y empleados.", IconoReportes, "reportes"));
                 opciones.Add(new OpcionMenu("Órdenes", "Ingresa y gestiona las órdenes de tus clientes.", IconoOrdenes, "ordenes"));
@@ -109,6 +190,12 @@ namespace Codelex
                 opciones.Add(new OpcionMenu("Empleados", "Gestiona el personal y sus accesos al sistema.", IconoEmpleados, "empleados"));
                 opciones.Add(new OpcionMenu("Inventario", "Controla productos, existencias y movimientos.", IconoInventario, "inventario"));
                 opciones.Add(new OpcionMenu("Usuarios", "Administra las cuentas de acceso al sistema.", IconoUsuarios, "usuarios"));
+            }
+            else if (clave == "mitrabajo")
+            {
+                Encabezado("Mi trabajo", "Consulta tu información y tus órdenes asignadas.");
+                opciones.Add(new OpcionMenu("Mis datos", "Consulta tu perfil de empleado, tu asistencia y tus órdenes.", IconoEmpleados, "MisDatos"));
+                opciones.Add(new OpcionMenu("Mis órdenes", "Revisa el detalle de las órdenes en las que estás asignado.", IconoOrdenes, "MisOrdenes"));
             }
             else if (clave == "facturacion")
             {
@@ -155,6 +242,9 @@ namespace Codelex
                 opciones.Add(new OpcionMenu("Gestión de usuarios", "Administra las cuentas de acceso al sistema.", IconoUsuarios, "Usuarios"));
             }
 
+            // Solo se muestran las opciones que el rol puede usar.
+            opciones.RemoveAll(o => !PuedeAbrir(clave, o.Destino));
+
             listaOpciones.ItemsSource = opciones;
         }
 
@@ -172,7 +262,18 @@ namespace Codelex
 
         private void AbrirDestino(string destino)
         {
-            if (destino == "Clientes")
+            // Segunda barrera: aunque alguien llegue aquí, se vuelve a comprobar el rol.
+            if (!PuedeDestino(destino))
+            {
+                MensajeCodelex.Mostrar(this, "Acceso denegado", "Tu rol no tiene permiso para abrir este módulo.", false);
+                return;
+            }
+
+            if (destino == "MisDatos")
+                AbrirModulo(new EmpleadoReporte(Sesion.EmpleadoId));
+            else if (destino == "MisOrdenes")
+                AbrirModulo(new MisOrdenes());
+            else if (destino == "Clientes")
                 AbrirModulo(new Clientes());
             else if (destino == "Vehiculos")
                 AbrirModulo(new RegistrarVehiculo());

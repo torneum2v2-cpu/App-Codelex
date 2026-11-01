@@ -1,4 +1,5 @@
-﻿using Codelex.Clases_BDD;
+﻿using Codelex.BDD;
+using Codelex.Clases_BDD;
 using System.Data;
 using System.Globalization;
 using System.Net.Mail;
@@ -37,6 +38,10 @@ namespace Codelex
             try
             {
                 DataTable roles = usuarioBD.ListarRoles();
+
+                if (Sesion.Nivel != NivelAcceso.Avanzado)
+                    roles.DefaultView.RowFilter = "nombreRol NOT LIKE '%Avanzado%'";
+
                 cmbRol.ItemsSource = roles.DefaultView;
             }
             catch (Exception ex)

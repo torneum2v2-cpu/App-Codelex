@@ -1,6 +1,35 @@
 USE Codelex
 GO
 
+IF COL_LENGTH('USUARIOS', 'foto_perfil') IS NULL
+	ALTER TABLE USUARIOS ADD foto_perfil VARBINARY(MAX) NULL;
+GO
+
+CREATE OR ALTER PROCEDURE sp_ObtenerFotoUsuario
+	@usuario_id INT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT foto_perfil
+	FROM USUARIOS
+	WHERE usuario_id = @usuario_id;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_GuardarFotoUsuario
+	@usuario_id INT,
+	@foto VARBINARY(MAX) = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	UPDATE USUARIOS
+	SET foto_perfil = @foto
+	WHERE usuario_id = @usuario_id;
+END
+GO
+
 -- Ahora también devuelve el rol del usuario
 CREATE OR ALTER PROCEDURE sp_ObtenerUsuarioLogin
 	@usuario VARCHAR(50)

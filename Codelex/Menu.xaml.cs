@@ -6,6 +6,7 @@ using System.Windows.Media;
 using Codelex.BDD;
 using Codelex.Clases_BDD;
 using Microsoft.Win32;
+using Codelex.Facturas_y_Cotizaciones;
 
 namespace Codelex
 {
@@ -405,6 +406,10 @@ namespace Codelex
                 AbrirModulo(new IngresarLocacion());
             else if (destino == "Reportes")
                 AbrirModulo(new Reportes());
+            else if (destino == "Cotizaciones")
+                AbrirModulo(new Cotizacion());
+            else if (destino == "Facturas")
+                AbrirModulo(new Factura());
             else
                 MensajeCodelex.Mostrar(this, "Próximamente", "Destino recibido: [" + destino + "]", true);
         }

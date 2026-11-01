@@ -1,0 +1,330 @@
+﻿<Window x:Class="Codelex.Facturas_y_Cotizaciones.Factura"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Facturas" Height="800" Width="1150"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize"
+        FontFamily="Segoe UI">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="EstilosDocumento.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Border CornerRadius="14">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="24" ShadowDepth="0" Opacity="0.35" Color="#000000"/>
+            </Border.Effect>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Encabezado Superior -->
+                <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{StaticResource BgGradient}"
+                        Padding="28,18,14,18" MouseLeftButtonDown="DragWindow">
+                    <Grid>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Volver"
+                                    Width="46" Height="36" Margin="0,0,14,0" VerticalAlignment="Center">
+                                <Path Data="M30,12 H2 M8,18 L2,12 L8,6"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      StrokeThickness="1.9" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                      StrokeLineJoin="Round" Stretch="Uniform" Width="32" Height="14"/>
+                            </Button>
+                            <Border Width="42" Height="42" CornerRadius="12" Background="{StaticResource ButtonGradient}">
+                                <Path Data="M14,2 H6 A2,2 0 0 0 4,4 V20 A2,2 0 0 0 6,22 H18 A2,2 0 0 0 20,20 V8 Z M14,2 V8 H20 M16,13 H8 M16,17 H8 M10,9 H8"
+                                      Stroke="White" StrokeThickness="1.8" StrokeLineJoin="Round"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stretch="Uniform"
+                                      Width="22" Height="22"/>
+                            </Border>
+                            <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="Facturas" Foreground="White" FontSize="22" FontWeight="Bold"/>
+                                <TextBlock Text="Facture los servicios realizados y registre el cobro." Foreground="{StaticResource Muted}" FontSize="13"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                            <Button Style="{StaticResource WindowButton}" Click="Minimizar_Click" ToolTip="Minimizar">
+                                <Path Data="M0,0 L10,0"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      StrokeThickness="1.6" Margin="0,8,0,0"/>
+                            </Button>
+                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Cerrar">
+                                <Path Data="M0,0 L10,10 M10,0 L0,10"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      StrokeThickness="1.6"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <!-- Fondo del contenido (evita el borde claro en las esquinas verdes) -->
+                <Border Grid.Row="1" CornerRadius="0,0,14,14" Background="{StaticResource Surface}"/>
+
+                <!-- Contenedor Principal -->
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <Grid Margin="20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <!-- SECCIÓN 1: Datos de la factura -->
+                        <Border Grid.Row="0" Style="{StaticResource Card}" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="Datos de la factura" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                        <TextBlock Text="N.° de factura:" Style="{StaticResource Etiqueta}"/>
+                                        <TextBox x:Name="txtN_documento" Text="(automático)" IsReadOnly="True"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                                        <TextBlock Text="Fecha:" Style="{StaticResource Etiqueta}"/>
+                                        <DatePicker x:Name="dpFecha"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Orden a facturar:" Style="{StaticResource Etiqueta}"/>
+                                        <TextBox x:Name="txtOrdenSeleccionada" IsReadOnly="True"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- SECCIÓN 2: Datos del cliente y Lugar del servicio -->
+                        <Grid Grid.Row="1" Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="380"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Columna Izquierda: Datos del cliente -->
+                            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,15,0">
+                                <StackPanel>
+                                    <TextBlock Text="Datos del cliente" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
+
+                                    <TextBlock Text="RTN / N.° de identidad:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="TxtIdentidad" Margin="0,0,0,8" IsReadOnly="True"/>
+
+                                    <TextBlock Text="Empresa:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="TxtEmpresa" Margin="0,0,0,8" IsReadOnly="True"/>
+
+                                    <TextBlock Text="Nombre del contacto:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="TxtContacto" Margin="0,0,0,8" IsReadOnly="True"/>
+
+                                    <TextBlock Text="Apellido del contacto:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="TxtApellido" Margin="0,0,0,8" IsReadOnly="True"/>
+
+                                    <TextBlock Text="Teléfono:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="TxtTelefono" Margin="0,0,0,8" IsReadOnly="True"/>
+
+                                    <TextBlock Text="Correo electrónico:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="TxtCorreo" Margin="0,0,0,10" IsReadOnly="True"/>
+
+                                    <TextBlock Text="Los datos se toman de la orden seleccionada." Style="{StaticResource Nota}" Margin="0,0,0,8"/>
+                                    <Button x:Name="btnLimpiarCliente" Content="Limpiar orden" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Click="btnLimpiarClientes"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Columna Derecha: Lugar del servicio -->
+                            <Border Grid.Column="1" Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Text="Lugar del servicio" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
+
+                                    <TextBlock Text="Locación:" Style="{StaticResource Etiqueta}"/>
+                                    <ComboBox x:Name="cmbLocacion" Margin="0,0,0,8"/>
+
+                                    <TextBlock Text="Tipo de locación:" Style="{StaticResource Etiqueta}"/>
+                                    <ComboBox x:Name="cmbTipoLocacion" Margin="0,0,0,8"/>
+
+                                    <TextBlock Text="Dirección:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="txtDireccion" Height="70" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,0,0,8" IsReadOnly="True"/>
+
+                                    <TextBlock Text="Lugar tomado de la orden seleccionada." Style="{StaticResource Nota}"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- SECCIÓN 3: Servicios y detalle -->
+                        <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="Servicios prestados y adicionales" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
+
+                                <!-- Fila para agregar líneas -->
+                                <Grid Margin="0,0,0,10">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="80"/>
+                                        <ColumnDefinition Width="110"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                        <TextBlock Text="Servicio (opcional):" Style="{StaticResource Etiqueta}"/>
+                                        <ComboBox x:Name="cmbServicioRapido"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                                        <TextBlock Text="Concepto:" Style="{StaticResource Etiqueta}"/>
+                                        <TextBox x:Name="txtConcepto"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                                        <TextBlock Text="Cantidad:" Style="{StaticResource Etiqueta}"/>
+                                        <TextBox x:Name="txtCantidad"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="3" Margin="0,0,10,0">
+                                        <TextBlock Text="Precio (L):" Style="{StaticResource Etiqueta}"/>
+                                        <TextBox x:Name="txtPrecio"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="4" Margin="0,0,10,0">
+                                        <TextBlock Text=" " Style="{StaticResource Etiqueta}"/>
+                                        <Button x:Name="btnAgregarLinea" Content="Agregar" Style="{StaticResource PrimaryButton}"
+                                                Width="100" Click="btnAgregarLinea_Click"
+                                                ToolTip="Agrega un servicio adicional al detalle"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="5">
+                                        <TextBlock Text=" " Style="{StaticResource Etiqueta}"/>
+                                        <Button x:Name="btnQuitarLinea" Content="Quitar" Style="{StaticResource SecondaryButton}"
+                                                Width="100" Click="btnQuitarLinea_Click"
+                                                ToolTip="Quita la línea seleccionada (solo adicionales)"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <DataGrid x:Name="dgLineas" Style="{StaticResource Tabla}" Height="150" AutoGenerateColumns="False"
+                                          CanUserAddRows="False" IsReadOnly="True" SelectionMode="Single">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Tipo" Binding="{Binding Origen, Mode=OneWay}" Width="100"/>
+                                        <DataGridTextColumn Header="Concepto" Binding="{Binding Concepto, Mode=OneWay}" Width="*"/>
+                                        <DataGridTextColumn Header="Cantidad" Binding="{Binding Cantidad, Mode=OneWay}" Width="90"/>
+                                        <DataGridTextColumn Header="Precio (L)" Binding="{Binding Precio, Mode=OneWay, StringFormat=N2}" Width="120"/>
+                                        <DataGridTextColumn Header="Subtotal (L)" Binding="{Binding Subtotal, Mode=OneWay, StringFormat=N2}" Width="130"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <!-- Totales -->
+                                <Grid Margin="0,12,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="300"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <Grid Grid.Column="1" VerticalAlignment="Bottom">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Subtotal:" Style="{StaticResource Etiqueta}"/>
+                                        <TextBlock x:Name="lblSubtotal" Grid.Row="0" Grid.Column="1" Text="L 0.00" Foreground="{StaticResource DarkText}" FontSize="13.5"/>
+
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="ISV (15%):" Style="{StaticResource Etiqueta}" Margin="0,4,0,5"/>
+                                        <TextBlock x:Name="lblIsv" Grid.Row="1" Grid.Column="1" Text="L 0.00" Foreground="{StaticResource DarkText}" FontSize="13.5" Margin="0,4,0,0"/>
+
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Total a pagar:" Style="{StaticResource TituloCard}" Margin="0,6,0,0"/>
+                                        <TextBlock x:Name="lblTotal" Grid.Row="2" Grid.Column="1" Text="L 0.00" Style="{StaticResource TituloCard}" Margin="0,6,0,0"/>
+                                    </Grid>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- SECCIÓN 4: Pago -->
+                        <Border Grid.Row="3" Style="{StaticResource Card}" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="Forma de pago" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                        <TextBlock Text="Método de pago:" Style="{StaticResource Etiqueta}"/>
+                                        <ComboBox x:Name="cmbMetodoPago"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                                        <TextBlock Text="Cuotas:" Style="{StaticResource Etiqueta}"/>
+                                        <ComboBox x:Name="cmbCuotas"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Valor por cuota:" Style="{StaticResource Etiqueta}"/>
+                                        <TextBlock x:Name="lblValorCuota" Text="1 x L 0.00" Style="{StaticResource TituloCard}" Margin="0,8,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Text="Contado es un solo pago. De 6 a 24 cuotas se crea una cuenta por cobrar con cuotas mensuales." Style="{StaticResource Nota}" Margin="0,10,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- SECCIÓN 5: Botones de acción -->
+                        <UniformGrid Grid.Row="4" Columns="3" Margin="0,0,0,15">
+                            <Button x:Name="btnNuevoDocumento" Content="Nueva factura" Style="{StaticResource SecondaryButton}"
+                                    Margin="0,0,5,0" Click="btnNuevoDocumento_Click"
+                                    ToolTip="Limpia el formulario para empezar una nueva"/>
+                            <Button x:Name="btnGuardar" Content="Guardar factura" Style="{StaticResource PrimaryButton}"
+                                    Margin="5,0,5,0" Click="btnGuardar_Click"
+                                    ToolTip="Guarda la factura"/>
+                            <Button x:Name="btnCancelar" Content="Cancelar" Style="{StaticResource SecondaryButton}"
+                                    Margin="5,0,0,0" Click="btnCancelar_Click"
+                                    ToolTip="Cierra la ventana"/>
+                        </UniformGrid>
+
+                        <!-- SECCIÓN 6: Órdenes finalizadas -->
+                        <Border Grid.Row="5" Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Órdenes finalizadas por facturar (haga clic en una para cargar sus datos)" Style="{StaticResource TituloCard}" FontSize="13" Margin="0,0,0,8"/>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                    <TextBlock Text="Buscar:" Style="{StaticResource Etiqueta}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <TextBox x:Name="txtBuscarOrden" Width="250" Margin="0,0,10,0" TextChanged="txtBuscarOrden_TextChanged"/>
+                                    <TextBlock Text="por N.° de orden, empresa o cliente" Style="{StaticResource Nota}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <DataGrid x:Name="dgOrdenes" Style="{StaticResource Tabla}" Height="140" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" SelectionMode="Single" SelectionChanged="dgOrdenes_SelectionChanged">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="N.° orden" Binding="{Binding orden_id}" Width="*"/>
+                                        <DataGridTextColumn Header="Fecha servicio" Binding="{Binding fecha_servicio, StringFormat=dd/MM/yyyy}" Width="*"/>
+                                        <DataGridTextColumn Header="Empresa" Binding="{Binding nombreEmpresa}" Width="*"/>
+                                        <DataGridTextColumn Header="Contacto" Binding="{Binding nombreCliente}" Width="*"/>
+                                        <DataGridTextColumn Header="Servicio" Binding="{Binding nombreServicio}" Width="*"/>
+                                        <DataGridTextColumn Header="Locación" Binding="{Binding nombreLocacion}" Width="*"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Border>
+
+                    </Grid>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

@@ -2,7 +2,10 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using Codelex.BDD;
+using Codelex.Clases_BDD;
+using Microsoft.Win32;
 
 namespace Codelex
 {
@@ -23,12 +26,12 @@ namespace Codelex
 
         private const string IconoGestionVehiculos = "M8,6 H21 M8,12 H21 M8,18 H21 M3,6 H3.01 M3,12 H3.01 M3,18 H3.01";
 
-        // Nivel mínimo de rol para ver cada sección del Panel principal.
+        // Nivel mínimo de rol para ver cada sección.
         private static readonly Dictionary<string, NivelAcceso> NivelPorSeccion = new Dictionary<string, NivelAcceso>
         {
-            { "inicio", NivelAcceso.Basico },
-            { "mitrabajo", NivelAcceso.Basico },
+            { "miperfil", NivelAcceso.Basico },
 
+            { "inicio", NivelAcceso.Medio },
             { "ordenes", NivelAcceso.Medio },
             { "vehiculos", NivelAcceso.Medio },
             { "clientes", NivelAcceso.Medio },
@@ -61,6 +64,8 @@ namespace Codelex
             { "Reportes", NivelAcceso.Avanzado }
         };
 
+        private readonly FotoPerfilBD fotoBD = new FotoPerfilBD();
+        private DateTime ultimoCierrePerfil = DateTime.MinValue;
         private string _seccionActual = "inicio";
 
         public Menu()
@@ -70,13 +75,25 @@ namespace Codelex
             string fecha = DateTime.Now.ToString("dddd, d 'de' MMMM 'de' yyyy", new CultureInfo("es"));
             txtFecha.Text = char.ToUpper(fecha[0]) + fecha.Substring(1);
 
-            if (Sesion.NombreCompleto != "")
-                txtFecha.Text += "  ·  " + Sesion.NombreCompleto + " (" + Sesion.Rol + ")";
+            txtIniciales.Text = Sesion.Iniciales;
+            txtInicialesGrande.Text = Sesion.Iniciales;
+            txtPopupNombre.Text = Sesion.NombreCompleto;
+            txtPopupRol.Text = Sesion.Rol == "" ? "Sin rol asignado" : Sesion.Rol;
+
+            // Sirve para que un clic en el avatar con el panel abierto lo cierre en vez de reabrirlo.
+            popupPerfil.Closed += (s, e) => ultimoCierrePerfil = DateTime.Now;
 
             AplicarRol();
+            MostrarSeccion(InicioDelRol());
 
+            Loaded += async (s, e) => await CargarFoto();
+        }
 
-            MostrarSeccion(Sesion.Nivel == NivelAcceso.Basico ? "mitrabajo" : "inicio");
+        // ---------- Roles ----------
+
+        private static string InicioDelRol()
+        {
+            return Sesion.Nivel == NivelAcceso.Basico ? "miperfil" : "inicio";
         }
 
         private static bool PuedeSeccion(string clave)
@@ -94,12 +111,14 @@ namespace Codelex
             return seccionActual == "inicio" ? PuedeSeccion(destino) : PuedeDestino(destino);
         }
 
-
+        // Oculta del menú lateral las secciones que el rol no puede usar.
         private void AplicarRol()
         {
             foreach (RadioButton boton in panelNav.Children)
                 boton.Visibility = PuedeSeccion("" + boton.Tag) ? Visibility.Visible : Visibility.Collapsed;
         }
+
+        // ---------- Ventana ----------
 
         private void DragWindow(object sender, MouseButtonEventArgs e)
         {
@@ -117,8 +136,25 @@ namespace Codelex
             Close();
         }
 
+        // ---------- Perfil y foto ----------
+
+        private void Perfil_Click(object sender, RoutedEventArgs e)
+        {
+            if ((DateTime.Now - ultimoCierrePerfil).TotalMilliseconds < 250)
+                return;
+
+            popupPerfil.IsOpen = true;
+        }
+
+        private void MiPerfil_Click(object sender, RoutedEventArgs e)
+        {
+            popupPerfil.IsOpen = false;
+            MostrarSeccion("miperfil");
+        }
+
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
+            popupPerfil.IsOpen = false;
             Sesion.Cerrar();
 
             if (CuentasRecordadas.Listar().Count > 0)
@@ -128,6 +164,87 @@ namespace Codelex
 
             Close();
         }
+
+        private async Task CargarFoto()
+        {
+            if (Sesion.UsuarioId == 0)
+                return;
+
+            try
+            {
+                int usuarioId = Sesion.UsuarioId;
+                byte[]? datos = await Task.Run(() => fotoBD.Obtener(usuarioId));
+                PintarAvatar(datos == null ? null : FotoPerfil.Cargar(datos));
+            }
+            catch
+            {
+                // Si no se puede leer la foto, se quedan las iniciales.
+            }
+        }
+
+        private async void CambiarFoto_Click(object sender, RoutedEventArgs e)
+        {
+            popupPerfil.IsOpen = false;
+
+            OpenFileDialog dialogo = new OpenFileDialog();
+            dialogo.Title = "Elige tu foto de perfil";
+            dialogo.Filter = "Imágenes (*.jpg;*.jpeg;*.png;*.bmp)|*.jpg;*.jpeg;*.png;*.bmp";
+
+            if (dialogo.ShowDialog(this) != true)
+                return;
+
+            try
+            {
+                byte[] foto = FotoPerfil.Preparar(dialogo.FileName);
+                int usuarioId = Sesion.UsuarioId;
+
+                await Task.Run(() => fotoBD.Guardar(usuarioId, foto));
+                PintarAvatar(FotoPerfil.Cargar(foto));
+            }
+            catch (Exception ex)
+            {
+                MensajeCodelex.Mostrar(this, "Foto de perfil", "No se pudo cambiar la foto. " + ex.Message, false);
+            }
+        }
+
+        private async void QuitarFoto_Click(object sender, RoutedEventArgs e)
+        {
+            popupPerfil.IsOpen = false;
+
+            try
+            {
+                int usuarioId = Sesion.UsuarioId;
+                await Task.Run(() => fotoBD.Guardar(usuarioId, null));
+                PintarAvatar(null);
+            }
+            catch (Exception ex)
+            {
+                MensajeCodelex.Mostrar(this, "Foto de perfil", "No se pudo quitar la foto. " + ex.Message, false);
+            }
+        }
+
+        // foto = null deja las iniciales con el degradado.
+        private void PintarAvatar(ImageSource? foto)
+        {
+            if (foto == null)
+            {
+                Brush degradado = (Brush)FindResource("ButtonGradient");
+                avatarFondo.Background = degradado;
+                avatarGrande.Background = degradado;
+                txtIniciales.Visibility = Visibility.Visible;
+                txtInicialesGrande.Visibility = Visibility.Visible;
+                btnQuitarFoto.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            avatarFondo.Background = new ImageBrush(foto) { Stretch = Stretch.UniformToFill };
+            avatarGrande.Background = new ImageBrush(foto) { Stretch = Stretch.UniformToFill };
+            txtIniciales.Visibility = Visibility.Collapsed;
+            txtInicialesGrande.Visibility = Visibility.Collapsed;
+            btnQuitarFoto.Visibility = Visibility.Visible;
+        }
+
+        // ---------- Navegación ----------
 
         private void Nav_Click(object sender, RoutedEventArgs e)
         {
@@ -146,13 +263,11 @@ namespace Codelex
                 AbrirDestino(destino);
         }
 
+        // Marca el botón de la barra lateral; si la sección no está en la barra (Mi perfil), no marca ninguno.
         private void MarcarBoton(string clave)
         {
             foreach (RadioButton boton in panelNav.Children)
-            {
-                if ("" + boton.Tag == clave)
-                    boton.IsChecked = true;
-            }
+                boton.IsChecked = "" + boton.Tag == clave;
         }
 
         private void Encabezado(string titulo, string subtitulo)
@@ -171,7 +286,7 @@ namespace Codelex
             }
 
             if (!PuedeSeccion(clave))
-                clave = "inicio";
+                clave = InicioDelRol();
 
             _seccionActual = clave;
             MarcarBoton(clave);
@@ -181,7 +296,6 @@ namespace Codelex
             if (clave == "inicio")
             {
                 Encabezado("Panel principal", "Selecciona un módulo para comenzar.");
-                opciones.Add(new OpcionMenu("Mi trabajo", "Consulta tus datos y las órdenes en las que estás asignado.", IconoUsuarios, "mitrabajo"));
                 opciones.Add(new OpcionMenu("Cotizaciones y facturación", "Genera cotizaciones y facturas para tus clientes.", IconoFacturacion, "facturacion"));
                 opciones.Add(new OpcionMenu("Reportes", "Consulta reportes de órdenes, asistencia y empleados.", IconoReportes, "reportes"));
                 opciones.Add(new OpcionMenu("Órdenes", "Ingresa y gestiona las órdenes de tus clientes.", IconoOrdenes, "ordenes"));
@@ -191,9 +305,9 @@ namespace Codelex
                 opciones.Add(new OpcionMenu("Inventario", "Controla productos, existencias y movimientos.", IconoInventario, "inventario"));
                 opciones.Add(new OpcionMenu("Usuarios", "Administra las cuentas de acceso al sistema.", IconoUsuarios, "usuarios"));
             }
-            else if (clave == "mitrabajo")
+            else if (clave == "miperfil")
             {
-                Encabezado("Mi trabajo", "Consulta tu información y tus órdenes asignadas.");
+                Encabezado("Mi perfil", "Consulta tu información y tus órdenes asignadas.");
                 opciones.Add(new OpcionMenu("Mis datos", "Consulta tu perfil de empleado, tu asistencia y tus órdenes.", IconoEmpleados, "MisDatos"));
                 opciones.Add(new OpcionMenu("Mis órdenes", "Revisa el detalle de las órdenes en las que estás asignado.", IconoOrdenes, "MisOrdenes"));
             }

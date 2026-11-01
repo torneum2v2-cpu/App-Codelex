@@ -17,6 +17,21 @@
         public static string Rol { get; private set; } = "";
         public static NivelAcceso Nivel { get; private set; } = NivelAcceso.SinRol;
 
+        public static string Iniciales
+        {
+            get
+            {
+                string[] partes = NombreCompleto.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                if (partes.Length >= 2)
+                    return (partes[0][0].ToString() + partes[1][0]).ToUpper();
+                if (partes.Length == 1)
+                    return partes[0][0].ToString().ToUpper();
+
+                return NombreUsuario.Length > 0 ? NombreUsuario[0].ToString().ToUpper() : "?";
+            }
+        }
+
         public static void Iniciar(Usuario usuario)
         {
             UsuarioId = usuario.UsuarioId;

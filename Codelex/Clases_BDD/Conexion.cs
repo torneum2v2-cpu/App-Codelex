@@ -1,4 +1,5 @@
 ﻿using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace Codelex.BDD
 {
@@ -12,6 +13,16 @@ namespace Codelex.BDD
             try
             {
                 conexion.Open();
+
+                if (Sesion.UsuarioId > 0)
+                {
+                    SqlCommand contexto = new SqlCommand("sp_set_session_context", conexion);
+                    contexto.CommandType = CommandType.StoredProcedure;
+                    contexto.Parameters.AddWithValue("@key", "usuario_id");
+                    contexto.Parameters.AddWithValue("@value", Sesion.UsuarioId);
+                    contexto.ExecuteNonQuery();
+                }
+
                 return conexion;
             }
             catch (Exception ex)

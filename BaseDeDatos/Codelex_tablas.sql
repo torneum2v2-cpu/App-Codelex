@@ -54,6 +54,7 @@ CREATE TABLE USUARIOS
 	contrasena_hash VARCHAR(255),
 	passkey_id VARBINARY(1023) NULL,
 	passkey_clave VARBINARY(1024) NULL,
+	foto_perfil VARBINARY(MAX) NULL,
 	rol_id INT NULL CONSTRAINT FK_USUARIOS_ROLES REFERENCES ROLES(rol_id),
 	estadoUsuario BIT NOT NULL CONSTRAINT DF_USUARIOS_estadoUsuario DEFAULT 1
 )
@@ -290,6 +291,50 @@ CREATE TABLE FACTURAS
 )
 GO
 
+IF OBJECT_ID('COTIZACIONES') IS NULL
+CREATE TABLE COTIZACIONES
+(
+	cotizacion_id VARCHAR(50) PRIMARY KEY NOT NULL,
+	identificacionCliente VARCHAR(30),
+	nombreEmpresa VARCHAR(50),
+	nombreCliente VARCHAR(50),
+	apellidoCliente VARCHAR(50),
+	telefonoCliente VARCHAR(50),
+	correoCliente VARCHAR(50),
+	locacion_id INT NULL FOREIGN KEY REFERENCES LOCACIONES(locacion_id),
+	direccion VARCHAR(80),
+	fechaCotizacion DATE,
+	valida_hasta DATE,
+	observaciones VARCHAR(200),
+	precio_cotizado MONEY
+)
+GO
+
+IF OBJECT_ID('COTIZACION_DETALLE') IS NULL
+CREATE TABLE COTIZACION_DETALLE
+(
+	cotizacion_id VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES COTIZACIONES(cotizacion_id),
+	linea INT NOT NULL,
+	concepto VARCHAR(150) NOT NULL,
+	cantidad INT NOT NULL,
+	precio_unitario MONEY NOT NULL,
+	CONSTRAINT PK_COTIZACION_DETALLE PRIMARY KEY (cotizacion_id, linea)
+)
+GO
+
+IF OBJECT_ID('FACTURA_DETALLE') IS NULL
+CREATE TABLE FACTURA_DETALLE
+(
+	factura_id INT NOT NULL FOREIGN KEY REFERENCES FACTURAS(factura_id),
+	linea INT NOT NULL,
+	concepto VARCHAR(150) NOT NULL,
+	cantidad INT NOT NULL,
+	precio_unitario MONEY NOT NULL,
+	adicional BIT NOT NULL DEFAULT 0,
+	CONSTRAINT PK_FACTURA_DETALLE PRIMARY KEY (factura_id, linea)
+)
+GO
+
 IF OBJECT_ID('COMPRAS_EQUIPOS') IS NULL
 CREATE TABLE COMPRAS_EQUIPOS
 (
@@ -371,7 +416,23 @@ IF TYPE_ID('dbo.tipo_ingreso_equipos') IS NULL
 	);
 GO
 
+IF TYPE_ID('dbo.tipo_lista_lineas') IS NULL
+	CREATE TYPE dbo.tipo_lista_lineas AS TABLE
+	(
+		concepto VARCHAR(150) NOT NULL,
+		cantidad INT NOT NULL,
+		precio_unitario DECIMAL(12, 2) NOT NULL,
+		adicional BIT NOT NULL
+	);
+GO
+
 -- Datos iniciales
+
+INSERT INTO FORMAS_PAGOS (nombreFormaPago)
+SELECT v.nombre
+FROM (VALUES ('Efectivo'), ('Tarjeta'), ('Transferencia'), ('Cheque')) v(nombre)
+WHERE NOT EXISTS (SELECT 1 FROM FORMAS_PAGOS f WHERE f.nombreFormaPago = v.nombre);
+GO
 
 INSERT INTO ROLES (nombreRol)
 SELECT v.nombre

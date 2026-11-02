@@ -19,9 +19,17 @@ namespace Codelex
         {
             ContentRendered -= EntrarAutomatico;
 
-            List<CuentaRecordada> cuentas = CuentasRecordadas.Listar();
-            if (cuentas.Count == 1)
-                await Entrar(cuentas[0]);
+            try
+            {
+                List<CuentaRecordada> cuentas = CuentasRecordadas.Listar();
+                if (cuentas.Count == 1)
+                    await Entrar(cuentas[0]);
+            }
+            catch (Exception ex)
+            {
+                IsEnabled = true;
+                MostrarError("No se pudo entrar: " + ex.Message);
+            }
         }
 
         private void CargarCuentas()
@@ -47,7 +55,8 @@ namespace Codelex
         {
             txtError.Visibility = Visibility.Collapsed;
             IsEnabled = false;
-            Cargando cargando = Cargando.Iniciar(this, "Entrando...");
+            Cargando? cargando = null;
+            try { cargando = Cargando.Iniciar(this, "Entrando..."); } catch { }
 
             Usuario usuario = new Usuario();
             string clave = CuentasRecordadas.ObtenerContrasena(cuenta);
@@ -64,7 +73,7 @@ namespace Codelex
                 errorBD = ex.Message;
             }
 
-            cargando.Terminar();
+            try { cargando?.Terminar(); } catch { }
             IsEnabled = true;
 
             if (errorBD != "")

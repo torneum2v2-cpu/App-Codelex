@@ -5,6 +5,7 @@ namespace Codelex.Clases_BDD
 {
     class DatosOrden
     {
+        public string CotizacionId = "";
         public string Rtn = "";
         public int LocacionId = 0;
         public int ServicioId = 0;
@@ -51,6 +52,21 @@ namespace Codelex.Clases_BDD
             return Consultar(Procedimiento("sp_ListarProductosEquipos"));
         }
 
+        public DataTable ListarCotizaciones(string texto, string rtn)
+        {
+            SqlCommand comando = Procedimiento("sp_ListarCotizacionesOrden");
+            comando.Parameters.AddWithValue("@texto", texto.Trim());
+            comando.Parameters.AddWithValue("@identificacionCliente", rtn.Trim());
+            return Consultar(comando);
+        }
+
+        public DataTable DetalleCotizacion(string cotizacionId)
+        {
+            SqlCommand comando = Procedimiento("sp_DetalleCotizacion");
+            comando.Parameters.AddWithValue("@cotizacion_id", cotizacionId);
+            return Consultar(comando);
+        }
+
         public string ValidarCantidad(string texto, int stock, out int cantidad)
         {
             cantidad = 0;
@@ -88,6 +104,7 @@ namespace Codelex.Clases_BDD
             comando.Parameters.AddWithValue("@observaciones", datos.Observaciones.Trim());
             comando.Parameters.AddWithValue("@turno", datos.Turno.Trim());
             comando.Parameters.AddWithValue("@piso_area", datos.PisoArea.Trim());
+            comando.Parameters.AddWithValue("@cotizacion_id", datos.CotizacionId.Trim());
 
             AgregarLista(comando, "@actividades", "dbo.tipo_lista_actividades",
                          TablaDeEnteros("actividad_id", datos.Actividades));
@@ -115,8 +132,10 @@ namespace Codelex.Clases_BDD
 
         private string ValidarOrden(DatosOrden datos)
         {
+            if (datos.CotizacionId.Trim() == "")
+                return "Seleccione una cotización.";
             if (datos.Rtn.Trim() == "")
-                return "Seleccione un cliente de la lista inferior.";
+                return "La cotización no tiene un cliente registrado.";
             if (datos.LocacionId <= 0)
                 return "Seleccione la locación.";
             if (datos.ServicioId <= 0)

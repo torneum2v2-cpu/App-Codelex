@@ -1,11 +1,11 @@
-﻿<Window x:Class="Codelex.ElegirCliente"
+﻿<Window x:Class="Codelex.SeleccionarCotizacion"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Codelex"
         mc:Ignorable="d"
-        Title="Codelex - Buscar cliente" Width="900" Height="600"
+        Title="Codelex - Seleccionar cotización" Width="980" Height="600"
         WindowStartupLocation="CenterOwner"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize"
@@ -260,8 +260,8 @@
                                       Width="22" Height="22"/>
                             </Border>
                             <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
-                                <TextBlock Text="Buscar cliente" Foreground="White" FontSize="22" FontWeight="Bold"/>
-                                <TextBlock Text="Elija el cliente para la nueva orden." Foreground="{StaticResource Muted}" FontSize="13"/>
+                                <TextBlock Text="Seleccionar cotización" Foreground="White" FontSize="22" FontWeight="Bold"/>
+                                <TextBlock Text="Toda orden nace de una cotización. Elija la cotización del cliente." Foreground="{StaticResource Muted}" FontSize="13"/>
                             </StackPanel>
                         </StackPanel>
 
@@ -289,7 +289,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="txtBuscar" Grid.Column="0" Margin="0,0,10,0" KeyDown="Buscar_KeyDown"
-                                     ToolTip="Escriba un RTN, empresa o nombre y presione Enter"/>
+                                     ToolTip="Escriba el número de cotización, RTN, empresa o nombre y presione Enter"/>
                             <Button x:Name="btnBuscar" Grid.Column="1" Content="Buscar" Width="110"
                                     Style="{StaticResource PrimaryButton}" Click="Buscar_Click"/>
                         </Grid>
@@ -297,29 +297,33 @@
 
                     <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0,16,0,0">
                         <DockPanel>
-                            <TextBlock x:Name="txtResultado" DockPanel.Dock="Top" Text="Clientes activos"
+                            <TextBlock x:Name="txtResultado" DockPanel.Dock="Top" Text="Cotizaciones pendientes"
                                        Style="{StaticResource TituloCard}" Margin="0,0,0,12"/>
-                            <DataGrid x:Name="dgClientes" Style="{StaticResource Tabla}"
+                            <DataGrid x:Name="dgCotizaciones" Style="{StaticResource Tabla}"
                                       AutoGenerateColumns="False" IsReadOnly="True"
                                       CanUserAddRows="False" SelectionMode="Single"
-                                      MouseDoubleClick="dgClientes_DoubleClick">
+                                      MouseDoubleClick="dgCotizaciones_DoubleClick">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="RTN / Identidad" Binding="{Binding identificacionCliente}" Width="1.2*"/>
-                                    <DataGridTextColumn Header="Empresa" Binding="{Binding nombreEmpresa}" Width="1.3*"/>
-                                    <DataGridTextColumn Header="Contacto" Binding="{Binding nombreCliente}" Width="*"/>
-                                    <DataGridTextColumn Header="Apellido" Binding="{Binding apellidoCliente}" Width="*"/>
-                                    <DataGridTextColumn Header="Teléfono" Binding="{Binding telefonoCliente}" Width="0.8*"/>
-                                    <DataGridTextColumn Header="Correo" Binding="{Binding correoCliente}" Width="1.3*"/>
+                                    <DataGridTextColumn Header="N.°" Binding="{Binding cotizacion_id}" Width="0.9*"/>
+                                    <DataGridTextColumn Header="Fecha" Binding="{Binding fechaCotizacion, StringFormat=dd/MM/yyyy}" Width="0.8*"/>
+                                    <DataGridTextColumn Header="Válida hasta" Binding="{Binding valida_hasta, StringFormat=dd/MM/yyyy}" Width="0.8*"/>
+                                    <DataGridTextColumn Header="RTN / Identidad" Binding="{Binding identificacionCliente}" Width="1.1*"/>
+                                    <DataGridTextColumn Header="Cliente" Binding="{Binding cliente}" Width="1.5*"/>
+                                    <DataGridTextColumn Header="Total (L)" Binding="{Binding precio_cotizado, StringFormat=N2}" Width="0.8*"/>
+                                    <DataGridTextColumn Header="Estado" Binding="{Binding estado}" Width="1.1*"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </DockPanel>
                     </Border>
 
                     <Grid Grid.Row="2" Margin="0,14,0,0">
-                        <TextBlock Text="Solo aparecen clientes activos. Doble clic para elegir."
+                        <TextBlock Text="Solo aparecen cotizaciones que todavía no tienen orden. Doble clic para elegir."
                                    Style="{StaticResource Nota}" VerticalAlignment="Center" Width="360"
                                    HorizontalAlignment="Left"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button x:Name="btnAgregarCotizacion" Content="Agregar cotización" Width="160" Margin="0,0,10,0"
+                                    Style="{StaticResource SecondaryButton}" Click="AgregarCotizacion_Click"
+                                    ToolTip="¿No encuentra la cotización? Créela aquí"/>
                             <Button x:Name="btnCancelar" Content="Cancelar" Width="110" Margin="0,0,10,0"
                                     Style="{StaticResource SecondaryButton}" Click="Cancelar_Click"/>
                             <Button x:Name="btnSeleccionar" Content="Seleccionar" Width="130"

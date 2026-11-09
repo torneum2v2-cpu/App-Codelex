@@ -40,9 +40,10 @@ namespace Codelex
         DataTable empleados = new DataTable();
         DataTable locacionesCliente = new DataTable();
 
-        string rtnInicial = "";
+        string cotizacionId = "";
+        DataRow? cotizacionInicial = null;
 
-        public IngresarOrden()
+        private IngresarOrden()
         {
             InitializeComponent();
 
@@ -57,22 +58,9 @@ namespace Codelex
             txtCantidad.PreviewTextInput += SoloNumeros;
             Loaded += Window_Loaded;
         }
-        public IngresarOrden(string rtn) : this()
+        public IngresarOrden(DataRow cotizacion) : this()
         {
-            rtnInicial = rtn;
-        }
-
-        private void SeleccionarClienteInicial()
-        {
-            DataTable tabla = clienteBD.ObtenerCliente(rtnInicial);
-
-            if (tabla.Rows.Count == 0 || !Convert.ToBoolean(tabla.Rows[0]["estadoCliente"]))
-            {
-                Aviso("El cliente está inactivo, no se pueden crear órdenes para él.");
-                return;
-            }
-
-            LlenarCliente(tabla.Rows[0]);
+            cotizacionInicial = cotizacion;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -80,10 +68,11 @@ namespace Codelex
             try
             {
                 CargarListas();
-                NuevaOrden();
 
-                if (rtnInicial != "")
-                    SeleccionarClienteInicial();
+                if (cotizacionInicial != null)
+                    CargarCotizacion(cotizacionInicial);
+                else
+                    NuevaOrden();
             }
             catch (Exception ex)
             {
@@ -251,8 +240,65 @@ namespace Codelex
             txtCantidad.Text = "";
             txtDescripcionLimpieza.Text = "";
 
+            cotizacionId = "";
+            txtCotizacion.Text = "";
+            txtTotalCotizacion.Text = "";
+            lstCotizacion.Items.Clear();
+
             CargarEmpleadosDisponibles();
             LimpiarCliente();
+        }
+
+        private void CargarCotizacion(DataRow cotizacion)
+        {
+            NuevaOrden();
+
+            cotizacionId = "" + cotizacion["cotizacion_id"];
+            txtCotizacion.Text = cotizacionId;
+            txtDescripcionLimpieza.Text = "" + cotizacion["observaciones"];
+            txtTotalCotizacion.Text = "Total cotizado: L " + Convert.ToDecimal(cotizacion["precio_cotizado"]).ToString("N2");
+
+            DataTable cliente = clienteBD.ObtenerCliente("" + cotizacion["identificacionCliente"]);
+            if (cliente.Rows.Count > 0)
+                LlenarCliente(cliente.Rows[0]);
+
+            if (cotizacion["locacion_id"] != DBNull.Value)
+                SeleccionarPorId(cmbLocacion, Convert.ToInt32(cotizacion["locacion_id"]));
+
+            DataTable detalle = ordenBD.DetalleCotizacion(cotizacionId);
+            foreach (DataRow linea in detalle.Rows)
+            {
+                string concepto = "" + linea["concepto"];
+                lstCotizacion.Items.Add(linea["cantidad"] + " x " + concepto + "   L " + Convert.ToDecimal(linea["subtotal"]).ToString("N2"));
+                SeleccionarServicio(concepto);
+            }
+        }
+
+        private void SeleccionarPorId(ComboBox combo, int id)
+        {
+            foreach (ItemLista item in combo.Items)
+            {
+                if (item.Id == id)
+                {
+                    combo.SelectedItem = item;
+                    return;
+                }
+            }
+        }
+
+        private void SeleccionarServicio(string concepto)
+        {
+            if (cmbTipo_Servicio.SelectedItem != null)
+                return;
+
+            foreach (ItemLista item in cmbTipo_Servicio.Items)
+            {
+                if (item.Texto.Trim().ToLower() == concepto.Trim().ToLower())
+                {
+                    cmbTipo_Servicio.SelectedItem = item;
+                    return;
+                }
+            }
         }
 
         private void LimpiarCliente()
@@ -275,13 +321,21 @@ namespace Codelex
                 e.Handled = true;
         }
 
-        private void BuscarCliente_Click(object sender, RoutedEventArgs e)
+        private void CambiarCotizacion_Click(object sender, RoutedEventArgs e)
         {
-            ElegirCliente ventana = new ElegirCliente();
-            ventana.Owner = this;
+            DataRow? cotizacion = SeleccionarCotizacion.Elegir(this, "");
 
-            if (ventana.ShowDialog() == true && ventana.ClienteElegido != null)
-                LlenarCliente(ventana.ClienteElegido.Row);
+            if (cotizacion == null)
+                return;
+
+            try
+            {
+                CargarCotizacion(cotizacion);
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
+            }
         }
 
         private void LlenarCliente(DataRow fila)
@@ -303,11 +357,6 @@ namespace Codelex
             {
                 MostrarError(ex);
             }
-        }
-
-        private void btnLimpiarClientes(object sender, RoutedEventArgs e)
-        {
-            LimpiarCliente();
         }
 
         private void cmbLocacion_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -428,15 +477,11 @@ namespace Codelex
             lstProductosOrden.Items.Remove(item);
         }
 
-        private void btnNuevaOrden_Click(object sender, RoutedEventArgs e)
-        {
-            NuevaOrden();
-        }
-
         private void btnGuardarOrden_Click(object sender, RoutedEventArgs e)
         {
             DatosOrden datos = new DatosOrden();
 
+            datos.CotizacionId = cotizacionId;
             datos.Rtn = clienteRtn;
             datos.LocacionId = IdSeleccionado(cmbLocacion);
             datos.ServicioId = IdSeleccionado(cmbTipo_Servicio);
@@ -482,9 +527,7 @@ namespace Codelex
                 MensajeCodelex.Mostrar(this, "Órdenes", mensaje, guardada);
 
                 if (guardada)
-                {
-                    NuevaOrden();
-                }
+                    Close();
             }
             catch (Exception ex)
             {

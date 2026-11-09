@@ -1486,6 +1486,63 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE sp_ListarCotizacionesOrden
+	@texto VARCHAR(50) = '',
+	@identificacionCliente VARCHAR(30) = ''
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
+	SET @identificacionCliente = LTRIM(RTRIM(ISNULL(@identificacionCliente, '')));
+
+	SELECT q.cotizacion_id,
+		   q.fechaCotizacion,
+		   q.valida_hasta,
+		   ISNULL(q.identificacionCliente, '') AS identificacionCliente,
+		   COALESCE(NULLIF(q.nombreEmpresa, ''),
+					LTRIM(ISNULL(q.nombreCliente, '') + ' ' + ISNULL(q.apellidoCliente, ''))) AS cliente,
+		   q.locacion_id,
+		   ISNULL(q.observaciones, '') AS observaciones,
+		   q.precio_cotizado,
+		   CASE WHEN c.identificacionCliente IS NULL THEN 'Cliente no registrado'
+				WHEN c.estadoCliente = 0 THEN 'Cliente inactivo'
+				WHEN q.valida_hasta < CAST(GETDATE() AS DATE) THEN 'Vencida'
+				ELSE 'Disponible' END AS estado,
+		   CASE WHEN c.identificacionCliente IS NULL
+				THEN 'El cliente de esta cotización no está registrado. Regístrelo en Clientes antes de crear la orden.'
+				WHEN c.estadoCliente = 0
+				THEN 'El cliente de esta cotización está inactivo.'
+				WHEN q.valida_hasta < CAST(GETDATE() AS DATE)
+				THEN 'Esta cotización ya venció. Haga una cotización nueva.'
+				ELSE '' END AS motivo
+	FROM COTIZACIONES q
+	LEFT JOIN CLIENTES c ON c.identificacionCliente = q.identificacionCliente
+	WHERE NOT EXISTS (SELECT 1 FROM ORDENES o WHERE o.cotizacion_id = q.cotizacion_id)
+	  AND (@identificacionCliente = '' OR q.identificacionCliente = @identificacionCliente)
+	  AND (@texto = ''
+		   OR q.cotizacion_id LIKE '%' + @texto + '%'
+		   OR q.identificacionCliente LIKE '%' + @texto + '%'
+		   OR q.nombreEmpresa LIKE '%' + @texto + '%'
+		   OR ISNULL(q.nombreCliente, '') + ' ' + ISNULL(q.apellidoCliente, '') LIKE '%' + @texto + '%')
+	ORDER BY q.fechaCotizacion DESC, q.cotizacion_id DESC;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_DetalleCotizacion
+	@cotizacion_id VARCHAR(50)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT linea, concepto, cantidad, precio_unitario,
+		   CAST(cantidad * precio_unitario AS MONEY) AS subtotal
+	FROM COTIZACION_DETALLE
+	WHERE cotizacion_id = @cotizacion_id
+	ORDER BY linea;
+END
+GO
+
 CREATE OR ALTER PROCEDURE sp_InsertarOrden
 	@identificacionCliente VARCHAR(30),
 	@locacion_id INT,
@@ -1502,6 +1559,7 @@ CREATE OR ALTER PROCEDURE sp_InsertarOrden
 	@empleados dbo.tipo_lista_empleados READONLY,
 	@productos dbo.tipo_lista_productos READONLY,
 	@equipos dbo.tipo_lista_equipos READONLY,
+	@cotizacion_id VARCHAR(50),
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT,
 	@orden_id VARCHAR(50) OUTPUT
@@ -1515,6 +1573,39 @@ BEGIN
 	SET @orden_id = '';
 
 	SET @identificacionCliente = LTRIM(RTRIM(ISNULL(@identificacionCliente, '')));
+	SET @cotizacion_id = LTRIM(RTRIM(ISNULL(@cotizacion_id, '')));
+
+	IF @cotizacion_id = ''
+	BEGIN
+		SET @mensaje = 'Seleccione una cotizacion.';
+		RETURN;
+	END
+
+	IF NOT EXISTS (SELECT 1 FROM COTIZACIONES WHERE cotizacion_id = @cotizacion_id)
+	BEGIN
+		SET @mensaje = 'La cotizacion no existe.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM ORDENES WHERE cotizacion_id = @cotizacion_id)
+	BEGIN
+		SET @mensaje = 'Esa cotizacion ya tiene una orden.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM COTIZACIONES
+			   WHERE cotizacion_id = @cotizacion_id AND valida_hasta < CAST(GETDATE() AS DATE))
+	BEGIN
+		SET @mensaje = 'La cotizacion ya vencio.';
+		RETURN;
+	END
+
+	IF NOT EXISTS (SELECT 1 FROM COTIZACIONES
+				   WHERE cotizacion_id = @cotizacion_id AND identificacionCliente = @identificacionCliente)
+	BEGIN
+		SET @mensaje = 'El cliente no coincide con el de la cotizacion.';
+		RETURN;
+	END
 
 	IF NOT EXISTS (SELECT 1 FROM CLIENTES
 				   WHERE identificacionCliente = @identificacionCliente AND estadoCliente = 1)
@@ -1565,10 +1656,10 @@ BEGIN
 
 		INSERT INTO ORDENES (orden_id, locacion_id, servicio_id, supervisor_id, vehiculo_id,
 							 fecha_solicitud, fecha_servicio, estado_orden_id, observaciones,
-							 conformidad_cliente, identificacionCliente)
+							 conformidad_cliente, identificacionCliente, cotizacion_id)
 		VALUES (@orden_id, @locacion_id, @servicio_id, @supervisor_id, @vehiculo_id,
 				@fecha_solicitud, @fecha_servicio, @estado_orden_id, @observaciones,
-				0, @identificacionCliente);
+				0, @identificacionCliente, @cotizacion_id);
 
 		INSERT INTO ORDEN_ACTIVIDADES (orden_id, actividad_id, estado, duracion_min)
 		SELECT @orden_id, actividad_id, 0, NULL FROM @actividades;

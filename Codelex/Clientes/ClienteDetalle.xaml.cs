@@ -114,7 +114,11 @@ namespace Codelex
 
         private void AbrirOrden()
         {
-            IngresarOrden ventana = new IngresarOrden(rtn);
+            DataRow? cotizacion = SeleccionarCotizacion.Elegir(this, rtn);
+            if (cotizacion == null)
+                return;
+
+            IngresarOrden ventana = new IngresarOrden(cotizacion);
             ventana.Owner = this;
             ventana.ShowDialog();
 

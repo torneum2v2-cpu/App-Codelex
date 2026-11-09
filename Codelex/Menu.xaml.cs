@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Data;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -376,6 +377,14 @@ namespace Codelex
             ventana.Show();
         }
 
+        private void AbrirOrden()
+        {
+            DataRow? cotizacion = SeleccionarCotizacion.Elegir(this, "");
+
+            if (cotizacion != null)
+                AbrirModulo(new IngresarOrden(cotizacion));
+        }
+
         private void AbrirDestino(string destino)
         {
             // Segunda barrera: aunque alguien llegue aquí, se vuelve a comprobar el rol.
@@ -396,7 +405,7 @@ namespace Codelex
             else if (destino == "GestionVehiculos")
                 AbrirModulo(new GestionVehiculos());
             else if (destino == "IngresarOrden")
-                AbrirModulo(new IngresarOrden());
+                AbrirOrden();
             else if (destino == "Usuarios")
                 AbrirModulo(new Usuarios());
             else if (destino == "Inventario")

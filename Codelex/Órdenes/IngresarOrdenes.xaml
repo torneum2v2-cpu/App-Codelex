@@ -415,23 +415,26 @@
 
                             <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,15,0">
                                 <StackPanel>
-                                    <TextBlock Text="Datos del cliente" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
+                                    <TextBlock Text="Cotización y cliente" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
 
-                                    <TextBlock Text="RTN / N.° de identidad:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBlock Text="Cotización:" Style="{StaticResource Etiqueta}"/>
                                     <Grid Margin="0,0,0,8">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBox x:Name="TxtIdentidad" Grid.Column="0" IsReadOnly="True" Margin="0,0,8,0"/>
-                                        <Button x:Name="btnBuscarCliente" Grid.Column="1" Width="38" Padding="0"
-                                                Style="{StaticResource PrimaryButton}" Click="BuscarCliente_Click"
-                                                ToolTip="Buscar cliente">
+                                        <TextBox x:Name="txtCotizacion" Grid.Column="0" IsReadOnly="True" Margin="0,0,8,0"/>
+                                        <Button x:Name="btnCambiarCotizacion" Grid.Column="1" Width="38" Padding="0"
+                                                Style="{StaticResource PrimaryButton}" Click="CambiarCotizacion_Click"
+                                                ToolTip="Elegir otra cotización">
                                             <Path Data="M11,4 A7,7 0 1 0 11,18 A7,7 0 1 0 11,4 M21,21 L16,16" Stroke="#06282B" StrokeThickness="2"
                                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stretch="Uniform"
                                                   Width="16" Height="16"/>
                                         </Button>
                                     </Grid>
+
+                                    <TextBlock Text="RTN / N.° de identidad:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="TxtIdentidad" IsReadOnly="True" Margin="0,0,0,8"/>
 
                                     <TextBlock Text="Empresa:" Style="{StaticResource Etiqueta}"/>
                                     <TextBox x:Name="TxtEmpresa" IsReadOnly="True" Margin="0,0,0,8"/>
@@ -448,8 +451,11 @@
                                     <TextBlock Text="Correo electrónico:" Style="{StaticResource Etiqueta}"/>
                                     <TextBox x:Name="TxtCorreo" IsReadOnly="True" Margin="0,0,0,10"/>
 
-                                    <TextBlock Text="Use la lupa para buscar el cliente." Style="{StaticResource Nota}" Margin="0,0,0,8"/>
-                                    <Button x:Name="btnLimpiarCliente" Content="Limpiar cliente" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Click="btnLimpiarClientes"/>
+                                    <TextBlock Text="Detalle cotizado:" Style="{StaticResource Etiqueta}"/>
+                                    <ListBox x:Name="lstCotizacion" Height="90" Margin="0,0,0,6"/>
+                                    <TextBlock x:Name="txtTotalCotizacion" Style="{StaticResource Etiqueta}" HorizontalAlignment="Right" Margin="0,0,0,8"/>
+
+                                    <TextBlock Text="Los datos vienen de la cotización. Use la lupa para elegir otra." Style="{StaticResource Nota}"/>
                                 </StackPanel>
                             </Border>
 
@@ -575,8 +581,8 @@
 
                         <UniformGrid Grid.Row="3" Columns="3" Margin="0,0,0,15">
                             <Button x:Name="btnNuevaOrden" Content="Nueva orden" Style="{StaticResource SecondaryButton}"
-                                    Margin="0,0,5,0" Click="btnNuevaOrden_Click"
-                                    ToolTip="Limpia el formulario para registrar una orden nueva"/>
+                                    Margin="0,0,5,0" Click="CambiarCotizacion_Click"
+                                    ToolTip="Elige otra cotización para registrar una orden nueva"/>
                             <Button x:Name="btnGuardarOrden" Content="Guardar orden" Style="{StaticResource PrimaryButton}"
                                     Margin="5,0,5,0" Click="btnGuardarOrden_Click"
                                     ToolTip="Guarda los datos del formulario como una orden nueva"/>

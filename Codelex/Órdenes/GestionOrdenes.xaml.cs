@@ -686,7 +686,11 @@ namespace Codelex.Órdenes
 
             private void btnNuevaOrden_Click(object sender, RoutedEventArgs e)
             {
-                IngresarOrden ventana = new IngresarOrden();
+                DataRow? cotizacion = SeleccionarCotizacion.Elegir(this, "");
+                if (cotizacion == null)
+                    return;
+
+                IngresarOrden ventana = new IngresarOrden(cotizacion);
                 ventana.Owner = this;
                 ventana.ShowDialog();
 

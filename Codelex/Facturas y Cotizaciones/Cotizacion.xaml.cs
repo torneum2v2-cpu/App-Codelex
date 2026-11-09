@@ -72,19 +72,6 @@ namespace Codelex.Facturas_y_Cotizaciones
             }
         }
 
-        private void CargarClientes()
-        {
-            try
-            {
-                DataTable tabla = clienteBD.BuscarClientes(txtBuscarCliente.Text.Trim(), "", "ACTIVOS");
-                dgClientes.ItemsSource = tabla.DefaultView;
-            }
-            catch (Exception ex)
-            {
-                MostrarError(ex);
-            }
-        }
-
         private void CargarLocaciones(string rtn)
         {
             cmbLocacion.Items.Clear();
@@ -123,11 +110,6 @@ namespace Codelex.Facturas_y_Cotizaciones
             txtObservaciones.Text = "";
 
             LimpiarCliente();
-
-            if (txtBuscarCliente.Text != "")
-                txtBuscarCliente.Text = "";
-
-            CargarClientes();
             RecalcularTotales();
         }
 
@@ -142,7 +124,6 @@ namespace Codelex.Facturas_y_Cotizaciones
             txtDireccion.Text = "";
 
             cmbLocacion.Items.Clear();
-            dgClientes.SelectedItem = null;
         }
 
         private void LimpiarEntradaLinea()
@@ -173,18 +154,17 @@ namespace Codelex.Facturas_y_Cotizaciones
             }
         }
 
-        private void txtBuscar_TextChanged(object sender, TextChangedEventArgs e)
+        private void BuscarCliente_Click(object sender, RoutedEventArgs e)
         {
-            CargarClientes();
+            ElegirCliente ventana = new ElegirCliente();
+            ventana.Owner = this;
+
+            if (ventana.ShowDialog() == true && ventana.ClienteElegido != null)
+                LlenarCliente(ventana.ClienteElegido.Row);
         }
 
-        private void dgClientes_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void LlenarCliente(DataRow fila)
         {
-            if (dgClientes.SelectedItem == null)
-                return;
-
-            DataRowView fila = (DataRowView)dgClientes.SelectedItem;
-
             string rtn = "" + fila["identificacionCliente"];
 
             TxtIdentidad.Text = rtn;

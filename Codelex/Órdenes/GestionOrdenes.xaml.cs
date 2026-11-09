@@ -129,8 +129,10 @@ namespace Codelex.Órdenes
             bool reconstruyendo = false;
 
             string detalleMostrado = "";
+            // Factura de la orden mostrada en el detalle (0 = todavía no tiene).
+            int facturaIdActual = 0;
 
-            public GestionOrdenes()
+        public GestionOrdenes()
             {
                 InitializeComponent();
                 cmbCambiarEstado.SelectionChanged += cmbCambiarEstado_SelectionChanged;
@@ -369,6 +371,7 @@ namespace Codelex.Órdenes
             private void LimpiarDetalle()
             {
                 detalleMostrado = "";
+                facturaIdActual = 0;
                 panelDetalle.Visibility = Visibility.Collapsed;
                 pillEstado.Visibility = Visibility.Collapsed;
                 txtSinSeleccion.Visibility = Visibility.Visible;
@@ -415,8 +418,9 @@ namespace Codelex.Órdenes
                     panelDetalle.Visibility = Visibility.Visible;
 
                     detalleMostrado = fila.OrdenId;
+                    facturaIdActual = d["factura_id"] is DBNull ? 0 : Convert.ToInt32(d["factura_id"]);
                     ActualizarAcciones(fila);
-                }
+            }
                 catch (Exception ex)
                 {
                     MostrarError(ex);
@@ -548,8 +552,15 @@ namespace Codelex.Órdenes
                     cmbCambiarEstado.ToolTip = null;
                     btnAplicarEstado.IsEnabled = false;
                     btnCancelarOrden.IsEnabled = false;
+                    btnCrearFactura.Visibility = Visibility.Collapsed;
+                    btnVerFactura.Visibility = Visibility.Collapsed;
                     return;
                 }
+
+                // Crear factura: orden completada sin factura. Ver factura: orden completada con factura.
+                bool completada = fila.Estado == "Completada";
+                btnCrearFactura.Visibility = completada && facturaIdActual == 0 ? Visibility.Visible : Visibility.Collapsed;
+                btnVerFactura.Visibility = completada && facturaIdActual > 0 ? Visibility.Visible : Visibility.Collapsed;
 
                 cmbCambiarEstado.IsEnabled = !fila.EsFinal;
                 cmbCambiarEstado.ToolTip = fila.EsFinal
@@ -643,12 +654,35 @@ namespace Codelex.Órdenes
                 }
             }
 
-            // ---------- Botones ----------
+        // ---------- Botones ----------
+
+            private void btnCrearFactura_Click(object sender, RoutedEventArgs e)
+            {
+                if (dgOrdenes.SelectedItem is not FilaOrden fila)
+                    return;
+
+                Factura ventana = new Factura(fila.OrdenId);
+                ventana.Owner = this;
+                ventana.ShowDialog();
+
+                // Al volver se relee la orden: si ya se facturó, el botón cambia a "Ver factura".
+                CargarOrdenes(fila.OrdenId, true);
+            }
+
+            private void btnVerFactura_Click(object sender, RoutedEventArgs e)
+            {
+                if (facturaIdActual <= 0)
+                    return;
+
+                FacturaDetalle ventana = new FacturaDetalle(facturaIdActual);
+                ventana.Owner = this;
+                ventana.ShowDialog();
+            }   
 
             private void btnActualizar_Click(object sender, RoutedEventArgs e)
-            {
-                CargarOrdenes("", true);
-            }
+                {
+                    CargarOrdenes("", true);
+                }
 
             private void btnNuevaOrden_Click(object sender, RoutedEventArgs e)
             {

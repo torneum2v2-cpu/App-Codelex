@@ -611,6 +611,12 @@
                                     <Button x:Name="btnCancelarOrden" Content="Cancelar orden" Style="{StaticResource SecondaryButton}"
                                             Margin="10,0,0,0" Click="btnCancelarOrden_Click" IsEnabled="False"
                                             ToolTip="Marca la orden como Cancelada (no borra el registro)"/>
+                                    <Button x:Name="btnCrearFactura" Content="Crear factura" Style="{StaticResource PrimaryButton}"
+                                            Margin="10,0,0,0" Click="btnCrearFactura_Click" Visibility="Collapsed"
+                                            ToolTip="Factura esta orden completada"/>
+                                    <Button x:Name="btnVerFactura" Content="Ver factura" Style="{StaticResource PrimaryButton}"
+                                            Margin="10,0,0,0" Click="btnVerFactura_Click" Visibility="Collapsed"
+                                            ToolTip="Muestra la factura de esta orden"/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2" Orientation="Horizontal">

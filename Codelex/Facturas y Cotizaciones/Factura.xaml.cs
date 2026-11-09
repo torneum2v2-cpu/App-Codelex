@@ -20,6 +20,16 @@ namespace Codelex.Facturas_y_Cotizaciones
         DataTable locacionesCliente = new DataTable();
         ObservableCollection<LineaDocumento> lineas = new ObservableCollection<LineaDocumento>();
 
+        // Orden con la que se abrió desde Gestionar órdenes ("" = abierta desde el menú).
+        string ordenInicial = "";
+
+        public Factura(string ordenInicial = "")
+        {
+            InitializeComponent();
+
+            this.ordenInicial = ordenInicial;
+        }
+
         public Factura()
         {
             InitializeComponent();
@@ -46,6 +56,9 @@ namespace Codelex.Facturas_y_Cotizaciones
             {
                 CargarListas();
                 NuevaFactura();
+
+                if (ordenInicial != "")
+                    SeleccionarOrden(ordenInicial);
             }
             catch (Exception ex)
             {
@@ -149,6 +162,24 @@ namespace Codelex.Facturas_y_Cotizaciones
             txtConcepto.Text = "";
             txtCantidad.Text = "";
             txtPrecio.Text = "";
+        }
+        // Marca en la lista la orden indicada; eso carga sus datos y su detalle.
+        private void SeleccionarOrden(string id)
+        {
+            if (dgOrdenes.ItemsSource is DataView vista)
+            {
+                foreach (DataRowView fila in vista)
+                {
+                    if ("" + fila["orden_id"] == id)
+                    {
+                        dgOrdenes.SelectedItem = fila;
+                        dgOrdenes.ScrollIntoView(fila);
+                        return;
+                    }
+                }
+            }
+
+            Aviso("La orden " + id + " ya no está disponible para facturar.");
         }
 
         // ---------- Eventos de orden ----------
@@ -392,7 +423,12 @@ namespace Codelex.Facturas_y_Cotizaciones
                 MensajeCodelex.Mostrar(this, "Facturas", mensaje, guardado);
 
                 if (guardado)
-                    NuevaFactura();
+                {
+                    if (ordenInicial != "")
+                        Close();
+                    else
+                        NuevaFactura();
+                }
             }
             catch (Exception ex)
             {

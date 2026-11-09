@@ -63,6 +63,27 @@ namespace Codelex.Clases_BDD
             return Consultar(comando);
         }
 
+        public DataTable ObtenerFactura(int facturaId)
+        {
+            SqlCommand comando = Procedimiento("sp_ObtenerFactura");
+            comando.Parameters.AddWithValue("@factura_id", facturaId);
+            return Consultar(comando);
+        }
+
+        public DataTable DetalleFactura(int facturaId)
+        {
+            SqlCommand comando = Procedimiento("sp_DetalleFactura");
+            comando.Parameters.AddWithValue("@factura_id", facturaId);
+            return Consultar(comando);
+        }
+
+        public DataTable CuotasFactura(int facturaId)
+        {
+            SqlCommand comando = Procedimiento("sp_CuotasFactura");
+            comando.Parameters.AddWithValue("@factura_id", facturaId);
+            return Consultar(comando);
+        }
+
         // ---------- Cálculos ----------
 
         public decimal CalcularIsv(decimal subtotal)

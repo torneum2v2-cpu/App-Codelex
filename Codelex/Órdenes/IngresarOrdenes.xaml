@@ -366,202 +366,256 @@
 
                 <Border Grid.Row="1" CornerRadius="0,0,14,14" Background="{StaticResource Surface}"/>
 
-                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                    <Grid Margin="20">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+                <Grid Grid.Row="1" Margin="20,14,20,16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                        <Border Grid.Row="0" Style="{StaticResource Card}" Margin="0,0,0,15">
-                            <StackPanel>
-                                <TextBlock Text="Datos de la orden" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
-                                <UniformGrid Columns="5">
-                                    <StackPanel Margin="0,0,10,0">
-                                        <TextBlock Text="N.° de orden:" Style="{StaticResource Etiqueta}"/>
-                                        <TextBox x:Name="txtN_orden" Text="(automático)" IsReadOnly="True"/>
-                                    </StackPanel>
-                                    <StackPanel Margin="0,0,10,0">
-                                        <TextBlock Text="Fecha de solicitud:" Style="{StaticResource Etiqueta}"/>
-                                        <DatePicker x:Name="dpFechaSolicitud"/>
-                                    </StackPanel>
-                                    <StackPanel Margin="0,0,10,0">
-                                        <TextBlock Text="Fecha de limpieza:" Style="{StaticResource Etiqueta}"/>
-                                        <DatePicker x:Name="dpFechaLimpieza"/>
-                                    </StackPanel>
-                                    <StackPanel Margin="0,0,10,0">
-                                        <TextBlock Text="Estado:" Style="{StaticResource Etiqueta}"/>
-                                        <ComboBox x:Name="cmbEstado" SelectedIndex="0">
-                                            <ComboBoxItem Content="Pendiente"/>
-                                            <ComboBoxItem Content="En proceso"/>
-                                            <ComboBoxItem Content="Completada"/>
-                                        </ComboBox>
-                                    </StackPanel>
-                                    <StackPanel>
-                                        <TextBlock Text="Supervisor:" Style="{StaticResource Etiqueta}"/>
-                                        <ComboBox x:Name="cmbSupervisor"/>
-                                    </StackPanel>
-                                </UniformGrid>
+                    <!-- Indicador de pasos -->
+                    <Border Grid.Row="0" Style="{StaticResource Card}" Padding="18,10" Margin="0,0,0,12">
+                        <UniformGrid Columns="3">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Cursor="Hand"
+                                        Tag="1" MouseLeftButtonUp="Paso_Click" Background="Transparent">
+                                <Border x:Name="circulo1" Width="30" Height="30" CornerRadius="15" Background="{StaticResource Primary}">
+                                    <TextBlock x:Name="numero1" Text="1" Foreground="White" FontWeight="Bold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock x:Name="titulo1" Text="Cotización y cliente" FontSize="14" FontWeight="Bold"
+                                           Foreground="{StaticResource DarkText}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
-                        </Border>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Cursor="Hand"
+                                        Tag="2" MouseLeftButtonUp="Paso_Click" Background="Transparent">
+                                <Border x:Name="circulo2" Width="30" Height="30" CornerRadius="15" Background="{StaticResource CardLine}">
+                                    <TextBlock x:Name="numero2" Text="2" Foreground="{StaticResource SoftText}" FontWeight="Bold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock x:Name="titulo2" Text="Servicio y lugar" FontSize="14" FontWeight="SemiBold"
+                                           Foreground="{StaticResource SoftText}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Cursor="Hand"
+                                        Tag="3" MouseLeftButtonUp="Paso_Click" Background="Transparent">
+                                <Border x:Name="circulo3" Width="30" Height="30" CornerRadius="15" Background="{StaticResource CardLine}">
+                                    <TextBlock x:Name="numero3" Text="3" Foreground="{StaticResource SoftText}" FontWeight="Bold"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock x:Name="titulo3" Text="Equipo y revisión" FontSize="14" FontWeight="SemiBold"
+                                           Foreground="{StaticResource SoftText}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </UniformGrid>
+                    </Border>
 
-                        <Grid Grid.Row="1" Margin="0,0,0,15">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="380"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                    <!-- Contenido de cada paso -->
+                    <ScrollViewer x:Name="scrollPasos" Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <Grid>
 
-                            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,15,0">
-                                <StackPanel>
-                                    <TextBlock Text="Cotización y cliente" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
+                            <!-- PASO 1: COTIZACIÓN Y CLIENTE -->
+                            <Grid x:Name="panelPaso1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="430"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-                                    <TextBlock Text="Cotización:" Style="{StaticResource Etiqueta}"/>
-                                    <Grid Margin="0,0,0,8">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBox x:Name="txtCotizacion" Grid.Column="0" IsReadOnly="True" Margin="0,0,8,0"/>
-                                        <Button x:Name="btnCambiarCotizacion" Grid.Column="1" Width="38" Padding="0"
-                                                Style="{StaticResource PrimaryButton}" Click="CambiarCotizacion_Click"
-                                                ToolTip="Elegir otra cotización">
-                                            <Path Data="M11,4 A7,7 0 1 0 11,18 A7,7 0 1 0 11,4 M21,21 L16,16" Stroke="#06282B" StrokeThickness="2"
-                                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stretch="Uniform"
-                                                  Width="16" Height="16"/>
-                                        </Button>
-                                    </Grid>
+                                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,15,0" VerticalAlignment="Top">
+                                    <StackPanel>
+                                        <TextBlock Text="Cotización" Style="{StaticResource TituloCard}" Margin="0,0,0,4"/>
+                                        <TextBlock Text="La orden se crea a partir de una cotización. Use la lupa para elegir otra."
+                                                   Style="{StaticResource Nota}" Margin="0,0,0,10"/>
 
-                                    <TextBlock Text="RTN / N.° de identidad:" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="TxtIdentidad" IsReadOnly="True" Margin="0,0,0,8"/>
+                                        <TextBlock Text="Cotización:" Style="{StaticResource Etiqueta}"/>
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox x:Name="txtCotizacion" Grid.Column="0" IsReadOnly="True" Margin="0,0,8,0"/>
+                                            <Button x:Name="btnCambiarCotizacion" Grid.Column="1" Width="38" Padding="0"
+                                                    Style="{StaticResource PrimaryButton}" Click="CambiarCotizacion_Click"
+                                                    ToolTip="Elegir otra cotización">
+                                                <Path Data="M11,4 A7,7 0 1 0 11,18 A7,7 0 1 0 11,4 M21,21 L16,16" Stroke="#06282B" StrokeThickness="2"
+                                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stretch="Uniform"
+                                                      Width="16" Height="16"/>
+                                            </Button>
+                                        </Grid>
 
-                                    <TextBlock Text="Empresa:" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="TxtEmpresa" IsReadOnly="True" Margin="0,0,0,8"/>
+                                        <TextBlock Text="Detalle cotizado:" Style="{StaticResource Etiqueta}"/>
+                                        <ListBox x:Name="lstCotizacion" Height="200" Margin="0,0,0,6"/>
+                                        <TextBlock x:Name="txtTotalCotizacion" Style="{StaticResource Etiqueta}" HorizontalAlignment="Right"/>
+                                    </StackPanel>
+                                </Border>
 
-                                    <TextBlock Text="Nombre del contacto:" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="TxtContacto" IsReadOnly="True" Margin="0,0,0,8"/>
+                                <Border Grid.Column="1" Style="{StaticResource Card}" VerticalAlignment="Top">
+                                    <StackPanel>
+                                        <TextBlock Text="Cliente" Style="{StaticResource TituloCard}" Margin="0,0,0,4"/>
+                                        <TextBlock Text="Los datos vienen de la cotización." Style="{StaticResource Nota}" Margin="0,0,0,10"/>
 
-                                    <TextBlock Text="Apellido del contacto:" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="TxtApellido" IsReadOnly="True" Margin="0,0,0,8"/>
+                                        <UniformGrid Columns="2">
+                                            <StackPanel Margin="0,0,10,8">
+                                                <TextBlock Text="RTN / N.° de identidad:" Style="{StaticResource Etiqueta}"/>
+                                                <TextBox x:Name="TxtIdentidad" IsReadOnly="True"/>
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,0,8">
+                                                <TextBlock Text="Empresa:" Style="{StaticResource Etiqueta}"/>
+                                                <TextBox x:Name="TxtEmpresa" IsReadOnly="True"/>
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,10,8">
+                                                <TextBlock Text="Nombre del contacto:" Style="{StaticResource Etiqueta}"/>
+                                                <TextBox x:Name="TxtContacto" IsReadOnly="True"/>
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,0,8">
+                                                <TextBlock Text="Apellido del contacto:" Style="{StaticResource Etiqueta}"/>
+                                                <TextBox x:Name="TxtApellido" IsReadOnly="True"/>
+                                            </StackPanel>
+                                            <StackPanel Margin="0,0,10,0">
+                                                <TextBlock Text="Teléfono:" Style="{StaticResource Etiqueta}"/>
+                                                <TextBox x:Name="TxtTelefono" IsReadOnly="True"/>
+                                            </StackPanel>
+                                            <StackPanel>
+                                                <TextBlock Text="Correo electrónico:" Style="{StaticResource Etiqueta}"/>
+                                                <TextBox x:Name="TxtCorreo" IsReadOnly="True"/>
+                                            </StackPanel>
+                                        </UniformGrid>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
 
-                                    <TextBlock Text="Teléfono:" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="TxtTelefono" IsReadOnly="True" Margin="0,0,0,8"/>
+                            <!-- PASO 2: SERVICIO Y LUGAR -->
+                            <Grid x:Name="panelPaso2" Visibility="Collapsed">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="380"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-                                    <TextBlock Text="Correo electrónico:" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="TxtCorreo" IsReadOnly="True" Margin="0,0,0,10"/>
+                                <StackPanel Grid.Column="0" Margin="0,0,15,0">
+                                    <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                                        <StackPanel>
+                                            <TextBlock Text="¿Cuándo?" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
 
-                                    <TextBlock Text="Detalle cotizado:" Style="{StaticResource Etiqueta}"/>
-                                    <ListBox x:Name="lstCotizacion" Height="90" Margin="0,0,0,6"/>
-                                    <TextBlock x:Name="txtTotalCotizacion" Style="{StaticResource Etiqueta}" HorizontalAlignment="Right" Margin="0,0,0,8"/>
+                                            <!-- Siempre es "(automático)"; se mantiene oculto porque el código lo usa. -->
+                                            <TextBox x:Name="txtN_orden" Text="(automático)" IsReadOnly="True" Visibility="Collapsed"/>
 
-                                    <TextBlock Text="Los datos vienen de la cotización. Use la lupa para elegir otra." Style="{StaticResource Nota}"/>
+                                            <TextBlock Text="Fecha de solicitud:" Style="{StaticResource Etiqueta}"/>
+                                            <DatePicker x:Name="dpFechaSolicitud" Margin="0,0,0,8"/>
+
+                                            <TextBlock Text="Fecha de limpieza:" Style="{StaticResource Etiqueta}"/>
+                                            <DatePicker x:Name="dpFechaLimpieza" Margin="0,0,0,8"/>
+
+                                            <TextBlock Text="Estado:" Style="{StaticResource Etiqueta}"/>
+                                            <ComboBox x:Name="cmbEstado" SelectedIndex="0" Margin="0,0,0,8">
+                                                <ComboBoxItem Content="Pendiente"/>
+                                                <ComboBoxItem Content="En proceso"/>
+                                                <ComboBoxItem Content="Completada"/>
+                                            </ComboBox>
+
+                                            <TextBlock Text="Supervisor:" Style="{StaticResource Etiqueta}"/>
+                                            <ComboBox x:Name="cmbSupervisor"/>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Style="{StaticResource Card}">
+                                        <StackPanel>
+                                            <TextBlock Text="¿Dónde?" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
+
+                                            <TextBlock Text="Locación:" Style="{StaticResource Etiqueta}"/>
+                                            <ComboBox x:Name="cmbLocacion" Margin="0,0,0,8"/>
+
+                                            <TextBlock Text="Tipo de locación:" Style="{StaticResource Etiqueta}"/>
+                                            <ComboBox x:Name="cmbTipoLocacion" Margin="0,0,0,8"/>
+
+                                            <TextBlock Text="Dirección de la limpieza:" Style="{StaticResource Etiqueta}"/>
+                                            <TextBox x:Name="txtDireccion_limpieza" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,0,0,8"/>
+
+                                            <TextBlock Text="Descripción de la limpieza (opcional):" Style="{StaticResource Etiqueta}"/>
+                                            <TextBox x:Name="txtDescripcionLimpieza" Height="50" AcceptsReturn="True" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
                                 </StackPanel>
-                            </Border>
 
-                            <Border Grid.Column="1" Style="{StaticResource Card}">
-                                <StackPanel>
-                                    <TextBlock Text="Servicio y actividades" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
+                                <Border Grid.Column="1" Style="{StaticResource Card}" VerticalAlignment="Top">
+                                    <StackPanel>
+                                        <TextBlock Text="¿Qué servicio?" Style="{StaticResource TituloCard}" Margin="0,0,0,4"/>
+                                        <TextBlock Text="Al elegir el servicio se cargan sus actividades. Puede sumar o quitar otras."
+                                                   Style="{StaticResource Nota}" Margin="0,0,0,10"/>
 
-                                    <TextBlock Text="Tipo de servicio:" Style="{StaticResource Etiqueta}"/>
-                                    <ComboBox x:Name="cmbTipo_Servicio" Margin="0,0,0,10"/>
+                                        <TextBlock Text="Tipo de servicio:" Style="{StaticResource Etiqueta}"/>
+                                        <ComboBox x:Name="cmbTipo_Servicio" Margin="0,0,0,10"/>
 
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
 
-                                        <StackPanel Grid.Column="0">
-                                            <TextBlock Text="Otras actividades disponibles:" Style="{StaticResource Etiqueta}" Margin="0,0,0,4"/>
-                                            <ListBox x:Name="lstActividadesDisponibles" Height="230"/>
-                                        </StackPanel>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Otras actividades disponibles:" Style="{StaticResource Etiqueta}" Margin="0,0,0,4"/>
+                                                <ListBox x:Name="lstActividadesDisponibles" Height="300"/>
+                                            </StackPanel>
 
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
-                                            <Button x:Name="btnAgregar" Content="Agregar >" Style="{StaticResource SecondaryButton}" Width="90" Margin="0,0,0,5" Click="btnAgregar_Click"/>
-                                            <Button x:Name="btnQuitar" Content="&lt; Quitar" Style="{StaticResource SecondaryButton}" Width="90" Click="btnQuitar_Click"/>
-                                        </StackPanel>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
+                                                <Button x:Name="btnAgregar" Content="Agregar >" Style="{StaticResource SecondaryButton}" Width="90" Margin="0,0,0,5" Click="btnAgregar_Click"/>
+                                                <Button x:Name="btnQuitar" Content="&lt; Quitar" Style="{StaticResource SecondaryButton}" Width="90" Click="btnQuitar_Click"/>
+                                            </StackPanel>
 
-                                        <StackPanel Grid.Column="2">
-                                            <TextBlock Text="Actividades de la orden:" Style="{StaticResource Etiqueta}" Margin="0,0,0,4"/>
-                                            <ListBox x:Name="lstActividadesOrden" Height="230"/>
-                                        </StackPanel>
-                                    </Grid>
-                                </StackPanel>
-                            </Border>
-                        </Grid>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="Actividades de la orden:" Style="{StaticResource Etiqueta}" Margin="0,0,0,4"/>
+                                                <ListBox x:Name="lstActividadesOrden" Height="300"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
 
-                        <Grid Grid.Row="2" Margin="0,0,0,15">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="380"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
+                            <!-- PASO 3: EQUIPO Y REVISIÓN -->
+                            <Grid x:Name="panelPaso3" Visibility="Collapsed">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-                            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,15,0">
-                                <StackPanel>
-                                    <TextBlock Text="Lugar de la limpieza" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
+                                <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,15,0" VerticalAlignment="Top">
+                                    <StackPanel>
+                                        <TextBlock Text="¿Quién lo hace?" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="Disponibles:" Style="{StaticResource Etiqueta}"/>
+                                                <ListBox x:Name="lstEmpleadosDisponibles" Height="150"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="5,0">
+                                                <Button x:Name="btnAgregarEmpleado" Content=">" Style="{StaticResource SecondaryButton}" Width="35" Padding="0" Margin="0,0,0,3" Click="btnAgregarEmpleado_Click"/>
+                                                <Button x:Name="btnQuitarEmpleado" Content="&lt;" Style="{StaticResource SecondaryButton}" Width="35" Padding="0" Click="btnQuitarEmpleado_Click"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="Asignados:" Style="{StaticResource Etiqueta}"/>
+                                                <ListBox x:Name="lstEmpleadosAsignados" Height="150"/>
+                                            </StackPanel>
+                                        </Grid>
 
-                                    <TextBlock Text="Locación:" Style="{StaticResource Etiqueta}"/>
-                                    <ComboBox x:Name="cmbLocacion" Margin="0,0,0,8"/>
+                                        <UniformGrid Columns="2" Margin="0,10,0,0">
+                                            <StackPanel Margin="0,0,5,0">
+                                                <TextBlock Text="Turno:" Style="{StaticResource Etiqueta}"/>
+                                                <ComboBox x:Name="cmbTurno"/>
+                                            </StackPanel>
+                                            <StackPanel Margin="5,0,0,0">
+                                                <TextBlock Text="Piso / área:" Style="{StaticResource Etiqueta}"/>
+                                                <TextBox x:Name="txtPiso_area"/>
+                                            </StackPanel>
+                                        </UniformGrid>
+                                        <TextBlock Text="Vehículo:" Style="{StaticResource Etiqueta}" Margin="0,8,0,5"/>
+                                        <ComboBox x:Name="cmbVehiculo"/>
+                                    </StackPanel>
+                                </Border>
 
-                                    <TextBlock Text="Tipo de locación:" Style="{StaticResource Etiqueta}"/>
-                                    <ComboBox x:Name="cmbTipoLocacion" Margin="0,0,0,8"/>
-
-                                    <TextBlock Text="Dirección de la limpieza:" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtDireccion_limpieza" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,0,0,8"/>
-
-                                    <TextBlock Text="Descripción de la limpieza:" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtDescripcionLimpieza" Height="50" AcceptsReturn="True" TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
-
-                            <Border Grid.Column="1" Style="{StaticResource Card}">
-                                <StackPanel>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                            <TextBlock Text="Empleados" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="*"/>
-                                                </Grid.ColumnDefinitions>
-                                                <StackPanel Grid.Column="0">
-                                                    <TextBlock Text="Disponibles:" Style="{StaticResource Etiqueta}"/>
-                                                    <ListBox x:Name="lstEmpleadosDisponibles" Height="150"/>
-                                                </StackPanel>
-                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="5,0">
-                                                    <Button x:Name="btnAgregarEmpleado" Content=">" Style="{StaticResource SecondaryButton}" Width="35" Padding="0" Margin="0,0,0,3" Click="btnAgregarEmpleado_Click"/>
-                                                    <Button x:Name="btnQuitarEmpleado" Content="&lt;" Style="{StaticResource SecondaryButton}" Width="35" Padding="0" Click="btnQuitarEmpleado_Click"/>
-                                                </StackPanel>
-                                                <StackPanel Grid.Column="2">
-                                                    <TextBlock Text="Asignados:" Style="{StaticResource Etiqueta}"/>
-                                                    <ListBox x:Name="lstEmpleadosAsignados" Height="150"/>
-                                                </StackPanel>
-                                            </Grid>
-
-                                            <UniformGrid Columns="2" Margin="0,10,0,0">
-                                                <StackPanel Margin="0,0,5,0">
-                                                    <TextBlock Text="Turno:" Style="{StaticResource Etiqueta}"/>
-                                                    <ComboBox x:Name="cmbTurno"/>
-                                                </StackPanel>
-                                                <StackPanel Margin="5,0,0,0">
-                                                    <TextBlock Text="Piso / área:" Style="{StaticResource Etiqueta}"/>
-                                                    <TextBox x:Name="txtPiso_area"/>
-                                                </StackPanel>
-                                            </UniformGrid>
-                                            <TextBlock Text="Vehículo:" Style="{StaticResource Etiqueta}" Margin="0,8,0,5"/>
-                                            <ComboBox x:Name="cmbVehiculo"/>
-                                        </StackPanel>
-
-                                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                                            <TextBlock Text="Productos y equipos a usar" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
+                                <StackPanel Grid.Column="1">
+                                    <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+                                        <StackPanel>
+                                            <TextBlock Text="Productos y equipos (opcional)" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
                                             <TextBlock Text="Producto / equipo:" Style="{StaticResource Etiqueta}"/>
                                             <ComboBox x:Name="cmbProducto_equipo" Margin="0,0,0,5"/>
 
@@ -574,25 +628,43 @@
 
                                             <ListBox x:Name="lstProductosOrden" Height="100"/>
                                         </StackPanel>
-                                    </Grid>
+                                    </Border>
+
+                                    <Border Style="{StaticResource Card}" Background="{StaticResource Hover}">
+                                        <StackPanel>
+                                            <TextBlock Text="Resumen de la orden" Style="{StaticResource TituloCard}" Margin="0,0,0,8"/>
+                                            <TextBlock x:Name="txtResumen" Foreground="{StaticResource DarkText}" FontSize="13"
+                                                       TextWrapping="Wrap" LineHeight="20"/>
+                                        </StackPanel>
+                                    </Border>
                                 </StackPanel>
-                            </Border>
+                            </Grid>
+
                         </Grid>
+                    </ScrollViewer>
 
-                        <UniformGrid Grid.Row="3" Columns="3" Margin="0,0,0,15">
-                            <Button x:Name="btnNuevaOrden" Content="Nueva orden" Style="{StaticResource SecondaryButton}"
-                                    Margin="0,0,5,0" Click="CambiarCotizacion_Click"
-                                    ToolTip="Elige otra cotización para registrar una orden nueva"/>
-                            <Button x:Name="btnGuardarOrden" Content="Guardar orden" Style="{StaticResource PrimaryButton}"
-                                    Margin="5,0,5,0" Click="btnGuardarOrden_Click"
-                                    ToolTip="Guarda los datos del formulario como una orden nueva"/>
-                            <Button x:Name="btnCancelar" Content="Cancelar" Style="{StaticResource SecondaryButton}"
-                                    Margin="5,0,0,0" Click="btnCancelar_Click"
-                                    ToolTip="Cancela la acción actual o cierra la ventana"/>
-                        </UniformGrid>
-
-                    </Grid>
-                </ScrollViewer>
+                    <!-- Barra inferior -->
+                    <StackPanel Grid.Row="2" Margin="0,12,0,0">
+                        <TextBlock x:Name="txtErrorPaso" Visibility="Collapsed" Foreground="#C0392B" FontSize="13"
+                                   FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                <Button x:Name="btnCancelar" Content="Cancelar" Style="{StaticResource SecondaryButton}"
+                                        Margin="0,0,8,0" Click="btnCancelar_Click"
+                                        ToolTip="Cierra la ventana sin guardar la orden"/>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button x:Name="btnAtras" Content="&lt; Atrás" Style="{StaticResource SecondaryButton}"
+                                        Margin="0,0,8,0" Visibility="Collapsed" Click="btnAtras_Click"/>
+                                <Button x:Name="btnSiguiente" Content="Siguiente >" Style="{StaticResource PrimaryButton}"
+                                        MinWidth="140" Click="btnSiguiente_Click"/>
+                                <Button x:Name="btnGuardarOrden" Content="Guardar orden" Style="{StaticResource PrimaryButton}"
+                                        MinWidth="160" Visibility="Collapsed" Click="btnGuardarOrden_Click"
+                                        ToolTip="Guarda los datos del formulario como una orden nueva"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Grid>
             </Grid>
         </Border>
     </Grid>

@@ -64,18 +64,15 @@ namespace Codelex
 
         private void SeleccionarClienteInicial()
         {
-            txtBuscarCliente.Text = rtnInicial;
+            DataTable tabla = clienteBD.ObtenerCliente(rtnInicial);
 
-            foreach (DataRowView fila in dgClientes.Items)
+            if (tabla.Rows.Count == 0 || !Convert.ToBoolean(tabla.Rows[0]["estadoCliente"]))
             {
-                if ("" + fila["identificacionCliente"] == rtnInicial)
-                {
-                    dgClientes.SelectedItem = fila;
-                    return;
-                }
+                Aviso("El cliente está inactivo, no se pueden crear órdenes para él.");
+                return;
             }
 
-            Aviso("El cliente está inactivo, no se pueden crear órdenes para él.");
+            LlenarCliente(tabla.Rows[0]);
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -182,19 +179,6 @@ namespace Codelex
             }
         }
 
-        private void CargarClientes()
-        {
-            try
-            {
-                DataTable tabla = clienteBD.BuscarClientes(txtBuscarCliente.Text.Trim(), "", "ACTIVOS");
-                dgClientes.ItemsSource = tabla.DefaultView;
-            }
-            catch (Exception ex)
-            {
-                MostrarError(ex);
-            }
-        }
-
         private void CargarLocaciones(string rtn)
         {
             cmbLocacion.Items.Clear();
@@ -269,11 +253,6 @@ namespace Codelex
 
             CargarEmpleadosDisponibles();
             LimpiarCliente();
-
-            if (txtBuscarCliente.Text != "")
-                txtBuscarCliente.Text = "";
-
-            CargarClientes();
         }
 
         private void LimpiarCliente()
@@ -288,7 +267,6 @@ namespace Codelex
             TxtCorreo.Text = "";
 
             cmbLocacion.Items.Clear();
-            dgClientes.SelectedItem = null;
         }
 
         private void SoloNumeros(object sender, TextCompositionEventArgs e)
@@ -297,18 +275,17 @@ namespace Codelex
                 e.Handled = true;
         }
 
-        private void txtBuscar_TextChanged(object sender, TextChangedEventArgs e)
+        private void BuscarCliente_Click(object sender, RoutedEventArgs e)
         {
-            CargarClientes();
+            ElegirCliente ventana = new ElegirCliente();
+            ventana.Owner = this;
+
+            if (ventana.ShowDialog() == true && ventana.ClienteElegido != null)
+                LlenarCliente(ventana.ClienteElegido.Row);
         }
 
-        private void dgClientes_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void LlenarCliente(DataRow fila)
         {
-            if (dgClientes.SelectedItem == null)
-                return;
-
-            DataRowView fila = (DataRowView)dgClientes.SelectedItem;
-
             clienteRtn = "" + fila["identificacionCliente"];
 
             TxtIdentidad.Text = clienteRtn;

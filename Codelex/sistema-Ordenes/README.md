@@ -8,7 +8,7 @@ Crear órdenes de limpieza a partir de una cotización (personal, vehículo, fec
 
 | Archivo | Para qué sirve |
 |---|---|
-| `ingresar-ordenes.xaml(.cs)` | Asistente de 3 pasos para crear una orden. |
+| `ingresar-ordenes.xaml(.cs)` | Asistente de 3 pasos para crear una orden. Se abre directo desde el menú; la cotización se elige con la lupa. |
 | `gestion-ordenes.xaml(.cs)` | Tabla de órdenes, detalle, cambio de estado, factura y conformidad. |
 | `seleccionar-cotizacion.xaml(.cs)` | Cuadro para elegir (o crear) la cotización de la orden. |
 

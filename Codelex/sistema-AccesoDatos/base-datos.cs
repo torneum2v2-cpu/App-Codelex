@@ -62,5 +62,21 @@ namespace Codelex.AccesoDatos
             mensaje = "" + textoMensaje.Value;
             return Convert.ToInt32(resultado.Value) == 1;
         }
+
+        /// <summary>
+        /// Indica si el texto solo tiene dígitos y punto decimal.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <returns>true si todos los caracteres son válidos; false en caso contrario.</returns>
+        public bool caracteresDePrecio(string texto)
+        {
+            foreach (char c in texto)
+            {
+                if (!char.IsDigit(c) && c != '.' && c != ',')
+                    return false;
+            }
+
+            return true;
+        }
     }
 }

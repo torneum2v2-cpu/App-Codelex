@@ -375,7 +375,7 @@ namespace Codelex.AccesoDatos
             DataView vista = new DataView(rangos);
             vista.Sort = "desde ASC";
 
-            if (Convert.ToDecimal(vista[0]["desde"]) != 0)
+            if (Convert.ToDecimal(vista[0]["desde"]) > 0.01m)
                 return "El primer rango de personas debe empezar en 0.";
 
             for (int i = 0; i < vista.Count - 1; i++)

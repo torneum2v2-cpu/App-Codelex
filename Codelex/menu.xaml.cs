@@ -1,5 +1,4 @@
-﻿using System.Data;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -479,17 +478,6 @@ namespace Codelex
         }
 
         /// <summary>
-        /// Abre orden.
-        /// </summary>
-        private void abrirOrden()
-        {
-            DataRow? cotizacion = SeleccionarCotizacion.elegir(this, "");
-
-            if (cotizacion != null)
-                abrirModulo(new IngresarOrden(cotizacion));
-        }
-
-        /// <summary>
         /// Abre destino.
         /// </summary>
         /// <param name="destino">Ventana que se va a mostrar.</param>
@@ -513,7 +501,7 @@ namespace Codelex
             else if (destino == "GestionVehiculos")
                 abrirModulo(new GestionVehiculos());
             else if (destino == "IngresarOrden")
-                abrirOrden();
+                abrirModulo(new IngresarOrden());
             else if (destino == "Usuarios")
                 abrirModulo(new Usuarios());
             else if (destino == "Inventario")

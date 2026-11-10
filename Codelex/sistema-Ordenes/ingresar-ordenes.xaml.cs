@@ -54,7 +54,7 @@ namespace Codelex
         /// <summary>
         /// Inicializa la ventana y prepara sus controles.
         /// </summary>
-        private IngresarOrden()
+        public IngresarOrden()
         {
             InitializeComponent();
 
@@ -297,7 +297,10 @@ namespace Codelex
             {
                 string texto = linea["concepto"] + "   L " + Convert.ToDecimal(linea["subtotal"]).ToString("N2");
                 lstCotizacion.Items.Add(texto);
-                lstActividadesOrden.Items.Add(linea["concepto"]);
+
+                // Las líneas sin actividad (como el descuento) solo cuentan en el total.
+                if (Convert.ToInt32(linea["actividad_id"]) != 0)
+                    lstActividadesOrden.Items.Add(linea["concepto"]);
             }
 
             DataTable necesidades = ordenBD.resumenCotizacion(cotizacionId);

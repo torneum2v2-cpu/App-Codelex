@@ -8,7 +8,7 @@ Crear cotizaciones por servicio y actividades (el precio sale de la fórmula de 
 
 | Archivo | Para qué sirve |
 |---|---|
-| `cotizacion.xaml(.cs)` | Cotización: cliente, servicio, actividades con su cantidad y totales. |
+| `cotizacion.xaml(.cs)` | Cotización: cliente, servicio, actividades con su cantidad, descuento en porcentaje (opcional) y totales. El descuento se guarda como una línea negativa, así la orden y la factura lo heredan; el ISV se calcula después del descuento. |
 | `factura.xaml(.cs)` | Factura nueva de una orden completada; solo se elige la forma de pago. |
 | `factura-detalle.xaml(.cs)` | Ver factura: estado, cuotas, saldar cuota y registrar abono. |
 | `registrar-abono.xaml(.cs)` | Abono libre con vista previa de cómo quedan las cuotas. |

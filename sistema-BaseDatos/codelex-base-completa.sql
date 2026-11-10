@@ -4649,7 +4649,7 @@ BEGIN
 		RETURN;
 	END
 
-	IF (SELECT MIN(desde) FROM @rangos) <> 0
+	IF (SELECT MIN(desde) FROM @rangos) > 0.01
 	BEGIN
 		SET @mensaje = 'El primer rango de personas debe empezar en 0.';
 		RETURN;
@@ -5150,6 +5150,7 @@ CREATE OR ALTER PROCEDURE sp_InsertarCotizacion
 	@observacion VARCHAR(200),
 	@servicio_id INT,
 	@lineas dbo.tipo_lista_medidas READONLY,
+	@porcentaje_descuento DECIMAL(5, 2) = 0,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT,
 	@cotizacion_id VARCHAR(50) OUTPUT
@@ -5189,6 +5190,14 @@ BEGIN
 		RETURN;
 	END
 
+	SET @porcentaje_descuento = ISNULL(@porcentaje_descuento, 0);
+
+	IF @porcentaje_descuento < 0 OR @porcentaje_descuento >= 100
+	BEGIN
+		SET @mensaje = 'El descuento debe ser mayor o igual a 0 y menor que 100.';
+		RETURN;
+	END
+
 	IF NOT EXISTS (SELECT 1 FROM @lineas)
 	BEGIN
 		SET @mensaje = 'La cotizacion necesita al menos una actividad.';
@@ -5213,7 +5222,9 @@ BEGIN
 		DECLARE @siguiente INT;
 		DECLARE @tasa DECIMAL(6, 4) = ISNULL((SELECT valor FROM parametros_costeo WHERE clave = 'ISV'), 0.15);
 		DECLARE @subtotal DECIMAL(12, 2) = (SELECT ISNULL(SUM(precio), 0) FROM dbo.fn_CotizarLineas(@lineas));
-		DECLARE @total DECIMAL(12, 2) = @subtotal + ROUND(@subtotal * @tasa, 2);
+		DECLARE @descuento DECIMAL(12, 2) = ROUND(@subtotal * @porcentaje_descuento / 100, 2);
+		DECLARE @base DECIMAL(12, 2) = @subtotal - @descuento;
+		DECLARE @total DECIMAL(12, 2) = @base + ROUND(@base * @tasa, 2);
 
 		SELECT @siguiente = ISNULL(MAX(TRY_CAST(SUBSTRING(cotizacion_id, 5, 20) AS INT)), 0) + 1
 		FROM cotizaciones WITH (UPDLOCK, HOLDLOCK)
@@ -5234,6 +5245,15 @@ BEGIN
 		SELECT @cotizacion_id, ROW_NUMBER() OVER (ORDER BY actividad_id), concepto, 1, precio,
 			   actividad_id, medida, cantidad_personas
 		FROM dbo.fn_CotizarLineas(@lineas);
+
+		-- El descuento se guarda como una linea negativa: asi la orden y la factura lo heredan solos.
+		IF @descuento > 0
+			INSERT INTO detalles_cotizacion (cotizacion_id, linea, concepto, cantidad, precio_unitario)
+			SELECT @cotizacion_id, MAX(linea) + 1,
+				   'Descuento (' + CAST(CAST(@porcentaje_descuento AS FLOAT) AS VARCHAR(10)) + '%)',
+				   1, -@descuento
+			FROM detalles_cotizacion
+			WHERE cotizacion_id = @cotizacion_id;
 
 		COMMIT TRANSACTION;
 

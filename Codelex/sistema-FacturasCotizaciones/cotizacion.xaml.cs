@@ -21,6 +21,9 @@ namespace Codelex.FacturasCotizaciones
         DataTable actividades = new DataTable();
         ObservableCollection<LineaActividad> lineas = new ObservableCollection<LineaActividad>();
 
+        decimal subtotalCotizado = 0;
+        int personasNecesarias = 0;
+
         /// <summary>
         /// Inicializa la ventana y prepara sus controles.
         /// </summary>
@@ -130,6 +133,7 @@ namespace Codelex.FacturasCotizaciones
             lineas.Clear();
             actualizarOtrasActividades();
             txtObservaciones.Text = "";
+            txtDescuento.Text = "0";
 
             limpiarCliente();
             recalcularTotales();
@@ -402,13 +406,50 @@ namespace Codelex.FacturasCotizaciones
                 mostrarError(ex);
             }
 
-            decimal isv = facturaBD.calcularIsv(subtotal);
-            decimal total = subtotal + isv;
+            subtotalCotizado = subtotal;
+            personasNecesarias = personas;
+            mostrarTotales();
+        }
 
-            lblSubtotal.Text = facturaBD.dinero(subtotal);
+        /// <summary>
+        /// Muestra subtotal, descuento, ISV y total con el porcentaje de descuento escrito.
+        /// El ISV se calcula sobre el subtotal ya descontado.
+        /// </summary>
+        private void mostrarTotales()
+        {
+            decimal descuento = facturaBD.calcularDescuento(subtotalCotizado, facturaBD.leerDescuento(txtDescuento.Text));
+            decimal baseImponible = subtotalCotizado - descuento;
+            decimal isv = facturaBD.calcularIsv(baseImponible);
+            decimal total = baseImponible + isv;
+
+            lblSubtotal.Text = facturaBD.dinero(subtotalCotizado);
+            lblDescuento.Text = "- " + facturaBD.dinero(descuento);
             lblIsv.Text = facturaBD.dinero(isv);
             lblTotal.Text = facturaBD.dinero(total);
-            lblPersonas.Text = "" + personas;
+            lblPersonas.Text = "" + personasNecesarias;
+        }
+
+        /// <summary>
+        /// Recalcula los totales cuando cambia el porcentaje de descuento.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
+        private void descuentoCambiado(object sender, TextChangedEventArgs e)
+        {
+            if (lblTotal == null)
+                return;
+
+            mostrarTotales();
+        }
+
+        /// <summary>
+        /// Impide escribir caracteres que no sean números o punto decimal.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
+        private void soloDecimales(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !facturaBD.caracteresDePrecio(e.Text);
         }
 
         // ---------- Botones ----------
@@ -443,6 +484,7 @@ namespace Codelex.FacturasCotizaciones
             datos.fecha = dpFecha.SelectedDate;
             datos.validaHasta = dpValidaHasta.SelectedDate;
             datos.observaciones = txtObservaciones.Text;
+            datos.descuento = txtDescuento.Text;
 
             datos.servicioId = idSeleccionado(cmbServicio);
 

@@ -420,7 +420,7 @@
                                 <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,15,0" VerticalAlignment="Top">
                                     <StackPanel>
                                         <TextBlock Text="Cotización" Style="{StaticResource TituloCard}" Margin="0,0,0,4"/>
-                                        <TextBlock Text="La orden se crea a partir de una cotización. Use la lupa para elegir otra."
+                                        <TextBlock Text="La orden se crea a partir de una cotización. Use la lupa para elegirla."
                                                    Style="{StaticResource Nota}" Margin="0,0,0,10"/>
 
                                         <TextBlock Text="Cotización:" Style="{StaticResource Etiqueta}"/>

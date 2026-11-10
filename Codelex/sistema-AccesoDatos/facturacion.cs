@@ -22,6 +22,7 @@ namespace Codelex.AccesoDatos
         public DateTime? fecha = null;
         public DateTime? validaHasta = null;
         public string observaciones = "";
+        public string descuento = "0";
 
         // Cotización: servicio y actividades (listas paralelas; la medida llega como la escribió el usuario)
         public int servicioId = 0;
@@ -361,6 +362,32 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
+        /// Convierte el texto del descuento a porcentaje; si no es válido devuelve 0.
+        /// </summary>
+        /// <param name="texto">Porcentaje escrito por el usuario.</param>
+        /// <returns>Porcentaje de descuento (0 si el texto no es válido).</returns>
+        public decimal leerDescuento(string texto)
+        {
+            decimal porcentaje;
+
+            if (validarDescuento(texto, out porcentaje) != "")
+                return 0;
+
+            return porcentaje;
+        }
+
+        /// <summary>
+        /// Calcula el monto del descuento sobre un subtotal.
+        /// </summary>
+        /// <param name="subtotal">Subtotal en lempiras.</param>
+        /// <param name="porcentaje">Porcentaje de descuento.</param>
+        /// <returns>Monto del descuento en lempiras.</returns>
+        public decimal calcularDescuento(decimal subtotal, decimal porcentaje)
+        {
+            return Math.Round(subtotal * porcentaje / 100, 2, MidpointRounding.AwayFromZero);
+        }
+
+        /// <summary>
         /// Calcula cuota.
         /// </summary>
         /// <param name="total">Total en lempiras.</param>
@@ -385,6 +412,27 @@ namespace Codelex.AccesoDatos
         }
 
         // ---------- Validaciones ----------
+
+        /// <summary>
+        /// Valida el porcentaje de descuento: vacío cuenta como 0; debe ser menor que 100.
+        /// </summary>
+        /// <param name="texto">Porcentaje escrito por el usuario.</param>
+        /// <param name="porcentaje">(salida) Porcentaje obtenido.</param>
+        /// <returns>Mensaje de error, o texto vacío si es válido.</returns>
+        public string validarDescuento(string texto, out decimal porcentaje)
+        {
+            porcentaje = 0;
+            texto = texto.Trim().Replace(',', '.');
+
+            if (texto == "")
+                return "";
+            if (!decimal.TryParse(texto, NumberStyles.Number, CultureInfo.InvariantCulture, out porcentaje))
+                return "El descuento \"" + texto + "\" no es válido.";
+            if (porcentaje < 0 || porcentaje >= 100)
+                return "El descuento debe ser mayor o igual a 0 y menor que 100.";
+
+            return "";
+        }
 
         /// <summary>
         /// Valida medida.
@@ -473,6 +521,11 @@ namespace Codelex.AccesoDatos
             if (datos.observaciones.Trim().Length > 200)
                 return "Las observaciones no pueden tener más de 200 caracteres.";
 
+            decimal porcentaje;
+            string errorDescuento = validarDescuento(datos.descuento, out porcentaje);
+            if (errorDescuento != "")
+                return errorDescuento;
+
             return validarActividades(datos);
         }
 
@@ -556,6 +609,7 @@ namespace Codelex.AccesoDatos
 
             comando.Parameters.AddWithValue("@servicio_id", datos.servicioId);
             agregarLista(comando, "@lineas", "dbo.tipo_lista_medidas", tablaDeMedidas(datos));
+            comando.Parameters.AddWithValue("@porcentaje_descuento", leerDescuento(datos.descuento));
 
             SqlParameter idParametro = new SqlParameter("@cotizacion_id", SqlDbType.VarChar, 50);
             idParametro.Direction = ParameterDirection.Output;

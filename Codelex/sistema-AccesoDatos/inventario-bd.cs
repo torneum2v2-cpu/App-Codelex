@@ -164,22 +164,6 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
-        /// Indica si el texto solo tiene dígitos y punto decimal.
-        /// </summary>
-        /// <param name="texto">Texto a usar.</param>
-        /// <returns>true si todos los caracteres son válidos; false en caso contrario.</returns>
-        public bool caracteresDePrecio(string texto)
-        {
-            foreach (char c in texto)
-            {
-                if (!char.IsDigit(c) && c != '.' && c != ',')
-                    return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Crea lista.
         /// </summary>
         /// <returns>Tabla con los datos consultados.</returns>

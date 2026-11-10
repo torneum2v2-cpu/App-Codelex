@@ -258,19 +258,28 @@
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
 
-                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Personas necesarias:" Style="{StaticResource Etiqueta}" Margin="0,6,0,0"/>
-                                        <TextBlock x:Name="lblPersonas" Grid.Row="3" Grid.Column="1" Text="0" Foreground="{StaticResource DarkText}" FontSize="13.5" Margin="0,6,0,0"/>
+                                        <TextBlock Grid.Row="4" Grid.Column="0" Text="Personas necesarias:" Style="{StaticResource Etiqueta}" Margin="0,6,0,0"/>
+                                        <TextBlock x:Name="lblPersonas" Grid.Row="4" Grid.Column="1" Text="0" Foreground="{StaticResource DarkText}" FontSize="13.5" Margin="0,6,0,0"/>
 
                                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Subtotal:" Style="{StaticResource Etiqueta}"/>
                                         <TextBlock x:Name="lblSubtotal" Grid.Row="0" Grid.Column="1" Text="L 0.00" Foreground="{StaticResource DarkText}" FontSize="13.5"/>
 
-                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="ISV (15%):" Style="{StaticResource Etiqueta}" Margin="0,4,0,5"/>
-                                        <TextBlock x:Name="lblIsv" Grid.Row="1" Grid.Column="1" Text="L 0.00" Foreground="{StaticResource DarkText}" FontSize="13.5" Margin="0,4,0,0"/>
+                                        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Margin="0,4,0,4" VerticalAlignment="Center">
+                                            <TextBlock Text="Descuento (%):" Style="{StaticResource Etiqueta}" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                            <TextBox x:Name="txtDescuento" Text="0" Width="64" Height="30" FontSize="13" MaxLength="5"
+                                                     PreviewTextInput="soloDecimales" TextChanged="descuentoCambiado"
+                                                     ToolTip="Porcentaje de descuento sobre el subtotal (0 a 99). El ISV se calcula después del descuento"/>
+                                        </StackPanel>
+                                        <TextBlock x:Name="lblDescuento" Grid.Row="1" Grid.Column="1" Text="- L 0.00" Foreground="{StaticResource DarkText}" FontSize="13.5" VerticalAlignment="Center"/>
 
-                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Total a pagar:" Style="{StaticResource TituloCard}" Margin="0,6,0,0"/>
-                                        <TextBlock x:Name="lblTotal" Grid.Row="2" Grid.Column="1" Text="L 0.00" Style="{StaticResource TituloCard}" Margin="0,6,0,0"/>
+                                        <TextBlock Grid.Row="2" Grid.Column="0" Text="ISV (15%):" Style="{StaticResource Etiqueta}" Margin="0,4,0,5"/>
+                                        <TextBlock x:Name="lblIsv" Grid.Row="2" Grid.Column="1" Text="L 0.00" Foreground="{StaticResource DarkText}" FontSize="13.5" Margin="0,4,0,0"/>
+
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Total a pagar:" Style="{StaticResource TituloCard}" Margin="0,6,0,0"/>
+                                        <TextBlock x:Name="lblTotal" Grid.Row="3" Grid.Column="1" Text="L 0.00" Style="{StaticResource TituloCard}" Margin="0,6,0,0"/>
                                     </Grid>
                                 </Grid>
                             </StackPanel>

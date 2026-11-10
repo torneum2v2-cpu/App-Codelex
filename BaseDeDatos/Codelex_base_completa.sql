@@ -2576,6 +2576,25 @@ BEGIN
 END
 GO
 
+-- Un empleado (o supervisor) que esta en una orden "En proceso" no se puede asignar a otra.
+CREATE OR ALTER FUNCTION dbo.fn_EmpleadoEnProceso (@empleado_id INT, @orden_excluir VARCHAR(50))
+RETURNS BIT
+AS
+BEGIN
+	IF EXISTS (SELECT 1
+			   FROM ORDENES o
+			   INNER JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
+			   WHERE eo.nombreEstadoOrden = 'En proceso'
+				 AND o.orden_id <> ISNULL(@orden_excluir, '')
+				 AND (o.supervisor_id = @empleado_id
+					  OR EXISTS (SELECT 1 FROM ORDEN_EMPLEADOS oe
+								 WHERE oe.orden_id = o.orden_id AND oe.empleado_id = @empleado_id)))
+		RETURN 1;
+
+	RETURN 0;
+END
+GO
+
 CREATE OR ALTER PROCEDURE sp_ListarEmpleadosOrden
 AS
 BEGIN
@@ -2585,11 +2604,7 @@ BEGIN
 		   LTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')) AS nombreCompleto
 	FROM EMPLEADOS e
 	WHERE e.estadoEmpleado = 1
-	  AND NOT EXISTS (SELECT 1
-					  FROM ORDEN_EMPLEADOS oe
-					  INNER JOIN ORDENES o ON o.orden_id = oe.orden_id
-					  INNER JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
-					  WHERE oe.empleado_id = e.empleado_id AND eo.nombreEstadoOrden = 'En proceso')
+	  AND dbo.fn_EmpleadoEnProceso(e.empleado_id, '') = 0
 	ORDER BY e.nombreEmpleado, e.apellidoEmpleado;
 END
 GO
@@ -2758,10 +2773,7 @@ BEGIN
 		   ISNULL(MAX(d.personas), 0) AS cantidad,
 		   (SELECT COUNT(1) FROM EMPLEADOS e
 			WHERE e.estadoEmpleado = 1
-			  AND NOT EXISTS (SELECT 1 FROM ORDEN_EMPLEADOS oe
-							  INNER JOIN ORDENES o ON o.orden_id = oe.orden_id
-							  INNER JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
-							  WHERE oe.empleado_id = e.empleado_id AND eo.nombreEstadoOrden = 'En proceso')) AS disponible
+			  AND dbo.fn_EmpleadoEnProceso(e.empleado_id, '') = 0) AS disponible
 	FROM COTIZACION_DETALLE d
 	WHERE d.cotizacion_id = @cotizacion_id
 
@@ -2946,6 +2958,18 @@ BEGIN
 		RETURN;
 	END
 
+	IF dbo.fn_EmpleadoEnProceso(@supervisor_id, '') = 1
+	BEGIN
+		SET @mensaje = 'El supervisor esta en una orden en proceso.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM @empleados WHERE empleado_id = @supervisor_id)
+	BEGIN
+		SET @mensaje = 'El supervisor no puede ser tambien empleado de la orden.';
+		RETURN;
+	END
+
 	IF NOT EXISTS (SELECT 1 FROM VEHICULOS WHERE vehiculo_id = @vehiculo_id AND estadoVehiculo = 1)
 	BEGIN
 		SET @mensaje = 'El vehiculo no existe o esta inactivo.';
@@ -2970,10 +2994,7 @@ BEGIN
 	SELECT TOP 1 @nombre = LTRIM(RTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')))
 	FROM @empleados x
 	INNER JOIN EMPLEADOS e ON e.empleado_id = x.empleado_id
-	INNER JOIN ORDEN_EMPLEADOS oe ON oe.empleado_id = x.empleado_id
-	INNER JOIN ORDENES o ON o.orden_id = oe.orden_id
-	INNER JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
-	WHERE eo.nombreEstadoOrden = 'En proceso';
+	WHERE dbo.fn_EmpleadoEnProceso(x.empleado_id, '') = 1;
 
 	IF @nombre IS NOT NULL
 	BEGIN
@@ -3409,6 +3430,12 @@ BEGIN
 		RETURN;
 	END
 
+	IF dbo.fn_EmpleadoEnProceso(@supervisor_id, @orden_id) = 1
+	BEGIN
+		SET @mensaje = 'El supervisor esta en una orden en proceso.';
+		RETURN;
+	END
+
 	IF NOT EXISTS (SELECT 1 FROM VEHICULOS WHERE vehiculo_id = @vehiculo_id AND estadoVehiculo = 1)
 	BEGIN
 		SET @mensaje = 'El vehiculo no existe o esta inactivo.';
@@ -3502,12 +3529,10 @@ BEGIN
 		DECLARE @ocupado VARCHAR(100);
 
 		SELECT TOP 1 @ocupado = LTRIM(RTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')))
-		FROM ORDEN_EMPLEADOS mi
-		INNER JOIN ORDEN_EMPLEADOS otro ON otro.empleado_id = mi.empleado_id AND otro.orden_id <> mi.orden_id
-		INNER JOIN ORDENES oo ON oo.orden_id = otro.orden_id
-		INNER JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = oo.estado_orden_id
-		INNER JOIN EMPLEADOS e ON e.empleado_id = mi.empleado_id
-		WHERE mi.orden_id = @orden_id AND eo.nombreEstadoOrden = 'En proceso';
+		FROM EMPLEADOS e
+		WHERE (e.empleado_id = (SELECT supervisor_id FROM ORDENES WHERE orden_id = @orden_id)
+			   OR e.empleado_id IN (SELECT empleado_id FROM ORDEN_EMPLEADOS WHERE orden_id = @orden_id))
+		  AND dbo.fn_EmpleadoEnProceso(e.empleado_id, @orden_id) = 1;
 
 		IF @ocupado IS NOT NULL
 		BEGIN

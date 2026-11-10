@@ -467,10 +467,8 @@
 
                             <ScrollViewer VerticalScrollBarVisibility="Auto">
                                 <StackPanel>
-                                    <Button x:Name="btnBuscarEmpleado" Content="Buscar empleado..."
-                                            Style="{StaticResource PrimaryButton}" Click="BuscarEmpleado_Click"/>
-                                    <TextBlock Text="Elija un empleado ya registrado. Sus datos se llenan solos."
-                                               Style="{StaticResource Nota}" Margin="0,8,0,14"/>
+                                    <TextBlock Text="Use la lupa junto al nombre para elegir un empleado ya registrado. Sus datos se llenan solos."
+                                               Style="{StaticResource Nota}" Margin="0,0,0,14"/>
 
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -488,7 +486,20 @@
 
                                         <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,12">
                                             <TextBlock Text="Nombre" Style="{StaticResource Etiqueta}"/>
-                                            <TextBox x:Name="txtNombre" IsReadOnly="True"/>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBox x:Name="txtNombre" Grid.Column="0" Margin="0,0,8,0" IsReadOnly="True"/>
+                                                <Button x:Name="btnBuscarEmpleado" Grid.Column="1" Width="38" Padding="0"
+                                                        Style="{StaticResource PrimaryButton}" Click="BuscarEmpleado_Click"
+                                                        ToolTip="Buscar empleado registrado">
+                                                    <Path Data="M11,4 A7,7 0 1 0 11,18 A7,7 0 1 0 11,4 M21,21 L16,16" Stroke="#06282B" StrokeThickness="2"
+                                                          StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stretch="Uniform"
+                                                          Width="16" Height="16"/>
+                                                </Button>
+                                            </Grid>
                                         </StackPanel>
 
                                         <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,12">

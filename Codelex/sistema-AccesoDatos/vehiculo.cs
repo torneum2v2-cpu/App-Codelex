@@ -5,6 +5,12 @@ namespace Codelex.AccesoDatos
 {
     class Vehiculo : BaseDatos
     {
+        /// <summary>
+        /// Busca vehículos.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <param name="filtroEstado">Filtro de estado.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable buscarVehiculos(string texto, string filtroEstado)
         {
             object estado = DBNull.Value;
@@ -19,6 +25,11 @@ namespace Codelex.AccesoDatos
             return consultar(comando);
         }
 
+        /// <summary>
+        /// Obtiene vehículo.
+        /// </summary>
+        /// <param name="vehiculoId">Identificador de vehículo.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable obtenerVehiculo(int vehiculoId)
         {
             SqlCommand comando = procedimiento("sp_ObtenerVehiculo");
@@ -26,16 +37,40 @@ namespace Codelex.AccesoDatos
             return consultar(comando);
         }
 
+        /// <summary>
+        /// Inserta vehículo.
+        /// </summary>
+        /// <param name="placa">Placa del vehículo.</param>
+        /// <param name="marca">Marca.</param>
+        /// <param name="modelo">Modelo.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool insertarVehiculo(string placa, string marca, string modelo, out string mensaje)
         {
             return guardarVehiculo("sp_InsertarVehiculo", 0, placa, marca, modelo, out mensaje);
         }
 
+        /// <summary>
+        /// Actualiza vehículo.
+        /// </summary>
+        /// <param name="vehiculoId">Identificador de vehículo.</param>
+        /// <param name="placa">Placa del vehículo.</param>
+        /// <param name="marca">Marca.</param>
+        /// <param name="modelo">Modelo.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool actualizarVehiculo(int vehiculoId, string placa, string marca, string modelo, out string mensaje)
         {
             return guardarVehiculo("sp_ActualizarVehiculo", vehiculoId, placa, marca, modelo, out mensaje);
         }
 
+        /// <summary>
+        /// Cambia estado vehículo.
+        /// </summary>
+        /// <param name="vehiculoId">Identificador de vehículo.</param>
+        /// <param name="activo">true para activar, false para desactivar.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool cambiarEstadoVehiculo(int vehiculoId, bool activo, out string mensaje)
         {
             SqlCommand comando = procedimiento("sp_CambiarEstadoVehiculo");
@@ -45,6 +80,11 @@ namespace Codelex.AccesoDatos
             return ejecutar(comando, out mensaje);
         }
 
+        /// <summary>
+        /// Indica si el texto solo tiene letras, números o guion.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <returns>true si todos los caracteres son válidos; false en caso contrario.</returns>
         public bool caracteresDePlaca(string texto)
         {
             foreach (char c in texto)
@@ -56,6 +96,13 @@ namespace Codelex.AccesoDatos
             return true;
         }
 
+        /// <summary>
+        /// Valida vehículo.
+        /// </summary>
+        /// <param name="placa">Placa del vehículo.</param>
+        /// <param name="marca">Marca.</param>
+        /// <param name="modelo">Modelo.</param>
+        /// <returns>Texto resultante.</returns>
         private string validarVehiculo(string placa, string marca, string modelo)
         {
             placa = placa.Trim();
@@ -84,6 +131,16 @@ namespace Codelex.AccesoDatos
             return "";
         }
 
+        /// <summary>
+        /// Guarda vehículo.
+        /// </summary>
+        /// <param name="nombreProcedimiento">Nombre del procedimiento almacenado.</param>
+        /// <param name="vehiculoId">Identificador de vehículo.</param>
+        /// <param name="placa">Placa del vehículo.</param>
+        /// <param name="marca">Marca.</param>
+        /// <param name="modelo">Modelo.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         private bool guardarVehiculo(string nombreProcedimiento, int vehiculoId, string placa, string marca,
                                      string modelo, out string mensaje)
         {

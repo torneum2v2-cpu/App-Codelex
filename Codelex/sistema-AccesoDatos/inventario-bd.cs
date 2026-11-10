@@ -6,6 +6,12 @@ namespace Codelex.AccesoDatos
 {
     class InventarioBD : BaseDatos
     {
+        /// <summary>
+        /// Busca inventario.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <param name="tipo">Tipo de dato.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable buscarInventario(string texto, string tipo)
         {
             SqlCommand comando = procedimiento("sp_BuscarInventario");
@@ -14,6 +20,11 @@ namespace Codelex.AccesoDatos
             return consultar(comando);
         }
 
+        /// <summary>
+        /// Lista productos.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable listarProductos(string texto)
         {
             SqlCommand comando = procedimiento("sp_ListarProductosInventario");
@@ -21,6 +32,11 @@ namespace Codelex.AccesoDatos
             return consultar(comando);
         }
 
+        /// <summary>
+        /// Lista equipos.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable listarEquipos(string texto)
         {
             SqlCommand comando = procedimiento("sp_ListarEquiposInventario");
@@ -28,16 +44,33 @@ namespace Codelex.AccesoDatos
             return consultar(comando);
         }
 
+        /// <summary>
+        /// Lista proveedores.
+        /// </summary>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable listarProveedores()
         {
             return consultar(procedimiento("sp_ListarProveedores"));
         }
 
+        /// <summary>
+        /// Lista empleados.
+        /// </summary>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable listarEmpleados()
         {
             return consultar(procedimiento("sp_ListarEmpleadosInventario"));
         }
 
+        /// <summary>
+        /// Inserta proveedor.
+        /// </summary>
+        /// <param name="nombre">Nombre.</param>
+        /// <param name="telefono">Teléfono.</param>
+        /// <param name="correo">Correo electrónico.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <param name="proveedorId">(salida) Identificador de proveedor.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool insertarProveedor(string nombre, string telefono, string correo, out string mensaje, out int proveedorId)
         {
             proveedorId = 0;
@@ -62,6 +95,14 @@ namespace Codelex.AccesoDatos
             return guardado;
         }
 
+        /// <summary>
+        /// Inserta producto.
+        /// </summary>
+        /// <param name="nombre">Nombre.</param>
+        /// <param name="tipo">Tipo de dato.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <param name="productoId">(salida) Identificador de producto.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool insertarProducto(string nombre, string tipo, out string mensaje, out int productoId)
         {
             productoId = 0;
@@ -85,6 +126,12 @@ namespace Codelex.AccesoDatos
             return guardado;
         }
 
+        /// <summary>
+        /// Valida producto.
+        /// </summary>
+        /// <param name="nombre">Nombre.</param>
+        /// <param name="tipo">Tipo de dato.</param>
+        /// <returns>Texto resultante.</returns>
         public string validarProducto(string nombre, string tipo)
         {
             nombre = nombre.Trim();
@@ -102,6 +149,14 @@ namespace Codelex.AccesoDatos
             return "";
         }
 
+        /// <summary>
+        /// Valida equipo.
+        /// </summary>
+        /// <param name="nombre">Nombre.</param>
+        /// <param name="tipo">Tipo de dato.</param>
+        /// <param name="marca">Marca.</param>
+        /// <param name="modelo">Modelo.</param>
+        /// <returns>Texto resultante.</returns>
         public string validarEquipo(string nombre, string tipo, string marca, string modelo)
         {
             nombre = nombre.Trim();
@@ -123,6 +178,11 @@ namespace Codelex.AccesoDatos
             return "";
         }
 
+        /// <summary>
+        /// Impide escribir caracteres que no sean números.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool soloNumeros(string texto)
         {
             foreach (char c in texto)
@@ -134,6 +194,11 @@ namespace Codelex.AccesoDatos
             return true;
         }
 
+        /// <summary>
+        /// Indica si el texto solo tiene dígitos y punto decimal.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <returns>true si todos los caracteres son válidos; false en caso contrario.</returns>
         public bool caracteresDePrecio(string texto)
         {
             foreach (char c in texto)
@@ -145,6 +210,10 @@ namespace Codelex.AccesoDatos
             return true;
         }
 
+        /// <summary>
+        /// Crea lista.
+        /// </summary>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable crearLista()
         {
             DataTable lista = new DataTable();
@@ -160,6 +229,17 @@ namespace Codelex.AccesoDatos
             return lista;
         }
 
+        /// <summary>
+        /// Agrega producto a lista.
+        /// </summary>
+        /// <param name="lista">Lista de datos.</param>
+        /// <param name="productoId">Identificador de producto.</param>
+        /// <param name="nombre">Nombre.</param>
+        /// <param name="tipo">Tipo de dato.</param>
+        /// <param name="cantidadTexto">Cantidad texto.</param>
+        /// <param name="precioTexto">Precio texto.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool agregarProductoALista(DataTable lista, int productoId, string nombre, string tipo,
                                           string cantidadTexto, string precioTexto, out string mensaje)
         {
@@ -183,6 +263,18 @@ namespace Codelex.AccesoDatos
             return true;
         }
 
+        /// <summary>
+        /// Agrega equipo a lista.
+        /// </summary>
+        /// <param name="lista">Lista de datos.</param>
+        /// <param name="nombre">Nombre.</param>
+        /// <param name="tipo">Tipo de dato.</param>
+        /// <param name="marca">Marca.</param>
+        /// <param name="modelo">Modelo.</param>
+        /// <param name="cantidadTexto">Cantidad texto.</param>
+        /// <param name="precioTexto">Precio texto.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool agregarEquipoALista(DataTable lista, string nombre, string tipo, string marca, string modelo,
                                         string cantidadTexto, string precioTexto, out string mensaje)
         {
@@ -214,6 +306,11 @@ namespace Codelex.AccesoDatos
             return true;
         }
 
+        /// <summary>
+        /// Suma el valor total del inventario.
+        /// </summary>
+        /// <param name="inventario">Tabla de inventario.</param>
+        /// <returns>Valor decimal resultante.</returns>
         public decimal valorTotal(DataTable inventario)
         {
             decimal total = 0;
@@ -227,6 +324,11 @@ namespace Codelex.AccesoDatos
             return total;
         }
 
+        /// <summary>
+        /// Suma las unidades de la lista de inventario.
+        /// </summary>
+        /// <param name="lista">Lista de datos.</param>
+        /// <returns>Número entero resultante.</returns>
         public int totalUnidades(DataTable lista)
         {
             int total = 0;
@@ -239,6 +341,16 @@ namespace Codelex.AccesoDatos
             return total;
         }
 
+        /// <summary>
+        /// Registra ingreso.
+        /// </summary>
+        /// <param name="proveedorId">Identificador de proveedor.</param>
+        /// <param name="empleadoId">Identificador de empleado.</param>
+        /// <param name="factura">Factura.</param>
+        /// <param name="fecha">Fecha.</param>
+        /// <param name="lista">Lista de datos.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool registrarIngreso(int proveedorId, int empleadoId, string factura, DateTime? fecha,
                                      DataTable lista, out string mensaje)
         {
@@ -287,6 +399,15 @@ namespace Codelex.AccesoDatos
             return ejecutar(comando, out mensaje);
         }
 
+        /// <summary>
+        /// Valida ingreso.
+        /// </summary>
+        /// <param name="proveedorId">Identificador de proveedor.</param>
+        /// <param name="empleadoId">Identificador de empleado.</param>
+        /// <param name="factura">Factura.</param>
+        /// <param name="fecha">Fecha.</param>
+        /// <param name="lista">Lista de datos.</param>
+        /// <returns>Texto resultante.</returns>
         private string validarIngreso(int proveedorId, int empleadoId, string factura, DateTime? fecha, DataTable lista)
         {
             if (proveedorId <= 0)
@@ -307,6 +428,14 @@ namespace Codelex.AccesoDatos
             return "";
         }
 
+        /// <summary>
+        /// Valida cantidad y precio.
+        /// </summary>
+        /// <param name="cantidadTexto">Cantidad texto.</param>
+        /// <param name="precioTexto">Precio texto.</param>
+        /// <param name="cantidad">(salida) Cantidad.</param>
+        /// <param name="precio">(salida) Precio.</param>
+        /// <returns>Texto resultante.</returns>
         private string validarCantidadYPrecio(string cantidadTexto, string precioTexto, out int cantidad, out decimal precio)
         {
             cantidad = 0;
@@ -328,6 +457,13 @@ namespace Codelex.AccesoDatos
             return "";
         }
 
+        /// <summary>
+        /// Valida proveedor.
+        /// </summary>
+        /// <param name="nombre">Nombre.</param>
+        /// <param name="telefono">Teléfono.</param>
+        /// <param name="correo">Correo electrónico.</param>
+        /// <returns>Texto resultante.</returns>
         private string validarProveedor(string nombre, string telefono, string correo)
         {
             nombre = nombre.Trim();
@@ -356,6 +492,13 @@ namespace Codelex.AccesoDatos
             return "";
         }
 
+        /// <summary>
+        /// Agrega tabla.
+        /// </summary>
+        /// <param name="comando">Comando de SQL Server.</param>
+        /// <param name="nombre">Nombre.</param>
+        /// <param name="tipo">Tipo de dato.</param>
+        /// <param name="tabla">Tabla de datos.</param>
         private void agregarTabla(SqlCommand comando, string nombre, string tipo, DataTable tabla)
         {
             SqlParameter parametro = comando.Parameters.AddWithValue(nombre, tabla);

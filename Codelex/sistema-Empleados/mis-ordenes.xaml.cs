@@ -14,12 +14,20 @@ namespace Codelex
         // El empleado sale siempre de la sesión, nunca de un campo que el usuario pueda cambiar.
         private readonly int empleadoId = Sesion.EmpleadoId;
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
         public MisOrdenes()
         {
             InitializeComponent();
             Height = Math.Min(Height, SystemParameters.WorkArea.Height - 10);
         }
 
+        /// <summary>
+        /// Prepara la ventana y carga los datos iniciales cuando termina de abrirse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private async void ventanaCargada(object sender, RoutedEventArgs e)
         {
             IsEnabled = false;
@@ -58,6 +66,11 @@ namespace Codelex
             dgOrdenes.SelectedIndex = 0;
         }
 
+        /// <summary>
+        /// Atiende el cambio de selección de órdenes.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void ordenesSeleccionCambiada(object sender, SelectionChangedEventArgs e)
         {
             if (dgOrdenes.SelectedItem is not DataRowView fila)
@@ -66,6 +79,10 @@ namespace Codelex
             cargarDetalle("" + fila["orden_id"]);
         }
 
+        /// <summary>
+        /// Carga detalle.
+        /// </summary>
+        /// <param name="ordenId">Identificador de orden.</param>
         private void cargarDetalle(string ordenId)
         {
             try
@@ -115,6 +132,9 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Limpia detalle.
+        /// </summary>
         private void limpiarDetalle()
         {
             txtOrden.Text = "Detalle de la orden";
@@ -124,12 +144,24 @@ namespace Codelex
             txtSinOrdenes.Visibility = dgOrdenes.Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        /// <summary>
+        /// Lee una columna de la fila como texto.
+        /// </summary>
+        /// <param name="fila">Fila con los datos.</param>
+        /// <param name="columna">Nombre de la columna.</param>
+        /// <returns>Texto resultante.</returns>
         private static string texto(DataRow fila, string columna)
         {
             string valor = ("" + fila[columna]).Trim();
             return valor == "" ? "—" : valor;
         }
 
+        /// <summary>
+        /// Convierte un valor de fecha en texto dd/MM/yyyy, o un guion si no hay fecha.
+        /// </summary>
+        /// <param name="fila">Fila con los datos.</param>
+        /// <param name="columna">Nombre de la columna.</param>
+        /// <returns>Fecha como dd/MM/yyyy, o un guion si no hay fecha.</returns>
         private static string fecha(DataRow fila, string columna)
         {
             if (fila.IsNull(columna))
@@ -138,17 +170,32 @@ namespace Codelex
             return Convert.ToDateTime(fila[columna]).ToString("dd/MM/yyyy");
         }
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
+        /// <summary>
+        /// Minimiza la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void cerrarClic(object sender, RoutedEventArgs e)
         {
             Close();

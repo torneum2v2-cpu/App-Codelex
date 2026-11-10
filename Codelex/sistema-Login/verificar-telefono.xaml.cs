@@ -11,6 +11,12 @@ namespace Codelex
         private readonly bool recordar;
         private readonly string contrasena;
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
+        /// <param name="usuarioLogin">Usuario login.</param>
+        /// <param name="recordar">Recordar.</param>
+        /// <param name="password">Password.</param>
         public VerificarTelefono(Usuario usuarioLogin, bool recordar = false, string password = "")
         {
             InitializeComponent();
@@ -32,6 +38,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Atiende el clic de verificar.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private async void verificarClic(object sender, RoutedEventArgs e)
         {
             txtError.Visibility = Visibility.Collapsed;
@@ -77,6 +88,11 @@ namespace Codelex
             Close();
         }
 
+        /// <summary>
+        /// Vuelve a la ventana anterior.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void volverClic(object sender, RoutedEventArgs e)
         {
             VentanaPrincipal login = new VentanaPrincipal();
@@ -84,17 +100,32 @@ namespace Codelex
             Close();
         }
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
+        /// <summary>
+        /// Minimiza la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void cerrarClic(object sender, RoutedEventArgs e)
         {
             Close();

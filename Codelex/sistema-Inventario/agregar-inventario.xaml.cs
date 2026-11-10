@@ -16,11 +16,19 @@ namespace Codelex
         string textoBusqueda = "";
         bool guardado = false;
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
         public AgregarInventario()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Prepara la ventana y carga los datos iniciales cuando termina de abrirse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             lista = inventarioBD.crearLista();
@@ -41,6 +49,10 @@ namespace Codelex
             actualizarTotal();
         }
 
+        /// <summary>
+        /// Carga proveedores.
+        /// </summary>
+        /// <param name="seleccionar">Seleccionar.</param>
         private void cargarProveedores(int seleccionar)
         {
             llenarCombo(cmbProveedor, inventarioBD.listarProveedores(), "proveedor_id", "nombre_proveedor");
@@ -52,6 +64,13 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Llena combo.
+        /// </summary>
+        /// <param name="combo">Lista desplegable.</param>
+        /// <param name="tabla">Tabla de datos.</param>
+        /// <param name="columnaId">Columna con el identificador.</param>
+        /// <param name="columnaTexto">Columna texto.</param>
         private void llenarCombo(ComboBox combo, DataTable tabla, string columnaId, string columnaTexto)
         {
             combo.Items.Clear();
@@ -62,6 +81,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Obtiene el identificador del elemento elegido en la lista desplegable.
+        /// </summary>
+        /// <param name="combo">Lista desplegable.</param>
+        /// <returns>Identificador elegido, o 0 si no hay selección.</returns>
         private int idSeleccionado(ComboBox combo)
         {
             ItemLista? item = combo.SelectedItem as ItemLista;
@@ -72,6 +96,9 @@ namespace Codelex
             return item.id;
         }
 
+        /// <summary>
+        /// Carga artículos.
+        /// </summary>
         private void cargarArticulos()
         {
             dgProductos.ItemsSource = inventarioBD.listarProductos(textoBusqueda).DefaultView;
@@ -89,11 +116,20 @@ namespace Codelex
             dgEquipos.ItemsSource = tablaEquipos.DefaultView;
         }
 
+        /// <summary>
+        /// Actualiza total.
+        /// </summary>
         private void actualizarTotal()
         {
             txtTotal.Text = "Total a ingresar: " + inventarioBD.totalUnidades(lista) + " unidades";
         }
 
+        /// <summary>
+        /// Selecciona en la tabla la fila cuyo valor coincide con el indicado.
+        /// </summary>
+        /// <param name="tabla">Tabla de datos.</param>
+        /// <param name="columna">Nombre de la columna.</param>
+        /// <param name="valor">Valor a usar.</param>
         private void seleccionar(DataGrid tabla, string columna, string valor)
         {
             foreach (object item in tabla.Items)
@@ -108,6 +144,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Atiende el cambio de marca de pestaña.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void pestanaMarcado(object sender, RoutedEventArgs e)
         {
             if (dgProductos == null || dgEquipos == null)
@@ -125,6 +166,9 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Busca texto.
+        /// </summary>
         private void buscarTexto()
         {
             textoBusqueda = txtBuscar.Text.Trim();
@@ -139,29 +183,54 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Busca con el texto escrito.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void buscarClic(object sender, RoutedEventArgs e)
         {
             buscarTexto();
         }
 
+        /// <summary>
+        /// Ejecuta la búsqueda al presionar Enter.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void buscarTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
                 buscarTexto();
         }
 
+        /// <summary>
+        /// Impide escribir caracteres que no sean números.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void soloNumeros(object sender, TextCompositionEventArgs e)
         {
             if (!inventarioBD.soloNumeros(e.Text))
                 e.Handled = true;
         }
 
+        /// <summary>
+        /// Impide escribir caracteres que no sean números o punto decimal.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void soloPrecio(object sender, TextCompositionEventArgs e)
         {
             if (!inventarioBD.caracteresDePrecio(e.Text))
                 e.Handled = true;
         }
 
+        /// <summary>
+        /// Atiende el clic de agregar a lista.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void agregarAListaClic(object sender, RoutedEventArgs e)
         {
             string mensaje;
@@ -207,6 +276,11 @@ namespace Codelex
             actualizarTotal();
         }
 
+        /// <summary>
+        /// Atiende el clic de nuevo artículo.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void nuevoArticuloClic(object sender, RoutedEventArgs e)
         {
             NuevoProductoEquipo ventana = new NuevoProductoEquipo();
@@ -245,6 +319,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Atiende el clic de nuevo proveedor.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void nuevoProveedorClic(object sender, RoutedEventArgs e)
         {
             NuevoProveedor ventana = new NuevoProveedor();
@@ -264,6 +343,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Atiende el clic de quitar.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void quitarClic(object sender, RoutedEventArgs e)
         {
             DataRowView? fila = dgLista.SelectedItem as DataRowView;
@@ -278,12 +362,22 @@ namespace Codelex
             actualizarTotal();
         }
 
+        /// <summary>
+        /// Atiende el clic de vaciar.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void vaciarClic(object sender, RoutedEventArgs e)
         {
             lista.Rows.Clear();
             actualizarTotal();
         }
 
+        /// <summary>
+        /// Valida y guarda los datos del formulario.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void guardarClic(object sender, RoutedEventArgs e)
         {
             try
@@ -307,6 +401,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Libera lo necesario justo antes de cerrar la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void ventanaCerrando(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (guardado || lista.Rows.Count == 0)
@@ -319,22 +418,41 @@ namespace Codelex
                 e.Cancel = true;
         }
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
+        /// <summary>
+        /// Minimiza la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
+        /// <summary>
+        /// Muestra un mensaje con el error ocurrido.
+        /// </summary>
+        /// <param name="ex">Excepción que se produjo.</param>
         private void mostrarError(Exception ex)
         {
             MensajeCodelex.mostrar(this, "Inventario", ex.Message, false);

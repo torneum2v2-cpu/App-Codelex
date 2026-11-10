@@ -19,6 +19,10 @@ namespace Codelex.FacturasCotizaciones
         DataTable cuotasActuales = new DataTable();
         bool huboCambios = false;
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
+        /// <param name="facturaId">Identificador de factura.</param>
         public FacturaDetalle(int facturaId)
         {
             InitializeComponent();
@@ -27,6 +31,11 @@ namespace Codelex.FacturasCotizaciones
             Loaded += ventanaCargada;
         }
 
+        /// <summary>
+        /// Prepara la ventana y carga los datos iniciales cuando termina de abrirse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             try
@@ -39,6 +48,9 @@ namespace Codelex.FacturasCotizaciones
             }
         }
 
+        /// <summary>
+        /// Carga factura.
+        /// </summary>
         private void cargarFactura()
         {
             DataTable cabecera = facturaBD.obtenerFactura(facturaId);
@@ -136,6 +148,11 @@ namespace Codelex.FacturasCotizaciones
             }
         }
 
+        /// <summary>
+        /// Atiende el clic de saldar.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void saldarClic(object sender, RoutedEventArgs e)
         {
             string mensaje;
@@ -172,6 +189,11 @@ namespace Codelex.FacturasCotizaciones
             }
         }
 
+        /// <summary>
+        /// Atiende el clic de abono.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void abonoClic(object sender, RoutedEventArgs e)
         {
             RegistrarAbono ventana = new RegistrarAbono(facturaId, saldoActual);
@@ -192,6 +214,11 @@ namespace Codelex.FacturasCotizaciones
             }
         }
 
+        /// <summary>
+        /// Convierte un valor de fecha en texto dd/MM/yyyy, o un guion si no hay fecha.
+        /// </summary>
+        /// <param name="valor">Valor a usar.</param>
+        /// <returns>Fecha como dd/MM/yyyy, o un guion si no hay fecha.</returns>
         private static string fecha(object valor)
         {
             if (valor is DateTime fecha)
@@ -200,11 +227,21 @@ namespace Codelex.FacturasCotizaciones
             return "—";
         }
 
+        /// <summary>
+        /// Devuelve un guion cuando el texto está vacío.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <returns>El mismo texto, o un guion si estaba vacío.</returns>
         private static string vacio(string texto)
         {
             return texto.Trim() == "" ? "—" : texto;
         }
 
+        /// <summary>
+        /// Crea un pincel a partir de un color en formato hexadecimal.
+        /// </summary>
+        /// <param name="color">Color en formato hexadecimal.</param>
+        /// <returns>Pincel con el color pedido.</returns>
         private static Brush pincel(string color)
         {
             SolidColorBrush pincel = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
@@ -214,17 +251,32 @@ namespace Codelex.FacturasCotizaciones
 
         // ---------- Ventana ----------
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
+        /// <summary>
+        /// Minimiza la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void salirClic(object sender, RoutedEventArgs e)
         {
             DialogResult = huboCambios;

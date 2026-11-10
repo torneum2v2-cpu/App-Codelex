@@ -23,21 +23,39 @@ namespace Codelex.AccesoDatos
 
     class Orden : BaseDatos
     {
+        /// <summary>
+        /// Lista estados orden.
+        /// </summary>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable listarEstadosOrden()
         {
             return consultar(procedimiento("sp_ListarEstadosOrden"));
         }
 
+        /// <summary>
+        /// Lista servicios.
+        /// </summary>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable listarServicios()
         {
             return consultar(procedimiento("sp_ListarServicios"));
         }
 
+        /// <summary>
+        /// Lista empleados.
+        /// </summary>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable listarEmpleados()
         {
             return consultar(procedimiento("sp_ListarEmpleadosOrden"));
         }
 
+        /// <summary>
+        /// Lista cotizaciones.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <param name="rtn">RTN o identidad del cliente (sin guiones).</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable listarCotizaciones(string texto, string rtn)
         {
             SqlCommand comando = procedimiento("sp_ListarCotizacionesOrden");
@@ -46,6 +64,11 @@ namespace Codelex.AccesoDatos
             return consultar(comando);
         }
 
+        /// <summary>
+        /// Lista las líneas de una cotización.
+        /// </summary>
+        /// <param name="cotizacionId">Identificador de cotización.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable detalleCotizacion(string cotizacionId)
         {
             SqlCommand comando = procedimiento("sp_DetalleCotizacion");
@@ -53,6 +76,11 @@ namespace Codelex.AccesoDatos
             return consultar(comando);
         }
 
+        /// <summary>
+        /// Resume lo que necesita una cotización (personas, productos y equipos).
+        /// </summary>
+        /// <param name="cotizacionId">Identificador de cotización.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable resumenCotizacion(string cotizacionId)
         {
             SqlCommand comando = procedimiento("sp_ResumenCotizacion");
@@ -61,6 +89,11 @@ namespace Codelex.AccesoDatos
         }
 
         // Una línea del resumen: lo que necesita la orden y lo que hay disponible.
+        /// <summary>
+        /// Arma el texto de una necesidad de la orden e indica si falta (FALTA - ...).
+        /// </summary>
+        /// <param name="fila">Fila con los datos.</param>
+        /// <returns>Texto resultante.</returns>
         public string textoNecesidad(DataRow fila)
         {
             string tipo = "" + fila["tipo"];
@@ -83,6 +116,13 @@ namespace Codelex.AccesoDatos
             return texto;
         }
 
+        /// <summary>
+        /// Guarda orden.
+        /// </summary>
+        /// <param name="datos">Datos a usar.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <param name="ordenId">(salida) Identificador de orden.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool guardarOrden(DatosOrden datos, out string mensaje, out string ordenId)
         {
             ordenId = "";
@@ -122,6 +162,11 @@ namespace Codelex.AccesoDatos
             return guardada;
         }
 
+        /// <summary>
+        /// Valida orden.
+        /// </summary>
+        /// <param name="datos">Datos a usar.</param>
+        /// <returns>Texto resultante.</returns>
         private string validarOrden(DatosOrden datos)
         {
             if (datos.cotizacionId.Trim() == "")
@@ -162,6 +207,13 @@ namespace Codelex.AccesoDatos
             return "";
         }
 
+        /// <summary>
+        /// Agrega lista.
+        /// </summary>
+        /// <param name="comando">Comando de SQL Server.</param>
+        /// <param name="nombre">Nombre.</param>
+        /// <param name="tipo">Tipo de dato.</param>
+        /// <param name="tabla">Tabla de datos.</param>
         private void agregarLista(SqlCommand comando, string nombre, string tipo, DataTable tabla)
         {
             SqlParameter parametro = comando.Parameters.AddWithValue(nombre, tabla);
@@ -169,6 +221,12 @@ namespace Codelex.AccesoDatos
             parametro.TypeName = tipo;
         }
 
+        /// <summary>
+        /// Arma una tabla de un solo campo entero para enviarla al procedimiento almacenado.
+        /// </summary>
+        /// <param name="columna">Nombre de la columna.</param>
+        /// <param name="valores">Valores a procesar.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         private DataTable tablaDeEnteros(string columna, List<int> valores)
         {
             DataTable tabla = new DataTable();

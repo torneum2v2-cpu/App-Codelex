@@ -6,6 +6,11 @@ namespace Codelex.AccesoDatos
 {
     class BaseDatos
     {
+        /// <summary>
+        /// Crea un comando listo para llamar a un procedimiento almacenado.
+        /// </summary>
+        /// <param name="nombre">Nombre.</param>
+        /// <returns>Comando listo para ejecutar.</returns>
         protected SqlCommand procedimiento(string nombre)
         {
             SqlCommand comando = new SqlCommand(nombre);
@@ -13,6 +18,11 @@ namespace Codelex.AccesoDatos
             return comando;
         }
 
+        /// <summary>
+        /// Ejecuta un procedimiento almacenado y devuelve el resultado en una tabla.
+        /// </summary>
+        /// <param name="comando">Comando de SQL Server.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         protected DataTable consultar(SqlCommand comando)
         {
             DataTable tabla = new DataTable();
@@ -27,6 +37,12 @@ namespace Codelex.AccesoDatos
             return tabla;
         }
 
+        /// <summary>
+        /// Ejecuta un procedimiento almacenado que responde con un resultado y un mensaje.
+        /// </summary>
+        /// <param name="comando">Comando de SQL Server.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si el procedimiento respondió resultado 1; false en caso contrario.</returns>
         protected bool ejecutar(SqlCommand comando, out string mensaje)
         {
             SqlParameter resultado = new SqlParameter("@resultado", SqlDbType.Int);

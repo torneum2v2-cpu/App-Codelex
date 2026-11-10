@@ -5,6 +5,11 @@ namespace Codelex.AccesoDatos
 {
     class Empleado : BaseDatos
     {
+        /// <summary>
+        /// Indica si existe correo.
+        /// </summary>
+        /// <param name="correo">Correo electrónico.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool existeCorreo(string correo)
         {
             if (correo.Trim() == "")
@@ -17,11 +22,22 @@ namespace Codelex.AccesoDatos
             return Convert.ToInt32(tabla.Rows[0]["cantidad"]) > 0;
         }
 
+        /// <summary>
+        /// Lista cargos.
+        /// </summary>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable listarCargos()
         {
             return consultar(procedimiento("sp_ListarCargos"));
         }
 
+        /// <summary>
+        /// Busca empleados.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <param name="buscarPor">Campo por el que se busca.</param>
+        /// <param name="filtroEstado">Filtro de estado.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable buscarEmpleados(string texto, string buscarPor, string filtroEstado)
         {
             object estado = DBNull.Value;
@@ -37,6 +53,11 @@ namespace Codelex.AccesoDatos
             return consultar(comando);
         }
 
+        /// <summary>
+        /// Obtiene empleado.
+        /// </summary>
+        /// <param name="empleadoId">Identificador de empleado.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable obtenerEmpleado(int empleadoId)
         {
             SqlCommand comando = procedimiento("sp_ObtenerEmpleado");
@@ -44,16 +65,42 @@ namespace Codelex.AccesoDatos
             return consultar(comando);
         }
 
+        /// <summary>
+        /// Lista las asistencias de un empleado en un rango de fechas.
+        /// </summary>
+        /// <param name="empleadoId">Identificador de empleado.</param>
+        /// <param name="desde">Fecha inicial.</param>
+        /// <param name="hasta">Fecha final.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable asistenciasPorEmpleado(int empleadoId, DateTime desde, DateTime hasta)
         {
             return consultarPorRango("sp_AsistenciasPorEmpleado", empleadoId, desde, hasta);
         }
 
+        /// <summary>
+        /// Lista las órdenes de un empleado en un rango de fechas.
+        /// </summary>
+        /// <param name="empleadoId">Identificador de empleado.</param>
+        /// <param name="desde">Fecha inicial.</param>
+        /// <param name="hasta">Fecha final.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable ordenesPorEmpleado(int empleadoId, DateTime desde, DateTime hasta)
         {
             return consultarPorRango("sp_OrdenesPorEmpleado", empleadoId, desde, hasta);
         }
 
+        /// <summary>
+        /// Inserta empleado.
+        /// </summary>
+        /// <param name="cargoId">Identificador del cargo.</param>
+        /// <param name="nombre">Nombre.</param>
+        /// <param name="apellido">Apellido.</param>
+        /// <param name="identidad">Número de identidad (sin guiones).</param>
+        /// <param name="telefono">Teléfono.</param>
+        /// <param name="correo">Correo electrónico.</param>
+        /// <param name="empleadoId">(salida) Identificador de empleado.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool insertarEmpleado(int cargoId, string nombre, string apellido, string identidad,
                                      string telefono, string correo,
                                      out int empleadoId, out string mensaje)
@@ -76,6 +123,18 @@ namespace Codelex.AccesoDatos
             return guardado;
         }
 
+        /// <summary>
+        /// Actualiza empleado.
+        /// </summary>
+        /// <param name="empleadoId">Identificador de empleado.</param>
+        /// <param name="cargoId">Identificador del cargo.</param>
+        /// <param name="nombre">Nombre.</param>
+        /// <param name="apellido">Apellido.</param>
+        /// <param name="identidad">Número de identidad (sin guiones).</param>
+        /// <param name="telefono">Teléfono.</param>
+        /// <param name="correo">Correo electrónico.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool actualizarEmpleado(int empleadoId, int cargoId, string nombre, string apellido, string identidad,
                                        string telefono, string correo, out string mensaje)
         {
@@ -90,6 +149,13 @@ namespace Codelex.AccesoDatos
             return ejecutar(comando, out mensaje);
         }
 
+        /// <summary>
+        /// Cambia estado empleado.
+        /// </summary>
+        /// <param name="empleadoId">Identificador de empleado.</param>
+        /// <param name="activo">true para activar, false para desactivar.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool cambiarEstadoEmpleado(int empleadoId, bool activo, out string mensaje)
         {
             SqlCommand comando = procedimiento("sp_CambiarEstadoEmpleado");
@@ -99,6 +165,11 @@ namespace Codelex.AccesoDatos
             return ejecutar(comando, out mensaje);
         }
 
+        /// <summary>
+        /// Impide escribir caracteres que no sean números.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool soloNumeros(string texto)
         {
             foreach (char c in texto)
@@ -110,6 +181,16 @@ namespace Codelex.AccesoDatos
             return true;
         }
 
+        /// <summary>
+        /// Valida empleado.
+        /// </summary>
+        /// <param name="cargoId">Identificador del cargo.</param>
+        /// <param name="nombre">Nombre.</param>
+        /// <param name="apellido">Apellido.</param>
+        /// <param name="identidad">Número de identidad (sin guiones).</param>
+        /// <param name="telefono">Teléfono.</param>
+        /// <param name="correo">Correo electrónico.</param>
+        /// <returns>Texto resultante.</returns>
         private string validarEmpleado(int cargoId, string nombre, string apellido, string identidad,
                                        string telefono, string correo)
         {
@@ -145,6 +226,16 @@ namespace Codelex.AccesoDatos
             return "";
         }
 
+        /// <summary>
+        /// Agrega parametros empleado.
+        /// </summary>
+        /// <param name="comando">Comando de SQL Server.</param>
+        /// <param name="cargoId">Identificador del cargo.</param>
+        /// <param name="nombre">Nombre.</param>
+        /// <param name="apellido">Apellido.</param>
+        /// <param name="identidad">Número de identidad (sin guiones).</param>
+        /// <param name="telefono">Teléfono.</param>
+        /// <param name="correo">Correo electrónico.</param>
         private void agregarParametrosEmpleado(SqlCommand comando, int cargoId, string nombre, string apellido,
                                                string identidad, string telefono, string correo)
         {
@@ -156,6 +247,14 @@ namespace Codelex.AccesoDatos
             comando.Parameters.AddWithValue("@correo_empleado", correo.Trim());
         }
 
+        /// <summary>
+        /// Consulta por rango.
+        /// </summary>
+        /// <param name="nombreProcedimiento">Nombre del procedimiento almacenado.</param>
+        /// <param name="empleadoId">Identificador de empleado.</param>
+        /// <param name="desde">Fecha inicial.</param>
+        /// <param name="hasta">Fecha final.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         private DataTable consultarPorRango(string nombreProcedimiento, int empleadoId, DateTime desde, DateTime hasta)
         {
             SqlCommand comando = procedimiento(nombreProcedimiento);

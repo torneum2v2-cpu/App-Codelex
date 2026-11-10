@@ -19,6 +19,10 @@ namespace Codelex
         private string codigo = "";
         private int segundos;
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
+        /// <param name="email">Email.</param>
         public IngresarCodigo(string email)
         {
             InitializeComponent();
@@ -32,12 +36,20 @@ namespace Codelex
             temporizador.Tick += temporizadorTic;
             ContentRendered += ventanaLista;
         }
+        /// <summary>
+        /// Pone el cursor en la primera casilla cuando la ventana termina de dibujarse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void ventanaLista(object sender, EventArgs e)
         {
             ContentRendered -= ventanaLista;
             enviarYContar();
         }
 
+        /// <summary>
+        /// Envía y contar.
+        /// </summary>
         private async void enviarYContar()
         {
             IsEnabled = false;
@@ -61,22 +73,46 @@ namespace Codelex
             txtC1.Focus();
         }
 
+        /// <summary>
+        /// Muestra el error del código de verificación escrito.
+        /// </summary>
+        /// <param name="message">Mensaje a mostrar.</param>
         private void mostrarErrorCodigo(string message)
         {
             txtError2.Text = message;
             txtError2.Visibility = Visibility.Visible;
         }
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
+        /// <summary>
+        /// Minimiza la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void minimizarClic(object sender, RoutedEventArgs e) =>
          WindowState = WindowState.Minimized;
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void cerrarClic(object sender, RoutedEventArgs e) => Close();
 
+        /// <summary>
+        /// Atiende el clic de cambiar correo.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void cambiarCorreoClic(object sender, RoutedEventArgs e)
         {
             temporizador.Stop();
@@ -84,6 +120,11 @@ namespace Codelex
             Close();
         }
 
+        /// <summary>
+        /// Atiende el clic de verificar.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void verificarClic(object sender, RoutedEventArgs e)
         {
             txtError2.Visibility = Visibility.Collapsed;
@@ -114,6 +155,9 @@ namespace Codelex
             new NuevaContra(correo).Show();
             Close();
         }
+        /// <summary>
+        /// Genera y enviar código.
+        /// </summary>
         private async Task generarYEnviarCodigo()
         {
             try
@@ -144,6 +188,11 @@ namespace Codelex
                 mostrarErrorCodigo("No se pudo enviar el correo: " + ex.Message);
             }
         }
+        /// <summary>
+        /// Atiende cada tic de temporizador.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void temporizadorTic(object? sender, EventArgs e)
         {
             segundos--;
@@ -151,6 +200,9 @@ namespace Codelex
             actualizarEspera();
         }
 
+        /// <summary>
+        /// Actualiza espera.
+        /// </summary>
         private void actualizarEspera()
         {
             bool waiting = segundos > 0;
@@ -158,12 +210,21 @@ namespace Codelex
             txtCountdown.Visibility = waiting ? Visibility.Visible : Visibility.Collapsed;
             tbResend.Visibility = waiting ? Visibility.Collapsed : Visibility.Visible;
         }
+        /// <summary>
+        /// Inicia espera.
+        /// </summary>
+        /// <param name="seconds">Seconds.</param>
         private void iniciarEspera(int seconds)
         {
             segundos = seconds;
             actualizarEspera();
             temporizador.Start();
         }
+        /// <summary>
+        /// Atiende el clic de reenviar.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void reenviarClic(object sender, RoutedEventArgs e)
         {
             limpiarCodigo();
@@ -171,18 +232,36 @@ namespace Codelex
             enviarYContar();
         }
 
+        /// <summary>
+        /// Devuelve la posición de la casilla dentro del código de verificación.
+        /// </summary>
+        /// <param name="box">Casilla de texto.</param>
+        /// <returns>Posición de la casilla (0 a 5).</returns>
         private int indiceDe(TextBox box) => Array.IndexOf(casillas, box);
 
+        /// <summary>
+        /// Limpia código.
+        /// </summary>
         private void limpiarCodigo()
         {
             foreach (var b in casillas) b.Clear();
         }
 
+        /// <summary>
+        /// Atiende el foco recibido por código.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void codigoFocoRecibido(object sender, KeyboardFocusChangedEventArgs e)
         {
             if (sender is TextBox box) box.SelectAll();
         }
 
+        /// <summary>
+        /// Atiende el texto escrito en código.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void codigoPreviaTextoIngresado(object sender, TextCompositionEventArgs e)
         {
             e.Handled = true;
@@ -196,6 +275,11 @@ namespace Codelex
             if (i < LONGITUD_CODIGO - 1) casillas[i + 1].Focus();
         }
 
+        /// <summary>
+        /// Atiende la tecla presionada en código.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void codigoPreviaTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (sender is not TextBox box) return;
@@ -234,6 +318,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Atiende el pegado en código.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void codigoPegado(object sender, DataObjectPastingEventArgs e)
         {
             e.CancelCommand();

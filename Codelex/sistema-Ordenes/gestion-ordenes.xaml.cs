@@ -17,12 +17,21 @@ namespace Codelex.Ordenes
             public int id;
             public string texto;
 
+            /// <summary>
+            /// Crea el objeto con sus valores iniciales.
+            /// </summary>
+            /// <param name="id">Identificador.</param>
+            /// <param name="texto">Texto a usar.</param>
             public OpcionFiltro(int id, string texto)
             {
                 id = id;
                 texto = texto;
             }
 
+            /// <summary>
+            /// Devuelve el texto que se muestra en las listas.
+            /// </summary>
+            /// <returns>Texto resultante.</returns>
             public override string ToString()
             {
                 return texto;
@@ -53,6 +62,10 @@ namespace Codelex.Ordenes
                 get { return Estado == "Completada" || Estado == "Cancelada"; }
             }
 
+            /// <summary>
+            /// Crea el objeto con sus valores iniciales.
+            /// </summary>
+            /// <param name="fila">Fila con los datos.</param>
             public FilaOrden(DataRow fila)
             {
                 OrdenId = "" + fila["orden_id"];
@@ -101,6 +114,11 @@ namespace Codelex.Ordenes
                 }
             }
 
+            /// <summary>
+            /// Convierte un valor de fecha en texto dd/MM/yyyy, o un guion si no hay fecha.
+            /// </summary>
+            /// <param name="valor">Valor a usar.</param>
+            /// <returns>Fecha como dd/MM/yyyy, o un guion si no hay fecha.</returns>
             private static DateTime? fecha(object valor)
             {
                 if (valor is DateTime fecha)
@@ -109,6 +127,11 @@ namespace Codelex.Ordenes
                 return null;
             }
 
+            /// <summary>
+            /// Crea un pincel a partir de un color en formato hexadecimal.
+            /// </summary>
+            /// <param name="color">Color en formato hexadecimal.</param>
+            /// <returns>Pincel con el color pedido.</returns>
             private static Brush pincel(string color)
             {
                 SolidColorBrush pincel = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
@@ -132,6 +155,9 @@ namespace Codelex.Ordenes
             // Factura de la orden mostrada en el detalle (0 = todavía no tiene).
             int facturaIdActual = 0;
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
         public GestionOrdenes()
             {
                 InitializeComponent();
@@ -140,6 +166,11 @@ namespace Codelex.Ordenes
 
             // ---------- Carga ----------
 
+            /// <summary>
+            /// Prepara la ventana y carga los datos iniciales cuando termina de abrirse.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
             private void ventanaCargada(object sender, RoutedEventArgs e)
             {
                 try
@@ -156,6 +187,9 @@ namespace Codelex.Ordenes
                 }
             }
 
+            /// <summary>
+            /// Carga estados.
+            /// </summary>
             private void cargarEstados()
             {
                 DataTable estados = ordenBD.listarEstadosOrden();
@@ -178,6 +212,11 @@ namespace Codelex.Ordenes
 
             // Lee las órdenes de la base y vuelve a aplicar los filtros.
             // forzarDetalle = true vuelve a leer el detalle de la orden seleccionada.
+            /// <summary>
+            /// Carga órdenes.
+            /// </summary>
+            /// <param name="idSeleccionar">Id seleccionar.</param>
+            /// <param name="forzarDetalle">Forzar detalle.</param>
             private void cargarOrdenes(string idSeleccionar, bool forzarDetalle)
             {
                 try
@@ -200,6 +239,9 @@ namespace Codelex.Ordenes
                 }
             }
 
+            /// <summary>
+            /// Actualiza resumen.
+            /// </summary>
             private void actualizarResumen()
             {
                 txtTotal.Text = todas.Count.ToString();
@@ -210,6 +252,9 @@ namespace Codelex.Ordenes
             }
 
             // El filtro de supervisor solo ofrece los supervisores que tienen órdenes.
+            /// <summary>
+            /// Reconstruye filtro supervisor.
+            /// </summary>
             private void reconstruirFiltroSupervisor()
             {
                 int previo = 0;
@@ -249,6 +294,12 @@ namespace Codelex.Ordenes
 
             // ---------- Filtros ----------
 
+            /// <summary>
+            /// Indica si un texto contiene a otro sin distinguir mayúsculas.
+            /// </summary>
+            /// <param name="origen">Texto donde se busca.</param>
+            /// <param name="texto">Texto a usar.</param>
+            /// <returns>true si el texto contiene al otro; false en caso contrario.</returns>
             private static bool contiene(string origen, string texto)
             {
                 // Sin importar mayúsculas ni tildes.
@@ -256,6 +307,11 @@ namespace Codelex.Ordenes
                     origen, texto, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) >= 0;
             }
 
+            /// <summary>
+            /// Aplica filtros.
+            /// </summary>
+            /// <param name="idSeleccionar">Id seleccionar.</param>
+            /// <param name="forzarDetalle">Forzar detalle.</param>
             private void aplicarFiltros(string idSeleccionar, bool forzarDetalle)
             {
                 if (!listo)
@@ -331,16 +387,31 @@ namespace Codelex.Ordenes
                 }
             }
 
+            /// <summary>
+            /// Atiende el cambio de texto de buscar.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
             private void buscarTextoCambiado(object sender, TextChangedEventArgs e)
             {
                 aplicarFiltros("", false);
             }
 
+            /// <summary>
+            /// Atiende el cambio de filtro.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
             private void filtroCambiado(object sender, SelectionChangedEventArgs e)
             {
                 aplicarFiltros("", false);
             }
 
+            /// <summary>
+            /// Atiende el clic de limpiar filtros.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
             private void limpiarFiltrosClic(object sender, RoutedEventArgs e)
             {
                 listo = false;
@@ -357,6 +428,11 @@ namespace Codelex.Ordenes
 
             // ---------- Detalle ----------
 
+            /// <summary>
+            /// Atiende el cambio de selección de órdenes.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
             private void ordenesSeleccionCambiada(object sender, SelectionChangedEventArgs e)
             {
                 if (reconstruyendo)
@@ -368,6 +444,9 @@ namespace Codelex.Ordenes
                     limpiarDetalle();
             }
 
+            /// <summary>
+            /// Limpia detalle.
+            /// </summary>
             private void limpiarDetalle()
             {
                 detalleMostrado = "";
@@ -379,6 +458,10 @@ namespace Codelex.Ordenes
                 actualizarAcciones(null);
             }
 
+            /// <summary>
+            /// Muestra detalle.
+            /// </summary>
+            /// <param name="fila">Fila con los datos.</param>
             private void mostrarDetalle(FilaOrden fila)
             {
                 try
@@ -427,6 +510,10 @@ namespace Codelex.Ordenes
                 }
             }
 
+            /// <summary>
+            /// Llena listas.
+            /// </summary>
+            /// <param name="ordenId">Identificador de orden.</param>
             private void llenarListas(string ordenId)
             {
                 DataTable tabla = gestionBD.listarDetalle(ordenId);
@@ -460,11 +547,21 @@ namespace Codelex.Ordenes
                 lstProductos.ItemsSource = productos;
             }
 
+            /// <summary>
+            /// Une lineas.
+            /// </summary>
+            /// <param name="lineas">Lineas.</param>
+            /// <returns>Texto resultante.</returns>
             private static string unirLineas(List<string> lineas)
             {
                 return string.Join(Environment.NewLine, lineas.Where(l => l.Trim() != ""));
             }
 
+            /// <summary>
+            /// Arma el texto del cliente que se muestra en el detalle de la orden.
+            /// </summary>
+            /// <param name="d">Fila con los datos de la orden.</param>
+            /// <returns>Texto resultante.</returns>
             private static string textoCliente(DataRow d)
             {
                 string empresa = ("" + d["nombre_empresa"]).Trim();
@@ -490,6 +587,11 @@ namespace Codelex.Ordenes
                 return unirLineas(lineas);
             }
 
+            /// <summary>
+            /// Arma el texto del lugar del servicio que se muestra en el detalle de la orden.
+            /// </summary>
+            /// <param name="d">Fila con los datos de la orden.</param>
+            /// <returns>Texto resultante.</returns>
             private static string textoLugar(DataRow d)
             {
                 string locacion = ("" + d["locacion"]).Trim();
@@ -513,6 +615,11 @@ namespace Codelex.Ordenes
             }
 
             // Igual que el reporte de órdenes: vacío = sin evaluar, 1 = conforme, 0 = no conforme.
+            /// <summary>
+            /// Arma el texto de la conformidad del cliente que se muestra en el detalle de la orden.
+            /// </summary>
+            /// <param name="d">Fila con los datos de la orden.</param>
+            /// <returns>Texto resultante.</returns>
             private static string textoConformidad(DataRow d)
             {
                 if ("" + d["estado"] != "Completada")
@@ -524,6 +631,11 @@ namespace Codelex.Ordenes
                 return "Sin evaluar";
             }
 
+            /// <summary>
+            /// Arma el texto de la factura que se muestra en el detalle de la orden.
+            /// </summary>
+            /// <param name="d">Fila con los datos de la orden.</param>
+            /// <returns>Texto resultante.</returns>
             private static string textoFactura(DataRow d)
             {
                 if (d["factura_id"] is DBNull)
@@ -543,6 +655,10 @@ namespace Codelex.Ordenes
 
             // ---------- Cambio de estado ----------
 
+            /// <summary>
+            /// Actualiza acciones.
+            /// </summary>
+            /// <param name="fila">Fila con los datos.</param>
             private void actualizarAcciones(FilaOrden? fila)
             {
                 if (fila == null)
@@ -574,6 +690,9 @@ namespace Codelex.Ordenes
                 actualizarBotonAplicar();
             }
 
+            /// <summary>
+            /// Actualiza boton aplicar.
+            /// </summary>
             private void actualizarBotonAplicar()
             {
                 FilaOrden? fila = dgOrdenes.SelectedItem as FilaOrden;
@@ -583,11 +702,21 @@ namespace Codelex.Ordenes
                                              && nuevo != null && nuevo.id != fila.EstadoId;
             }
 
+            /// <summary>
+            /// Atiende el cambio de selección de cambiar estado.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
             private void cambiarEstadoSeleccionCambiada(object sender, SelectionChangedEventArgs e)
             {
                 actualizarBotonAplicar();
             }
 
+            /// <summary>
+            /// Atiende el clic de aplicar estado.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
             private void aplicarEstadoClic(object sender, RoutedEventArgs e)
             {
                 if (dgOrdenes.SelectedItem is not FilaOrden fila || cmbCambiarEstado.SelectedItem is not OpcionFiltro nuevo)
@@ -609,6 +738,11 @@ namespace Codelex.Ordenes
                 cambiarEstado(fila, nuevo.id);
             }
 
+            /// <summary>
+            /// Atiende el clic de cancelar orden.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
             private void cancelarOrdenClic(object sender, RoutedEventArgs e)
             {
                 if (dgOrdenes.SelectedItem is not FilaOrden fila)
@@ -636,6 +770,11 @@ namespace Codelex.Ordenes
                 cambiarEstado(fila, canceladaId);
             }
 
+            /// <summary>
+            /// Cambia estado.
+            /// </summary>
+            /// <param name="fila">Fila con los datos.</param>
+            /// <param name="estadoId">Identificador del estado.</param>
             private void cambiarEstado(FilaOrden fila, int estadoId)
             {
                 try
@@ -656,6 +795,11 @@ namespace Codelex.Ordenes
 
         // ---------- Botones ----------
 
+            /// <summary>
+            /// Atiende el clic de crear factura.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
             private void crearFacturaClic(object sender, RoutedEventArgs e)
             {
                 if (dgOrdenes.SelectedItem is not FilaOrden fila)
@@ -669,6 +813,11 @@ namespace Codelex.Ordenes
                 cargarOrdenes(fila.OrdenId, true);
             }
 
+            /// <summary>
+            /// Atiende el clic de ver factura.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
             private void verFacturaClic(object sender, RoutedEventArgs e)
             {
                 if (facturaIdActual <= 0)
@@ -681,11 +830,21 @@ namespace Codelex.Ordenes
                     cargarOrdenes(fila.OrdenId, true);
             }
 
+            /// <summary>
+            /// Valida y guarda los cambios del registro seleccionado.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
             private void actualizarClic(object sender, RoutedEventArgs e)
                 {
                     cargarOrdenes("", true);
                 }
 
+            /// <summary>
+            /// Atiende el clic de nueva orden.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
             private void nuevaOrdenClic(object sender, RoutedEventArgs e)
             {
                 DataRow? cotizacion = SeleccionarCotizacion.elegir(this, "");
@@ -701,22 +860,41 @@ namespace Codelex.Ordenes
 
             // ---------- Ventana ----------
 
+            /// <summary>
+            /// Permite mover la ventana arrastrando la barra superior con el mouse.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
             private void arrastrarVentana(object sender, MouseButtonEventArgs e)
             {
                 if (e.ButtonState == MouseButtonState.Pressed)
                     DragMove();
             }
 
+            /// <summary>
+            /// Minimiza la ventana.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
             private void minimizarClic(object sender, RoutedEventArgs e)
             {
                 WindowState = WindowState.Minimized;
             }
 
+            /// <summary>
+            /// Cierra la ventana.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
             private void salirClic(object sender, RoutedEventArgs e)
             {
                 Close();
             }
 
+            /// <summary>
+            /// Muestra un mensaje con el error ocurrido.
+            /// </summary>
+            /// <param name="ex">Excepción que se produjo.</param>
             private void mostrarError(Exception ex)
             {
                 MensajeCodelex.mostrar(this, "Gestión de órdenes", ex.Message, false);

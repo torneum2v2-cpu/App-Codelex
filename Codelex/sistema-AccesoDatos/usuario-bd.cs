@@ -11,16 +11,30 @@ namespace Codelex.AccesoDatos
     {
 
 
+        /// <summary>
+        /// Crea el objeto con sus valores iniciales.
+        /// </summary>
         public UsuarioBD()
         {
 
         }
 
+        /// <summary>
+        /// Lista roles.
+        /// </summary>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable listarRoles()
         {
             return consultar(procedimiento("sp_ListarRoles"));
         }
 
+        /// <summary>
+        /// Busca usuarios.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <param name="buscarPor">Campo por el que se busca.</param>
+        /// <param name="filtroEstado">Filtro de estado.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable buscarUsuarios(string texto, string buscarPor, string filtroEstado)
         {
             object estado = DBNull.Value;
@@ -36,6 +50,11 @@ namespace Codelex.AccesoDatos
             return consultar(comando);
         }
 
+        /// <summary>
+        /// Busca empleados sin usuario.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable buscarEmpleadosSinUsuario(string texto)
         {
             SqlCommand comando = procedimiento("sp_BuscarEmpleadosSinUsuario");
@@ -43,6 +62,12 @@ namespace Codelex.AccesoDatos
             return consultar(comando);
         }
 
+        /// <summary>
+        /// Indica si existe usuario.
+        /// </summary>
+        /// <param name="usuario">Nombre de usuario.</param>
+        /// <param name="excluirUsuarioId">Identificador de excluir usuario.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool existeUsuario(string usuario, int excluirUsuarioId)
         {
             SqlCommand comando = procedimiento("sp_ExisteUsuario");
@@ -53,6 +78,11 @@ namespace Codelex.AccesoDatos
             return Convert.ToInt32(tabla.Rows[0]["cantidad"]) > 0;
         }
 
+        /// <summary>
+        /// Busca un nombre de usuario que todavía no esté usado.
+        /// </summary>
+        /// <param name="usuarioBase">Nombre de usuario base.</param>
+        /// <returns>Nombre de usuario libre.</returns>
         public string usuarioDisponible(string usuarioBase)
         {
             string candidato = usuarioBase;
@@ -67,16 +97,41 @@ namespace Codelex.AccesoDatos
             return candidato;
         }
 
+        /// <summary>
+        /// Crea usuario.
+        /// </summary>
+        /// <param name="empleadoId">Identificador de empleado.</param>
+        /// <param name="usuario">Nombre de usuario.</param>
+        /// <param name="contrasena">Contraseña.</param>
+        /// <param name="rolId">Identificador de rol.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool crearUsuario(int empleadoId, string usuario, string contrasena, int rolId, out string mensaje)
         {
             return guardarUsuario(true, empleadoId, usuario, contrasena, rolId, out mensaje);
         }
 
+        /// <summary>
+        /// Actualiza usuario.
+        /// </summary>
+        /// <param name="usuarioId">Identificador del usuario.</param>
+        /// <param name="usuario">Nombre de usuario.</param>
+        /// <param name="contrasena">Contraseña.</param>
+        /// <param name="rolId">Identificador de rol.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool actualizarUsuario(int usuarioId, string usuario, string contrasena, int rolId, out string mensaje)
         {
             return guardarUsuario(false, usuarioId, usuario, contrasena, rolId, out mensaje);
         }
 
+        /// <summary>
+        /// Cambia estado usuario.
+        /// </summary>
+        /// <param name="usuarioId">Identificador del usuario.</param>
+        /// <param name="activo">true para activar, false para desactivar.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool cambiarEstadoUsuario(int usuarioId, bool activo, out string mensaje)
         {
             SqlCommand comando = procedimiento("sp_CambiarEstadoUsuario");
@@ -86,6 +141,12 @@ namespace Codelex.AccesoDatos
             return ejecutar(comando, out mensaje);
         }
 
+        /// <summary>
+        /// Elimina usuario.
+        /// </summary>
+        /// <param name="usuarioId">Identificador del usuario.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool eliminarUsuario(int usuarioId, out string mensaje)
         {
             SqlCommand comando = procedimiento("sp_EliminarUsuario");
@@ -94,6 +155,14 @@ namespace Codelex.AccesoDatos
             return ejecutar(comando, out mensaje);
         }
 
+        /// <summary>
+        /// Valida usuario.
+        /// </summary>
+        /// <param name="usuario">Nombre de usuario.</param>
+        /// <param name="contrasena">Contraseña.</param>
+        /// <param name="rolId">Identificador de rol.</param>
+        /// <param name="esNuevo">Es nuevo.</param>
+        /// <returns>Texto resultante.</returns>
         private string validarUsuario(string usuario, string contrasena, int rolId, bool esNuevo)
         {
             usuario = usuario.Trim();
@@ -113,11 +182,26 @@ namespace Codelex.AccesoDatos
         }
 
         // Hoy el login compara la contrasena tal cual. Si el equipo usa hash, se cambia aqui y en ValidarLogin.
+        /// <summary>
+        /// Prepara contraseña.
+        /// </summary>
+        /// <param name="contrasena">Contraseña.</param>
+        /// <returns>Texto resultante.</returns>
         private string prepararContrasena(string contrasena)
         {
             return contrasena;
         }
 
+        /// <summary>
+        /// Guarda usuario.
+        /// </summary>
+        /// <param name="esNuevo">Es nuevo.</param>
+        /// <param name="id">Identificador.</param>
+        /// <param name="usuario">Nombre de usuario.</param>
+        /// <param name="contrasena">Contraseña.</param>
+        /// <param name="rolId">Identificador de rol.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         private bool guardarUsuario(bool esNuevo, int id, string usuario, string contrasena, int rolId, out string mensaje)
         {
             mensaje = validarUsuario(usuario, contrasena, rolId, esNuevo);
@@ -143,6 +227,11 @@ namespace Codelex.AccesoDatos
             return ejecutar(comando, out mensaje);
         }
 
+        /// <summary>
+        /// Crea un comando listo para llamar a un procedimiento almacenado.
+        /// </summary>
+        /// <param name="nombre">Nombre.</param>
+        /// <returns>Comando listo para ejecutar.</returns>
         private SqlCommand procedimiento(string nombre)
         {
             SqlCommand comando = new SqlCommand(nombre);
@@ -150,6 +239,11 @@ namespace Codelex.AccesoDatos
             return comando;
         }
 
+        /// <summary>
+        /// Ejecuta un procedimiento almacenado y devuelve el resultado en una tabla.
+        /// </summary>
+        /// <param name="comando">Comando de SQL Server.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         private DataTable consultar(SqlCommand comando)
         {
             DataTable tabla = new DataTable();
@@ -164,6 +258,12 @@ namespace Codelex.AccesoDatos
             return tabla;
         }
 
+        /// <summary>
+        /// Ejecuta un procedimiento almacenado que responde con un resultado y un mensaje.
+        /// </summary>
+        /// <param name="comando">Comando de SQL Server.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si el procedimiento respondió resultado 1; false en caso contrario.</returns>
         private bool ejecutar(SqlCommand comando, out string mensaje)
         {
             SqlParameter resultado = new SqlParameter("@resultado", SqlDbType.Int);

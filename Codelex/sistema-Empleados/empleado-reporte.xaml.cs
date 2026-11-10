@@ -20,6 +20,10 @@ namespace Codelex
         DataTable asistencias = new DataTable();
         DataTable ordenes = new DataTable();
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
+        /// <param name="empleadoId">Identificador de empleado.</param>
         public EmpleadoReporte(int empleadoId)
         {
             InitializeComponent();
@@ -32,6 +36,11 @@ namespace Codelex
             empleadoInicial = empleadoId;
         }
 
+        /// <summary>
+        /// Prepara la ventana y carga los datos iniciales cuando termina de abrirse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             DateTime hoy = DateTime.Today;
@@ -61,6 +70,10 @@ namespace Codelex
             generarReporte();
         }
 
+        /// <summary>
+        /// Obtiene el identificador del empleado elegido.
+        /// </summary>
+        /// <returns>Identificador del empleado elegido, o 0 si no hay.</returns>
         private int empleadoSeleccionado()
         {
             if (cmbEmpleado.SelectedValue == null)
@@ -69,6 +82,11 @@ namespace Codelex
             return Convert.ToInt32(cmbEmpleado.SelectedValue);
         }
 
+        /// <summary>
+        /// Atiende el cambio de selección de empleado.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void empleadoSeleccionCambiada(object sender, SelectionChangedEventArgs e)
         {
             if (cargando)
@@ -78,6 +96,9 @@ namespace Codelex
             generarReporte();
         }
 
+        /// <summary>
+        /// Carga datos empleado.
+        /// </summary>
         private void cargarDatosEmpleado()
         {
             int id = empleadoSeleccionado();
@@ -106,11 +127,19 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Atiende el clic de generar.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void generarClic(object sender, RoutedEventArgs e)
         {
             generarReporte();
         }
 
+        /// <summary>
+        /// Genera reporte.
+        /// </summary>
         private void generarReporte()
         {
             int id = empleadoSeleccionado();
@@ -153,6 +182,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Atiende el clic de exportar.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void exportarClic(object sender, RoutedEventArgs e)
         {
             if (empleadoSeleccionado() == 0)
@@ -199,6 +233,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Prepara un valor para escribirlo en un archivo CSV (comillas y separadores).
+        /// </summary>
+        /// <param name="valor">Valor a usar.</param>
+        /// <returns>Texto resultante.</returns>
         private string csv(object valor)
         {
             string texto = "" + valor;
@@ -207,6 +246,11 @@ namespace Codelex
             return texto;
         }
 
+        /// <summary>
+        /// Atiende el clic de imprimir.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void imprimirClic(object sender, RoutedEventArgs e)
         {
             PrintDialog dialogo = new PrintDialog();
@@ -214,22 +258,41 @@ namespace Codelex
                 dialogo.PrintVisual(areaReporte, "Reporte del empleado");
         }
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
+        /// <summary>
+        /// Minimiza la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void cerrarClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
+        /// <summary>
+        /// Muestra un mensaje con el error ocurrido.
+        /// </summary>
+        /// <param name="ex">Excepción que se produjo.</param>
         private void mostrarError(Exception ex)
         {
             MensajeCodelex.mostrar(this, "Reporte del empleado", ex.Message, false);

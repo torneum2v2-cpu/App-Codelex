@@ -13,6 +13,12 @@ namespace Codelex
         public string texto;
         public string tipo;
 
+        /// <summary>
+        /// Crea el objeto con sus valores iniciales.
+        /// </summary>
+        /// <param name="id">Identificador.</param>
+        /// <param name="texto">Texto a usar.</param>
+        /// <param name="tipo">Tipo de dato.</param>
         public ItemLista(int id, string texto, string tipo)
         {
             id = id;
@@ -20,6 +26,10 @@ namespace Codelex
             tipo = tipo;
         }
 
+        /// <summary>
+        /// Devuelve el texto que se muestra en las listas.
+        /// </summary>
+        /// <returns>Texto resultante.</returns>
         public override string ToString()
         {
             return texto;
@@ -41,6 +51,9 @@ namespace Codelex
         int personasNecesarias = 0;
         DataRow? cotizacionInicial = null;
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
         private IngresarOrden()
         {
             InitializeComponent();
@@ -53,11 +66,20 @@ namespace Codelex
             cmbLocacion.SelectionChanged += locacionSeleccionCambiada;
             Loaded += ventanaCargada;
         }
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
+        /// <param name="cotizacion">Cotización.</param>
         public IngresarOrden(DataRow cotizacion) : this()
         {
             cotizacionInicial = cotizacion;
         }
 
+        /// <summary>
+        /// Prepara la ventana y carga los datos iniciales cuando termina de abrirse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             try
@@ -75,6 +97,9 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Carga listas.
+        /// </summary>
         private void cargarListas()
         {
             llenarCombo(cmbEstado, ordenBD.listarEstadosOrden(), "estado_orden_id", "nombre_estado_orden");
@@ -91,6 +116,13 @@ namespace Codelex
             cargarVehiculos();
         }
 
+        /// <summary>
+        /// Llena combo.
+        /// </summary>
+        /// <param name="combo">Lista desplegable.</param>
+        /// <param name="tabla">Tabla de datos.</param>
+        /// <param name="columnaId">Columna con el identificador.</param>
+        /// <param name="columnaTexto">Columna texto.</param>
         private void llenarCombo(ComboBox combo, DataTable tabla, string columnaId, string columnaTexto)
         {
             combo.Items.Clear();
@@ -101,6 +133,9 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Carga vehículos.
+        /// </summary>
         private void cargarVehiculos()
         {
             cmbVehiculo.Items.Clear();
@@ -114,6 +149,9 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Carga empleados disponibles.
+        /// </summary>
         private void cargarEmpleadosDisponibles()
         {
             lstEmpleadosDisponibles.Items.Clear();
@@ -125,6 +163,10 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Carga locaciones.
+        /// </summary>
+        /// <param name="rtn">RTN o identidad del cliente (sin guiones).</param>
         private void cargarLocaciones(string rtn)
         {
             cmbLocacion.Items.Clear();
@@ -140,6 +182,11 @@ namespace Codelex
                 aviso("Este cliente no tiene locaciones registradas. Regístrelas desde Clientes.");
         }
 
+        /// <summary>
+        /// Obtiene el identificador del elemento elegido en la lista desplegable.
+        /// </summary>
+        /// <param name="combo">Lista desplegable.</param>
+        /// <returns>Identificador elegido, o 0 si no hay selección.</returns>
         private int idSeleccionado(ComboBox combo)
         {
             ItemLista item = combo.SelectedItem as ItemLista;
@@ -150,6 +197,11 @@ namespace Codelex
             return item.id;
         }
 
+        /// <summary>
+        /// Selecciona por texto.
+        /// </summary>
+        /// <param name="combo">Lista desplegable.</param>
+        /// <param name="texto">Texto a usar.</param>
         private void seleccionarPorTexto(ComboBox combo, string texto)
         {
             foreach (ItemLista item in combo.Items)
@@ -165,6 +217,11 @@ namespace Codelex
                 combo.SelectedIndex = 0;
         }
 
+        /// <summary>
+        /// Mueve seleccionado.
+        /// </summary>
+        /// <param name="origen">Texto donde se busca.</param>
+        /// <param name="destino">Ventana que se va a mostrar.</param>
         private void moverSeleccionado(ListBox origen, ListBox destino)
         {
             ItemLista item = origen.SelectedItem as ItemLista;
@@ -176,6 +233,9 @@ namespace Codelex
             destino.Items.Add(item);
         }
 
+        /// <summary>
+        /// Deja el formulario listo para una orden nueva.
+        /// </summary>
         private void nuevaOrden()
         {
             txtNOrden.Text = "(automático)";
@@ -206,6 +266,10 @@ namespace Codelex
             irAPaso(1);
         }
 
+        /// <summary>
+        /// Carga cotización.
+        /// </summary>
+        /// <param name="cotizacion">Cotización.</param>
         private void cargarCotizacion(DataRow cotizacion)
         {
             nuevaOrden();
@@ -248,6 +312,11 @@ namespace Codelex
             lblPersonasNecesarias.Text = "La cotización necesita " + personasNecesarias + " empleados.";
         }
 
+        /// <summary>
+        /// Selecciona por id.
+        /// </summary>
+        /// <param name="combo">Lista desplegable.</param>
+        /// <param name="id">Identificador.</param>
         private void seleccionarPorId(ComboBox combo, int id)
         {
             foreach (ItemLista item in combo.Items)
@@ -260,6 +329,9 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Limpia cliente.
+        /// </summary>
         private void limpiarCliente()
         {
             clienteRtn = "";
@@ -274,6 +346,11 @@ namespace Codelex
             cmbLocacion.Items.Clear();
         }
 
+        /// <summary>
+        /// Atiende el clic de cambiar cotización.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void cambiarCotizacionClic(object sender, RoutedEventArgs e)
         {
             DataRow? cotizacion = SeleccionarCotizacion.elegir(this, "");
@@ -291,6 +368,10 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Llena cliente.
+        /// </summary>
+        /// <param name="fila">Fila con los datos.</param>
         private void llenarCliente(DataRow fila)
         {
             clienteRtn = "" + fila["identificacion_cliente"];
@@ -312,6 +393,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Atiende el cambio de selección de locación.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void locacionSeleccionCambiada(object sender, SelectionChangedEventArgs e)
         {
             cmbTipoLocacion.Items.Clear();
@@ -332,16 +418,31 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Atiende el clic de agregar empleado.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void agregarEmpleadoClic(object sender, RoutedEventArgs e)
         {
             moverSeleccionado(lstEmpleadosDisponibles, lstEmpleadosAsignados);
         }
 
+        /// <summary>
+        /// Atiende el clic de quitar empleado.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void quitarEmpleadoClic(object sender, RoutedEventArgs e)
         {
             moverSeleccionado(lstEmpleadosAsignados, lstEmpleadosDisponibles);
         }
 
+        /// <summary>
+        /// Atiende el clic de guardar orden.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void guardarOrdenClic(object sender, RoutedEventArgs e)
         {
             for (int paso = 1; paso <= 3; paso++)
@@ -394,6 +495,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Cancela lo que se está haciendo y cierra o limpia el formulario.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void cancelarClic(object sender, RoutedEventArgs e)
         {
             if (clienteRtn != "")
@@ -413,6 +519,10 @@ namespace Codelex
 
         int pasoActual = 1;
 
+        /// <summary>
+        /// Va a paso.
+        /// </summary>
+        /// <param name="paso">Número del paso.</param>
         private void irAPaso(int paso)
         {
             pasoActual = paso;
@@ -437,6 +547,13 @@ namespace Codelex
             scrollPasos.ScrollToTop();
         }
 
+        /// <summary>
+        /// Pinta indicador.
+        /// </summary>
+        /// <param name="numero">Número a revisar.</param>
+        /// <param name="circulo">Circulo.</param>
+        /// <param name="texto">Texto a usar.</param>
+        /// <param name="titulo">Título del cuadro.</param>
         private void pintarIndicador(int numero, Border circulo, TextBlock texto, TextBlock titulo)
         {
             if (numero < pasoActual)
@@ -466,6 +583,10 @@ namespace Codelex
         }
 
         // Avanza hasta el paso pedido validando cada paso intermedio. Si uno falla, se queda en él.
+        /// <summary>
+        /// Avanza hasta.
+        /// </summary>
+        /// <param name="destino">Ventana que se va a mostrar.</param>
         private void avanzarHasta(int destino)
         {
             for (int paso = pasoActual; paso < destino; paso++)
@@ -483,6 +604,11 @@ namespace Codelex
             irAPaso(destino);
         }
 
+        /// <summary>
+        /// Valida paso.
+        /// </summary>
+        /// <param name="paso">Número del paso.</param>
+        /// <returns>Texto resultante.</returns>
         private string validarPaso(int paso)
         {
             if (paso == 1)
@@ -526,12 +652,19 @@ namespace Codelex
             return "";
         }
 
+        /// <summary>
+        /// Muestra el mensaje de error del paso actual del asistente.
+        /// </summary>
+        /// <param name="mensaje">Mensaje con el resultado.</param>
         private void mostrarErrorPaso(string mensaje)
         {
             txtErrorPaso.Text = mensaje;
             txtErrorPaso.Visibility = Visibility.Visible;
         }
 
+        /// <summary>
+        /// Arma resumen.
+        /// </summary>
         private void armarResumen()
         {
             string fecha = dpFechaLimpieza.SelectedDate == null
@@ -547,6 +680,11 @@ namespace Codelex
                 "Supervisor: " + cmbSupervisor.SelectedItem;
         }
 
+        /// <summary>
+        /// Atiende el clic de paso.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void pasoClic(object sender, MouseButtonEventArgs e)
         {
             int destino = int.Parse("" + ((FrameworkElement)sender).Tag);
@@ -557,38 +695,71 @@ namespace Codelex
                 avanzarHasta(destino);
         }
 
+        /// <summary>
+        /// Atiende el clic de siguiente.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void siguienteClic(object sender, RoutedEventArgs e)
         {
             avanzarHasta(pasoActual + 1);
         }
 
+        /// <summary>
+        /// Atiende el clic de atras.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void atrasClic(object sender, RoutedEventArgs e)
         {
             if (pasoActual > 1)
                 irAPaso(pasoActual - 1);
         }
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
+        /// <summary>
+        /// Minimiza la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
+        /// <summary>
+        /// Muestra un mensaje de aviso al usuario.
+        /// </summary>
+        /// <param name="mensaje">Mensaje con el resultado.</param>
         private void aviso(string mensaje)
         {
             MensajeCodelex.mostrar(this, "Órdenes", mensaje, false);
         }
 
+        /// <summary>
+        /// Muestra un mensaje con el error ocurrido.
+        /// </summary>
+        /// <param name="ex">Excepción que se produjo.</param>
         private void mostrarError(Exception ex)
         {
             MensajeCodelex.mostrar(this, "Órdenes", ex.Message, false);

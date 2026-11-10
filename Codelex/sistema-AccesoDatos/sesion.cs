@@ -32,6 +32,10 @@
             }
         }
 
+        /// <summary>
+        /// Guarda los datos del usuario que inició sesión.
+        /// </summary>
+        /// <param name="usuario">Nombre de usuario.</param>
         public static void iniciar(Usuario usuario)
         {
             UsuarioId = usuario.UsuarioId;
@@ -42,6 +46,9 @@
             Nivel = nivelDe(usuario.Rol);
         }
 
+        /// <summary>
+        /// Cierra la sesión actual.
+        /// </summary>
         public static void cerrar()
         {
             UsuarioId = 0;
@@ -53,11 +60,21 @@
         }
 
         // Verdadero si el usuario tiene al menos el nivel pedido.
+        /// <summary>
+        /// Indica si el usuario tiene al menos el nivel de acceso pedido.
+        /// </summary>
+        /// <param name="minimo">Nivel mínimo requerido.</param>
+        /// <returns>true si el nivel alcanza; false en caso contrario.</returns>
         public static bool permite(NivelAcceso minimo)
         {
             return Nivel != NivelAcceso.SinRol && Nivel >= minimo;
         }
 
+        /// <summary>
+        /// Devuelve el nivel de acceso que corresponde a un rol.
+        /// </summary>
+        /// <param name="rol">Nombre del rol.</param>
+        /// <returns>Nivel de acceso del rol.</returns>
         private static NivelAcceso nivelDe(string rol)
         {
             string texto = rol.Trim().ToLowerInvariant();

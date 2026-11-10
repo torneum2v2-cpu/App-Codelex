@@ -18,11 +18,19 @@ namespace Codelex
         string buscarPor = "";
         string filtroEstado = "TODOS";
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
         public Clientes()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Prepara la ventana y carga los datos iniciales cuando termina de abrirse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             foreach (string tipo in clienteBD.tiposIdentificacion())
@@ -37,11 +45,19 @@ namespace Codelex
             cargarClientes();
         }
 
+        /// <summary>
+        /// Atiende el cambio de selección de tipo id.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void tipoIdSeleccionCambiada(object sender, SelectionChangedEventArgs e)
         {
             txtRTN.MaxLength = clienteBD.largoIdentificacion("" + cmbTipoId.SelectedItem);
         }
 
+        /// <summary>
+        /// Carga clientes.
+        /// </summary>
         private void cargarClientes()
         {
             try
@@ -55,6 +71,10 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Carga en formulario.
+        /// </summary>
+        /// <param name="rtn">RTN o identidad del cliente (sin guiones).</param>
         private void cargarEnFormulario(string rtn)
         {
             try
@@ -89,6 +109,9 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Limpia formulario.
+        /// </summary>
         private void limpiarFormulario()
         {
             clienteId = 0;
@@ -107,6 +130,9 @@ namespace Codelex
             txtRTN.Focus();
         }
 
+        /// <summary>
+        /// Actualiza botones.
+        /// </summary>
         private void actualizarBotones()
         {
             if (clienteActual == "")
@@ -138,17 +164,32 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Impide escribir caracteres que no sean números.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void soloNumeros(object sender, TextCompositionEventArgs e)
         {
             if (!clienteBD.soloNumeros(e.Text))
                 e.Handled = true;
         }
 
+        /// <summary>
+        /// Limpia el formulario para registrar uno nuevo.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void nuevoClic(object sender, RoutedEventArgs e)
         {
             limpiarFormulario();
         }
 
+        /// <summary>
+        /// Valida y guarda el registro nuevo.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void crearClic(object sender, RoutedEventArgs e)
         {
             try
@@ -173,6 +214,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Valida y guarda los cambios del registro seleccionado.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void actualizarClic(object sender, RoutedEventArgs e)
         {
             if (clienteActual == "")
@@ -200,6 +246,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Activa o desactiva el registro seleccionado.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void cambiarEstadoClic(object sender, RoutedEventArgs e)
         {
             if (clienteActual == "")
@@ -237,6 +288,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Atiende el clic de ver detalle.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void verDetalleClic(object sender, RoutedEventArgs e)
         {
             if (clienteActual == "")
@@ -248,6 +304,11 @@ namespace Codelex
             abrirDetalle(clienteActual);
         }
 
+        /// <summary>
+        /// Atiende el clic de clientes.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void clientesClic(object sender, MouseButtonEventArgs e)
         {
             if (dgClientes.SelectedItem == null)
@@ -261,6 +322,10 @@ namespace Codelex
             dgClientes.SelectedItem = null;
         }
 
+        /// <summary>
+        /// Abre detalle.
+        /// </summary>
+        /// <param name="rtn">RTN o identidad del cliente (sin guiones).</param>
         private void abrirDetalle(string rtn)
         {
             ClienteDetalle detalle = new ClienteDetalle(rtn);
@@ -271,6 +336,11 @@ namespace Codelex
                 cargarEnFormulario(rtn);
         }
 
+        /// <summary>
+        /// Atiende el clic de por rtn.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void porRTNClic(object sender, RoutedEventArgs e)
         {
             textoBusqueda = txtBuscar.Text.Trim();
@@ -278,6 +348,11 @@ namespace Codelex
             cargarClientes();
         }
 
+        /// <summary>
+        /// Atiende el clic de por nombre.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void porNombreClic(object sender, RoutedEventArgs e)
         {
             textoBusqueda = txtBuscar.Text.Trim();
@@ -285,6 +360,11 @@ namespace Codelex
             cargarClientes();
         }
 
+        /// <summary>
+        /// Quita los filtros y muestra todos los registros.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void mostrarTodosClic(object sender, RoutedEventArgs e)
         {
             txtBuscar.Text = "";
@@ -294,18 +374,33 @@ namespace Codelex
             cargarClientes();
         }
 
+        /// <summary>
+        /// Muestra solo los registros activos.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void activosClic(object sender, RoutedEventArgs e)
         {
             filtroEstado = "ACTIVOS";
             cargarClientes();
         }
 
+        /// <summary>
+        /// Muestra solo los registros inactivos.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void inactivosClic(object sender, RoutedEventArgs e)
         {
             filtroEstado = "INACTIVOS";
             cargarClientes();
         }
 
+        /// <summary>
+        /// Ejecuta la búsqueda al presionar Enter.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void buscarTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -316,22 +411,42 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
+        /// <summary>
+        /// Minimiza la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
+        /// <summary>
+        /// Muestra mensaje.
+        /// </summary>
+        /// <param name="correcto">Correcto.</param>
+        /// <param name="mensaje">Mensaje con el resultado.</param>
         private void mostrarMensaje(bool correcto, string mensaje)
         {
             if (correcto)
@@ -340,6 +455,10 @@ namespace Codelex
                 MensajeCodelex.mostrar(this, "Clientes", mensaje, false);
         }
 
+        /// <summary>
+        /// Muestra un mensaje con el error ocurrido.
+        /// </summary>
+        /// <param name="ex">Excepción que se produjo.</param>
         private void mostrarError(Exception ex)
         {
             MensajeCodelex.mostrar(this, "Clientes", ex.Message, false);

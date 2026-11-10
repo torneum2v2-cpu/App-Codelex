@@ -16,12 +16,20 @@ namespace Codelex
         string buscarPor = "";
         string filtroEstado = "TODOS";
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
         public Empleados()
         {
             InitializeComponent();
             Height = Math.Min(Height, SystemParameters.WorkArea.Height - 10);
         }
 
+        /// <summary>
+        /// Prepara la ventana y carga los datos iniciales cuando termina de abrirse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             try
@@ -37,6 +45,9 @@ namespace Codelex
             cargarEmpleados();
         }
 
+        /// <summary>
+        /// Carga empleados.
+        /// </summary>
         private void cargarEmpleados()
         {
             try
@@ -50,6 +61,10 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Carga en formulario.
+        /// </summary>
+        /// <param name="id">Identificador.</param>
         private void cargarEnFormulario(int id)
         {
             try
@@ -89,6 +104,9 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Limpia formulario.
+        /// </summary>
         private void limpiarFormulario()
         {
             empleadoActual = 0;
@@ -106,6 +124,9 @@ namespace Codelex
             cmbCargo.Focus();
         }
 
+        /// <summary>
+        /// Actualiza botones.
+        /// </summary>
         private void actualizarBotones()
         {
             if (empleadoActual == 0)
@@ -139,6 +160,10 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Obtiene el identificador del cargo elegido.
+        /// </summary>
+        /// <returns>Identificador del cargo elegido, o 0 si no hay.</returns>
         private int cargoSeleccionado()
         {
             if (cmbCargo.SelectedValue == null)
@@ -147,18 +172,33 @@ namespace Codelex
             return Convert.ToInt32(cmbCargo.SelectedValue);
         }
 
+        /// <summary>
+        /// Impide escribir caracteres que no sean números.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void soloNumeros(object sender, TextCompositionEventArgs e)
         {
             if (!empleadoBD.soloNumeros(e.Text))
                 e.Handled = true;
         }
 
+        /// <summary>
+        /// Limpia el formulario para registrar uno nuevo.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void nuevoClic(object sender, RoutedEventArgs e)
         {
             dgEmpleados.SelectedItem = null;
             limpiarFormulario();
         }
 
+        /// <summary>
+        /// Valida y guarda el registro nuevo.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void crearClic(object sender, RoutedEventArgs e)
         {
             try
@@ -184,6 +224,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Valida y guarda los cambios del registro seleccionado.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void actualizarClic(object sender, RoutedEventArgs e)
         {
             if (empleadoActual == 0)
@@ -208,6 +253,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Activa o desactiva el registro seleccionado.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void cambiarEstadoClic(object sender, RoutedEventArgs e)
         {
             if (empleadoActual == 0)
@@ -246,6 +296,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Atiende el clic de ver reporte.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void verReporteClic(object sender, RoutedEventArgs e)
         {
             if (empleadoActual == 0)
@@ -257,6 +312,11 @@ namespace Codelex
             abrirReporte(empleadoActual);
         }
 
+        /// <summary>
+        /// Atiende el clic de empleados.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void empleadosClic(object sender, MouseButtonEventArgs e)
         {
             if (dgEmpleados.SelectedItem == null)
@@ -266,6 +326,11 @@ namespace Codelex
             cargarEnFormulario(Convert.ToInt32(fila["empleado_id"]));
         }
 
+        /// <summary>
+        /// Atiende el doble clic en empleados.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void empleadosDobleClic(object sender, MouseButtonEventArgs e)
         {
             if (dgEmpleados.SelectedItem == null)
@@ -275,6 +340,10 @@ namespace Codelex
             abrirReporte(Convert.ToInt32(fila["empleado_id"]));
         }
 
+        /// <summary>
+        /// Abre reporte.
+        /// </summary>
+        /// <param name="id">Identificador.</param>
         private void abrirReporte(int id)
         {
             EmpleadoReporte reporte = new EmpleadoReporte(id);
@@ -282,21 +351,40 @@ namespace Codelex
             reporte.ShowDialog();
         }
 
+        /// <summary>
+        /// Atiende el clic de por nombre.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void porNombreClic(object sender, RoutedEventArgs e)
         {
             buscar("NOMBRE");
         }
 
+        /// <summary>
+        /// Atiende el clic de por identidad.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void porIdentidadClic(object sender, RoutedEventArgs e)
         {
             buscar("IDENTIDAD");
         }
 
+        /// <summary>
+        /// Atiende el clic de por cargo.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void porCargoClic(object sender, RoutedEventArgs e)
         {
             buscar("CARGO");
         }
 
+        /// <summary>
+        /// Busca empleados según el criterio indicado.
+        /// </summary>
+        /// <param name="criterio">Criterio de búsqueda.</param>
         private void buscar(string criterio)
         {
             textoBusqueda = txtBuscar.Text.Trim();
@@ -304,6 +392,11 @@ namespace Codelex
             cargarEmpleados();
         }
 
+        /// <summary>
+        /// Quita los filtros y muestra todos los registros.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void mostrarTodosClic(object sender, RoutedEventArgs e)
         {
             txtBuscar.Text = "";
@@ -313,45 +406,84 @@ namespace Codelex
             cargarEmpleados();
         }
 
+        /// <summary>
+        /// Muestra solo los registros activos.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void activosClic(object sender, RoutedEventArgs e)
         {
             filtroEstado = "ACTIVOS";
             cargarEmpleados();
         }
 
+        /// <summary>
+        /// Muestra solo los registros inactivos.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void inactivosClic(object sender, RoutedEventArgs e)
         {
             filtroEstado = "INACTIVOS";
             cargarEmpleados();
         }
 
+        /// <summary>
+        /// Ejecuta la búsqueda al presionar Enter.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void buscarTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
                 buscar("");
         }
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
+        /// <summary>
+        /// Minimiza la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
+        /// <summary>
+        /// Muestra mensaje.
+        /// </summary>
+        /// <param name="correcto">Correcto.</param>
+        /// <param name="mensaje">Mensaje con el resultado.</param>
         private void mostrarMensaje(bool correcto, string mensaje)
         {
             MensajeCodelex.mostrar(this, "Empleados", mensaje, correcto);
         }
 
+        /// <summary>
+        /// Muestra un mensaje con el error ocurrido.
+        /// </summary>
+        /// <param name="ex">Excepción que se produjo.</param>
         private void mostrarError(Exception ex)
         {
             MensajeCodelex.mostrar(this, "Empleados", ex.Message, false);

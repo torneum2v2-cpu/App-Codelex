@@ -16,17 +16,28 @@ namespace Codelex
         string textoBusqueda = "";
         string filtroEstado = "TODOS";
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
         public GestionVehiculos()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Prepara la ventana y carga los datos iniciales cuando termina de abrirse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             limpiarFormulario();
             cargarVehiculos();
         }
 
+        /// <summary>
+        /// Carga vehículos.
+        /// </summary>
         private void cargarVehiculos()
         {
             try
@@ -40,6 +51,10 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Carga en formulario.
+        /// </summary>
+        /// <param name="vehiculoId">Identificador de vehículo.</param>
         private void cargarEnFormulario(int vehiculoId)
         {
             try
@@ -70,6 +85,9 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Limpia formulario.
+        /// </summary>
         private void limpiarFormulario()
         {
             vehiculoActual = 0;
@@ -85,6 +103,9 @@ namespace Codelex
             txtBuscar.Focus();
         }
 
+        /// <summary>
+        /// Actualiza botones.
+        /// </summary>
         private void actualizarBotones()
         {
             bool haySeleccion = vehiculoActual > 0;
@@ -118,12 +139,22 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Impide escribir caracteres que no se permiten en una placa.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void soloPlaca(object sender, TextCompositionEventArgs e)
         {
             if (!vehiculoBD.caracteresDePlaca(e.Text))
                 e.Handled = true;
         }
 
+        /// <summary>
+        /// Atiende el clic de registrar.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void registrarClic(object sender, RoutedEventArgs e)
         {
             RegistrarVehiculo ventana = new RegistrarVehiculo();
@@ -133,11 +164,21 @@ namespace Codelex
             cargarVehiculos();
         }
 
+        /// <summary>
+        /// Limpia los datos del formulario.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void limpiarClic(object sender, RoutedEventArgs e)
         {
             limpiarFormulario();
         }
 
+        /// <summary>
+        /// Valida y guarda los cambios del registro seleccionado.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void actualizarClic(object sender, RoutedEventArgs e)
         {
             if (vehiculoActual == 0)
@@ -165,6 +206,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Activa o desactiva el registro seleccionado.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void cambiarEstadoClic(object sender, RoutedEventArgs e)
         {
             if (vehiculoActual == 0)
@@ -202,6 +248,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Atiende el clic de vehículos.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void vehiculosClic(object sender, MouseButtonEventArgs e)
         {
             if (dgVehiculos.SelectedItem == null)
@@ -213,23 +264,41 @@ namespace Codelex
             cargarEnFormulario(vehiculoId);
         }
 
+        /// <summary>
+        /// Busca texto.
+        /// </summary>
         private void buscarTexto()
         {
             textoBusqueda = txtBuscar.Text.Trim();
             cargarVehiculos();
         }
 
+        /// <summary>
+        /// Busca con el texto escrito.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void buscarClic(object sender, RoutedEventArgs e)
         {
             buscarTexto();
         }
 
+        /// <summary>
+        /// Ejecuta la búsqueda al presionar Enter.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void buscarTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
                 buscarTexto();
         }
 
+        /// <summary>
+        /// Quita los filtros y muestra todos los registros.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void mostrarTodosClic(object sender, RoutedEventArgs e)
         {
             txtBuscar.Text = "";
@@ -238,34 +307,63 @@ namespace Codelex
             cargarVehiculos();
         }
 
+        /// <summary>
+        /// Muestra solo los registros activos.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void activosClic(object sender, RoutedEventArgs e)
         {
             filtroEstado = "ACTIVOS";
             cargarVehiculos();
         }
 
+        /// <summary>
+        /// Muestra solo los registros inactivos.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void inactivosClic(object sender, RoutedEventArgs e)
         {
             filtroEstado = "INACTIVOS";
             cargarVehiculos();
         }
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
+        /// <summary>
+        /// Minimiza la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
+        /// <summary>
+        /// Muestra un mensaje con el error ocurrido.
+        /// </summary>
+        /// <param name="ex">Excepción que se produjo.</param>
         private void mostrarError(Exception ex)
         {
             MensajeCodelex.mostrar(this, "Vehículos", ex.Message, false);

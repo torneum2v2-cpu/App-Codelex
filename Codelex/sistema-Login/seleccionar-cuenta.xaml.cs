@@ -6,6 +6,10 @@ namespace Codelex
 {
     public partial class SeleccionarCuenta : Window
     {
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
+        /// <param name="entrarAutomatico">Entrar automatico.</param>
         public SeleccionarCuenta(bool entrarAutomatico = false)
         {
             InitializeComponent();
@@ -15,6 +19,11 @@ namespace Codelex
                 ContentRendered += entrarAutomaticamente;
         }
 
+        /// <summary>
+        /// Entra solo cuando hay una única cuenta recordada.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private async void entrarAutomaticamente(object? sender, EventArgs e)
         {
             ContentRendered -= entrarAutomaticamente;
@@ -32,17 +41,29 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Carga cuentas.
+        /// </summary>
         private void cargarCuentas()
         {
             lista.ItemsSource = CuentasRecordadas.listar();
         }
 
+        /// <summary>
+        /// Muestra un mensaje con el error ocurrido.
+        /// </summary>
+        /// <param name="mensaje">Mensaje con el resultado.</param>
         private void mostrarError(string mensaje)
         {
             txtError.Text = mensaje;
             txtError.Visibility = Visibility.Visible;
         }
 
+        /// <summary>
+        /// Atiende el clic de cuenta.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private async void cuentaClic(object sender, RoutedEventArgs e)
         {
             if (((FrameworkElement)sender).DataContext is not CuentaRecordada cuenta)
@@ -51,6 +72,10 @@ namespace Codelex
             await entrar(cuenta);
         }
 
+        /// <summary>
+        /// Inicia sesión con la cuenta recordada que se eligió.
+        /// </summary>
+        /// <param name="cuenta">Cuenta recordada elegida.</param>
         private async Task entrar(CuentaRecordada cuenta)
         {
             txtError.Visibility = Visibility.Collapsed;
@@ -95,6 +120,11 @@ namespace Codelex
             Close();
         }
 
+        /// <summary>
+        /// Atiende el clic de quitar.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void quitarClic(object sender, RoutedEventArgs e)
         {
             if (((FrameworkElement)sender).DataContext is not CuentaRecordada cuenta)
@@ -112,21 +142,41 @@ namespace Codelex
             cargarCuentas();
         }
 
+        /// <summary>
+        /// Atiende el clic de agregar.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void agregarClic(object sender, RoutedEventArgs e)
         {
             new VentanaPrincipal().Show();
             Close();
         }
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
+        /// <summary>
+        /// Minimiza la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void minimizarClic(object sender, RoutedEventArgs e) =>
             WindowState = WindowState.Minimized;
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void cerrarClic(object sender, RoutedEventArgs e) => Close();
     }
 }

@@ -6,6 +6,11 @@ namespace Codelex.AccesoDatos
 {
     class FotoPerfilBD : BaseDatos
     {
+        /// <summary>
+        /// Obtiene la foto de perfil guardada de un usuario.
+        /// </summary>
+        /// <param name="usuarioId">Identificador del usuario.</param>
+        /// <returns>Resultado de tipo .</returns>
         public byte[]? obtener(int usuarioId)
         {
             SqlCommand comando = procedimiento("sp_ObtenerFotoUsuario");
@@ -19,6 +24,11 @@ namespace Codelex.AccesoDatos
         }
 
         // foto = null borra la foto del usuario.
+        /// <summary>
+        /// Guarda la foto de perfil de un usuario.
+        /// </summary>
+        /// <param name="usuarioId">Identificador del usuario.</param>
+        /// <param name="foto">Bytes de la foto.</param>
         public void guardar(int usuarioId, byte[]? foto)
         {
             SqlCommand comando = procedimiento("sp_GuardarFotoUsuario");

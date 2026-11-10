@@ -21,6 +21,9 @@ namespace Codelex.FacturasCotizaciones
         DataTable actividades = new DataTable();
         ObservableCollection<LineaActividad> lineas = new ObservableCollection<LineaActividad>();
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
         public Cotizacion()
         {
             InitializeComponent();
@@ -43,6 +46,11 @@ namespace Codelex.FacturasCotizaciones
             Loaded += ventanaCargada;
         }
 
+        /// <summary>
+        /// Prepara la ventana y carga los datos iniciales cuando termina de abrirse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             try
@@ -59,6 +67,9 @@ namespace Codelex.FacturasCotizaciones
 
         // ---------- Carga de datos ----------
 
+        /// <summary>
+        /// Carga servicios.
+        /// </summary>
         private void cargarServicios()
         {
             cmbServicio.Items.Clear();
@@ -70,6 +81,10 @@ namespace Codelex.FacturasCotizaciones
             }
         }
 
+        /// <summary>
+        /// Carga locaciones.
+        /// </summary>
+        /// <param name="rtn">RTN o identidad del cliente (sin guiones).</param>
         private void cargarLocaciones(string rtn)
         {
             cmbLocacion.Items.Clear();
@@ -85,6 +100,11 @@ namespace Codelex.FacturasCotizaciones
                 aviso("Este cliente no tiene locaciones registradas. Escriba la dirección del servicio.");
         }
 
+        /// <summary>
+        /// Obtiene el identificador del elemento elegido en la lista desplegable.
+        /// </summary>
+        /// <param name="combo">Lista desplegable.</param>
+        /// <returns>Identificador elegido, o 0 si no hay selección.</returns>
         private int idSeleccionado(ComboBox combo)
         {
             ItemLista item = combo.SelectedItem as ItemLista;
@@ -97,6 +117,9 @@ namespace Codelex.FacturasCotizaciones
 
         // ---------- Cotización nueva ----------
 
+        /// <summary>
+        /// Deja el formulario listo para una cotización nueva.
+        /// </summary>
         private void nuevaCotizacion()
         {
             txtNDocumento.Text = "(automático)";
@@ -112,6 +135,9 @@ namespace Codelex.FacturasCotizaciones
             recalcularTotales();
         }
 
+        /// <summary>
+        /// Limpia cliente.
+        /// </summary>
         private void limpiarCliente()
         {
             txtIdentidad.Text = "";
@@ -127,6 +153,11 @@ namespace Codelex.FacturasCotizaciones
 
         // ---------- Eventos de cliente ----------
 
+        /// <summary>
+        /// Atiende el clic de buscar cliente.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void buscarClienteClic(object sender, RoutedEventArgs e)
         {
             ElegirCliente ventana = new ElegirCliente();
@@ -136,6 +167,10 @@ namespace Codelex.FacturasCotizaciones
                 llenarCliente(ventana.clienteElegido.Row);
         }
 
+        /// <summary>
+        /// Llena cliente.
+        /// </summary>
+        /// <param name="fila">Fila con los datos.</param>
         private void llenarCliente(DataRow fila)
         {
             string rtn = "" + fila["identificacion_cliente"];
@@ -157,11 +192,21 @@ namespace Codelex.FacturasCotizaciones
             }
         }
 
+        /// <summary>
+        /// Borra los datos del cliente del formulario.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void limpiarClientes(object sender, RoutedEventArgs e)
         {
             limpiarCliente();
         }
 
+        /// <summary>
+        /// Atiende el cambio de selección de locación.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void locacionSeleccionCambiada(object sender, SelectionChangedEventArgs e)
         {
             cmbTipoLocacion.Items.Clear();
@@ -183,6 +228,11 @@ namespace Codelex.FacturasCotizaciones
 
         // ---------- Actividades ----------
 
+        /// <summary>
+        /// Atiende el cambio de selección de servicio.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void servicioSeleccionCambiada(object sender, SelectionChangedEventArgs e)
         {
             int servicioId = idSeleccionado(cmbServicio);
@@ -202,6 +252,11 @@ namespace Codelex.FacturasCotizaciones
             recalcularTotales();
         }
 
+        /// <summary>
+        /// Crea una línea de actividad a partir de una fila de la base de datos.
+        /// </summary>
+        /// <param name="fila">Fila con los datos.</param>
+        /// <returns>Resultado de tipo LineaActividad.</returns>
         private LineaActividad nuevaLinea(DataRow fila)
         {
             LineaActividad linea = new LineaActividad();
@@ -211,6 +266,11 @@ namespace Codelex.FacturasCotizaciones
             return linea;
         }
 
+        /// <summary>
+        /// Indica si ya esta en la lista.
+        /// </summary>
+        /// <param name="actividadId">Identificador de actividad.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         private bool yaEstaEnLaLista(int actividadId)
         {
             foreach (LineaActividad linea in lineas)
@@ -222,6 +282,9 @@ namespace Codelex.FacturasCotizaciones
             return false;
         }
 
+        /// <summary>
+        /// Actualiza otras actividades.
+        /// </summary>
         private void actualizarOtrasActividades()
         {
             cmbOtraActividad.Items.Clear();
@@ -235,6 +298,11 @@ namespace Codelex.FacturasCotizaciones
             }
         }
 
+        /// <summary>
+        /// Atiende el clic de agregar linea.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void agregarLineaClic(object sender, RoutedEventArgs e)
         {
             int actividadId = idSeleccionado(cmbOtraActividad);
@@ -255,6 +323,11 @@ namespace Codelex.FacturasCotizaciones
             recalcularTotales();
         }
 
+        /// <summary>
+        /// Atiende el clic de quitar linea.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void quitarLineaClic(object sender, RoutedEventArgs e)
         {
             LineaActividad linea = dgLineas.SelectedItem as LineaActividad;
@@ -270,11 +343,19 @@ namespace Codelex.FacturasCotizaciones
             recalcularTotales();
         }
 
+        /// <summary>
+        /// Atiende la pérdida de foco de medida.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void medidaFocoPerdido(object sender, RoutedEventArgs e)
         {
             Dispatcher.BeginInvoke(new Action(recalcularTotales), DispatcherPriority.Background);
         }
 
+        /// <summary>
+        /// Recalcula totales.
+        /// </summary>
         private void recalcularTotales()
         {
             List<int> ids = new List<int>();
@@ -332,11 +413,21 @@ namespace Codelex.FacturasCotizaciones
 
         // ---------- Botones ----------
 
+        /// <summary>
+        /// Atiende el clic de nuevo documento.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void nuevoDocumentoClic(object sender, RoutedEventArgs e)
         {
             nuevaCotizacion();
         }
 
+        /// <summary>
+        /// Valida y guarda los datos del formulario.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void guardarClic(object sender, RoutedEventArgs e)
         {
             DatosDocumento datos = new DatosDocumento();
@@ -380,6 +471,11 @@ namespace Codelex.FacturasCotizaciones
             }
         }
 
+        /// <summary>
+        /// Cancela lo que se está haciendo y cierra o limpia el formulario.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void cancelarClic(object sender, RoutedEventArgs e)
         {
             bool hayDatos = txtContacto.Text.Trim() != "" || txtEmpresa.Text.Trim() != "" || lineas.Count > 0;
@@ -399,27 +495,50 @@ namespace Codelex.FacturasCotizaciones
 
         // ---------- Ventana ----------
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
+        /// <summary>
+        /// Minimiza la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
+        /// <summary>
+        /// Muestra un mensaje de aviso al usuario.
+        /// </summary>
+        /// <param name="mensaje">Mensaje con el resultado.</param>
         private void aviso(string mensaje)
         {
             MensajeCodelex.mostrar(this, "Cotizaciones", mensaje, false);
         }
 
+        /// <summary>
+        /// Muestra un mensaje con el error ocurrido.
+        /// </summary>
+        /// <param name="ex">Excepción que se produjo.</param>
         private void mostrarError(Exception ex)
         {
             MensajeCodelex.mostrar(this, "Cotizaciones", ex.Message, false);

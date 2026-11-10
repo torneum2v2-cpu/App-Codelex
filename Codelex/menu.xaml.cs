@@ -65,6 +65,9 @@ namespace Codelex
         private DateTime ultimoCierrePerfil = DateTime.MinValue;
         private string seccionActual = "inicio";
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
         public Menu()
         {
             InitializeComponent();
@@ -88,27 +91,50 @@ namespace Codelex
 
         // ---------- Roles ----------
 
+        /// <summary>
+        /// Devuelve la sección de inicio que corresponde al rol del usuario.
+        /// </summary>
+        /// <returns>Nombre de la sección de inicio.</returns>
         private static string inicioDelRol()
         {
             return Sesion.Nivel == NivelAcceso.Basico ? "miperfil" : "inicio";
         }
 
+        /// <summary>
+        /// Indica si puede seccion.
+        /// </summary>
+        /// <param name="clave">Función que obtiene la clave de cada fila.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         private static bool puedeSeccion(string clave)
         {
             return NIVEL_POR_SECCION.TryGetValue(clave, out NivelAcceso minimo) && Sesion.permite(minimo);
         }
 
+        /// <summary>
+        /// Indica si puede destino.
+        /// </summary>
+        /// <param name="destino">Ventana que se va a mostrar.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         private static bool puedeDestino(string destino)
         {
             return NIVEL_POR_DESTINO.TryGetValue(destino, out NivelAcceso minimo) && Sesion.permite(minimo);
         }
 
+        /// <summary>
+        /// Indica si puede abrir.
+        /// </summary>
+        /// <param name="seccionActual">Seccion actual.</param>
+        /// <param name="destino">Ventana que se va a mostrar.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         private static bool puedeAbrir(string seccionActual, string destino)
         {
             return seccionActual == "inicio" ? puedeSeccion(destino) : puedeDestino(destino);
         }
 
         // Oculta del menú lateral las secciones que el rol no puede usar.
+        /// <summary>
+        /// Aplica rol.
+        /// </summary>
         private void aplicarRol()
         {
             foreach (RadioButton boton in panelNav.Children)
@@ -117,17 +143,32 @@ namespace Codelex
 
         // ---------- Ventana ----------
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
+        /// <summary>
+        /// Minimiza la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void cerrarClic(object sender, RoutedEventArgs e)
         {
             Close();
@@ -135,6 +176,11 @@ namespace Codelex
 
         // ---------- Perfil y foto ----------
 
+        /// <summary>
+        /// Atiende el clic de perfil.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void perfilClic(object sender, RoutedEventArgs e)
         {
             if ((DateTime.Now - ultimoCierrePerfil).TotalMilliseconds < 250)
@@ -143,12 +189,22 @@ namespace Codelex
             popupPerfil.IsOpen = true;
         }
 
+        /// <summary>
+        /// Atiende el clic de mi perfil.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void miPerfilClic(object sender, RoutedEventArgs e)
         {
             popupPerfil.IsOpen = false;
             mostrarSeccion("miperfil");
         }
 
+        /// <summary>
+        /// Atiende el clic de cerrar sesión.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void cerrarSesionClic(object sender, RoutedEventArgs e)
         {
             popupPerfil.IsOpen = false;
@@ -162,6 +218,9 @@ namespace Codelex
             Close();
         }
 
+        /// <summary>
+        /// Carga foto.
+        /// </summary>
         private async Task cargarFoto()
         {
             if (Sesion.UsuarioId == 0)
@@ -179,6 +238,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Atiende el clic de cambiar foto.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private async void cambiarFotoClic(object sender, RoutedEventArgs e)
         {
             popupPerfil.IsOpen = false;
@@ -204,6 +268,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Atiende el clic de quitar foto.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private async void quitarFotoClic(object sender, RoutedEventArgs e)
         {
             popupPerfil.IsOpen = false;
@@ -221,6 +290,10 @@ namespace Codelex
         }
 
         // foto = null deja las iniciales con el degradado.
+        /// <summary>
+        /// Pinta avatar.
+        /// </summary>
+        /// <param name="foto">Bytes de la foto.</param>
         private void pintarAvatar(ImageSource? foto)
         {
             if (foto == null)
@@ -243,12 +316,22 @@ namespace Codelex
 
         // ---------- Navegación ----------
 
+        /// <summary>
+        /// Atiende el clic de nav.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void navClic(object sender, RoutedEventArgs e)
         {
             RadioButton boton = (RadioButton)sender;
             mostrarSeccion("" + boton.Tag);
         }
 
+        /// <summary>
+        /// Atiende el clic de opcion.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void opcionClic(object sender, RoutedEventArgs e)
         {
             Button boton = (Button)sender;
@@ -261,18 +344,31 @@ namespace Codelex
         }
 
         // Marca el botón de la barra lateral; si la sección no está en la barra (Mi perfil), no marca ninguno.
+        /// <summary>
+        /// Marca boton.
+        /// </summary>
+        /// <param name="clave">Función que obtiene la clave de cada fila.</param>
         private void marcarBoton(string clave)
         {
             foreach (RadioButton boton in panelNav.Children)
                 boton.IsChecked = "" + boton.Tag == clave;
         }
 
+        /// <summary>
+        /// Pone el título y el subtítulo de la sección que se muestra.
+        /// </summary>
+        /// <param name="titulo">Título del cuadro.</param>
+        /// <param name="subtitulo">Subtítulo de la sección.</param>
         private void encabezado(string titulo, string subtitulo)
         {
             txtTitulo.Text = titulo;
             txtSubtitulo.Text = subtitulo;
         }
 
+        /// <summary>
+        /// Muestra seccion.
+        /// </summary>
+        /// <param name="clave">Función que obtiene la clave de cada fila.</param>
         private void mostrarSeccion(string clave)
         {
             if (Sesion.Nivel == NivelAcceso.SinRol)
@@ -352,11 +448,20 @@ namespace Codelex
             listaOpciones.ItemsSource = opciones;
         }
 
+        /// <summary>
+        /// Vuelve a mostrar el menú cuando se cierra un módulo.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void moduloCerrado(object sender, EventArgs e)
         {
             Show();
         }
 
+        /// <summary>
+        /// Abre modulo.
+        /// </summary>
+        /// <param name="ventana">Ventana a usar.</param>
         private void abrirModulo(Window ventana)
         {
             ventana.Closed += moduloCerrado;
@@ -364,6 +469,9 @@ namespace Codelex
             ventana.Show();
         }
 
+        /// <summary>
+        /// Abre orden.
+        /// </summary>
         private void abrirOrden()
         {
             DataRow? cotizacion = SeleccionarCotizacion.elegir(this, "");
@@ -372,6 +480,10 @@ namespace Codelex
                 abrirModulo(new IngresarOrden(cotizacion));
         }
 
+        /// <summary>
+        /// Abre destino.
+        /// </summary>
+        /// <param name="destino">Ventana que se va a mostrar.</param>
         private void abrirDestino(string destino)
         {
             // Segunda barrera: aunque alguien llegue aquí, se vuelve a comprobar el rol.
@@ -417,6 +529,13 @@ namespace Codelex
         public string Icono { get; set; }
         public string Destino { get; set; }
 
+        /// <summary>
+        /// Crea el objeto con sus valores iniciales.
+        /// </summary>
+        /// <param name="titulo">Título del cuadro.</param>
+        /// <param name="descripcion">Descripción.</param>
+        /// <param name="icono">Icono.</param>
+        /// <param name="destino">Ventana que se va a mostrar.</param>
         public OpcionMenu(string titulo, string descripcion, string icono, string destino)
         {
             Titulo = titulo;

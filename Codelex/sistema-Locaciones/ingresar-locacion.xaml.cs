@@ -14,16 +14,28 @@ namespace Codelex
         string clienteRtn = "";
         string rtnInicial = "";
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
         public IngresarLocacion()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
+        /// <param name="rtn">RTN o identidad del cliente (sin guiones).</param>
         public IngresarLocacion(string rtn) : this()
         {
             rtnInicial = rtn;
         }
 
+        /// <summary>
+        /// Prepara la ventana y carga los datos iniciales cuando termina de abrirse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             try
@@ -55,12 +67,19 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Carga clientes.
+        /// </summary>
         private void cargarClientes()
         {
             DataTable tabla = clienteBD.buscarClientes(txtBuscarCliente.Text.Trim(), "", "ACTIVOS");
             dgClientes.ItemsSource = tabla.DefaultView;
         }
 
+        /// <summary>
+        /// Muestra cliente.
+        /// </summary>
+        /// <param name="rtn">RTN o identidad del cliente (sin guiones).</param>
         private void mostrarCliente(string rtn)
         {
             DataTable tabla = clienteBD.obtenerCliente(rtn);
@@ -83,6 +102,9 @@ namespace Codelex
             cargarLocaciones();
         }
 
+        /// <summary>
+        /// Carga locaciones.
+        /// </summary>
         private void cargarLocaciones()
         {
             if (clienteRtn == "")
@@ -95,6 +117,9 @@ namespace Codelex
             dgLocaciones.ItemsSource = tabla.DefaultView;
         }
 
+        /// <summary>
+        /// Limpia formulario.
+        /// </summary>
         private void limpiarFormulario()
         {
             txtNombre.Text = "";
@@ -103,6 +128,11 @@ namespace Codelex
             txtNombre.Focus();
         }
 
+        /// <summary>
+        /// Atiende el cambio de texto de buscar.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void buscarTextoCambiado(object sender, TextChangedEventArgs e)
         {
             try
@@ -115,6 +145,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Atiende el cambio de selección de clientes.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void clientesSeleccionCambiada(object sender, SelectionChangedEventArgs e)
         {
             if (dgClientes.SelectedItem == null)
@@ -132,11 +167,21 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Limpia los datos del formulario.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void limpiarClic(object sender, RoutedEventArgs e)
         {
             limpiarFormulario();
         }
 
+        /// <summary>
+        /// Valida y guarda los datos del formulario.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void guardarClic(object sender, RoutedEventArgs e)
         {
             try
@@ -160,27 +205,50 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
+        /// <summary>
+        /// Minimiza la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
+        /// <summary>
+        /// Muestra un mensaje de aviso al usuario.
+        /// </summary>
+        /// <param name="mensaje">Mensaje con el resultado.</param>
         private void aviso(string mensaje)
         {
             MensajeCodelex.mostrar(this, "Locaciones", mensaje, false);
         }
 
+        /// <summary>
+        /// Muestra un mensaje con el error ocurrido.
+        /// </summary>
+        /// <param name="ex">Excepción que se produjo.</param>
         private void mostrarError(Exception ex)
         {
             MensajeCodelex.mostrar(this, "Locaciones", ex.Message, false);

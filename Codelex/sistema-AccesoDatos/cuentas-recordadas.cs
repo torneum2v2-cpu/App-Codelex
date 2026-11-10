@@ -39,6 +39,10 @@ namespace Codelex.AccesoDatos
             WriteIndented = true
         };
 
+        /// <summary>
+        /// Lee las cuentas recordadas del archivo.
+        /// </summary>
+        /// <returns>Lista con los elementos obtenidos.</returns>
         public static List<CuentaRecordada> listar()
         {
             try
@@ -55,11 +59,22 @@ namespace Codelex.AccesoDatos
             }
         }
 
+        /// <summary>
+        /// Indica si ya hay una cuenta recordada con ese usuario.
+        /// </summary>
+        /// <param name="usuario">Nombre de usuario.</param>
+        /// <returns>true si ya existe; false en caso contrario.</returns>
         public static bool existe(string usuario)
         {
             return listar().Any(c => string.Equals(c.Usuario, usuario, StringComparison.OrdinalIgnoreCase));
         }
 
+        /// <summary>
+        /// Guarda o actualiza una cuenta recordada (con la contraseña protegida).
+        /// </summary>
+        /// <param name="usuario">Nombre de usuario.</param>
+        /// <param name="nombreCompleto">Nombre completo del usuario.</param>
+        /// <param name="contrasena">Contraseña.</param>
         public static void guardar(string usuario, string nombreCompleto, string contrasena)
         {
             try
@@ -90,6 +105,10 @@ namespace Codelex.AccesoDatos
             }
         }
 
+        /// <summary>
+        /// Quita una cuenta recordada.
+        /// </summary>
+        /// <param name="usuario">Nombre de usuario.</param>
         public static void quitar(string usuario)
         {
             try
@@ -103,6 +122,11 @@ namespace Codelex.AccesoDatos
             }
         }
 
+        /// <summary>
+        /// Obtiene contraseña.
+        /// </summary>
+        /// <param name="cuenta">Cuenta recordada elegida.</param>
+        /// <returns>Texto resultante.</returns>
         public static string obtenerContrasena(CuentaRecordada cuenta)
         {
             try
@@ -117,6 +141,10 @@ namespace Codelex.AccesoDatos
             }
         }
 
+        /// <summary>
+        /// Guarda la lista de cuentas recordadas en el archivo.
+        /// </summary>
+        /// <param name="cuentas">Lista de cuentas recordadas.</param>
         private static void escribir(List<CuentaRecordada> cuentas)
         {
             Directory.CreateDirectory(CARPETA);

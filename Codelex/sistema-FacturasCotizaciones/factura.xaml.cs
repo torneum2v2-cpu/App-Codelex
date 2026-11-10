@@ -18,6 +18,10 @@ namespace Codelex.FacturasCotizaciones
         string ordenId = "";
         decimal total = 0;
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
+        /// <param name="ordenId">Identificador de orden.</param>
         public Factura(string ordenId)
         {
             InitializeComponent();
@@ -29,6 +33,11 @@ namespace Codelex.FacturasCotizaciones
             Loaded += ventanaCargada;
         }
 
+        /// <summary>
+        /// Prepara la ventana y carga los datos iniciales cuando termina de abrirse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             try
@@ -50,6 +59,9 @@ namespace Codelex.FacturasCotizaciones
             }
         }
 
+        /// <summary>
+        /// Carga listas.
+        /// </summary>
         private void cargarListas()
         {
             foreach (string tipo in facturaBD.tiposPago())
@@ -72,6 +84,10 @@ namespace Codelex.FacturasCotizaciones
             cmbCuotas.SelectedIndex = 4;
         }
 
+        /// <summary>
+        /// Carga orden.
+        /// </summary>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         private bool cargarOrden()
         {
             DataTable orden = facturaBD.obtenerOrdenFactura(ordenId);
@@ -122,6 +138,11 @@ namespace Codelex.FacturasCotizaciones
             return true;
         }
 
+        /// <summary>
+        /// Devuelve un guion cuando el texto está vacío.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <returns>El mismo texto, o un guion si estaba vacío.</returns>
         private static string vacio(string texto)
         {
             if (texto.Trim() == "")
@@ -132,11 +153,19 @@ namespace Codelex.FacturasCotizaciones
 
         // ---------- Forma de pago ----------
 
+        /// <summary>
+        /// Atiende el cambio de selección de pago.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void pagoSeleccionCambiada(object sender, SelectionChangedEventArgs e)
         {
             actualizarValorCuota();
         }
 
+        /// <summary>
+        /// Actualiza valor cuota.
+        /// </summary>
         private void actualizarValorCuota()
         {
             if (cmbTipoPago.SelectedItem == null || cmbCuotas.SelectedItem == null)
@@ -155,6 +184,11 @@ namespace Codelex.FacturasCotizaciones
             lblValorCuota.Text = cuotas + " x " + facturaBD.dinero(facturaBD.calcularCuota(total, cuotas));
         }
 
+        /// <summary>
+        /// Valida y guarda los datos del formulario.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void guardarClic(object sender, RoutedEventArgs e)
         {
             ItemLista metodo = cmbMetodoPago.SelectedItem as ItemLista;
@@ -189,27 +223,50 @@ namespace Codelex.FacturasCotizaciones
 
         // ---------- Ventana ----------
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
+        /// <summary>
+        /// Minimiza la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
+        /// <summary>
+        /// Muestra un mensaje de aviso al usuario.
+        /// </summary>
+        /// <param name="mensaje">Mensaje con el resultado.</param>
         private void aviso(string mensaje)
         {
             MensajeCodelex.mostrar(this, "Facturas", mensaje, false);
         }
 
+        /// <summary>
+        /// Muestra un mensaje con el error ocurrido.
+        /// </summary>
+        /// <param name="ex">Excepción que se produjo.</param>
         private void mostrarError(Exception ex)
         {
             MensajeCodelex.mostrar(this, "Facturas", ex.Message, false);

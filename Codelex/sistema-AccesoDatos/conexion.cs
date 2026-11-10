@@ -7,6 +7,10 @@ namespace Codelex.AccesoDatos
     {
         private static string cadenaConexion = "Data Source=BERTARTX\\SQLEXPRESS;Initial Catalog=Codelex;Integrated Security=True;Encrypt=False;Connect Timeout=5";
 
+        /// <summary>
+        /// Obtiene conexión.
+        /// </summary>
+        /// <returns>Resultado de tipo SqlConnection.</returns>
         public static SqlConnection obtenerConexion()
         {
             SqlConnection conexion = new SqlConnection(cadenaConexion);

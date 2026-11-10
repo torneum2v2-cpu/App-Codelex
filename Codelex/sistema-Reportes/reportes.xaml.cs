@@ -37,12 +37,20 @@ namespace Codelex
         private string tituloGrafico1 = "";
         private string tituloGrafico2 = "";
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
         public Reportes()
         {
             InitializeComponent();
             Height = Math.Min(Height, SystemParameters.WorkArea.Height - 10);
         }
 
+        /// <summary>
+        /// Prepara la ventana y carga los datos iniciales cuando termina de abrirse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private async void ventanaCargada(object sender, RoutedEventArgs e)
         {
             DateTime hoy = DateTime.Today;
@@ -78,6 +86,14 @@ namespace Codelex
             await generarReporte();
         }
 
+        /// <summary>
+        /// Arma la lista de opciones agregando al inicio la opción que incluye todos.
+        /// </summary>
+        /// <param name="tabla">Tabla de datos.</param>
+        /// <param name="columnaId">Columna con el identificador.</param>
+        /// <param name="columnaNombre">Columna con el nombre.</param>
+        /// <param name="textoTodos">Texto de la opcion que incluye todos.</param>
+        /// <returns>Lista con los elementos obtenidos.</returns>
         private static List<OpcionFiltro> conTodos(DataTable tabla, string columnaId, string columnaNombre, string textoTodos)
         {
             List<OpcionFiltro> lista = new List<OpcionFiltro> { new OpcionFiltro(0, textoTodos) };
@@ -88,6 +104,11 @@ namespace Codelex
             return lista;
         }
 
+        /// <summary>
+        /// Obtiene el identificador del elemento elegido en la lista desplegable.
+        /// </summary>
+        /// <param name="combo">Lista desplegable.</param>
+        /// <returns>Identificador elegido, o 0 si no hay selección.</returns>
         private static int seleccionado(ComboBox combo)
         {
             if (combo.SelectedValue == null)
@@ -96,6 +117,11 @@ namespace Codelex
             return Convert.ToInt32(combo.SelectedValue);
         }
 
+        /// <summary>
+        /// Atiende el cambio de marca de tipo.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private async void tipoMarcado(object sender, RoutedEventArgs e)
         {
             if (cargando)
@@ -115,17 +141,30 @@ namespace Codelex
             await generarReporte();
         }
 
+        /// <summary>
+        /// Atiende el clic de generar.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private async void generarClic(object sender, RoutedEventArgs e)
         {
             await generarReporte();
         }
 
+        /// <summary>
+        /// Atiende la tecla presionada en filtro.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private async void filtroTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
                 await generarReporte();
         }
 
+        /// <summary>
+        /// Genera reporte.
+        /// </summary>
         private async Task generarReporte()
         {
             if (generando)
@@ -195,6 +234,10 @@ namespace Codelex
 
         // ---------- Armado de resultados ----------
 
+        /// <summary>
+        /// Muestra resultado.
+        /// </summary>
+        /// <param name="t">Tipo de reporte.</param>
         private void mostrarResultado(TipoReporte t)
         {
             tipoMostrado = t;
@@ -231,6 +274,10 @@ namespace Codelex
             dibujarGrafico();
         }
 
+        /// <summary>
+        /// Arma órdenes.
+        /// </summary>
+        /// <param name="filas">Filas a procesar.</param>
         private void armarOrdenes(List<DataRow> filas)
         {
             List<PuntoGrafico> porEstado = agrupar(filas, f => texto(f, "nombre_estado_orden"), f => 1);
@@ -260,6 +307,10 @@ namespace Codelex
             puntos = serieTiempo(serie, desdeUsado, hastaUsado);
         }
 
+        /// <summary>
+        /// Arma asistencia.
+        /// </summary>
+        /// <param name="filas">Filas a procesar.</param>
         private void armarAsistencia(List<DataRow> filas)
         {
             double horas = filas.Sum(f => Convert.ToDouble(f["horas"]));
@@ -287,6 +338,10 @@ namespace Codelex
             puntos = serieTiempo(serie, desdeUsado, hastaUsado);
         }
 
+        /// <summary>
+        /// Arma empleados.
+        /// </summary>
+        /// <param name="filas">Filas a procesar.</param>
         private void armarEmpleados(List<DataRow> filas)
         {
             int activos = filas.Count(f => texto(f, "estado") == "Activo");
@@ -312,21 +367,45 @@ namespace Codelex
             graficoColumnas = true;
         }
 
+        /// <summary>
+        /// Lee una columna de la fila como texto.
+        /// </summary>
+        /// <param name="fila">Fila con los datos.</param>
+        /// <param name="columna">Nombre de la columna.</param>
+        /// <returns>Texto resultante.</returns>
         private static string texto(DataRow fila, string columna)
         {
             return "" + fila[columna];
         }
 
+        /// <summary>
+        /// Devuelve el elemento de la lista con el valor más alto, o "Sin datos".
+        /// </summary>
+        /// <param name="lista">Lista de datos.</param>
+        /// <returns>Texto con el valor más alto o "Sin datos".</returns>
         private static string primero(List<PuntoGrafico> lista)
         {
             return lista.Count > 0 ? lista[0].Etiqueta : "—";
         }
 
+        /// <summary>
+        /// Arma el texto con el valor más alto de la lista y su unidad.
+        /// </summary>
+        /// <param name="lista">Lista de datos.</param>
+        /// <param name="unidad">Unidad de medida.</param>
+        /// <returns>Texto resultante.</returns>
         private static string detalle(List<PuntoGrafico> lista, string unidad)
         {
             return lista.Count > 0 ? lista[0].Valor.ToString("0.##") + " " + unidad : "Sin datos";
         }
 
+        /// <summary>
+        /// Agrupa las filas por una clave y suma un valor por grupo.
+        /// </summary>
+        /// <param name="filas">Filas a procesar.</param>
+        /// <param name="clave">Función que obtiene la clave de cada fila.</param>
+        /// <param name="valor">Valor a usar.</param>
+        /// <returns>Lista con los elementos obtenidos.</returns>
         private static List<PuntoGrafico> agrupar(List<DataRow> filas, Func<DataRow, string> clave, Func<DataRow, double> valor)
         {
             return filas.GroupBy(clave)
@@ -335,6 +414,13 @@ namespace Codelex
                         .ToList();
         }
 
+        /// <summary>
+        /// Arma la serie de valores por día entre dos fechas.
+        /// </summary>
+        /// <param name="valores">Valores a procesar.</param>
+        /// <param name="desde">Fecha inicial.</param>
+        /// <param name="hasta">Fecha final.</param>
+        /// <returns>Lista con los elementos obtenidos.</returns>
         private static List<PuntoGrafico> serieTiempo(List<(DateTime Fecha, double Valor)> valores, DateTime desde, DateTime hasta)
         {
             List<PuntoGrafico> resultado = new List<PuntoGrafico>();
@@ -366,6 +452,9 @@ namespace Codelex
 
         // ---------- Gráfico de barras ----------
 
+        /// <summary>
+        /// Muestra barras.
+        /// </summary>
         private void mostrarBarras()
         {
             List<PuntoGrafico> mejores = barras.Take(MAXIMO_BARRAS).ToList();
@@ -383,11 +472,19 @@ namespace Codelex
 
         // ---------- Gráfico de líneas / columnas ----------
 
+        /// <summary>
+        /// Atiende el cambio de tamaño de canvas gráfico.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void canvasGraficoTamanoCambiado(object sender, SizeChangedEventArgs e)
         {
             dibujarGrafico();
         }
 
+        /// <summary>
+        /// Dibuja gráfico.
+        /// </summary>
         private void dibujarGrafico()
         {
             canvasGrafico.Children.Clear();
@@ -518,6 +615,12 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Calcula el valor máximo del eje de un gráfico.
+        /// </summary>
+        /// <param name="maximo">Valor máximo.</param>
+        /// <param name="enteros">true si los valores son enteros.</param>
+        /// <returns>Valor máximo para el eje.</returns>
         private static double escalaMaxima(double maximo, bool enteros)
         {
             if (maximo <= 0)
@@ -544,6 +647,15 @@ namespace Codelex
             return paso * 4;
         }
 
+        /// <summary>
+        /// Agrega texto.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <param name="x">X.</param>
+        /// <param name="y">Y.</param>
+        /// <param name="ancho">Ancho.</param>
+        /// <param name="alineacion">Alineacion.</param>
+        /// <param name="color">Color en formato hexadecimal.</param>
         private void agregarTexto(string texto, double x, double y, double ancho, TextAlignment alineacion, Brush color)
         {
             if (ancho <= 0)
@@ -566,6 +678,11 @@ namespace Codelex
 
         // ---------- Exportar ----------
 
+        /// <summary>
+        /// Atiende el clic de exportar.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void exportarClic(object sender, RoutedEventArgs e)
         {
             if (datos.Rows.Count == 0)
@@ -611,6 +728,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Devuelve el nombre del reporte para usarlo en el nombre del archivo.
+        /// </summary>
+        /// <param name="t">Tipo de reporte.</param>
+        /// <returns>Texto resultante.</returns>
         private static string nombreReporte(TipoReporte t)
         {
             if (t == TipoReporte.Asistencia)
@@ -620,6 +742,11 @@ namespace Codelex
             return "Órdenes";
         }
 
+        /// <summary>
+        /// Obtiene columnas csv.
+        /// </summary>
+        /// <param name="t">Tipo de reporte.</param>
+        /// <returns>Lista con los elementos obtenidos.</returns>
         private static List<(string Encabezado, string Columna)> obtenerColumnasCsv(TipoReporte t)
         {
             if (t == TipoReporte.Asistencia)
@@ -644,6 +771,11 @@ namespace Codelex
             };
         }
 
+        /// <summary>
+        /// Convierte un valor en texto para mostrarlo en la tabla.
+        /// </summary>
+        /// <param name="valor">Valor a usar.</param>
+        /// <returns>Texto resultante.</returns>
         private static string celda(object valor)
         {
             if (valor is DateTime fecha)
@@ -654,6 +786,11 @@ namespace Codelex
             return csv(valor);
         }
 
+        /// <summary>
+        /// Prepara un valor para escribirlo en un archivo CSV (comillas y separadores).
+        /// </summary>
+        /// <param name="valor">Valor a usar.</param>
+        /// <returns>Texto resultante.</returns>
         private static string csv(object valor)
         {
             string texto = "" + valor;
@@ -664,22 +801,41 @@ namespace Codelex
 
         // ---------- Ventana ----------
 
+        /// <summary>
+        /// Muestra un mensaje con el error ocurrido.
+        /// </summary>
+        /// <param name="ex">Excepción que se produjo.</param>
         private void mostrarError(Exception ex)
         {
             MensajeCodelex.mostrar(this, "Reportes", ex.Message, false);
         }
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
+        /// <summary>
+        /// Minimiza la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void cerrarClic(object sender, RoutedEventArgs e)
         {
             Close();

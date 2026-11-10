@@ -16,17 +16,30 @@ namespace Codelex
         public string marca = "";
         public string modelo = "";
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
         public NuevoProductoEquipo()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Prepara la ventana y carga los datos iniciales cuando termina de abrirse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             mostrarCampos();
             limpiarFormulario();
         }
 
+        /// <summary>
+        /// Atiende el cambio de marca de tipo.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void tipoMarcado(object sender, RoutedEventArgs e)
         {
             if (spMarca == null || spModelo == null)
@@ -35,6 +48,9 @@ namespace Codelex
             mostrarCampos();
         }
 
+        /// <summary>
+        /// Muestra campos.
+        /// </summary>
         private void mostrarCampos()
         {
             if (rbEquipo.IsChecked == true)
@@ -55,6 +71,9 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Limpia formulario.
+        /// </summary>
         private void limpiarFormulario()
         {
             txtNombre.Text = "";
@@ -64,6 +83,11 @@ namespace Codelex
             txtNombre.Focus();
         }
 
+        /// <summary>
+        /// Valida y guarda los datos del formulario.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void guardarClic(object sender, RoutedEventArgs e)
         {
             try
@@ -108,17 +132,32 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Limpia los datos del formulario.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void limpiarClic(object sender, RoutedEventArgs e)
         {
             limpiarFormulario();
         }
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();

@@ -12,12 +12,21 @@ namespace Codelex
 
         public bool editarCliente = false;
 
+        /// <summary>
+        /// Inicializa la ventana y prepara sus controles.
+        /// </summary>
+        /// <param name="rtn">RTN o identidad del cliente (sin guiones).</param>
         public ClienteDetalle(string rtn)
         {
             InitializeComponent();
             this.rtn = rtn;
         }
 
+        /// <summary>
+        /// Prepara la ventana y carga los datos iniciales cuando termina de abrirse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             try
@@ -33,6 +42,9 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Carga datos cliente.
+        /// </summary>
         private void cargarDatosCliente()
         {
             DataTable tabla = clienteBD.obtenerCliente(rtn);
@@ -55,6 +67,9 @@ namespace Codelex
             txtEstado.Text = fila["estado"].ToString();
         }
 
+        /// <summary>
+        /// Carga locaciones.
+        /// </summary>
         private void cargarLocaciones()
         {
             DataTable tabla = clienteBD.locacionesPorCliente(rtn);
@@ -67,6 +82,9 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Carga órdenes.
+        /// </summary>
         private void cargarOrdenes()
         {
             DataTable tabla = clienteBD.ordenesPorCliente(rtn);
@@ -79,6 +97,9 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Carga facturas.
+        /// </summary>
         private void cargarFacturas()
         {
             DataTable tabla = clienteBD.facturasPorCliente(rtn);
@@ -95,6 +116,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Convierte un valor de fecha en texto dd/MM/yyyy, o un guion si no hay fecha.
+        /// </summary>
+        /// <param name="valor">Valor a usar.</param>
+        /// <returns>Fecha como dd/MM/yyyy, o un guion si no hay fecha.</returns>
         private string fecha(object valor)
         {
             if (valor == DBNull.Value)
@@ -103,16 +129,29 @@ namespace Codelex
             return Convert.ToDateTime(valor).ToString("dd/MM/yyyy");
         }
 
+        /// <summary>
+        /// Atiende el clic de nueva orden.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void nuevaOrdenClic(object sender, RoutedEventArgs e)
         {
             abrirOrden();
         }
 
+        /// <summary>
+        /// Atiende el clic de agregar orden.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void agregarOrdenClic(object sender, RoutedEventArgs e)
         {
             abrirOrden();
         }
 
+        /// <summary>
+        /// Abre orden.
+        /// </summary>
         private void abrirOrden()
         {
             DataRow? cotizacion = SeleccionarCotizacion.elegir(this, rtn);
@@ -133,6 +172,11 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Atiende el clic de agregar locación.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void agregarLocacionClic(object sender, RoutedEventArgs e)
         {
             IngresarLocacion ventana = new IngresarLocacion(rtn);
@@ -149,27 +193,51 @@ namespace Codelex
             }
         }
 
+        /// <summary>
+        /// Atiende el clic de agregar factura.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void agregarFacturaClic(object sender, RoutedEventArgs e)
         {
             MensajeCodelex.mostrar(this, "Facturas", "Próximamente", true);
         }
 
+        /// <summary>
+        /// Muestra un mensaje con el error ocurrido.
+        /// </summary>
+        /// <param name="ex">Excepción que se produjo.</param>
         private void mostrarError(Exception ex)
         {
             MensajeCodelex.mostrar(this, "Detalle del cliente", ex.Message, false);
         }
 
+        /// <summary>
+        /// Atiende el clic de editar.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void editarClic(object sender, RoutedEventArgs e)
         {
             editarCliente = true;
             Close();
         }
 
+        /// <summary>
+        /// Cierra la ventana.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void cerrarClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
+        /// <summary>
+        /// Permite mover la ventana arrastrando la barra superior con el mouse.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
         private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)

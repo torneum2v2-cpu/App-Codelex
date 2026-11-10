@@ -8,6 +8,15 @@ namespace Codelex.AccesoDatos
         public string[] tipos = { "Oficina", "Edificio", "Casa", "Local comercial", "Bodega",
                                   "Clínica / Hospital", "Centro educativo", "Industria", "Otro" };
 
+        /// <summary>
+        /// Inserta locación.
+        /// </summary>
+        /// <param name="rtn">RTN o identidad del cliente (sin guiones).</param>
+        /// <param name="nombre">Nombre.</param>
+        /// <param name="tipo">Tipo de dato.</param>
+        /// <param name="direccion">Dirección.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool insertarLocacion(string rtn, string nombre, string tipo, string direccion, out string mensaje)
         {
             mensaje = validarLocacion(rtn, nombre, tipo, direccion);
@@ -27,6 +36,14 @@ namespace Codelex.AccesoDatos
             return ejecutar(comando, out mensaje);
         }
 
+        /// <summary>
+        /// Valida locación.
+        /// </summary>
+        /// <param name="rtn">RTN o identidad del cliente (sin guiones).</param>
+        /// <param name="nombre">Nombre.</param>
+        /// <param name="tipo">Tipo de dato.</param>
+        /// <param name="direccion">Dirección.</param>
+        /// <returns>Texto resultante.</returns>
         private string validarLocacion(string rtn, string nombre, string tipo, string direccion)
         {
             if (rtn.Trim() == "")

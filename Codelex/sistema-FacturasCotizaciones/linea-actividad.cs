@@ -34,6 +34,10 @@ namespace Codelex.FacturasCotizaciones
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
+        /// <summary>
+        /// Avisa a la pantalla que cambió una propiedad para que se actualice.
+        /// </summary>
+        /// <param name="propiedad">Nombre de la propiedad que cambió.</param>
         private void avisar(string propiedad)
         {
             if (PropertyChanged != null)

@@ -5,6 +5,10 @@ namespace Codelex
 {
     public partial class App : Application
     {
+        /// <summary>
+        /// Decide qué ventana abrir al iniciar el programa, según las cuentas recordadas.
+        /// </summary>
+        /// <param name="e">Datos del evento.</param>
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -25,6 +29,10 @@ namespace Codelex
                 new SeleccionarCuenta(cantidad == 1).Show();
         }
 
+        /// <summary>
+        /// Muestra cualquier error inesperado de la aplicación.
+        /// </summary>
+        /// <param name="ex">Excepción que se produjo.</param>
         private static void mostrarErrorGlobal(Exception ex)
         {
             string mensaje = ex.Message;

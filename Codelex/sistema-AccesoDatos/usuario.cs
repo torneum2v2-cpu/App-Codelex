@@ -22,6 +22,12 @@ namespace Codelex.AccesoDatos
         public byte[] LlaveId { get; set; } = new byte[0];
         public byte[] LlavePublica { get; set; } = new byte[0];
 
+        /// <summary>
+        /// Valida login.
+        /// </summary>
+        /// <param name="usuario">Nombre de usuario.</param>
+        /// <param name="password">Password.</param>
+        /// <returns>true si todo es válido; false si hay algun problema.</returns>
         public bool validarLogin(string usuario, string password)
         {
             DataTable tabla = new DataTable();
@@ -62,6 +68,11 @@ namespace Codelex.AccesoDatos
             return true;
         }
 
+        /// <summary>
+        /// Registra llave.
+        /// </summary>
+        /// <param name="ventana">Ventana a usar.</param>
+        /// <returns>Resultado de tipo Task.</returns>
         public async Task<string> registrarLlave(IntPtr ventana)
         {
             RelyingPartyInformation sitio = new RelyingPartyInformation()
@@ -107,6 +118,11 @@ namespace Codelex.AccesoDatos
             return "";
         }
 
+        /// <summary>
+        /// Verifica llave.
+        /// </summary>
+        /// <param name="ventana">Ventana a usar.</param>
+        /// <returns>Resultado de tipo Task.</returns>
         public async Task<string> verificarLlave(IntPtr ventana)
         {
             List<PublicKeyCredentialDescriptor> permitidas = new List<PublicKeyCredentialDescriptor>();
@@ -133,6 +149,12 @@ namespace Codelex.AccesoDatos
             return comprobarInicio(respuesta, reto);
         }
 
+        /// <summary>
+        /// Comprueba registro.
+        /// </summary>
+        /// <param name="respuesta">Respuesta.</param>
+        /// <param name="reto">Reto.</param>
+        /// <returns>Texto resultante.</returns>
         private string comprobarRegistro(AttestationPublicKeyCredential respuesta, byte[] reto)
         {
             AuthenticatorData? datos = leerDatosRegistro(respuesta);
@@ -153,6 +175,11 @@ namespace Codelex.AccesoDatos
             return "";
         }
 
+        /// <summary>
+        /// Lee datos registro.
+        /// </summary>
+        /// <param name="respuesta">Respuesta.</param>
+        /// <returns>Resultado de tipo AuthenticatorData.</returns>
         private AuthenticatorData? leerDatosRegistro(AttestationPublicKeyCredential respuesta)
         {
             if (respuesta.Response == null)
@@ -179,6 +206,12 @@ namespace Codelex.AccesoDatos
             return null;
         }
 
+        /// <summary>
+        /// Comprueba inicio.
+        /// </summary>
+        /// <param name="respuesta">Respuesta.</param>
+        /// <param name="reto">Reto.</param>
+        /// <returns>Texto resultante.</returns>
         private string comprobarInicio(AssertionPublicKeyCredential respuesta, byte[] reto)
         {
             AuthenticatorAssertionResponse? datos = respuesta.Response;
@@ -205,6 +238,14 @@ namespace Codelex.AccesoDatos
             return "";
         }
 
+        /// <summary>
+        /// Comprueba datos.
+        /// </summary>
+        /// <param name="datos">Datos a usar.</param>
+        /// <param name="json">Json.</param>
+        /// <param name="tipo">Tipo de dato.</param>
+        /// <param name="reto">Reto.</param>
+        /// <returns>Texto resultante.</returns>
         private string comprobarDatos(AuthenticatorData datos, string? json, string tipo, byte[] reto)
         {
             if (json == null || datos.RelyingPartyIdHash == null)
@@ -224,6 +265,10 @@ namespace Codelex.AccesoDatos
             return "";
         }
 
+        /// <summary>
+        /// Pide teléfono.
+        /// </summary>
+        /// <returns>Resultado de tipo .</returns>
         private string[]? pedirTelefono()
         {
             if (WebAuthnApi.IsPublicKeyCredentialHintSupported)
@@ -232,6 +277,13 @@ namespace Codelex.AccesoDatos
             return null;
         }
 
+        /// <summary>
+        /// Guarda llave.
+        /// </summary>
+        /// <param name="llaveId">Identificador de llave.</param>
+        /// <param name="llavePublica">Llave publica.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         private bool guardarLlave(byte[] llaveId, byte[] llavePublica, out string mensaje)
         {
             SqlParameter resultado = new SqlParameter("@resultado", SqlDbType.Int);
@@ -264,6 +316,12 @@ namespace Codelex.AccesoDatos
             return true;
         }
 
+        /// <summary>
+        /// Valida contras.
+        /// </summary>
+        /// <param name="contra">Contra.</param>
+        /// <param name="contra2">Contra 2.</param>
+        /// <returns>Texto resultante.</returns>
         public string validarContras(string contra, string contra2)
         {
             if (contra != contra2)
@@ -278,6 +336,14 @@ namespace Codelex.AccesoDatos
             return "";
         }
 
+        /// <summary>
+        /// Cambia contraseña.
+        /// </summary>
+        /// <param name="correo">Correo electrónico.</param>
+        /// <param name="contra">Contra.</param>
+        /// <param name="contra2">Contra 2.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool cambiarContrasena(string correo, string contra, string contra2, out string mensaje)
         {
             mensaje = validarContras(contra, contra2);
@@ -313,6 +379,11 @@ namespace Codelex.AccesoDatos
             return Convert.ToInt32(resultado.Value) == 1;
         }
 
+        /// <summary>
+        /// Indica si tiene mayuscula.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         private bool tieneMayuscula(string texto)
         {
             foreach (char c in texto)
@@ -323,6 +394,11 @@ namespace Codelex.AccesoDatos
             return false;
         }
 
+        /// <summary>
+        /// Indica si tiene número.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         private bool tieneNumero(string texto)
         {
             foreach (char c in texto)

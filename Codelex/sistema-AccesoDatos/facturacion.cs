@@ -47,6 +47,10 @@ namespace Codelex.AccesoDatos
         public const string CONTADO = "Contado";
         public const string CREDITO = "Crédito";
 
+        /// <summary>
+        /// Lista los tipos de pago (Contado y Crédito).
+        /// </summary>
+        /// <returns>Lista con los elementos obtenidos.</returns>
         public List<string> tiposPago()
         {
             List<string> tipos = new List<string>();
@@ -55,6 +59,10 @@ namespace Codelex.AccesoDatos
             return tipos;
         }
 
+        /// <summary>
+        /// Lista las cantidades de cuotas disponibles (de 2 a 24).
+        /// </summary>
+        /// <returns>Lista con los elementos obtenidos.</returns>
         public List<int> opcionesCuotas()
         {
             List<int> cuotas = new List<int>();
@@ -68,26 +76,48 @@ namespace Codelex.AccesoDatos
         }
 
         // Número de factura con formato profesional: 000-001-01-00000001
+        /// <summary>
+        /// Arma el número de factura con el formato 000-001-01-00000001.
+        /// </summary>
+        /// <param name="facturaId">Identificador de factura.</param>
+        /// <returns>Número de factura, por ejemplo 000-001-01-00000008.</returns>
         public static string numeroFactura(int facturaId)
         {
             return "000-001-01-" + facturaId.ToString().PadLeft(8, '0');
         }
 
+        /// <summary>
+        /// Lista servicios.
+        /// </summary>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable listarServicios()
         {
             return consultar(procedimiento("sp_ListarServicios"));
         }
 
+        /// <summary>
+        /// Lista actividades.
+        /// </summary>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable listarActividades()
         {
             return consultar(procedimiento("sp_ListarActividades"));
         }
 
+        /// <summary>
+        /// Lista formas pago.
+        /// </summary>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable listarFormasPago()
         {
             return consultar(procedimiento("sp_ListarFormasPago"));
         }
 
+        /// <summary>
+        /// Obtiene orden factura.
+        /// </summary>
+        /// <param name="ordenId">Identificador de orden.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable obtenerOrdenFactura(string ordenId)
         {
             SqlCommand comando = procedimiento("sp_ObtenerOrdenFactura");
@@ -95,6 +125,11 @@ namespace Codelex.AccesoDatos
             return consultar(comando);
         }
 
+        /// <summary>
+        /// Lista las líneas de la cotización de una orden, con su subtotal.
+        /// </summary>
+        /// <param name="ordenId">Identificador de orden.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable detalleOrden(string ordenId)
         {
             SqlCommand comando = procedimiento("sp_DetalleOrdenFactura");
@@ -106,6 +141,11 @@ namespace Codelex.AccesoDatos
             return tabla;
         }
 
+        /// <summary>
+        /// Valida orden facturable.
+        /// </summary>
+        /// <param name="orden">Orden.</param>
+        /// <returns>Texto resultante.</returns>
         public string validarOrdenFacturable(DataTable orden)
         {
             if (orden.Rows.Count == 0)
@@ -116,6 +156,11 @@ namespace Codelex.AccesoDatos
             return "";
         }
 
+        /// <summary>
+        /// Obtiene factura.
+        /// </summary>
+        /// <param name="facturaId">Identificador de factura.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable obtenerFactura(int facturaId)
         {
             SqlCommand comando = procedimiento("sp_ObtenerFactura");
@@ -123,6 +168,11 @@ namespace Codelex.AccesoDatos
             return consultar(comando);
         }
 
+        /// <summary>
+        /// Lista las líneas de una factura.
+        /// </summary>
+        /// <param name="facturaId">Identificador de factura.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable detalleFactura(int facturaId)
         {
             SqlCommand comando = procedimiento("sp_DetalleFactura");
@@ -130,6 +180,11 @@ namespace Codelex.AccesoDatos
             return consultar(comando);
         }
 
+        /// <summary>
+        /// Lista las cuotas de una factura.
+        /// </summary>
+        /// <param name="facturaId">Identificador de factura.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable cuotasFactura(int facturaId)
         {
             SqlCommand comando = procedimiento("sp_CuotasFactura");
@@ -137,11 +192,19 @@ namespace Codelex.AccesoDatos
             return consultar(comando);
         }
 
+        /// <summary>
+        /// Actualiza cuotas vencidas.
+        /// </summary>
         public void actualizarCuotasVencidas()
         {
             consultar(procedimiento("sp_ActualizarCuotasVencidas"));
         }
 
+        /// <summary>
+        /// Lista abonos.
+        /// </summary>
+        /// <param name="facturaId">Identificador de factura.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable listarAbonos(int facturaId)
         {
             SqlCommand comando = procedimiento("sp_ListarAbonosFactura");
@@ -150,6 +213,14 @@ namespace Codelex.AccesoDatos
         }
 
         // Cómo quedarían las cuotas si se abona ese monto.
+        /// <summary>
+        /// Simula abono.
+        /// </summary>
+        /// <param name="facturaId">Identificador de factura.</param>
+        /// <param name="montoTexto">Monto texto.</param>
+        /// <param name="saldo">Saldo pendiente en lempiras.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable simularAbono(int facturaId, string montoTexto, decimal saldo, out string mensaje)
         {
             decimal monto;
@@ -165,6 +236,14 @@ namespace Codelex.AccesoDatos
         }
 
         // El abono usa el método de pago que se eligió al crear la factura.
+        /// <summary>
+        /// Registra abono.
+        /// </summary>
+        /// <param name="facturaId">Identificador de factura.</param>
+        /// <param name="montoTexto">Monto texto.</param>
+        /// <param name="saldo">Saldo pendiente en lempiras.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool registrarAbono(int facturaId, string montoTexto, decimal saldo, out string mensaje)
         {
             decimal monto;
@@ -181,6 +260,13 @@ namespace Codelex.AccesoDatos
         }
 
         // La cuota elegida; si no se eligió ninguna, la primera que todavía tiene saldo.
+        /// <summary>
+        /// Elige cuota.
+        /// </summary>
+        /// <param name="cuotas">Cantidad de cuotas.</param>
+        /// <param name="seleccion">Selección.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>Fila elegida o null si no hay.</returns>
         public DataRow? elegirCuota(DataTable cuotas, DataRowView? seleccion, out string mensaje)
         {
             mensaje = "";
@@ -206,6 +292,12 @@ namespace Codelex.AccesoDatos
             return null;
         }
 
+        /// <summary>
+        /// Salda cuota.
+        /// </summary>
+        /// <param name="cuotaId">Identificador de cuota.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool saldarCuota(int cuotaId, out string mensaje)
         {
             SqlCommand comando = procedimiento("sp_SaldarCuota");
@@ -216,6 +308,13 @@ namespace Codelex.AccesoDatos
 
         // Calcula el precio de cada actividad con la fórmula de costeo (la fórmula vive en la base de datos).
         // Las medidas vacías se ignoran; si alguna no es válida, mensaje dice cuál.
+        /// <summary>
+        /// Calcula el precio de actividades.
+        /// </summary>
+        /// <param name="ids">Identificadores.</param>
+        /// <param name="medidas">Cantidades escritas por el usuario.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         public DataTable cotizarActividades(List<int> ids, List<string> medidas, out string mensaje)
         {
             mensaje = "";
@@ -251,11 +350,22 @@ namespace Codelex.AccesoDatos
 
         // ---------- Cálculos ----------
 
+        /// <summary>
+        /// Calcula isv.
+        /// </summary>
+        /// <param name="subtotal">Subtotal en lempiras.</param>
+        /// <returns>Valor decimal resultante.</returns>
         public decimal calcularIsv(decimal subtotal)
         {
             return Math.Round(subtotal * TASA_ISV, 2, MidpointRounding.AwayFromZero);
         }
 
+        /// <summary>
+        /// Calcula cuota.
+        /// </summary>
+        /// <param name="total">Total en lempiras.</param>
+        /// <param name="cuotas">Cantidad de cuotas.</param>
+        /// <returns>Valor decimal resultante.</returns>
         public decimal calcularCuota(decimal total, int cuotas)
         {
             if (cuotas <= 0)
@@ -264,6 +374,11 @@ namespace Codelex.AccesoDatos
             return Math.Round(total / cuotas, 2, MidpointRounding.AwayFromZero);
         }
 
+        /// <summary>
+        /// Da formato de lempiras (L 1,234.50) a un monto.
+        /// </summary>
+        /// <param name="valor">Valor a usar.</param>
+        /// <returns>Texto con el monto, por ejemplo L 1,234.50.</returns>
         public string dinero(decimal valor)
         {
             return "L " + valor.ToString("N2", CultureInfo.InvariantCulture);
@@ -271,6 +386,12 @@ namespace Codelex.AccesoDatos
 
         // ---------- Validaciones ----------
 
+        /// <summary>
+        /// Valida medida.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <param name="medida">(salida) Cantidad medida (m2 o unidades).</param>
+        /// <returns>Texto resultante.</returns>
         public string validarMedida(string texto, out decimal medida)
         {
             medida = 0;
@@ -288,6 +409,11 @@ namespace Codelex.AccesoDatos
             return "";
         }
 
+        /// <summary>
+        /// Valida actividades.
+        /// </summary>
+        /// <param name="datos">Datos a usar.</param>
+        /// <returns>Texto resultante.</returns>
         private string validarActividades(DatosDocumento datos)
         {
             if (datos.servicioId <= 0)
@@ -307,6 +433,11 @@ namespace Codelex.AccesoDatos
             return "";
         }
 
+        /// <summary>
+        /// Valida cotización.
+        /// </summary>
+        /// <param name="datos">Datos a usar.</param>
+        /// <returns>Texto resultante.</returns>
         private string validarCotizacion(DatosDocumento datos)
         {
             if (datos.contacto.Trim() == "")
@@ -345,6 +476,13 @@ namespace Codelex.AccesoDatos
             return validarActividades(datos);
         }
 
+        /// <summary>
+        /// Valida abono.
+        /// </summary>
+        /// <param name="texto">Texto a usar.</param>
+        /// <param name="saldo">Saldo pendiente en lempiras.</param>
+        /// <param name="monto">(salida) Monto en lempiras.</param>
+        /// <returns>Texto resultante.</returns>
         public string validarAbono(string texto, decimal saldo, out decimal monto)
         {
             monto = 0;
@@ -362,6 +500,11 @@ namespace Codelex.AccesoDatos
             return "";
         }
 
+        /// <summary>
+        /// Valida factura.
+        /// </summary>
+        /// <param name="datos">Datos a usar.</param>
+        /// <returns>Texto resultante.</returns>
         private string validarFactura(DatosFactura datos)
         {
             if (datos.ordenId.Trim() == "")
@@ -378,6 +521,13 @@ namespace Codelex.AccesoDatos
 
         // ---------- Guardado ----------
 
+        /// <summary>
+        /// Guarda cotización.
+        /// </summary>
+        /// <param name="datos">Datos a usar.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <param name="cotizacionId">(salida) Identificador de cotización.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool guardarCotizacion(DatosDocumento datos, out string mensaje, out string cotizacionId)
         {
             cotizacionId = "";
@@ -422,6 +572,13 @@ namespace Codelex.AccesoDatos
             return guardada;
         }
 
+        /// <summary>
+        /// Guarda factura.
+        /// </summary>
+        /// <param name="datos">Datos a usar.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <param name="facturaId">(salida) Identificador de factura.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool guardarFactura(DatosFactura datos, out string mensaje, out int facturaId)
         {
             facturaId = 0;
@@ -457,6 +614,13 @@ namespace Codelex.AccesoDatos
 
         // ---------- Auxiliares ----------
 
+        /// <summary>
+        /// Agrega lista.
+        /// </summary>
+        /// <param name="comando">Comando de SQL Server.</param>
+        /// <param name="nombre">Nombre.</param>
+        /// <param name="tipo">Tipo de dato.</param>
+        /// <param name="tabla">Tabla de datos.</param>
         private void agregarLista(SqlCommand comando, string nombre, string tipo, DataTable tabla)
         {
             SqlParameter parametro = comando.Parameters.AddWithValue(nombre, tabla);
@@ -464,6 +628,11 @@ namespace Codelex.AccesoDatos
             parametro.TypeName = tipo;
         }
 
+        /// <summary>
+        /// Arma la tabla de actividades y medidas que recibe el procedimiento almacenado.
+        /// </summary>
+        /// <param name="datos">Datos a usar.</param>
+        /// <returns>Tabla con los datos consultados.</returns>
         private DataTable tablaDeMedidas(DatosDocumento datos)
         {
             DataTable tabla = new DataTable();

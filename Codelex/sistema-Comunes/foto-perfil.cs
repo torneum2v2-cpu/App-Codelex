@@ -10,6 +10,11 @@ namespace Codelex
         private const int LADO = 256;
 
         // Lee una imagen del disco, la recorta cuadrada al centro, la reduce a 256x256 y devuelve un PNG.
+        /// <summary>
+        /// Lee una imagen del disco y la reduce para guardarla.
+        /// </summary>
+        /// <param name="ruta">Ruta del archivo.</param>
+        /// <returns>Resultado de tipo .</returns>
         public static byte[] preparar(string ruta)
         {
             BitmapImage origen = new BitmapImage();
@@ -42,6 +47,11 @@ namespace Codelex
         }
 
         // Convierte los bytes guardados en una imagen que WPF puede mostrar.
+        /// <summary>
+        /// Convierte los bytes guardados en una imagen.
+        /// </summary>
+        /// <param name="datos">Datos a usar.</param>
+        /// <returns>Resultado de tipo ImageSource.</returns>
         public static ImageSource? cargar(byte[] datos)
         {
             try

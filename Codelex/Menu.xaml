@@ -303,13 +303,6 @@
                                         <TextBlock Text="Panel principal" Margin="14,0,0,0" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </RadioButton>
-                                <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="facturacion" Click="Nav_Click">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Path Style="{StaticResource NavIcon}"
-                                          Data="M14,2 H6 A2,2 0 0 0 4,4 V20 A2,2 0 0 0 6,22 H18 A2,2 0 0 0 20,20 V8 Z M14,2 V8 H20 M16,13 H8 M16,17 H8 M10,9 H8"/>
-                                        <TextBlock Text="Facturación" Margin="14,0,0,0" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </RadioButton>
                                 <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="reportes" Click="Nav_Click">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Style="{StaticResource NavIcon}"

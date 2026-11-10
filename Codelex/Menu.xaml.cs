@@ -7,7 +7,6 @@ using System.Windows.Media;
 using Codelex.BDD;
 using Codelex.Clases_BDD;
 using Microsoft.Win32;
-using Codelex.Facturas_y_Cotizaciones;
 using Codelex.Órdenes;
 
 namespace Codelex
@@ -18,8 +17,6 @@ namespace Codelex
         private const string IconoIngresarOrden = "M14,2 H6 A2,2 0 0 0 4,4 V20 A2,2 0 0 0 6,22 H18 A2,2 0 0 0 20,20 V8 Z M14,2 V8 H20 M12,18 V12 M9,15 H15";
         private const string IconoVehiculos = "M1,3 H16 V16 H1 Z M16,8 H20 L23,11 V16 H16 Z M3,18.5 A2.5,2.5 0 1 0 8,18.5 A2.5,2.5 0 1 0 3,18.5 M16,18.5 A2.5,2.5 0 1 0 21,18.5 A2.5,2.5 0 1 0 16,18.5";
         private const string IconoGestionOrdenes = "M9,4 H7 A2,2 0 0 0 5,6 V20 A2,2 0 0 0 7,22 H17 A2,2 0 0 0 19,20 V6 A2,2 0 0 0 17,4 H15 M9,2 H15 V6 H9 Z M9,14 L11,16 L15,12";
-        private const string IconoFacturacion = "M14,2 H6 A2,2 0 0 0 4,4 V20 A2,2 0 0 0 6,22 H18 A2,2 0 0 0 20,20 V8 Z M14,2 V8 H20 M16,13 H8 M16,17 H8 M10,9 H8";
-        private const string IconoCotizacion = "M12,1 V23 M17,5 H9.5 A3.5,3.5 0 0 0 9.5,12 H14.5 A3.5,3.5 0 0 1 14.5,19 H6";
         private const string IconoReportes = "M18,20 V10 M12,20 V4 M6,20 V14";
         private const string IconoOrdenes = "M9,4 H7 A2,2 0 0 0 5,6 V20 A2,2 0 0 0 7,22 H17 A2,2 0 0 0 19,20 V6 A2,2 0 0 0 17,4 H15 M9,2 H15 V6 H9 Z M9,12 H15 M9,16 H13";
         private const string IconoClientes = "M5,7 A4,4 0 1 0 13,7 A4,4 0 1 0 5,7 M2,21 V19 A4,4 0 0 1 6,15 H12 A4,4 0 0 1 16,19 V21 M16,3.1 A4,4 0 0 1 16,10.9 M22,21 V19 A4,4 0 0 0 19,15.1";
@@ -42,7 +39,6 @@ namespace Codelex
             { "inventario", NivelAcceso.Medio },
             { "usuarios", NivelAcceso.Medio },
 
-            { "facturacion", NivelAcceso.Avanzado },
             { "reportes", NivelAcceso.Avanzado }
         };
 
@@ -62,8 +58,6 @@ namespace Codelex
             { "Inventario", NivelAcceso.Medio },
             { "Usuarios", NivelAcceso.Medio },
 
-            { "Cotizaciones", NivelAcceso.Avanzado },
-            { "Facturas", NivelAcceso.Avanzado },
             { "Reportes", NivelAcceso.Avanzado }
         };
 
@@ -299,7 +293,6 @@ namespace Codelex
             if (clave == "inicio")
             {
                 Encabezado("Panel principal", "Selecciona un módulo para comenzar.");
-                opciones.Add(new OpcionMenu("Cotizaciones y facturación", "Genera cotizaciones y facturas para tus clientes.", IconoFacturacion, "facturacion"));
                 opciones.Add(new OpcionMenu("Reportes", "Consulta reportes de órdenes, asistencia y empleados.", IconoReportes, "reportes"));
                 opciones.Add(new OpcionMenu("Órdenes", "Ingresa y gestiona las órdenes de tus clientes.", IconoOrdenes, "ordenes"));
                 opciones.Add(new OpcionMenu("Vehículos", "Registra y gestiona los vehículos de la empresa.", IconoVehiculos, "vehiculos"));
@@ -313,12 +306,6 @@ namespace Codelex
                 Encabezado("Mi perfil", "Consulta tu información y tus órdenes asignadas.");
                 opciones.Add(new OpcionMenu("Mis datos", "Consulta tu perfil de empleado, tu asistencia y tus órdenes.", IconoEmpleados, "MisDatos"));
                 opciones.Add(new OpcionMenu("Mis órdenes", "Revisa el detalle de las órdenes en las que estás asignado.", IconoOrdenes, "MisOrdenes"));
-            }
-            else if (clave == "facturacion")
-            {
-                Encabezado("Cotizaciones y facturación", "Elige qué deseas gestionar.");
-                opciones.Add(new OpcionMenu("Cotizaciones", "Crea y consulta las cotizaciones de servicios.", IconoCotizacion, "Cotizaciones"));
-                opciones.Add(new OpcionMenu("Facturas", "Emite y consulta las facturas de las órdenes.", IconoFacturacion, "Facturas"));
             }
             else if (clave == "reportes")
             {
@@ -416,10 +403,6 @@ namespace Codelex
                 AbrirModulo(new IngresarLocacion());
             else if (destino == "Reportes")
                 AbrirModulo(new Reportes());
-            else if (destino == "Cotizaciones")
-                AbrirModulo(new Cotizacion());
-            else if (destino == "Facturas")
-                AbrirModulo(new Factura());
             else if (destino == "GestionOrdenes")
             AbrirModulo(new GestionOrdenes());
             else

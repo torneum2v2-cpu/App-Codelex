@@ -175,66 +175,65 @@
                             </Border>
                         </Grid>
 
-                        <!-- SECCIÓN 3: Servicio y detalle -->
+                        <!-- SECCIÓN 3: Servicio y actividades -->
                         <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0,0,0,15">
                             <StackPanel>
-                                <TextBlock Text="Servicio y detalle" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
+                                <TextBlock Text="Servicio y actividades" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
 
-                                <!-- Fila para agregar líneas -->
                                 <Grid Margin="0,0,0,10">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="200"/>
+                                        <ColumnDefinition Width="260"/>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="80"/>
-                                        <ColumnDefinition Width="110"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                        <TextBlock Text="Servicio (opcional):" Style="{StaticResource Etiqueta}"/>
-                                        <ComboBox x:Name="cmbServicioRapido"/>
+                                        <TextBlock Text="Servicio:" Style="{StaticResource Etiqueta}"/>
+                                        <ComboBox x:Name="cmbServicio"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1" Margin="0,0,10,0">
-                                        <TextBlock Text="Concepto:" Style="{StaticResource Etiqueta}"/>
-                                        <TextBox x:Name="txtConcepto"/>
+                                        <TextBlock Text="Agregar otra actividad:" Style="{StaticResource Etiqueta}"/>
+                                        <ComboBox x:Name="cmbOtraActividad"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="2" Margin="0,0,10,0">
-                                        <TextBlock Text="Cantidad:" Style="{StaticResource Etiqueta}"/>
-                                        <TextBox x:Name="txtCantidad"/>
-                                    </StackPanel>
-
-                                    <StackPanel Grid.Column="3" Margin="0,0,10,0">
-                                        <TextBlock Text="Precio (L):" Style="{StaticResource Etiqueta}"/>
-                                        <TextBox x:Name="txtPrecio"/>
-                                    </StackPanel>
-
-                                    <StackPanel Grid.Column="4" Margin="0,0,10,0">
                                         <TextBlock Text=" " Style="{StaticResource Etiqueta}"/>
                                         <Button x:Name="btnAgregarLinea" Content="Agregar" Style="{StaticResource PrimaryButton}"
                                                 Width="100" Click="btnAgregarLinea_Click"
-                                                ToolTip="Agrega la línea al detalle"/>
+                                                ToolTip="Agrega la actividad elegida a la cotización"/>
                                     </StackPanel>
 
-                                    <StackPanel Grid.Column="5">
+                                    <StackPanel Grid.Column="3">
                                         <TextBlock Text=" " Style="{StaticResource Etiqueta}"/>
                                         <Button x:Name="btnQuitarLinea" Content="Quitar" Style="{StaticResource SecondaryButton}"
                                                 Width="100" Click="btnQuitarLinea_Click"
-                                                ToolTip="Quita la línea seleccionada"/>
+                                                ToolTip="Quita la actividad seleccionada"/>
                                     </StackPanel>
                                 </Grid>
 
-                                <DataGrid x:Name="dgLineas" Style="{StaticResource Tabla}" Height="150" AutoGenerateColumns="False"
-                                          CanUserAddRows="False" IsReadOnly="True" SelectionMode="Single">
+                                <DataGrid x:Name="dgLineas" Style="{StaticResource Tabla}" Height="220" AutoGenerateColumns="False"
+                                          CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True"
+                                          SelectionMode="Single" SelectionUnit="FullRow">
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Header="Concepto" Binding="{Binding Concepto, Mode=OneWay}" Width="*"/>
-                                        <DataGridTextColumn Header="Cantidad" Binding="{Binding Cantidad, Mode=OneWay}" Width="90"/>
-                                        <DataGridTextColumn Header="Precio (L)" Binding="{Binding Precio, Mode=OneWay, StringFormat=N2}" Width="120"/>
-                                        <DataGridTextColumn Header="Subtotal (L)" Binding="{Binding Subtotal, Mode=OneWay, StringFormat=N2}" Width="130"/>
+                                        <DataGridTextColumn Header="Actividad" Binding="{Binding Nombre, Mode=OneWay}" IsReadOnly="True" Width="*"/>
+                                        <DataGridTextColumn Header="Se mide en" Binding="{Binding Unidad, Mode=OneWay}" IsReadOnly="True" Width="120"/>
+                                        <DataGridTemplateColumn Header="Cantidad (escríbala aquí)" Width="190">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBox Text="{Binding Medida, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                             MaxLength="12" Margin="0,4" LostFocus="Medida_LostFocus"/>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="Personas" Binding="{Binding Personas, Mode=OneWay}" IsReadOnly="True" Width="100"/>
+                                        <DataGridTextColumn Header="Precio (L)" Binding="{Binding Precio, Mode=OneWay, StringFormat=N2}" IsReadOnly="True" Width="130"/>
                                     </DataGrid.Columns>
                                 </DataGrid>
+
+                                <TextBlock Text="Escriba cuántos m² o unidades tiene cada actividad. El precio y las personas se calculan solos."
+                                           Style="{StaticResource Nota}" Margin="0,6,0,0"/>
 
                                 <!-- Observaciones y totales -->
                                 <Grid Margin="0,12,0,0">
@@ -257,7 +256,11 @@
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
+
+                                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Personas necesarias:" Style="{StaticResource Etiqueta}" Margin="0,6,0,0"/>
+                                        <TextBlock x:Name="lblPersonas" Grid.Row="3" Grid.Column="1" Text="0" Foreground="{StaticResource DarkText}" FontSize="13.5" Margin="0,6,0,0"/>
 
                                         <TextBlock Grid.Row="0" Grid.Column="0" Text="Subtotal:" Style="{StaticResource Etiqueta}"/>
                                         <TextBlock x:Name="lblSubtotal" Grid.Row="0" Grid.Column="1" Text="L 0.00" Foreground="{StaticResource DarkText}" FontSize="13.5"/>

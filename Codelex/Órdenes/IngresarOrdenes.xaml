@@ -463,31 +463,28 @@
                                 <StackPanel>
                                     <TextBlock Text="Servicio y actividades" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
 
-                                    <TextBlock Text="Tipo de servicio:" Style="{StaticResource Etiqueta}"/>
-                                    <ComboBox x:Name="cmbTipo_Servicio" Margin="0,0,0,10"/>
+                                    <TextBlock Text="Servicio:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBox x:Name="txtServicio" IsReadOnly="True" Margin="0,0,0,10"/>
 
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
 
-                                        <StackPanel Grid.Column="0">
-                                            <TextBlock Text="Otras actividades disponibles:" Style="{StaticResource Etiqueta}" Margin="0,0,0,4"/>
-                                            <ListBox x:Name="lstActividadesDisponibles" Height="230"/>
-                                        </StackPanel>
-
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
-                                            <Button x:Name="btnAgregar" Content="Agregar >" Style="{StaticResource SecondaryButton}" Width="90" Margin="0,0,0,5" Click="btnAgregar_Click"/>
-                                            <Button x:Name="btnQuitar" Content="&lt; Quitar" Style="{StaticResource SecondaryButton}" Width="90" Click="btnQuitar_Click"/>
-                                        </StackPanel>
-
-                                        <StackPanel Grid.Column="2">
+                                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
                                             <TextBlock Text="Actividades de la orden:" Style="{StaticResource Etiqueta}" Margin="0,0,0,4"/>
-                                            <ListBox x:Name="lstActividadesOrden" Height="230"/>
+                                            <ListBox x:Name="lstActividadesOrden" Height="190"/>
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                            <TextBlock Text="Se necesita para esta orden:" Style="{StaticResource Etiqueta}" Margin="0,0,0,4"/>
+                                            <ListBox x:Name="lstNecesidades" Height="190"/>
                                         </StackPanel>
                                     </Grid>
+
+                                    <TextBlock Text="Todo se toma de la cotización. Los productos se descuentan del inventario y los equipos se asignan solos."
+                                               Style="{StaticResource Nota}" Margin="0,8,0,0"/>
                                 </StackPanel>
                             </Border>
                         </Grid>
@@ -519,13 +516,9 @@
                             <Border Grid.Column="1" Style="{StaticResource Card}">
                                 <StackPanel>
                                     <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                                            <TextBlock Text="Empleados" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
+                                        <StackPanel>
+                                            <TextBlock Text="Empleados" Style="{StaticResource TituloCard}" Margin="0,0,0,2"/>
+                                            <TextBlock x:Name="lblPersonasNecesarias" Style="{StaticResource Nota}" Margin="0,0,0,8"/>
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="*"/>
@@ -534,7 +527,7 @@
                                                 </Grid.ColumnDefinitions>
                                                 <StackPanel Grid.Column="0">
                                                     <TextBlock Text="Disponibles:" Style="{StaticResource Etiqueta}"/>
-                                                    <ListBox x:Name="lstEmpleadosDisponibles" Height="150"/>
+                                                    <ListBox x:Name="lstEmpleadosDisponibles" Height="170"/>
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="5,0">
                                                     <Button x:Name="btnAgregarEmpleado" Content=">" Style="{StaticResource SecondaryButton}" Width="35" Padding="0" Margin="0,0,0,3" Click="btnAgregarEmpleado_Click"/>
@@ -542,7 +535,7 @@
                                                 </StackPanel>
                                                 <StackPanel Grid.Column="2">
                                                     <TextBlock Text="Asignados:" Style="{StaticResource Etiqueta}"/>
-                                                    <ListBox x:Name="lstEmpleadosAsignados" Height="150"/>
+                                                    <ListBox x:Name="lstEmpleadosAsignados" Height="170"/>
                                                 </StackPanel>
                                             </Grid>
 
@@ -560,20 +553,6 @@
                                             <ComboBox x:Name="cmbVehiculo"/>
                                         </StackPanel>
 
-                                        <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                                            <TextBlock Text="Productos y equipos a usar" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
-                                            <TextBlock Text="Producto / equipo:" Style="{StaticResource Etiqueta}"/>
-                                            <ComboBox x:Name="cmbProducto_equipo" Margin="0,0,0,5"/>
-
-                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
-                                                <TextBlock Text="Cant:" Style="{StaticResource Etiqueta}" VerticalAlignment="Center" Margin="0,0,5,0"/>
-                                                <TextBox x:Name="txtCantidad" Width="60" Margin="0,0,5,0"/>
-                                                <Button x:Name="btnAgregarProducto" Content="Agregar" Style="{StaticResource SecondaryButton}" Margin="0,0,5,0" Click="btnAgregarProducto_Click"/>
-                                                <Button x:Name="btnQuitarProducto" Content="Quitar" Style="{StaticResource SecondaryButton}" Click="btnQuitarProducto_Click"/>
-                                            </StackPanel>
-
-                                            <ListBox x:Name="lstProductosOrden" Height="100"/>
-                                        </StackPanel>
                                     </Grid>
                                 </StackPanel>
                             </Border>

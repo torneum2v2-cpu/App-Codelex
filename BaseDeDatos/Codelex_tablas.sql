@@ -386,22 +386,83 @@ CREATE TABLE CUOTAS
 )
 GO
 
--- Tipos de tabla que usan los procedimientos
-
-IF TYPE_ID('dbo.tipo_lista_actividades') IS NULL
-	CREATE TYPE dbo.tipo_lista_actividades AS TABLE (actividad_id INT NOT NULL PRIMARY KEY);
+IF COL_LENGTH('ACTIVIDADES', 'unidad') IS NULL
+	ALTER TABLE ACTIVIDADES ADD unidad VARCHAR(20) NULL;
 GO
+
+IF COL_LENGTH('ACTIVIDADES', 'rendimiento') IS NULL
+	ALTER TABLE ACTIVIDADES ADD rendimiento DECIMAL(10, 2) NULL;
+GO
+
+IF OBJECT_ID('PARAMETROS_COSTEO') IS NULL
+CREATE TABLE PARAMETROS_COSTEO
+(
+	clave VARCHAR(40) PRIMARY KEY,
+	valor DECIMAL(14, 4) NOT NULL,
+	descripcion VARCHAR(150) NOT NULL
+)
+GO
+
+IF OBJECT_ID('ACTIVIDAD_RANGOS') IS NULL
+CREATE TABLE ACTIVIDAD_RANGOS
+(
+	actividad_id INT NOT NULL FOREIGN KEY REFERENCES ACTIVIDADES(actividad_id),
+	desde DECIMAL(12, 2) NOT NULL,
+	hasta DECIMAL(12, 2) NULL,
+	personas INT NOT NULL,
+	CONSTRAINT PK_ACTIVIDAD_RANGOS PRIMARY KEY (actividad_id, desde)
+)
+GO
+
+IF OBJECT_ID('ACTIVIDAD_PRODUCTOS') IS NULL
+CREATE TABLE ACTIVIDAD_PRODUCTOS
+(
+	actividad_id INT NOT NULL FOREIGN KEY REFERENCES ACTIVIDADES(actividad_id),
+	producto_id INT NOT NULL FOREIGN KEY REFERENCES PRODUCTOS(producto_id),
+	cantidad_por_unidad DECIMAL(10, 4) NOT NULL,
+	CONSTRAINT PK_ACTIVIDAD_PRODUCTOS PRIMARY KEY (actividad_id, producto_id)
+)
+GO
+
+IF OBJECT_ID('ACTIVIDAD_EQUIPOS') IS NULL
+CREATE TABLE ACTIVIDAD_EQUIPOS
+(
+	actividad_id INT NOT NULL FOREIGN KEY REFERENCES ACTIVIDADES(actividad_id),
+	nombreEquipo VARCHAR(50) NOT NULL,
+	CONSTRAINT PK_ACTIVIDAD_EQUIPOS PRIMARY KEY (actividad_id, nombreEquipo)
+)
+GO
+
+IF COL_LENGTH('COTIZACIONES', 'servicio_id') IS NULL
+	ALTER TABLE COTIZACIONES ADD servicio_id INT NULL;
+GO
+
+IF OBJECT_ID('FK_COTIZACIONES_SERVICIOS') IS NULL
+	ALTER TABLE COTIZACIONES
+	ADD CONSTRAINT FK_COTIZACIONES_SERVICIOS FOREIGN KEY (servicio_id) REFERENCES SERVICIOS(servicio_id);
+GO
+
+IF COL_LENGTH('COTIZACION_DETALLE', 'actividad_id') IS NULL
+	ALTER TABLE COTIZACION_DETALLE ADD actividad_id INT NULL;
+GO
+
+IF COL_LENGTH('COTIZACION_DETALLE', 'medida') IS NULL
+	ALTER TABLE COTIZACION_DETALLE ADD medida DECIMAL(12, 2) NULL;
+GO
+
+IF COL_LENGTH('COTIZACION_DETALLE', 'personas') IS NULL
+	ALTER TABLE COTIZACION_DETALLE ADD personas INT NULL;
+GO
+
+IF OBJECT_ID('FK_COTIZACION_DETALLE_ACTIVIDADES') IS NULL
+	ALTER TABLE COTIZACION_DETALLE
+	ADD CONSTRAINT FK_COTIZACION_DETALLE_ACTIVIDADES FOREIGN KEY (actividad_id) REFERENCES ACTIVIDADES(actividad_id);
+GO
+
+-- Tipos de tabla que usan los procedimientos
 
 IF TYPE_ID('dbo.tipo_lista_empleados') IS NULL
 	CREATE TYPE dbo.tipo_lista_empleados AS TABLE (empleado_id INT NOT NULL PRIMARY KEY);
-GO
-
-IF TYPE_ID('dbo.tipo_lista_productos') IS NULL
-	CREATE TYPE dbo.tipo_lista_productos AS TABLE (producto_id INT NOT NULL PRIMARY KEY, cantidad INT NOT NULL);
-GO
-
-IF TYPE_ID('dbo.tipo_lista_equipos') IS NULL
-	CREATE TYPE dbo.tipo_lista_equipos AS TABLE (equipo_id INT NOT NULL PRIMARY KEY);
 GO
 
 IF TYPE_ID('dbo.tipo_ingreso_productos') IS NULL
@@ -422,6 +483,14 @@ IF TYPE_ID('dbo.tipo_ingreso_equipos') IS NULL
 		modeloEquipo VARCHAR(50),
 		cantidad INT,
 		precio_unitario MONEY
+	);
+GO
+
+IF TYPE_ID('dbo.tipo_lista_medidas') IS NULL
+	CREATE TYPE dbo.tipo_lista_medidas AS TABLE
+	(
+		actividad_id INT NOT NULL,
+		medida DECIMAL(12, 2) NOT NULL
 	);
 GO
 
@@ -461,6 +530,229 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM ESTADO_EQUIPOS WHERE nombreEstadoEquipo = 'Disponible')
 	INSERT INTO ESTADO_EQUIPOS (nombreEstadoEquipo) VALUES ('Disponible');
+GO
+
+INSERT INTO PARAMETROS_COSTEO (clave, valor, descripcion)
+SELECT v.clave, v.valor, v.descripcion
+FROM (VALUES
+	('SALARIO_MINIMO', 12500, 'Salario minimo mensual en Honduras (L). Ajustar al vigente'),
+	('CARGAS_SOCIALES', 0.3033, 'IHSS patronal 7%, RAP 1.5%, INFOP 1%, decimo tercer y cuarto mes, vacaciones'),
+	('HORAS_MES', 190, 'Horas de trabajo al mes (jornada de 44 horas semanales)'),
+	('FACTOR_SUPERVISOR', 1.5, 'El supervisor gana este multiplo del salario minimo'),
+	('CUADRILLAS_POR_SUPERVISOR', 5, 'Cuadrillas que atiende el supervisor al mismo tiempo'),
+	('LITROS_GASOLINA_VIAJE', 6, 'Litros de gasolina estandar para ir y volver del servicio'),
+	('PRECIO_LITRO_GASOLINA', 100, 'Precio del litro de gasolina (L)'),
+	('VIDA_UTIL_EQUIPO_MESES', 36, 'Meses de vida util del equipo'),
+	('MANTENIMIENTO_EQUIPO_MENSUAL', 0.01, 'Mantenimiento mensual del equipo (fraccion de su precio)'),
+	('GASTOS_ADMINISTRATIVOS', 0.10, 'Gastos administrativos sobre el costo directo'),
+	('MARGEN_UTILIDAD', 0.50, 'Margen de utilidad sobre el precio de venta'),
+	('ISV', 0.15, 'Impuesto sobre ventas de Honduras')
+) v(clave, valor, descripcion)
+WHERE NOT EXISTS (SELECT 1 FROM PARAMETROS_COSTEO p WHERE p.clave = v.clave);
+GO
+
+DECLARE @servicios TABLE (nombre VARCHAR(30));
+DECLARE @act TABLE (servicio VARCHAR(30), descripcion VARCHAR(50), unidad VARCHAR(20), rendimiento DECIMAL(10, 2), perfil VARCHAR(5));
+DECLARE @rango TABLE (perfil VARCHAR(5), desde DECIMAL(12, 2), hasta DECIMAL(12, 2), personas INT);
+DECLARE @prod TABLE (nombre VARCHAR(50), tipo VARCHAR(20), stock INT, costo MONEY);
+DECLARE @eq TABLE (nombre VARCHAR(50), tipo VARCHAR(50), marca VARCHAR(50), modelo VARCHAR(50), unidades INT, costo MONEY);
+DECLARE @ap TABLE (actividad VARCHAR(50), producto VARCHAR(50), cantidad DECIMAL(10, 4));
+DECLARE @ae TABLE (actividad VARCHAR(50), equipo VARCHAR(50));
+
+INSERT INTO @act VALUES
+	('Limpieza general', 'Barrido y trapeado de pisos', 'm²', 25, 'M2'),
+	('Limpieza general', 'Limpieza de ventanas y vidrios', 'm²', 15, 'VID'),
+	('Limpieza general', 'Limpieza de paredes y zócalos', 'm²', 20, 'M2'),
+	('Limpieza general', 'Desempolvado de techos y esquinas', 'm²', 30, 'M2'),
+	('Limpieza general', 'Recolección y retiro de basura', 'm²', 80, 'M2'),
+	('Limpieza general', 'Limpieza y desinfección de baños', 'baños', 1.5, 'UNI'),
+	('Limpieza de oficinas', 'Limpieza de escritorios', 'escritorios', 8, 'UNI'),
+	('Limpieza de oficinas', 'Limpieza de equipo de cómputo', 'equipos', 6, 'UNI'),
+	('Limpieza de oficinas', 'Limpieza de sillas y mobiliario', 'muebles', 10, 'UNI'),
+	('Limpieza de oficinas', 'Limpieza de salas de reuniones', 'salas', 1, 'UNI'),
+	('Limpieza de oficinas', 'Vaciado de papeleras', 'papeleras', 40, 'UNI'),
+	('Limpieza de tanques', 'Limpieza de tanque de 1,000 litros', 'tanques', 0.5, 'TNQ'),
+	('Limpieza de tanques', 'Limpieza de tanque de 5,000 litros', 'tanques', 0.2, 'TNQ'),
+	('Limpieza de tanques', 'Limpieza de tanque de 10,000 litros', 'tanques', 0.1, 'TNQ'),
+	('Pisos y alfombras', 'Pulido y encerado de pisos', 'm²', 12, 'M2'),
+	('Pisos y alfombras', 'Lavado de alfombras', 'm²', 10, 'M2'),
+	('Pisos y alfombras', 'Lavado a presión de áreas exteriores', 'm²', 20, 'M2');
+
+INSERT INTO @rango VALUES
+	('M2', 0.01, 50, 1), ('M2', 51, 150, 2), ('M2', 151, 400, 3), ('M2', 401, 1000, 4), ('M2', 1001, NULL, 6),
+	('VID', 0.01, 30, 1), ('VID', 31, 100, 2), ('VID', 101, 300, 3), ('VID', 301, 800, 4), ('VID', 801, NULL, 6),
+	('UNI', 0.01, 10, 1), ('UNI', 11, 30, 2), ('UNI', 31, 100, 3), ('UNI', 101, NULL, 4),
+	('TNQ', 0.01, 2, 2), ('TNQ', 3, 6, 3), ('TNQ', 7, NULL, 4);
+
+INSERT INTO @prod VALUES
+	('Desinfectante multiusos (litro)', 'Químico', 200, 45),
+	('Detergente líquido (litro)', 'Químico', 200, 38),
+	('Limpiavidrios (litro)', 'Químico', 150, 55),
+	('Desengrasante (litro)', 'Químico', 100, 60),
+	('Cloro (litro)', 'Químico', 300, 20),
+	('Cera para piso (litro)', 'Químico', 100, 120),
+	('Shampoo para alfombras (litro)', 'Químico', 100, 90),
+	('Alcohol isopropílico (litro)', 'Químico', 100, 70),
+	('Bolsas para basura (unidad)', 'Consumible', 1000, 3),
+	('Paños de microfibra (unidad)', 'Consumible', 500, 25),
+	('Esponja de limpieza (unidad)', 'Consumible', 500, 12);
+
+INSERT INTO @eq VALUES
+	('Aspiradora industrial', 'Eléctrico', 'Karcher', 'NT 70', 3, 9500),
+	('Trapeador industrial con balde', 'Manual', 'Rubbermaid', 'Pro', 3, 1800),
+	('Carro de limpieza', 'Manual', 'Rubbermaid', 'Pro', 3, 4500),
+	('Escalera telescópica', 'Manual', 'Werner', 'Telescópica', 2, 3200),
+	('Kit rasqueta para vidrios', 'Manual', 'Unger', 'Profesional', 3, 900),
+	('Hidrolavadora', 'Eléctrico', 'Karcher', 'K5', 2, 7500),
+	('Pulidora de pisos', 'Eléctrico', 'Hako', 'Industrial', 2, 18000),
+	('Extractor de alfombras', 'Eléctrico', 'Karcher', 'Puzzi', 2, 14000),
+	('Bomba de agua sumergible', 'Eléctrico', 'Truper', '1 HP', 2, 3500);
+
+INSERT INTO @ap VALUES
+	('Barrido y trapeado de pisos', 'Desinfectante multiusos (litro)', 0.01),
+	('Barrido y trapeado de pisos', 'Detergente líquido (litro)', 0.005),
+	('Barrido y trapeado de pisos', 'Paños de microfibra (unidad)', 0.002),
+	('Limpieza de ventanas y vidrios', 'Limpiavidrios (litro)', 0.008),
+	('Limpieza de ventanas y vidrios', 'Paños de microfibra (unidad)', 0.01),
+	('Limpieza de paredes y zócalos', 'Desinfectante multiusos (litro)', 0.006),
+	('Limpieza de paredes y zócalos', 'Esponja de limpieza (unidad)', 0.004),
+	('Desempolvado de techos y esquinas', 'Paños de microfibra (unidad)', 0.005),
+	('Recolección y retiro de basura', 'Bolsas para basura (unidad)', 0.02),
+	('Limpieza y desinfección de baños', 'Cloro (litro)', 0.15),
+	('Limpieza y desinfección de baños', 'Desinfectante multiusos (litro)', 0.2),
+	('Limpieza y desinfección de baños', 'Esponja de limpieza (unidad)', 0.5),
+	('Limpieza y desinfección de baños', 'Bolsas para basura (unidad)', 1),
+	('Limpieza de escritorios', 'Desinfectante multiusos (litro)', 0.02),
+	('Limpieza de escritorios', 'Paños de microfibra (unidad)', 0.1),
+	('Limpieza de equipo de cómputo', 'Alcohol isopropílico (litro)', 0.03),
+	('Limpieza de equipo de cómputo', 'Paños de microfibra (unidad)', 0.1),
+	('Limpieza de sillas y mobiliario', 'Desinfectante multiusos (litro)', 0.03),
+	('Limpieza de sillas y mobiliario', 'Paños de microfibra (unidad)', 0.1),
+	('Limpieza de salas de reuniones', 'Desinfectante multiusos (litro)', 0.15),
+	('Limpieza de salas de reuniones', 'Paños de microfibra (unidad)', 1),
+	('Limpieza de salas de reuniones', 'Bolsas para basura (unidad)', 1),
+	('Vaciado de papeleras', 'Bolsas para basura (unidad)', 1),
+	('Limpieza de tanque de 1,000 litros', 'Cloro (litro)', 1.5),
+	('Limpieza de tanque de 1,000 litros', 'Detergente líquido (litro)', 2),
+	('Limpieza de tanque de 1,000 litros', 'Esponja de limpieza (unidad)', 3),
+	('Limpieza de tanque de 5,000 litros', 'Cloro (litro)', 6),
+	('Limpieza de tanque de 5,000 litros', 'Detergente líquido (litro)', 5),
+	('Limpieza de tanque de 5,000 litros', 'Esponja de limpieza (unidad)', 5),
+	('Limpieza de tanque de 10,000 litros', 'Cloro (litro)', 12),
+	('Limpieza de tanque de 10,000 litros', 'Detergente líquido (litro)', 10),
+	('Limpieza de tanque de 10,000 litros', 'Esponja de limpieza (unidad)', 8),
+	('Pulido y encerado de pisos', 'Cera para piso (litro)', 0.02),
+	('Pulido y encerado de pisos', 'Detergente líquido (litro)', 0.005),
+	('Pulido y encerado de pisos', 'Paños de microfibra (unidad)', 0.005),
+	('Lavado de alfombras', 'Shampoo para alfombras (litro)', 0.02),
+	('Lavado de alfombras', 'Paños de microfibra (unidad)', 0.004),
+	('Lavado a presión de áreas exteriores', 'Detergente líquido (litro)', 0.01),
+	('Lavado a presión de áreas exteriores', 'Desengrasante (litro)', 0.005);
+
+INSERT INTO @ae VALUES
+	('Barrido y trapeado de pisos', 'Trapeador industrial con balde'),
+	('Barrido y trapeado de pisos', 'Carro de limpieza'),
+	('Barrido y trapeado de pisos', 'Aspiradora industrial'),
+	('Limpieza de ventanas y vidrios', 'Escalera telescópica'),
+	('Limpieza de ventanas y vidrios', 'Kit rasqueta para vidrios'),
+	('Limpieza de paredes y zócalos', 'Escalera telescópica'),
+	('Limpieza de paredes y zócalos', 'Carro de limpieza'),
+	('Desempolvado de techos y esquinas', 'Escalera telescópica'),
+	('Desempolvado de techos y esquinas', 'Aspiradora industrial'),
+	('Recolección y retiro de basura', 'Carro de limpieza'),
+	('Limpieza y desinfección de baños', 'Carro de limpieza'),
+	('Limpieza de escritorios', 'Carro de limpieza'),
+	('Limpieza de sillas y mobiliario', 'Carro de limpieza'),
+	('Limpieza de salas de reuniones', 'Carro de limpieza'),
+	('Limpieza de salas de reuniones', 'Aspiradora industrial'),
+	('Vaciado de papeleras', 'Carro de limpieza'),
+	('Limpieza de tanque de 1,000 litros', 'Bomba de agua sumergible'),
+	('Limpieza de tanque de 1,000 litros', 'Hidrolavadora'),
+	('Limpieza de tanque de 5,000 litros', 'Bomba de agua sumergible'),
+	('Limpieza de tanque de 5,000 litros', 'Hidrolavadora'),
+	('Limpieza de tanque de 10,000 litros', 'Bomba de agua sumergible'),
+	('Limpieza de tanque de 10,000 litros', 'Hidrolavadora'),
+	('Pulido y encerado de pisos', 'Pulidora de pisos'),
+	('Pulido y encerado de pisos', 'Aspiradora industrial'),
+	('Lavado de alfombras', 'Extractor de alfombras'),
+	('Lavado a presión de áreas exteriores', 'Hidrolavadora');
+
+INSERT INTO @servicios SELECT DISTINCT servicio FROM @act;
+
+INSERT INTO SERVICIOS (nombreServicio)
+SELECT s.nombre FROM @servicios s
+WHERE NOT EXISTS (SELECT 1 FROM SERVICIOS x WHERE x.nombreServicio = s.nombre);
+
+INSERT INTO ACTIVIDADES (servicio_id, descripcion, frecuencia, precio, unidad, rendimiento)
+SELECT sv.servicio_id, a.descripcion, NULL, NULL, a.unidad, a.rendimiento
+FROM @act a
+INNER JOIN SERVICIOS sv ON sv.nombreServicio = a.servicio
+WHERE NOT EXISTS (SELECT 1 FROM ACTIVIDADES x WHERE x.descripcion = a.descripcion);
+
+UPDATE x
+SET x.unidad = a.unidad, x.rendimiento = a.rendimiento
+FROM ACTIVIDADES x
+INNER JOIN @act a ON a.descripcion = x.descripcion
+WHERE x.rendimiento IS NULL;
+
+INSERT INTO ACTIVIDAD_RANGOS (actividad_id, desde, hasta, personas)
+SELECT x.actividad_id, r.desde, r.hasta, r.personas
+FROM @act a
+INNER JOIN ACTIVIDADES x ON x.descripcion = a.descripcion
+INNER JOIN @rango r ON r.perfil = a.perfil
+WHERE NOT EXISTS (SELECT 1 FROM ACTIVIDAD_RANGOS y WHERE y.actividad_id = x.actividad_id);
+
+IF NOT EXISTS (SELECT 1 FROM COMPRAS WHERE numero_factura = 'INVENTARIO-INICIAL')
+BEGIN
+	DECLARE @nuevosP TABLE (producto_id INT, nombre VARCHAR(50));
+	DECLARE @nuevosE TABLE (equipo_id INT, nombre VARCHAR(50));
+	DECLARE @proveedor INT;
+	DECLARE @compra INT;
+	DECLARE @disponible INT = (SELECT TOP 1 estado_equipo_id FROM ESTADO_EQUIPOS WHERE nombreEstadoEquipo = 'Disponible');
+
+	IF NOT EXISTS (SELECT 1 FROM PROVEEDORES WHERE nombreProveedor = 'Proveedor inicial')
+		INSERT INTO PROVEEDORES (nombreProveedor, telefonoProveedor, correoProveedor) VALUES ('Proveedor inicial', '', '');
+
+	SELECT TOP 1 @proveedor = proveedor_id FROM PROVEEDORES WHERE nombreProveedor = 'Proveedor inicial';
+
+	INSERT INTO COMPRAS (proveedor_id, firma_empleado_id, numero_factura, fechaCompra)
+	VALUES (@proveedor, NULL, 'INVENTARIO-INICIAL', CAST(GETDATE() AS DATE));
+
+	SET @compra = CAST(SCOPE_IDENTITY() AS INT);
+
+	INSERT INTO PRODUCTOS (nombreProducto, tipoProducto, stock)
+	OUTPUT inserted.producto_id, inserted.nombreProducto INTO @nuevosP
+	SELECT p.nombre, p.tipo, p.stock FROM @prod p
+	WHERE NOT EXISTS (SELECT 1 FROM PRODUCTOS x WHERE x.nombreProducto = p.nombre);
+
+	INSERT INTO COMPRAS_PRODUCTOS (compra_id, producto_id, cantidad, precio_unitario)
+	SELECT @compra, n.producto_id, p.stock, p.costo
+	FROM @nuevosP n INNER JOIN @prod p ON p.nombre = n.nombre;
+
+	INSERT INTO EQUIPOS (nombreEquipo, tipoEquipo, marcaEquipo, modeloEquipo, estado_equipo_id)
+	OUTPUT inserted.equipo_id, inserted.nombreEquipo INTO @nuevosE
+	SELECT e.nombre, e.tipo, e.marca, e.modelo, @disponible
+	FROM @eq e
+	INNER JOIN (VALUES (1), (2), (3), (4)) n(numero) ON n.numero <= e.unidades
+	WHERE NOT EXISTS (SELECT 1 FROM EQUIPOS x WHERE x.nombreEquipo = e.nombre);
+
+	INSERT INTO COMPRAS_EQUIPOS (compra_id, equipo_id, precio_unitario)
+	SELECT @compra, n.equipo_id, e.costo
+	FROM @nuevosE n INNER JOIN @eq e ON e.nombre = n.nombre;
+END
+
+INSERT INTO ACTIVIDAD_PRODUCTOS (actividad_id, producto_id, cantidad_por_unidad)
+SELECT x.actividad_id, p.producto_id, a.cantidad
+FROM @ap a
+INNER JOIN ACTIVIDADES x ON x.descripcion = a.actividad
+INNER JOIN PRODUCTOS p ON p.nombreProducto = a.producto
+WHERE NOT EXISTS (SELECT 1 FROM ACTIVIDAD_PRODUCTOS y WHERE y.actividad_id = x.actividad_id);
+
+INSERT INTO ACTIVIDAD_EQUIPOS (actividad_id, nombreEquipo)
+SELECT x.actividad_id, a.equipo
+FROM @ae a
+INNER JOIN ACTIVIDADES x ON x.descripcion = a.actividad
+WHERE NOT EXISTS (SELECT 1 FROM ACTIVIDAD_EQUIPOS y WHERE y.actividad_id = x.actividad_id);
 GO
 
 SET NOEXEC OFF;

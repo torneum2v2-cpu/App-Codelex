@@ -1446,7 +1446,9 @@ BEGIN
 	SELECT actividad_id,
 		   ISNULL(servicio_id, 0) AS servicio_id,
 		   ISNULL(descripcion, '') +
-		   CASE WHEN ISNULL(frecuencia, '') = '' THEN '' ELSE ' (' + frecuencia + ')' END AS texto
+		   CASE WHEN ISNULL(frecuencia, '') = '' THEN '' ELSE ' (' + frecuencia + ')' END AS texto,
+		   ISNULL(descripcion, '') AS nombre,
+		   ISNULL(unidad, 'unidad') AS unidad
 	FROM ACTIVIDADES
 	ORDER BY descripcion;
 END
@@ -1457,32 +1459,207 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT empleado_id,
-		   LTRIM(ISNULL(nombreEmpleado, '') + ' ' + ISNULL(apellidoEmpleado, '')) AS nombreCompleto
-	FROM EMPLEADOS
-	WHERE estadoEmpleado = 1
-	ORDER BY nombreEmpleado, apellidoEmpleado;
+	SELECT e.empleado_id,
+		   LTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')) AS nombreCompleto
+	FROM EMPLEADOS e
+	WHERE e.estadoEmpleado = 1
+	  AND NOT EXISTS (SELECT 1
+					  FROM ORDEN_EMPLEADOS oe
+					  INNER JOIN ORDENES o ON o.orden_id = oe.orden_id
+					  INNER JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
+					  WHERE oe.empleado_id = e.empleado_id AND eo.nombreEstadoOrden = 'En proceso')
+	ORDER BY e.nombreEmpleado, e.apellidoEmpleado;
 END
 GO
 
-CREATE OR ALTER PROCEDURE sp_ListarProductosEquipos
+-- Costeo de actividades
+-- Precio = (mano de obra + insumos + equipo + transporte + supervision) + gastos administrativos,
+-- dividido entre (1 - margen). El ISV se suma al total del documento.
+-- Los valores (salario minimo, cargas, margen, etc.) estan en la tabla PARAMETROS_COSTEO.
+
+CREATE OR ALTER FUNCTION dbo.fn_CotizarLineas (@lineas dbo.tipo_lista_medidas READONLY)
+RETURNS TABLE
+AS
+RETURN
+(
+	WITH par AS
+	(
+		SELECT CAST(MAX(CASE WHEN clave = 'SALARIO_MINIMO' THEN valor END) AS FLOAT) AS salario,
+			   CAST(MAX(CASE WHEN clave = 'CARGAS_SOCIALES' THEN valor END) AS FLOAT) AS cargas,
+			   CAST(MAX(CASE WHEN clave = 'HORAS_MES' THEN valor END) AS FLOAT) AS horasMes,
+			   CAST(MAX(CASE WHEN clave = 'FACTOR_SUPERVISOR' THEN valor END) AS FLOAT) AS factorSup,
+			   CAST(MAX(CASE WHEN clave = 'CUADRILLAS_POR_SUPERVISOR' THEN valor END) AS FLOAT) AS cuadrillas,
+			   CAST(MAX(CASE WHEN clave = 'LITROS_GASOLINA_VIAJE' THEN valor END) AS FLOAT)
+			   * CAST(MAX(CASE WHEN clave = 'PRECIO_LITRO_GASOLINA' THEN valor END) AS FLOAT) AS transporte,
+			   CAST(MAX(CASE WHEN clave = 'VIDA_UTIL_EQUIPO_MESES' THEN valor END) AS FLOAT) AS vidaUtil,
+			   CAST(MAX(CASE WHEN clave = 'MANTENIMIENTO_EQUIPO_MENSUAL' THEN valor END) AS FLOAT) AS mantenimiento,
+			   CAST(MAX(CASE WHEN clave = 'GASTOS_ADMINISTRATIVOS' THEN valor END) AS FLOAT) AS admin,
+			   CAST(MAX(CASE WHEN clave = 'MARGEN_UTILIDAD' THEN valor END) AS FLOAT) AS margen
+		FROM PARAMETROS_COSTEO
+	),
+	pedido AS
+	(
+		SELECT actividad_id, SUM(medida) AS medida
+		FROM @lineas
+		GROUP BY actividad_id
+	),
+	base AS
+	(
+		SELECT a.actividad_id,
+			   a.descripcion,
+			   ISNULL(a.unidad, 'unidad') AS unidad,
+			   CAST(l.medida AS FLOAT) AS medida,
+			   CAST(a.rendimiento AS FLOAT) AS rendimiento,
+			   CAST(ISNULL(a.precio, 0) AS FLOAT) AS precioFijo,
+			   ISNULL(r.personas, 1) AS personas
+		FROM pedido l
+		INNER JOIN ACTIVIDADES a ON a.actividad_id = l.actividad_id
+		OUTER APPLY (SELECT TOP 1 ar.personas
+					 FROM ACTIVIDAD_RANGOS ar
+					 WHERE ar.actividad_id = a.actividad_id AND ar.desde <= l.medida
+					 ORDER BY ar.desde DESC) r
+	),
+	horas AS
+	(
+		SELECT b.*,
+			   CASE WHEN ISNULL(b.rendimiento, 0) > 0
+					THEN b.medida / (b.rendimiento * b.personas) ELSE 0 END AS horasTrabajo
+		FROM base b
+	),
+	costos AS
+	(
+		SELECT h.*,
+			   CASE WHEN ISNULL(h.rendimiento, 0) > 0
+					THEN h.medida / h.rendimiento * (p.salario * (1 + p.cargas) / p.horasMes)
+					ELSE 0 END AS manoObra,
+			   h.medida * CAST(ISNULL((SELECT SUM(ap.cantidad_por_unidad * ISNULL(pr.precio, 0))
+									   FROM ACTIVIDAD_PRODUCTOS ap
+									   OUTER APPLY (SELECT TOP 1 cp.precio_unitario AS precio
+													FROM COMPRAS_PRODUCTOS cp
+													WHERE cp.producto_id = ap.producto_id
+													ORDER BY cp.compra_producto_id DESC) pr
+									   WHERE ap.actividad_id = h.actividad_id), 0) AS FLOAT) AS insumos,
+			   h.horasTrabajo * CAST(ISNULL((SELECT SUM(eq.precio)
+											 FROM ACTIVIDAD_EQUIPOS ae
+											 CROSS APPLY (SELECT AVG(ce.precio_unitario) AS precio
+														  FROM COMPRAS_EQUIPOS ce
+														  INNER JOIN EQUIPOS e ON e.equipo_id = ce.equipo_id
+														  WHERE e.nombreEquipo = ae.nombreEquipo) eq
+											 WHERE ae.actividad_id = h.actividad_id), 0) AS FLOAT)
+			   * (1 / p.vidaUtil + p.mantenimiento) / p.horasMes AS equipo,
+			   h.horasTrabajo * (p.salario * p.factorSup * (1 + p.cargas) / p.horasMes) / p.cuadrillas AS supervision,
+			   CASE WHEN SUM(h.horasTrabajo) OVER () > 0
+					THEN p.transporte * h.horasTrabajo / SUM(h.horasTrabajo) OVER ()
+					ELSE p.transporte / COUNT(*) OVER () END AS transporte,
+			   p.admin, p.margen
+		FROM horas h
+		CROSS JOIN par p
+	),
+	total AS
+	(
+		SELECT c.*,
+			   c.manoObra + c.insumos + c.equipo + c.transporte + c.supervision AS directo
+		FROM costos c
+	)
+	SELECT t.actividad_id,
+		   LEFT(t.descripcion + ' (' +
+				CASE WHEN t.medida = FLOOR(t.medida)
+					 THEN CAST(CAST(t.medida AS BIGINT) AS VARCHAR(20))
+					 ELSE CAST(CAST(t.medida AS DECIMAL(12, 2)) AS VARCHAR(20)) END +
+				' ' + t.unidad + ')', 150) AS concepto,
+		   t.descripcion,
+		   t.unidad,
+		   CAST(t.medida AS DECIMAL(12, 2)) AS medida,
+		   t.personas,
+		   CAST(t.horasTrabajo AS DECIMAL(12, 2)) AS horas,
+		   CAST(t.manoObra AS DECIMAL(12, 2)) AS mano_obra,
+		   CAST(t.insumos AS DECIMAL(12, 2)) AS insumos,
+		   CAST(t.equipo AS DECIMAL(12, 2)) AS equipo,
+		   CAST(t.transporte AS DECIMAL(12, 2)) AS transporte,
+		   CAST(t.supervision AS DECIMAL(12, 2)) AS supervision,
+		   CAST(t.directo * t.admin AS DECIMAL(12, 2)) AS gastos_admin,
+		   CAST(t.directo * (1 + t.admin) AS DECIMAL(12, 2)) AS costo_total,
+		   CAST(CASE WHEN ISNULL(t.rendimiento, 0) > 0
+					 THEN t.directo * (1 + t.admin) / (1 - t.margen)
+					 ELSE t.precioFijo * t.medida END AS DECIMAL(12, 2)) AS precio
+	FROM total t
+);
+GO
+
+CREATE OR ALTER PROCEDURE sp_CotizarLineas
+	@lineas dbo.tipo_lista_medidas READONLY
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT 'P' AS tipo, p.producto_id AS id, ISNULL(p.nombreProducto, '') AS nombre,
-		   ISNULL(p.stock, 0) AS stock, '' AS detalle
-	FROM PRODUCTOS p
+	SELECT actividad_id, concepto, unidad, medida, personas, horas,
+		   mano_obra, insumos, equipo, transporte, supervision, gastos_admin, costo_total, precio
+	FROM dbo.fn_CotizarLineas(@lineas)
+	ORDER BY actividad_id;
+END
+GO
+
+-- Lo que necesita una cotizacion: productos (cantidad redondeada hacia arriba) y un equipo de cada tipo.
+CREATE OR ALTER FUNCTION dbo.fn_NecesidadesCotizacion (@cotizacion_id VARCHAR(50))
+RETURNS TABLE
+AS
+RETURN
+(
+	SELECT 'P' AS tipo,
+		   p.producto_id,
+		   p.nombreProducto AS nombre,
+		   CAST(CEILING(SUM(d.medida * ap.cantidad_por_unidad)) AS INT) AS cantidad
+	FROM COTIZACION_DETALLE d
+	INNER JOIN ACTIVIDAD_PRODUCTOS ap ON ap.actividad_id = d.actividad_id
+	INNER JOIN PRODUCTOS p ON p.producto_id = ap.producto_id
+	WHERE d.cotizacion_id = @cotizacion_id
+	GROUP BY p.producto_id, p.nombreProducto
 
 	UNION ALL
 
-	SELECT 'E', e.equipo_id, ISNULL(e.nombreEquipo, ''), 0,
-		   LTRIM(RTRIM(ISNULL(e.marcaEquipo, '') + ' ' + ISNULL(e.modeloEquipo, '')))
-	FROM EQUIPOS e
-	WHERE NOT EXISTS (SELECT 1 FROM ORDEN_EQUIPOS oe
-					  WHERE oe.equipo_id = e.equipo_id AND ISNULL(oe.devuelto, 0) = 0)
+	SELECT 'E', NULL, ae.nombreEquipo, 1
+	FROM COTIZACION_DETALLE d
+	INNER JOIN ACTIVIDAD_EQUIPOS ae ON ae.actividad_id = d.actividad_id
+	WHERE d.cotizacion_id = @cotizacion_id
+	GROUP BY ae.nombreEquipo
+);
+GO
 
-	ORDER BY tipo DESC, nombre;
+CREATE OR ALTER PROCEDURE sp_ResumenCotizacion
+	@cotizacion_id VARCHAR(50)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT 'Personas' AS tipo,
+		   'Empleados necesarios' AS nombre,
+		   ISNULL(MAX(d.personas), 0) AS cantidad,
+		   (SELECT COUNT(1) FROM EMPLEADOS e
+			WHERE e.estadoEmpleado = 1
+			  AND NOT EXISTS (SELECT 1 FROM ORDEN_EMPLEADOS oe
+							  INNER JOIN ORDENES o ON o.orden_id = oe.orden_id
+							  INNER JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
+							  WHERE oe.empleado_id = e.empleado_id AND eo.nombreEstadoOrden = 'En proceso')) AS disponible
+	FROM COTIZACION_DETALLE d
+	WHERE d.cotizacion_id = @cotizacion_id
+
+	UNION ALL
+
+	SELECT 'Producto', n.nombre, n.cantidad, ISNULL(p.stock, 0)
+	FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id) n
+	INNER JOIN PRODUCTOS p ON p.producto_id = n.producto_id
+	WHERE n.tipo = 'P'
+
+	UNION ALL
+
+	SELECT 'Equipo', n.nombre, n.cantidad,
+		   (SELECT COUNT(1) FROM EQUIPOS e
+			INNER JOIN ESTADO_EQUIPOS ee ON ee.estado_equipo_id = e.estado_equipo_id
+			WHERE e.nombreEquipo = n.nombre AND ee.nombreEstadoEquipo = 'Disponible'
+			  AND NOT EXISTS (SELECT 1 FROM ORDEN_EQUIPOS oe
+							  WHERE oe.equipo_id = e.equipo_id AND ISNULL(oe.devuelto, 0) = 0))
+	FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id) n
+	WHERE n.tipo = 'E';
 END
 GO
 
@@ -1508,6 +1685,9 @@ BEGIN
 		   CASE WHEN c.identificacionCliente IS NULL THEN 'Cliente no registrado'
 				WHEN c.estadoCliente = 0 THEN 'Cliente inactivo'
 				WHEN q.valida_hasta < CAST(GETDATE() AS DATE) THEN 'Vencida'
+				WHEN q.servicio_id IS NULL OR NOT EXISTS (SELECT 1 FROM COTIZACION_DETALLE d
+														  WHERE d.cotizacion_id = q.cotizacion_id
+															AND d.actividad_id IS NOT NULL) THEN 'Sin actividades'
 				ELSE 'Disponible' END AS estado,
 		   CASE WHEN c.identificacionCliente IS NULL
 				THEN 'El cliente de esta cotización no está registrado. Regístrelo en Clientes antes de crear la orden.'
@@ -1515,7 +1695,14 @@ BEGIN
 				THEN 'El cliente de esta cotización está inactivo.'
 				WHEN q.valida_hasta < CAST(GETDATE() AS DATE)
 				THEN 'Esta cotización ya venció. Haga una cotización nueva.'
-				ELSE '' END AS motivo
+				WHEN q.servicio_id IS NULL OR NOT EXISTS (SELECT 1 FROM COTIZACION_DETALLE d
+														  WHERE d.cotizacion_id = q.cotizacion_id
+															AND d.actividad_id IS NOT NULL)
+				THEN 'Esta cotización es antigua y no tiene actividades. Haga una cotización nueva.'
+				ELSE '' END AS motivo,
+		   ISNULL(q.servicio_id, 0) AS servicio_id,
+		   ISNULL((SELECT MAX(d.personas) FROM COTIZACION_DETALLE d
+				   WHERE d.cotizacion_id = q.cotizacion_id), 0) AS personas
 	FROM COTIZACIONES q
 	LEFT JOIN CLIENTES c ON c.identificacionCliente = q.identificacionCliente
 	WHERE NOT EXISTS (SELECT 1 FROM ORDENES o WHERE o.cotizacion_id = q.cotizacion_id)
@@ -1536,7 +1723,10 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT linea, concepto, cantidad, precio_unitario,
-		   CAST(cantidad * precio_unitario AS MONEY) AS subtotal
+		   CAST(cantidad * precio_unitario AS MONEY) AS subtotal,
+		   ISNULL(actividad_id, 0) AS actividad_id,
+		   ISNULL(medida, 0) AS medida,
+		   ISNULL(personas, 0) AS personas
 	FROM COTIZACION_DETALLE
 	WHERE cotizacion_id = @cotizacion_id
 	ORDER BY linea;
@@ -1546,7 +1736,6 @@ GO
 CREATE OR ALTER PROCEDURE sp_InsertarOrden
 	@identificacionCliente VARCHAR(30),
 	@locacion_id INT,
-	@servicio_id INT,
 	@supervisor_id INT,
 	@vehiculo_id INT,
 	@fecha_solicitud DATE,
@@ -1555,10 +1744,7 @@ CREATE OR ALTER PROCEDURE sp_InsertarOrden
 	@observaciones VARCHAR(200),
 	@turno VARCHAR(20),
 	@piso_area VARCHAR(20),
-	@actividades dbo.tipo_lista_actividades READONLY,
 	@empleados dbo.tipo_lista_empleados READONLY,
-	@productos dbo.tipo_lista_productos READONLY,
-	@equipos dbo.tipo_lista_equipos READONLY,
 	@cotizacion_id VARCHAR(50),
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT,
@@ -1574,6 +1760,8 @@ BEGIN
 
 	SET @identificacionCliente = LTRIM(RTRIM(ISNULL(@identificacionCliente, '')));
 	SET @cotizacion_id = LTRIM(RTRIM(ISNULL(@cotizacion_id, '')));
+
+	DECLARE @servicio_id INT, @personas INT, @nombre VARCHAR(100);
 
 	IF @cotizacion_id = ''
 	BEGIN
@@ -1607,6 +1795,15 @@ BEGIN
 		RETURN;
 	END
 
+	SELECT @servicio_id = servicio_id FROM COTIZACIONES WHERE cotizacion_id = @cotizacion_id;
+
+	IF @servicio_id IS NULL
+	   OR NOT EXISTS (SELECT 1 FROM COTIZACION_DETALLE WHERE cotizacion_id = @cotizacion_id AND actividad_id IS NOT NULL)
+	BEGIN
+		SET @mensaje = 'La cotizacion no tiene actividades. Haga una nueva.';
+		RETURN;
+	END
+
 	IF NOT EXISTS (SELECT 1 FROM CLIENTES
 				   WHERE identificacionCliente = @identificacionCliente AND estadoCliente = 1)
 	BEGIN
@@ -1621,25 +1818,72 @@ BEGIN
 		RETURN;
 	END
 
+	IF NOT EXISTS (SELECT 1 FROM EMPLEADOS WHERE empleado_id = @supervisor_id AND estadoEmpleado = 1)
+	BEGIN
+		SET @mensaje = 'El supervisor no existe o esta inactivo.';
+		RETURN;
+	END
+
 	IF NOT EXISTS (SELECT 1 FROM VEHICULOS WHERE vehiculo_id = @vehiculo_id AND estadoVehiculo = 1)
 	BEGIN
 		SET @mensaje = 'El vehiculo no existe o esta inactivo.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM @productos x
-			   INNER JOIN PRODUCTOS p ON p.producto_id = x.producto_id
-			   WHERE x.cantidad > ISNULL(p.stock, 0))
+	SELECT @personas = ISNULL(MAX(personas), 0) FROM COTIZACION_DETALLE WHERE cotizacion_id = @cotizacion_id;
+
+	IF (SELECT COUNT(1) FROM @empleados) < @personas
 	BEGIN
-		SET @mensaje = 'No hay stock suficiente de uno de los productos.';
+		SET @mensaje = 'La cotizacion necesita ' + CAST(@personas AS VARCHAR(10)) + ' empleados.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM @equipos x
-			   INNER JOIN ORDEN_EQUIPOS oe ON oe.equipo_id = x.equipo_id
-			   WHERE ISNULL(oe.devuelto, 0) = 0)
+	IF EXISTS (SELECT 1 FROM @empleados x
+			   WHERE NOT EXISTS (SELECT 1 FROM EMPLEADOS e WHERE e.empleado_id = x.empleado_id AND e.estadoEmpleado = 1))
 	BEGIN
-		SET @mensaje = 'Uno de los equipos ya esta asignado a otra orden.';
+		SET @mensaje = 'Uno de los empleados no existe o esta inactivo.';
+		RETURN;
+	END
+
+	SELECT TOP 1 @nombre = LTRIM(RTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')))
+	FROM @empleados x
+	INNER JOIN EMPLEADOS e ON e.empleado_id = x.empleado_id
+	INNER JOIN ORDEN_EMPLEADOS oe ON oe.empleado_id = x.empleado_id
+	INNER JOIN ORDENES o ON o.orden_id = oe.orden_id
+	INNER JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
+	WHERE eo.nombreEstadoOrden = 'En proceso';
+
+	IF @nombre IS NOT NULL
+	BEGIN
+		SET @mensaje = LEFT(@nombre + ' esta en una orden en proceso.', 100);
+		RETURN;
+	END
+
+	SET @nombre = NULL;
+
+	SELECT TOP 1 @nombre = n.nombre
+	FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id) n
+	INNER JOIN PRODUCTOS p ON p.producto_id = n.producto_id
+	WHERE n.tipo = 'P' AND n.cantidad > ISNULL(p.stock, 0);
+
+	IF @nombre IS NOT NULL
+	BEGIN
+		SET @mensaje = LEFT('No hay stock suficiente de ' + @nombre + '.', 100);
+		RETURN;
+	END
+
+	SELECT TOP 1 @nombre = n.nombre
+	FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id) n
+	WHERE n.tipo = 'E'
+	  AND NOT EXISTS (SELECT 1 FROM EQUIPOS e
+					  INNER JOIN ESTADO_EQUIPOS ee ON ee.estado_equipo_id = e.estado_equipo_id
+					  WHERE e.nombreEquipo = n.nombre AND ee.nombreEstadoEquipo = 'Disponible'
+						AND NOT EXISTS (SELECT 1 FROM ORDEN_EQUIPOS oe
+										WHERE oe.equipo_id = e.equipo_id AND ISNULL(oe.devuelto, 0) = 0));
+
+	IF @nombre IS NOT NULL
+	BEGIN
+		SET @mensaje = LEFT('No hay equipo disponible: ' + @nombre + '.', 100);
 		RETURN;
 	END
 
@@ -1662,21 +1906,34 @@ BEGIN
 				0, @identificacionCliente, @cotizacion_id);
 
 		INSERT INTO ORDEN_ACTIVIDADES (orden_id, actividad_id, estado, duracion_min)
-		SELECT @orden_id, actividad_id, 0, NULL FROM @actividades;
+		SELECT DISTINCT @orden_id, actividad_id, 0, NULL
+		FROM COTIZACION_DETALLE
+		WHERE cotizacion_id = @cotizacion_id AND actividad_id IS NOT NULL;
 
 		INSERT INTO ORDEN_EMPLEADOS (orden_id, empleado_id, turno, piso_area)
 		SELECT @orden_id, empleado_id, @turno, @piso_area FROM @empleados;
 
 		INSERT INTO ORDEN_PRODUCTOS (orden_id, producto_id, cantidad)
-		SELECT @orden_id, producto_id, cantidad FROM @productos;
+		SELECT @orden_id, producto_id, cantidad
+		FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id)
+		WHERE tipo = 'P';
 
 		UPDATE p
-		SET p.stock = ISNULL(p.stock, 0) - x.cantidad
+		SET p.stock = ISNULL(p.stock, 0) - n.cantidad
 		FROM PRODUCTOS p
-		INNER JOIN @productos x ON x.producto_id = p.producto_id;
+		INNER JOIN dbo.fn_NecesidadesCotizacion(@cotizacion_id) n ON n.producto_id = p.producto_id
+		WHERE n.tipo = 'P';
 
 		INSERT INTO ORDEN_EQUIPOS (orden_id, equipo_id, fecha_asignacion, devuelto)
-		SELECT @orden_id, equipo_id, @fecha_servicio, 0 FROM @equipos;
+		SELECT @orden_id,
+			   (SELECT MIN(e.equipo_id) FROM EQUIPOS e
+				INNER JOIN ESTADO_EQUIPOS ee ON ee.estado_equipo_id = e.estado_equipo_id
+				WHERE e.nombreEquipo = n.nombre AND ee.nombreEstadoEquipo = 'Disponible'
+				  AND NOT EXISTS (SELECT 1 FROM ORDEN_EQUIPOS oe
+								  WHERE oe.equipo_id = e.equipo_id AND ISNULL(oe.devuelto, 0) = 0)),
+			   @fecha_servicio, 0
+		FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id) n
+		WHERE n.tipo = 'E';
 
 		COMMIT TRANSACTION;
 
@@ -2116,6 +2373,25 @@ BEGIN
 	BEGIN
 		SET @mensaje = 'La orden ya esta ' + LOWER(@actual) + ' y no se puede cambiar.';
 		RETURN;
+	END
+
+	IF @nuevo = 'En proceso' AND ISNULL(@actual, '') <> 'En proceso'
+	BEGIN
+		DECLARE @ocupado VARCHAR(100);
+
+		SELECT TOP 1 @ocupado = LTRIM(RTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')))
+		FROM ORDEN_EMPLEADOS mi
+		INNER JOIN ORDEN_EMPLEADOS otro ON otro.empleado_id = mi.empleado_id AND otro.orden_id <> mi.orden_id
+		INNER JOIN ORDENES oo ON oo.orden_id = otro.orden_id
+		INNER JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = oo.estado_orden_id
+		INNER JOIN EMPLEADOS e ON e.empleado_id = mi.empleado_id
+		WHERE mi.orden_id = @orden_id AND eo.nombreEstadoOrden = 'En proceso';
+
+		IF @ocupado IS NOT NULL
+		BEGIN
+			SET @mensaje = LEFT(@ocupado + ' ya esta en otra orden en proceso.', 100);
+			RETURN;
+		END
 	END
 
 	BEGIN TRY
@@ -2670,22 +2946,36 @@ BEGIN
 END
 GO
 
--- Las líneas de la orden salen de sus actividades (ahí están los precios).
--- Productos y equipos no tienen precio de venta, por eso no se cobran aquí.
+-- Las líneas de la orden salen de su cotización (una por actividad). Sin cotización, de las actividades.
 CREATE OR ALTER PROCEDURE sp_DetalleOrdenFactura
 	@orden_id VARCHAR(50)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT ISNULL(a.descripcion, '') +
-		   CASE WHEN ISNULL(a.frecuencia, '') = '' THEN '' ELSE ' (' + a.frecuencia + ')' END AS concepto,
-		   1 AS cantidad,
-		   CAST(ISNULL(a.precio, 0) AS DECIMAL(12, 2)) AS precio_unitario
-	FROM ORDEN_ACTIVIDADES oa
-	INNER JOIN ACTIVIDADES a ON a.actividad_id = oa.actividad_id
-	WHERE oa.orden_id = @orden_id
-	ORDER BY a.descripcion;
+	IF EXISTS (SELECT 1 FROM ORDENES o
+			   INNER JOIN COTIZACION_DETALLE d ON d.cotizacion_id = o.cotizacion_id
+			   WHERE o.orden_id = @orden_id)
+	BEGIN
+		SELECT d.concepto,
+			   d.cantidad,
+			   CAST(d.precio_unitario AS DECIMAL(12, 2)) AS precio_unitario
+		FROM ORDENES o
+		INNER JOIN COTIZACION_DETALLE d ON d.cotizacion_id = o.cotizacion_id
+		WHERE o.orden_id = @orden_id
+		ORDER BY d.linea;
+	END
+	ELSE
+	BEGIN
+		SELECT ISNULL(a.descripcion, '') +
+			   CASE WHEN ISNULL(a.frecuencia, '') = '' THEN '' ELSE ' (' + a.frecuencia + ')' END AS concepto,
+			   1 AS cantidad,
+			   CAST(ISNULL(a.precio, 0) AS DECIMAL(12, 2)) AS precio_unitario
+		FROM ORDEN_ACTIVIDADES oa
+		INNER JOIN ACTIVIDADES a ON a.actividad_id = oa.actividad_id
+		WHERE oa.orden_id = @orden_id
+		ORDER BY a.descripcion;
+	END
 END
 GO
 
@@ -2701,7 +2991,8 @@ CREATE OR ALTER PROCEDURE sp_InsertarCotizacion
 	@fecha_cotizacion DATE,
 	@valida_hasta DATE,
 	@observaciones VARCHAR(200),
-	@lineas dbo.tipo_lista_lineas READONLY,
+	@servicio_id INT,
+	@lineas dbo.tipo_lista_medidas READONLY,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT,
 	@cotizacion_id VARCHAR(50) OUTPUT
@@ -2734,9 +3025,27 @@ BEGIN
 		RETURN;
 	END
 
+	IF NOT EXISTS (SELECT 1 FROM SERVICIOS WHERE servicio_id = @servicio_id)
+	BEGIN
+		SET @mensaje = 'El servicio no existe.';
+		RETURN;
+	END
+
 	IF NOT EXISTS (SELECT 1 FROM @lineas)
 	BEGIN
-		SET @mensaje = 'La cotizacion necesita al menos una linea.';
+		SET @mensaje = 'La cotizacion necesita al menos una actividad.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM @lineas WHERE medida <= 0)
+	BEGIN
+		SET @mensaje = 'Todas las actividades necesitan una medida mayor que 0.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM @lineas x WHERE NOT EXISTS (SELECT 1 FROM ACTIVIDADES a WHERE a.actividad_id = x.actividad_id))
+	BEGIN
+		SET @mensaje = 'Una de las actividades no existe.';
 		RETURN;
 	END
 
@@ -2744,8 +3053,9 @@ BEGIN
 		BEGIN TRANSACTION;
 
 		DECLARE @siguiente INT;
-		DECLARE @subtotal DECIMAL(12, 2) = (SELECT ISNULL(SUM(cantidad * precio_unitario), 0) FROM @lineas);
-		DECLARE @total DECIMAL(12, 2) = @subtotal + ROUND(@subtotal * 0.15, 2);
+		DECLARE @tasa DECIMAL(6, 4) = ISNULL((SELECT valor FROM PARAMETROS_COSTEO WHERE clave = 'ISV'), 0.15);
+		DECLARE @subtotal DECIMAL(12, 2) = (SELECT ISNULL(SUM(precio), 0) FROM dbo.fn_CotizarLineas(@lineas));
+		DECLARE @total DECIMAL(12, 2) = @subtotal + ROUND(@subtotal * @tasa, 2);
 
 		SELECT @siguiente = ISNULL(MAX(TRY_CAST(SUBSTRING(cotizacion_id, 5, 20) AS INT)), 0) + 1
 		FROM COTIZACIONES WITH (UPDLOCK, HOLDLOCK)
@@ -2755,15 +3065,17 @@ BEGIN
 
 		INSERT INTO COTIZACIONES (cotizacion_id, identificacionCliente, nombreEmpresa, nombreCliente,
 								  apellidoCliente, telefonoCliente, correoCliente, locacion_id, direccion,
-								  fechaCotizacion, valida_hasta, observaciones, precio_cotizado)
+								  fechaCotizacion, valida_hasta, observaciones, precio_cotizado, servicio_id)
 		VALUES (@cotizacion_id, NULLIF(LTRIM(RTRIM(@identificacionCliente)), ''), NULLIF(@nombreEmpresa, ''),
 				@nombreCliente, NULLIF(@apellidoCliente, ''), NULLIF(@telefonoCliente, ''),
 				NULLIF(@correoCliente, ''), @locacion_id, @direccion,
-				@fecha_cotizacion, @valida_hasta, NULLIF(@observaciones, ''), @total);
+				@fecha_cotizacion, @valida_hasta, NULLIF(@observaciones, ''), @total, @servicio_id);
 
-		INSERT INTO COTIZACION_DETALLE (cotizacion_id, linea, concepto, cantidad, precio_unitario)
-		SELECT @cotizacion_id, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), concepto, cantidad, precio_unitario
-		FROM @lineas;
+		INSERT INTO COTIZACION_DETALLE (cotizacion_id, linea, concepto, cantidad, precio_unitario,
+										actividad_id, medida, personas)
+		SELECT @cotizacion_id, ROW_NUMBER() OVER (ORDER BY actividad_id), concepto, 1, precio,
+			   actividad_id, medida, personas
+		FROM dbo.fn_CotizarLineas(@lineas);
 
 		COMMIT TRANSACTION;
 
@@ -2935,28 +3247,63 @@ BEGIN
 
 	SELECT f.factura_id,
 		   f.orden_id,
-		   o.identificacionCliente,
-		   ISNULL(c.nombreEmpresa, o.identificacionCliente) AS cliente,
-		   s.nombreServicio,
 		   f.fechaFactura,
 		   f.tipo_pago,
 		   f.estado_pago,
 		   f.fecha_pago,
-		   f.forma_pago_id,
-		   fp.nombreFormaPago,
-		   f.precio_facturado,
-		   cc.cuenta_id,
-		   cc.prima,
-		   cc.numero_cuotas,
-		   cc.frecuencia,
-		   cc.estado_cuenta
+		   ISNULL(fp.nombreFormaPago, '') AS nombreFormaPago,
+		   ISNULL(f.precio_facturado, 0) AS precio_facturado,
+		   ISNULL(o.identificacionCliente, '') AS identificacionCliente,
+		   ISNULL(c.nombreEmpresa, '') AS nombreEmpresa,
+		   ISNULL(c.nombreCliente, '') AS nombreCliente,
+		   ISNULL(c.apellidoCliente, '') AS apellidoCliente,
+		   ISNULL(c.telefonoCliente, '') AS telefonoCliente,
+		   ISNULL(c.correoCliente, '') AS correoCliente,
+		   ISNULL(l.nombreLocacion, '') AS nombreLocacion,
+		   ISNULL(l.tipoLocacion, '') AS tipoLocacion,
+		   ISNULL(l.direccion, '') AS direccion
 	FROM FACTURAS f
 	INNER JOIN ORDENES o ON o.orden_id = f.orden_id
 	LEFT JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
-	LEFT JOIN SERVICIOS s ON s.servicio_id = o.servicio_id
+	LEFT JOIN LOCACIONES l ON l.locacion_id = o.locacion_id
 	LEFT JOIN FORMAS_PAGOS fp ON fp.forma_pago_id = f.forma_pago_id
-	LEFT JOIN CUENTAS_POR_COBRAR cc ON cc.factura_id = f.factura_id
 	WHERE f.factura_id = @factura_id;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_DetalleFactura
+	@factura_id INT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT linea,
+		   CASE WHEN adicional = 1 THEN 'Adicional' ELSE 'Servicio' END AS tipo,
+		   concepto,
+		   cantidad,
+		   precio_unitario,
+		   CAST(cantidad * precio_unitario AS DECIMAL(12, 2)) AS subtotal
+	FROM FACTURA_DETALLE
+	WHERE factura_id = @factura_id
+	ORDER BY linea;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_CuotasFactura
+	@factura_id INT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT q.numero_cuota,
+		   q.fecha_vencimiento,
+		   q.monto_cuota,
+		   ISNULL(q.monto_pagado, 0) AS monto_pagado,
+		   q.estado_cuota
+	FROM CUENTAS_POR_COBRAR cpc
+	INNER JOIN CUOTAS q ON q.cuenta_id = cpc.cuenta_id
+	WHERE cpc.factura_id = @factura_id
+	ORDER BY q.numero_cuota;
 END
 GO
 

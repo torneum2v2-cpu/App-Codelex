@@ -11,10 +11,6 @@ namespace Codelex
         public int Id;
         public string Texto;
         public string Tipo;
-        public string Nombre = "";
-        public int Stock = 0;
-        public int Cantidad = 0;
-
 
         public ItemLista(int id, string texto, string tipo)
         {
@@ -36,11 +32,12 @@ namespace Codelex
         Vehiculo vehiculoBD = new Vehiculo();
 
         string clienteRtn = "";
-        DataTable actividades = new DataTable();
+        DataTable servicios = new DataTable();
         DataTable empleados = new DataTable();
         DataTable locacionesCliente = new DataTable();
 
         string cotizacionId = "";
+        int personasNecesarias = 0;
         DataRow? cotizacionInicial = null;
 
         private IngresarOrden()
@@ -49,13 +46,10 @@ namespace Codelex
 
             txtDescripcionLimpieza.MaxLength = 200;
             txtPiso_area.MaxLength = 20;
-            txtCantidad.MaxLength = 4;
             txtDireccion_limpieza.IsReadOnly = true;
             cmbTipoLocacion.IsEnabled = false;
 
             cmbLocacion.SelectionChanged += cmbLocacion_SelectionChanged;
-            cmbTipo_Servicio.SelectionChanged += cmbTipo_Servicio_SelectionChanged;
-            txtCantidad.PreviewTextInput += SoloNumeros;
             Loaded += Window_Loaded;
         }
         public IngresarOrden(DataRow cotizacion) : this()
@@ -83,12 +77,10 @@ namespace Codelex
         private void CargarListas()
         {
             LlenarCombo(cmbEstado, ordenBD.ListarEstadosOrden(), "estado_orden_id", "nombreEstadoOrden");
-            LlenarCombo(cmbTipo_Servicio, ordenBD.ListarServicios(), "servicio_id", "nombreServicio");
+            servicios = ordenBD.ListarServicios();
 
             empleados = ordenBD.ListarEmpleados();
             LlenarCombo(cmbSupervisor, empleados, "empleado_id", "nombreCompleto");
-
-            actividades = ordenBD.ListarActividades();
 
             cmbTurno.Items.Clear();
             cmbTurno.Items.Add("Mañana");
@@ -96,7 +88,6 @@ namespace Codelex
             cmbTurno.Items.Add("Noche");
 
             CargarVehiculos();
-            CargarProductosEquipos();
         }
 
         private void LlenarCombo(ComboBox combo, DataTable tabla, string columnaId, string columnaTexto)
@@ -119,41 +110,6 @@ namespace Codelex
             {
                 string texto = fila["placa"] + " - " + fila["marcaVehiculo"] + " " + fila["modeloVehiculo"];
                 cmbVehiculo.Items.Add(new ItemLista(Convert.ToInt32(fila["vehiculo_id"]), texto, ""));
-            }
-        }
-
-        private void CargarProductosEquipos()
-        {
-            cmbProducto_equipo.Items.Clear();
-
-            DataTable tabla = ordenBD.ListarProductosEquipos();
-
-            foreach (DataRow fila in tabla.Rows)
-            {
-                string tipo = "" + fila["tipo"];
-                string nombre = "" + fila["nombre"];
-                int id = Convert.ToInt32(fila["id"]);
-
-                ItemLista item;
-
-                if (tipo == "P")
-                {
-                    int stock = Convert.ToInt32(fila["stock"]);
-                    item = new ItemLista(id, "Producto: " + nombre + " (stock " + stock + ")", "P");
-                    item.Stock = stock;
-                }
-                else
-                {
-                    string detalle = "" + fila["detalle"];
-                    string texto = "Equipo: " + nombre;
-                    if (detalle != "")
-                        texto = texto + " (" + detalle + ")";
-
-                    item = new ItemLista(id, texto, "E");
-                }
-
-                item.Nombre = nombre;
-                cmbProducto_equipo.Items.Add(item);
             }
         }
 
@@ -229,15 +185,14 @@ namespace Codelex
             cmbSupervisor.SelectedIndex = -1;
             cmbVehiculo.SelectedIndex = -1;
             cmbTurno.SelectedIndex = -1;
-            cmbProducto_equipo.SelectedIndex = -1;
-            cmbTipo_Servicio.SelectedIndex = -1;
 
             lstActividadesOrden.Items.Clear();
-            lstActividadesDisponibles.Items.Clear();
-            lstProductosOrden.Items.Clear();
+            lstNecesidades.Items.Clear();
+            txtServicio.Text = "";
+            lblPersonasNecesarias.Text = "";
+            personasNecesarias = 0;
 
             txtPiso_area.Text = "";
-            txtCantidad.Text = "";
             txtDescripcionLimpieza.Text = "";
 
             cotizacionId = "";
@@ -265,13 +220,30 @@ namespace Codelex
             if (cotizacion["locacion_id"] != DBNull.Value)
                 SeleccionarPorId(cmbLocacion, Convert.ToInt32(cotizacion["locacion_id"]));
 
+            foreach (DataRow servicio in servicios.Rows)
+            {
+                if (Convert.ToInt32(servicio["servicio_id"]) == Convert.ToInt32(cotizacion["servicio_id"]))
+                    txtServicio.Text = "" + servicio["nombreServicio"];
+            }
+
             DataTable detalle = ordenBD.DetalleCotizacion(cotizacionId);
             foreach (DataRow linea in detalle.Rows)
             {
-                string concepto = "" + linea["concepto"];
-                lstCotizacion.Items.Add(linea["cantidad"] + " x " + concepto + "   L " + Convert.ToDecimal(linea["subtotal"]).ToString("N2"));
-                SeleccionarServicio(concepto);
+                string texto = linea["concepto"] + "   L " + Convert.ToDecimal(linea["subtotal"]).ToString("N2");
+                lstCotizacion.Items.Add(texto);
+                lstActividadesOrden.Items.Add(linea["concepto"]);
             }
+
+            DataTable necesidades = ordenBD.ResumenCotizacion(cotizacionId);
+            foreach (DataRow fila in necesidades.Rows)
+            {
+                lstNecesidades.Items.Add(ordenBD.TextoNecesidad(fila));
+
+                if (("" + fila["tipo"]) == "Personas")
+                    personasNecesarias = Convert.ToInt32(fila["cantidad"]);
+            }
+
+            lblPersonasNecesarias.Text = "La cotización necesita " + personasNecesarias + " empleados.";
         }
 
         private void SeleccionarPorId(ComboBox combo, int id)
@@ -281,21 +253,6 @@ namespace Codelex
                 if (item.Id == id)
                 {
                     combo.SelectedItem = item;
-                    return;
-                }
-            }
-        }
-
-        private void SeleccionarServicio(string concepto)
-        {
-            if (cmbTipo_Servicio.SelectedItem != null)
-                return;
-
-            foreach (ItemLista item in cmbTipo_Servicio.Items)
-            {
-                if (item.Texto.Trim().ToLower() == concepto.Trim().ToLower())
-                {
-                    cmbTipo_Servicio.SelectedItem = item;
                     return;
                 }
             }
@@ -313,12 +270,6 @@ namespace Codelex
             TxtCorreo.Text = "";
 
             cmbLocacion.Items.Clear();
-        }
-
-        private void SoloNumeros(object sender, TextCompositionEventArgs e)
-        {
-            if (!clienteBD.SoloNumeros(e.Text))
-                e.Handled = true;
         }
 
         private void CambiarCotizacion_Click(object sender, RoutedEventArgs e)
@@ -379,36 +330,6 @@ namespace Codelex
             }
         }
 
-        private void cmbTipo_Servicio_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            lstActividadesOrden.Items.Clear();
-            lstActividadesDisponibles.Items.Clear();
-
-            int servicioId = IdSeleccionado(cmbTipo_Servicio);
-            if (servicioId == 0)
-                return;
-
-            foreach (DataRow fila in actividades.Rows)
-            {
-                ItemLista item = new ItemLista(Convert.ToInt32(fila["actividad_id"]), "" + fila["texto"], "");
-
-                if (Convert.ToInt32(fila["servicio_id"]) == servicioId)
-                    lstActividadesOrden.Items.Add(item);
-                else
-                    lstActividadesDisponibles.Items.Add(item);
-            }
-        }
-
-        private void btnAgregar_Click(object sender, RoutedEventArgs e)
-        {
-            MoverSeleccionado(lstActividadesDisponibles, lstActividadesOrden);
-        }
-
-        private void btnQuitar_Click(object sender, RoutedEventArgs e)
-        {
-            MoverSeleccionado(lstActividadesOrden, lstActividadesDisponibles);
-        }
-
         private void btnAgregarEmpleado_Click(object sender, RoutedEventArgs e)
         {
             MoverSeleccionado(lstEmpleadosDisponibles, lstEmpleadosAsignados);
@@ -419,64 +340,6 @@ namespace Codelex
             MoverSeleccionado(lstEmpleadosAsignados, lstEmpleadosDisponibles);
         }
 
-        private void btnAgregarProducto_Click(object sender, RoutedEventArgs e)
-        {
-            ItemLista elegido = cmbProducto_equipo.SelectedItem as ItemLista;
-
-            if (elegido == null)
-            {
-                Aviso("Seleccione un producto o equipo.");
-                return;
-            }
-
-            foreach (ItemLista item in lstProductosOrden.Items)
-            {
-                if (item.Tipo == elegido.Tipo && item.Id == elegido.Id)
-                {
-                    Aviso("Ya está en la lista. Quítelo para agregarlo con otra cantidad.");
-                    return;
-                }
-            }
-
-            int cantidad = 1;
-
-            if (elegido.Tipo == "P")
-            {
-                string mensaje = ordenBD.ValidarCantidad(txtCantidad.Text, elegido.Stock, out cantidad);
-
-                if (mensaje != "")
-                {
-                    Aviso(mensaje);
-                    return;
-                }
-            }
-
-            string texto;
-            if (elegido.Tipo == "P")
-                texto = elegido.Nombre + " x " + cantidad;
-            else
-                texto = elegido.Nombre + " (equipo)";
-
-            ItemLista nuevo = new ItemLista(elegido.Id, texto, elegido.Tipo);
-            nuevo.Nombre = elegido.Nombre;
-            nuevo.Cantidad = cantidad;
-
-            lstProductosOrden.Items.Add(nuevo);
-
-            txtCantidad.Text = "";
-            cmbProducto_equipo.SelectedIndex = -1;
-        }
-
-        private void btnQuitarProducto_Click(object sender, RoutedEventArgs e)
-        {
-            ItemLista item = lstProductosOrden.SelectedItem as ItemLista;
-
-            if (item == null)
-                return;
-
-            lstProductosOrden.Items.Remove(item);
-        }
-
         private void btnGuardarOrden_Click(object sender, RoutedEventArgs e)
         {
             DatosOrden datos = new DatosOrden();
@@ -484,7 +347,6 @@ namespace Codelex
             datos.CotizacionId = cotizacionId;
             datos.Rtn = clienteRtn;
             datos.LocacionId = IdSeleccionado(cmbLocacion);
-            datos.ServicioId = IdSeleccionado(cmbTipo_Servicio);
             datos.SupervisorId = IdSeleccionado(cmbSupervisor);
             datos.VehiculoId = IdSeleccionado(cmbVehiculo);
             datos.FechaSolicitud = dpFechaSolicitud.SelectedDate;
@@ -493,28 +355,11 @@ namespace Codelex
             datos.Observaciones = txtDescripcionLimpieza.Text;
             datos.Turno = "" + cmbTurno.SelectedItem;
             datos.PisoArea = txtPiso_area.Text;
-
-            foreach (ItemLista item in lstActividadesOrden.Items)
-            {
-                datos.Actividades.Add(item.Id);
-            }
+            datos.PersonasNecesarias = personasNecesarias;
 
             foreach (ItemLista item in lstEmpleadosAsignados.Items)
             {
                 datos.Empleados.Add(item.Id);
-            }
-
-            foreach (ItemLista item in lstProductosOrden.Items)
-            {
-                if (item.Tipo == "P")
-                {
-                    datos.ProductosId.Add(item.Id);
-                    datos.ProductosCantidad.Add(item.Cantidad);
-                }
-                else
-                {
-                    datos.EquiposId.Add(item.Id);
-                }
             }
 
             try

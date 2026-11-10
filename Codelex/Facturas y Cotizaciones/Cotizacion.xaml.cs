@@ -5,6 +5,7 @@ using System.Data;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace Codelex.Facturas_y_Cotizaciones
 {
@@ -17,7 +18,8 @@ namespace Codelex.Facturas_y_Cotizaciones
         Facturacion facturaBD = new Facturacion();
 
         DataTable locacionesCliente = new DataTable();
-        ObservableCollection<LineaDocumento> lineas = new ObservableCollection<LineaDocumento>();
+        DataTable actividades = new DataTable();
+        ObservableCollection<LineaActividad> lineas = new ObservableCollection<LineaActividad>();
 
         public Cotizacion()
         {
@@ -32,17 +34,12 @@ namespace Codelex.Facturas_y_Cotizaciones
             TxtTelefono.MaxLength = 50;
             TxtCorreo.MaxLength = 50;
             txtDireccion.MaxLength = 80;
-            txtConcepto.MaxLength = 150;
-            txtCantidad.MaxLength = 4;
-            txtPrecio.MaxLength = 10;
             txtObservaciones.MaxLength = 200;
 
             dgLineas.ItemsSource = lineas;
 
             cmbLocacion.SelectionChanged += cmbLocacion_SelectionChanged;
-            cmbServicioRapido.SelectionChanged += cmbServicioRapido_SelectionChanged;
-            txtCantidad.PreviewTextInput += SoloNumeros;
-            txtPrecio.PreviewTextInput += SoloDecimal;
+            cmbServicio.SelectionChanged += cmbServicio_SelectionChanged;
             Loaded += Window_Loaded;
         }
 
@@ -51,6 +48,7 @@ namespace Codelex.Facturas_y_Cotizaciones
             try
             {
                 CargarServicios();
+                actividades = facturaBD.ListarActividades();
                 NuevaCotizacion();
             }
             catch (Exception ex)
@@ -63,12 +61,12 @@ namespace Codelex.Facturas_y_Cotizaciones
 
         private void CargarServicios()
         {
-            cmbServicioRapido.Items.Clear();
+            cmbServicio.Items.Clear();
 
             DataTable servicios = facturaBD.ListarServicios();
             foreach (DataRow fila in servicios.Rows)
             {
-                cmbServicioRapido.Items.Add(new ItemLista(Convert.ToInt32(fila["servicio_id"]), "" + fila["nombreServicio"], ""));
+                cmbServicio.Items.Add(new ItemLista(Convert.ToInt32(fila["servicio_id"]), "" + fila["nombreServicio"], ""));
             }
         }
 
@@ -105,8 +103,9 @@ namespace Codelex.Facturas_y_Cotizaciones
             dpFecha.SelectedDate = DateTime.Today;
             dpValidaHasta.SelectedDate = DateTime.Today.AddDays(15);
 
+            cmbServicio.SelectedIndex = -1;
             lineas.Clear();
-            LimpiarEntradaLinea();
+            ActualizarOtrasActividades();
             txtObservaciones.Text = "";
 
             LimpiarCliente();
@@ -126,33 +125,7 @@ namespace Codelex.Facturas_y_Cotizaciones
             cmbLocacion.Items.Clear();
         }
 
-        private void LimpiarEntradaLinea()
-        {
-            cmbServicioRapido.SelectedIndex = -1;
-            txtConcepto.Text = "";
-            txtCantidad.Text = "";
-            txtPrecio.Text = "";
-        }
-
         // ---------- Eventos de cliente ----------
-
-        private void SoloNumeros(object sender, TextCompositionEventArgs e)
-        {
-            if (!clienteBD.SoloNumeros(e.Text))
-                e.Handled = true;
-        }
-
-        private void SoloDecimal(object sender, TextCompositionEventArgs e)
-        {
-            foreach (char c in e.Text)
-            {
-                if (!char.IsDigit(c) && c != '.')
-                {
-                    e.Handled = true;
-                    return;
-                }
-            }
-        }
 
         private void BuscarCliente_Click(object sender, RoutedEventArgs e)
         {
@@ -208,64 +181,144 @@ namespace Codelex.Facturas_y_Cotizaciones
             }
         }
 
-        // ---------- Detalle ----------
+        // ---------- Actividades ----------
 
-        private void cmbServicioRapido_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void cmbServicio_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ItemLista item = cmbServicioRapido.SelectedItem as ItemLista;
+            int servicioId = IdSeleccionado(cmbServicio);
 
-            if (item == null)
+            if (servicioId == 0)
                 return;
 
-            txtConcepto.Text = item.Texto;
+            lineas.Clear();
+
+            foreach (DataRow fila in actividades.Rows)
+            {
+                if (Convert.ToInt32(fila["servicio_id"]) == servicioId)
+                    lineas.Add(NuevaLinea(fila));
+            }
+
+            ActualizarOtrasActividades();
+            RecalcularTotales();
+        }
+
+        private LineaActividad NuevaLinea(DataRow fila)
+        {
+            LineaActividad linea = new LineaActividad();
+            linea.ActividadId = Convert.ToInt32(fila["actividad_id"]);
+            linea.Nombre = "" + fila["nombre"];
+            linea.Unidad = "" + fila["unidad"];
+            return linea;
+        }
+
+        private bool YaEstaEnLaLista(int actividadId)
+        {
+            foreach (LineaActividad linea in lineas)
+            {
+                if (linea.ActividadId == actividadId)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private void ActualizarOtrasActividades()
+        {
+            cmbOtraActividad.Items.Clear();
+
+            foreach (DataRow fila in actividades.Rows)
+            {
+                int id = Convert.ToInt32(fila["actividad_id"]);
+
+                if (!YaEstaEnLaLista(id))
+                    cmbOtraActividad.Items.Add(new ItemLista(id, "" + fila["nombre"] + " (" + fila["unidad"] + ")", ""));
+            }
         }
 
         private void btnAgregarLinea_Click(object sender, RoutedEventArgs e)
         {
-            int cantidad;
-            decimal precio;
+            int actividadId = IdSeleccionado(cmbOtraActividad);
 
-            string mensaje = facturaBD.ValidarLinea(txtConcepto.Text, txtCantidad.Text, txtPrecio.Text,
-                                                    out cantidad, out precio);
-            if (mensaje != "")
+            if (actividadId == 0)
             {
-                Aviso(mensaje);
+                Aviso("Seleccione la actividad que desea agregar.");
                 return;
             }
 
-            LineaDocumento nueva = new LineaDocumento();
-            nueva.Origen = "Servicio";
-            nueva.Concepto = txtConcepto.Text.Trim();
-            nueva.Cantidad = cantidad;
-            nueva.Precio = precio;
+            foreach (DataRow fila in actividades.Rows)
+            {
+                if (Convert.ToInt32(fila["actividad_id"]) == actividadId)
+                    lineas.Add(NuevaLinea(fila));
+            }
 
-            lineas.Add(nueva);
-
-            LimpiarEntradaLinea();
+            ActualizarOtrasActividades();
             RecalcularTotales();
         }
 
         private void btnQuitarLinea_Click(object sender, RoutedEventArgs e)
         {
-            LineaDocumento linea = dgLineas.SelectedItem as LineaDocumento;
+            LineaActividad linea = dgLineas.SelectedItem as LineaActividad;
 
             if (linea == null)
             {
-                Aviso("Seleccione la línea que desea quitar.");
+                Aviso("Seleccione la actividad que desea quitar.");
                 return;
             }
 
             lineas.Remove(linea);
+            ActualizarOtrasActividades();
             RecalcularTotales();
+        }
+
+        private void Medida_LostFocus(object sender, RoutedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(RecalcularTotales), DispatcherPriority.Background);
         }
 
         private void RecalcularTotales()
         {
-            decimal subtotal = 0;
+            List<int> ids = new List<int>();
+            List<string> medidas = new List<string>();
 
-            foreach (LineaDocumento linea in lineas)
+            foreach (LineaActividad linea in lineas)
             {
-                subtotal += linea.Subtotal;
+                ids.Add(linea.ActividadId);
+                medidas.Add(linea.Medida);
+                linea.Precio = 0;
+                linea.Personas = 0;
+            }
+
+            decimal subtotal = 0;
+            int personas = 0;
+
+            try
+            {
+                string mensaje;
+                DataTable precios = facturaBD.CotizarActividades(ids, medidas, out mensaje);
+
+                foreach (DataRow fila in precios.Rows)
+                {
+                    foreach (LineaActividad linea in lineas)
+                    {
+                        if (linea.ActividadId == Convert.ToInt32(fila["actividad_id"]))
+                        {
+                            linea.Precio = Convert.ToDecimal(fila["precio"]);
+                            linea.Personas = Convert.ToInt32(fila["personas"]);
+                        }
+                    }
+
+                    subtotal += Convert.ToDecimal(fila["precio"]);
+
+                    if (Convert.ToInt32(fila["personas"]) > personas)
+                        personas = Convert.ToInt32(fila["personas"]);
+                }
+
+                if (mensaje != "")
+                    Aviso(mensaje);
+            }
+            catch (Exception ex)
+            {
+                MostrarError(ex);
             }
 
             decimal isv = facturaBD.CalcularIsv(subtotal);
@@ -274,6 +327,7 @@ namespace Codelex.Facturas_y_Cotizaciones
             lblSubtotal.Text = facturaBD.Dinero(subtotal);
             lblIsv.Text = facturaBD.Dinero(isv);
             lblTotal.Text = facturaBD.Dinero(total);
+            lblPersonas.Text = "" + personas;
         }
 
         // ---------- Botones ----------
@@ -299,12 +353,13 @@ namespace Codelex.Facturas_y_Cotizaciones
             datos.ValidaHasta = dpValidaHasta.SelectedDate;
             datos.Observaciones = txtObservaciones.Text;
 
-            foreach (LineaDocumento linea in lineas)
+            datos.ServicioId = IdSeleccionado(cmbServicio);
+
+            foreach (LineaActividad linea in lineas)
             {
-                datos.LineasConcepto.Add(linea.Concepto);
-                datos.LineasCantidad.Add(linea.Cantidad);
-                datos.LineasPrecio.Add(linea.Precio);
-                datos.LineasAdicional.Add(false);
+                datos.ActividadesId.Add(linea.ActividadId);
+                datos.ActividadesNombre.Add(linea.Nombre);
+                datos.ActividadesMedida.Add(linea.Medida);
             }
 
             try

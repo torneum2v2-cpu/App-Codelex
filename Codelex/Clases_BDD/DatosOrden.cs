@@ -8,7 +8,6 @@ namespace Codelex.Clases_BDD
         public string CotizacionId = "";
         public string Rtn = "";
         public int LocacionId = 0;
-        public int ServicioId = 0;
         public int SupervisorId = 0;
         public int VehiculoId = 0;
         public DateTime? FechaSolicitud = null;
@@ -17,12 +16,9 @@ namespace Codelex.Clases_BDD
         public string Observaciones = "";
         public string Turno = "";
         public string PisoArea = "";
+        public int PersonasNecesarias = 0;
 
-        public List<int> Actividades = new List<int>();
         public List<int> Empleados = new List<int>();
-        public List<int> ProductosId = new List<int>();
-        public List<int> ProductosCantidad = new List<int>();
-        public List<int> EquiposId = new List<int>();
     }
 
     class Orden : BaseDatos
@@ -37,19 +33,9 @@ namespace Codelex.Clases_BDD
             return Consultar(Procedimiento("sp_ListarServicios"));
         }
 
-        public DataTable ListarActividades()
-        {
-            return Consultar(Procedimiento("sp_ListarActividades"));
-        }
-
         public DataTable ListarEmpleados()
         {
             return Consultar(Procedimiento("sp_ListarEmpleadosOrden"));
-        }
-
-        public DataTable ListarProductosEquipos()
-        {
-            return Consultar(Procedimiento("sp_ListarProductosEquipos"));
         }
 
         public DataTable ListarCotizaciones(string texto, string rtn)
@@ -67,21 +53,34 @@ namespace Codelex.Clases_BDD
             return Consultar(comando);
         }
 
-        public string ValidarCantidad(string texto, int stock, out int cantidad)
+        public DataTable ResumenCotizacion(string cotizacionId)
         {
-            cantidad = 0;
-            texto = texto.Trim();
+            SqlCommand comando = Procedimiento("sp_ResumenCotizacion");
+            comando.Parameters.AddWithValue("@cotizacion_id", cotizacionId);
+            return Consultar(comando);
+        }
 
-            if (texto == "")
-                return "Escriba la cantidad.";
-            if (!int.TryParse(texto, out cantidad))
-                return "La cantidad no es válida.";
-            if (cantidad <= 0)
-                return "La cantidad debe ser mayor que 0.";
-            if (cantidad > stock)
-                return "No hay stock suficiente. Disponible: " + stock + ".";
+        // Una línea del resumen: lo que necesita la orden y lo que hay disponible.
+        public string TextoNecesidad(DataRow fila)
+        {
+            string tipo = "" + fila["tipo"];
+            string nombre = "" + fila["nombre"];
+            int cantidad = Convert.ToInt32(fila["cantidad"]);
+            int disponible = Convert.ToInt32(fila["disponible"]);
 
-            return "";
+            string texto;
+
+            if (tipo == "Personas")
+                texto = nombre + ": " + cantidad + " (hay " + disponible + " libres)";
+            else if (tipo == "Producto")
+                texto = nombre + ": " + cantidad + " (stock " + disponible + ")";
+            else
+                texto = "Equipo: " + nombre + " (libres " + disponible + ")";
+
+            if (disponible < cantidad)
+                texto = "FALTA - " + texto;
+
+            return texto;
         }
 
         public bool GuardarOrden(DatosOrden datos, out string mensaje, out string ordenId)
@@ -95,7 +94,6 @@ namespace Codelex.Clases_BDD
             SqlCommand comando = Procedimiento("sp_InsertarOrden");
             comando.Parameters.AddWithValue("@identificacionCliente", datos.Rtn.Trim());
             comando.Parameters.AddWithValue("@locacion_id", datos.LocacionId);
-            comando.Parameters.AddWithValue("@servicio_id", datos.ServicioId);
             comando.Parameters.AddWithValue("@supervisor_id", datos.SupervisorId);
             comando.Parameters.AddWithValue("@vehiculo_id", datos.VehiculoId);
             comando.Parameters.AddWithValue("@fecha_solicitud", datos.FechaSolicitud.Value);
@@ -106,14 +104,8 @@ namespace Codelex.Clases_BDD
             comando.Parameters.AddWithValue("@piso_area", datos.PisoArea.Trim());
             comando.Parameters.AddWithValue("@cotizacion_id", datos.CotizacionId.Trim());
 
-            AgregarLista(comando, "@actividades", "dbo.tipo_lista_actividades",
-                         TablaDeEnteros("actividad_id", datos.Actividades));
             AgregarLista(comando, "@empleados", "dbo.tipo_lista_empleados",
                          TablaDeEnteros("empleado_id", datos.Empleados));
-            AgregarLista(comando, "@productos", "dbo.tipo_lista_productos",
-                         TablaDeProductos(datos.ProductosId, datos.ProductosCantidad));
-            AgregarLista(comando, "@equipos", "dbo.tipo_lista_equipos",
-                         TablaDeEnteros("equipo_id", datos.EquiposId));
 
             SqlParameter ordenParametro = new SqlParameter("@orden_id", SqlDbType.VarChar, 50);
             ordenParametro.Direction = ParameterDirection.Output;
@@ -138,11 +130,6 @@ namespace Codelex.Clases_BDD
                 return "La cotización no tiene un cliente registrado.";
             if (datos.LocacionId <= 0)
                 return "Seleccione la locación.";
-            if (datos.ServicioId <= 0)
-                return "Seleccione el tipo de servicio.";
-            if (datos.Actividades.Count == 0)
-                return "La orden necesita al menos una actividad.";
-
             if (!datos.FechaSolicitud.HasValue)
                 return "Seleccione la fecha de solicitud.";
             if (!datos.FechaServicio.HasValue)
@@ -157,6 +144,8 @@ namespace Codelex.Clases_BDD
 
             if (datos.Empleados.Count == 0)
                 return "Asigne al menos un empleado.";
+            if (datos.Empleados.Count < datos.PersonasNecesarias)
+                return "La cotización necesita " + datos.PersonasNecesarias + " empleados. Asigne más.";
             if (datos.Turno.Trim() == "")
                 return "Seleccione el turno.";
             if (datos.PisoArea.Trim() == "")
@@ -188,20 +177,6 @@ namespace Codelex.Clases_BDD
             foreach (int valor in valores)
             {
                 tabla.Rows.Add(valor);
-            }
-
-            return tabla;
-        }
-
-        private DataTable TablaDeProductos(List<int> ids, List<int> cantidades)
-        {
-            DataTable tabla = new DataTable();
-            tabla.Columns.Add("producto_id", typeof(int));
-            tabla.Columns.Add("cantidad", typeof(int));
-
-            for (int i = 0; i < ids.Count; i++)
-            {
-                tabla.Rows.Add(ids[i], cantidades[i]);
             }
 
             return tabla;

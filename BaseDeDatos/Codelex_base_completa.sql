@@ -386,22 +386,83 @@ CREATE TABLE CUOTAS
 )
 GO
 
--- Tipos de tabla que usan los procedimientos
-
-IF TYPE_ID('dbo.tipo_lista_actividades') IS NULL
-	CREATE TYPE dbo.tipo_lista_actividades AS TABLE (actividad_id INT NOT NULL PRIMARY KEY);
+IF COL_LENGTH('ACTIVIDADES', 'unidad') IS NULL
+	ALTER TABLE ACTIVIDADES ADD unidad VARCHAR(20) NULL;
 GO
+
+IF COL_LENGTH('ACTIVIDADES', 'rendimiento') IS NULL
+	ALTER TABLE ACTIVIDADES ADD rendimiento DECIMAL(10, 2) NULL;
+GO
+
+IF OBJECT_ID('PARAMETROS_COSTEO') IS NULL
+CREATE TABLE PARAMETROS_COSTEO
+(
+	clave VARCHAR(40) PRIMARY KEY,
+	valor DECIMAL(14, 4) NOT NULL,
+	descripcion VARCHAR(150) NOT NULL
+)
+GO
+
+IF OBJECT_ID('ACTIVIDAD_RANGOS') IS NULL
+CREATE TABLE ACTIVIDAD_RANGOS
+(
+	actividad_id INT NOT NULL FOREIGN KEY REFERENCES ACTIVIDADES(actividad_id),
+	desde DECIMAL(12, 2) NOT NULL,
+	hasta DECIMAL(12, 2) NULL,
+	personas INT NOT NULL,
+	CONSTRAINT PK_ACTIVIDAD_RANGOS PRIMARY KEY (actividad_id, desde)
+)
+GO
+
+IF OBJECT_ID('ACTIVIDAD_PRODUCTOS') IS NULL
+CREATE TABLE ACTIVIDAD_PRODUCTOS
+(
+	actividad_id INT NOT NULL FOREIGN KEY REFERENCES ACTIVIDADES(actividad_id),
+	producto_id INT NOT NULL FOREIGN KEY REFERENCES PRODUCTOS(producto_id),
+	cantidad_por_unidad DECIMAL(10, 4) NOT NULL,
+	CONSTRAINT PK_ACTIVIDAD_PRODUCTOS PRIMARY KEY (actividad_id, producto_id)
+)
+GO
+
+IF OBJECT_ID('ACTIVIDAD_EQUIPOS') IS NULL
+CREATE TABLE ACTIVIDAD_EQUIPOS
+(
+	actividad_id INT NOT NULL FOREIGN KEY REFERENCES ACTIVIDADES(actividad_id),
+	nombreEquipo VARCHAR(50) NOT NULL,
+	CONSTRAINT PK_ACTIVIDAD_EQUIPOS PRIMARY KEY (actividad_id, nombreEquipo)
+)
+GO
+
+IF COL_LENGTH('COTIZACIONES', 'servicio_id') IS NULL
+	ALTER TABLE COTIZACIONES ADD servicio_id INT NULL;
+GO
+
+IF OBJECT_ID('FK_COTIZACIONES_SERVICIOS') IS NULL
+	ALTER TABLE COTIZACIONES
+	ADD CONSTRAINT FK_COTIZACIONES_SERVICIOS FOREIGN KEY (servicio_id) REFERENCES SERVICIOS(servicio_id);
+GO
+
+IF COL_LENGTH('COTIZACION_DETALLE', 'actividad_id') IS NULL
+	ALTER TABLE COTIZACION_DETALLE ADD actividad_id INT NULL;
+GO
+
+IF COL_LENGTH('COTIZACION_DETALLE', 'medida') IS NULL
+	ALTER TABLE COTIZACION_DETALLE ADD medida DECIMAL(12, 2) NULL;
+GO
+
+IF COL_LENGTH('COTIZACION_DETALLE', 'personas') IS NULL
+	ALTER TABLE COTIZACION_DETALLE ADD personas INT NULL;
+GO
+
+IF OBJECT_ID('FK_COTIZACION_DETALLE_ACTIVIDADES') IS NULL
+	ALTER TABLE COTIZACION_DETALLE
+	ADD CONSTRAINT FK_COTIZACION_DETALLE_ACTIVIDADES FOREIGN KEY (actividad_id) REFERENCES ACTIVIDADES(actividad_id);
+GO
+
+-- Tipos de tabla que usan los procedimientos
 
 IF TYPE_ID('dbo.tipo_lista_empleados') IS NULL
 	CREATE TYPE dbo.tipo_lista_empleados AS TABLE (empleado_id INT NOT NULL PRIMARY KEY);
-GO
-
-IF TYPE_ID('dbo.tipo_lista_productos') IS NULL
-	CREATE TYPE dbo.tipo_lista_productos AS TABLE (producto_id INT NOT NULL PRIMARY KEY, cantidad INT NOT NULL);
-GO
-
-IF TYPE_ID('dbo.tipo_lista_equipos') IS NULL
-	CREATE TYPE dbo.tipo_lista_equipos AS TABLE (equipo_id INT NOT NULL PRIMARY KEY);
 GO
 
 IF TYPE_ID('dbo.tipo_ingreso_productos') IS NULL
@@ -422,6 +483,14 @@ IF TYPE_ID('dbo.tipo_ingreso_equipos') IS NULL
 		modeloEquipo VARCHAR(50),
 		cantidad INT,
 		precio_unitario MONEY
+	);
+GO
+
+IF TYPE_ID('dbo.tipo_lista_medidas') IS NULL
+	CREATE TYPE dbo.tipo_lista_medidas AS TABLE
+	(
+		actividad_id INT NOT NULL,
+		medida DECIMAL(12, 2) NOT NULL
 	);
 GO
 
@@ -461,6 +530,229 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM ESTADO_EQUIPOS WHERE nombreEstadoEquipo = 'Disponible')
 	INSERT INTO ESTADO_EQUIPOS (nombreEstadoEquipo) VALUES ('Disponible');
+GO
+
+INSERT INTO PARAMETROS_COSTEO (clave, valor, descripcion)
+SELECT v.clave, v.valor, v.descripcion
+FROM (VALUES
+	('SALARIO_MINIMO', 12500, 'Salario minimo mensual en Honduras (L). Ajustar al vigente'),
+	('CARGAS_SOCIALES', 0.3033, 'IHSS patronal 7%, RAP 1.5%, INFOP 1%, decimo tercer y cuarto mes, vacaciones'),
+	('HORAS_MES', 190, 'Horas de trabajo al mes (jornada de 44 horas semanales)'),
+	('FACTOR_SUPERVISOR', 1.5, 'El supervisor gana este multiplo del salario minimo'),
+	('CUADRILLAS_POR_SUPERVISOR', 5, 'Cuadrillas que atiende el supervisor al mismo tiempo'),
+	('LITROS_GASOLINA_VIAJE', 6, 'Litros de gasolina estandar para ir y volver del servicio'),
+	('PRECIO_LITRO_GASOLINA', 100, 'Precio del litro de gasolina (L)'),
+	('VIDA_UTIL_EQUIPO_MESES', 36, 'Meses de vida util del equipo'),
+	('MANTENIMIENTO_EQUIPO_MENSUAL', 0.01, 'Mantenimiento mensual del equipo (fraccion de su precio)'),
+	('GASTOS_ADMINISTRATIVOS', 0.10, 'Gastos administrativos sobre el costo directo'),
+	('MARGEN_UTILIDAD', 0.50, 'Margen de utilidad sobre el precio de venta'),
+	('ISV', 0.15, 'Impuesto sobre ventas de Honduras')
+) v(clave, valor, descripcion)
+WHERE NOT EXISTS (SELECT 1 FROM PARAMETROS_COSTEO p WHERE p.clave = v.clave);
+GO
+
+DECLARE @servicios TABLE (nombre VARCHAR(30));
+DECLARE @act TABLE (servicio VARCHAR(30), descripcion VARCHAR(50), unidad VARCHAR(20), rendimiento DECIMAL(10, 2), perfil VARCHAR(5));
+DECLARE @rango TABLE (perfil VARCHAR(5), desde DECIMAL(12, 2), hasta DECIMAL(12, 2), personas INT);
+DECLARE @prod TABLE (nombre VARCHAR(50), tipo VARCHAR(20), stock INT, costo MONEY);
+DECLARE @eq TABLE (nombre VARCHAR(50), tipo VARCHAR(50), marca VARCHAR(50), modelo VARCHAR(50), unidades INT, costo MONEY);
+DECLARE @ap TABLE (actividad VARCHAR(50), producto VARCHAR(50), cantidad DECIMAL(10, 4));
+DECLARE @ae TABLE (actividad VARCHAR(50), equipo VARCHAR(50));
+
+INSERT INTO @act VALUES
+	('Limpieza general', 'Barrido y trapeado de pisos', 'm²', 25, 'M2'),
+	('Limpieza general', 'Limpieza de ventanas y vidrios', 'm²', 15, 'VID'),
+	('Limpieza general', 'Limpieza de paredes y zócalos', 'm²', 20, 'M2'),
+	('Limpieza general', 'Desempolvado de techos y esquinas', 'm²', 30, 'M2'),
+	('Limpieza general', 'Recolección y retiro de basura', 'm²', 80, 'M2'),
+	('Limpieza general', 'Limpieza y desinfección de baños', 'baños', 1.5, 'UNI'),
+	('Limpieza de oficinas', 'Limpieza de escritorios', 'escritorios', 8, 'UNI'),
+	('Limpieza de oficinas', 'Limpieza de equipo de cómputo', 'equipos', 6, 'UNI'),
+	('Limpieza de oficinas', 'Limpieza de sillas y mobiliario', 'muebles', 10, 'UNI'),
+	('Limpieza de oficinas', 'Limpieza de salas de reuniones', 'salas', 1, 'UNI'),
+	('Limpieza de oficinas', 'Vaciado de papeleras', 'papeleras', 40, 'UNI'),
+	('Limpieza de tanques', 'Limpieza de tanque de 1,000 litros', 'tanques', 0.5, 'TNQ'),
+	('Limpieza de tanques', 'Limpieza de tanque de 5,000 litros', 'tanques', 0.2, 'TNQ'),
+	('Limpieza de tanques', 'Limpieza de tanque de 10,000 litros', 'tanques', 0.1, 'TNQ'),
+	('Pisos y alfombras', 'Pulido y encerado de pisos', 'm²', 12, 'M2'),
+	('Pisos y alfombras', 'Lavado de alfombras', 'm²', 10, 'M2'),
+	('Pisos y alfombras', 'Lavado a presión de áreas exteriores', 'm²', 20, 'M2');
+
+INSERT INTO @rango VALUES
+	('M2', 0.01, 50, 1), ('M2', 51, 150, 2), ('M2', 151, 400, 3), ('M2', 401, 1000, 4), ('M2', 1001, NULL, 6),
+	('VID', 0.01, 30, 1), ('VID', 31, 100, 2), ('VID', 101, 300, 3), ('VID', 301, 800, 4), ('VID', 801, NULL, 6),
+	('UNI', 0.01, 10, 1), ('UNI', 11, 30, 2), ('UNI', 31, 100, 3), ('UNI', 101, NULL, 4),
+	('TNQ', 0.01, 2, 2), ('TNQ', 3, 6, 3), ('TNQ', 7, NULL, 4);
+
+INSERT INTO @prod VALUES
+	('Desinfectante multiusos (litro)', 'Químico', 200, 45),
+	('Detergente líquido (litro)', 'Químico', 200, 38),
+	('Limpiavidrios (litro)', 'Químico', 150, 55),
+	('Desengrasante (litro)', 'Químico', 100, 60),
+	('Cloro (litro)', 'Químico', 300, 20),
+	('Cera para piso (litro)', 'Químico', 100, 120),
+	('Shampoo para alfombras (litro)', 'Químico', 100, 90),
+	('Alcohol isopropílico (litro)', 'Químico', 100, 70),
+	('Bolsas para basura (unidad)', 'Consumible', 1000, 3),
+	('Paños de microfibra (unidad)', 'Consumible', 500, 25),
+	('Esponja de limpieza (unidad)', 'Consumible', 500, 12);
+
+INSERT INTO @eq VALUES
+	('Aspiradora industrial', 'Eléctrico', 'Karcher', 'NT 70', 3, 9500),
+	('Trapeador industrial con balde', 'Manual', 'Rubbermaid', 'Pro', 3, 1800),
+	('Carro de limpieza', 'Manual', 'Rubbermaid', 'Pro', 3, 4500),
+	('Escalera telescópica', 'Manual', 'Werner', 'Telescópica', 2, 3200),
+	('Kit rasqueta para vidrios', 'Manual', 'Unger', 'Profesional', 3, 900),
+	('Hidrolavadora', 'Eléctrico', 'Karcher', 'K5', 2, 7500),
+	('Pulidora de pisos', 'Eléctrico', 'Hako', 'Industrial', 2, 18000),
+	('Extractor de alfombras', 'Eléctrico', 'Karcher', 'Puzzi', 2, 14000),
+	('Bomba de agua sumergible', 'Eléctrico', 'Truper', '1 HP', 2, 3500);
+
+INSERT INTO @ap VALUES
+	('Barrido y trapeado de pisos', 'Desinfectante multiusos (litro)', 0.01),
+	('Barrido y trapeado de pisos', 'Detergente líquido (litro)', 0.005),
+	('Barrido y trapeado de pisos', 'Paños de microfibra (unidad)', 0.002),
+	('Limpieza de ventanas y vidrios', 'Limpiavidrios (litro)', 0.008),
+	('Limpieza de ventanas y vidrios', 'Paños de microfibra (unidad)', 0.01),
+	('Limpieza de paredes y zócalos', 'Desinfectante multiusos (litro)', 0.006),
+	('Limpieza de paredes y zócalos', 'Esponja de limpieza (unidad)', 0.004),
+	('Desempolvado de techos y esquinas', 'Paños de microfibra (unidad)', 0.005),
+	('Recolección y retiro de basura', 'Bolsas para basura (unidad)', 0.02),
+	('Limpieza y desinfección de baños', 'Cloro (litro)', 0.15),
+	('Limpieza y desinfección de baños', 'Desinfectante multiusos (litro)', 0.2),
+	('Limpieza y desinfección de baños', 'Esponja de limpieza (unidad)', 0.5),
+	('Limpieza y desinfección de baños', 'Bolsas para basura (unidad)', 1),
+	('Limpieza de escritorios', 'Desinfectante multiusos (litro)', 0.02),
+	('Limpieza de escritorios', 'Paños de microfibra (unidad)', 0.1),
+	('Limpieza de equipo de cómputo', 'Alcohol isopropílico (litro)', 0.03),
+	('Limpieza de equipo de cómputo', 'Paños de microfibra (unidad)', 0.1),
+	('Limpieza de sillas y mobiliario', 'Desinfectante multiusos (litro)', 0.03),
+	('Limpieza de sillas y mobiliario', 'Paños de microfibra (unidad)', 0.1),
+	('Limpieza de salas de reuniones', 'Desinfectante multiusos (litro)', 0.15),
+	('Limpieza de salas de reuniones', 'Paños de microfibra (unidad)', 1),
+	('Limpieza de salas de reuniones', 'Bolsas para basura (unidad)', 1),
+	('Vaciado de papeleras', 'Bolsas para basura (unidad)', 1),
+	('Limpieza de tanque de 1,000 litros', 'Cloro (litro)', 1.5),
+	('Limpieza de tanque de 1,000 litros', 'Detergente líquido (litro)', 2),
+	('Limpieza de tanque de 1,000 litros', 'Esponja de limpieza (unidad)', 3),
+	('Limpieza de tanque de 5,000 litros', 'Cloro (litro)', 6),
+	('Limpieza de tanque de 5,000 litros', 'Detergente líquido (litro)', 5),
+	('Limpieza de tanque de 5,000 litros', 'Esponja de limpieza (unidad)', 5),
+	('Limpieza de tanque de 10,000 litros', 'Cloro (litro)', 12),
+	('Limpieza de tanque de 10,000 litros', 'Detergente líquido (litro)', 10),
+	('Limpieza de tanque de 10,000 litros', 'Esponja de limpieza (unidad)', 8),
+	('Pulido y encerado de pisos', 'Cera para piso (litro)', 0.02),
+	('Pulido y encerado de pisos', 'Detergente líquido (litro)', 0.005),
+	('Pulido y encerado de pisos', 'Paños de microfibra (unidad)', 0.005),
+	('Lavado de alfombras', 'Shampoo para alfombras (litro)', 0.02),
+	('Lavado de alfombras', 'Paños de microfibra (unidad)', 0.004),
+	('Lavado a presión de áreas exteriores', 'Detergente líquido (litro)', 0.01),
+	('Lavado a presión de áreas exteriores', 'Desengrasante (litro)', 0.005);
+
+INSERT INTO @ae VALUES
+	('Barrido y trapeado de pisos', 'Trapeador industrial con balde'),
+	('Barrido y trapeado de pisos', 'Carro de limpieza'),
+	('Barrido y trapeado de pisos', 'Aspiradora industrial'),
+	('Limpieza de ventanas y vidrios', 'Escalera telescópica'),
+	('Limpieza de ventanas y vidrios', 'Kit rasqueta para vidrios'),
+	('Limpieza de paredes y zócalos', 'Escalera telescópica'),
+	('Limpieza de paredes y zócalos', 'Carro de limpieza'),
+	('Desempolvado de techos y esquinas', 'Escalera telescópica'),
+	('Desempolvado de techos y esquinas', 'Aspiradora industrial'),
+	('Recolección y retiro de basura', 'Carro de limpieza'),
+	('Limpieza y desinfección de baños', 'Carro de limpieza'),
+	('Limpieza de escritorios', 'Carro de limpieza'),
+	('Limpieza de sillas y mobiliario', 'Carro de limpieza'),
+	('Limpieza de salas de reuniones', 'Carro de limpieza'),
+	('Limpieza de salas de reuniones', 'Aspiradora industrial'),
+	('Vaciado de papeleras', 'Carro de limpieza'),
+	('Limpieza de tanque de 1,000 litros', 'Bomba de agua sumergible'),
+	('Limpieza de tanque de 1,000 litros', 'Hidrolavadora'),
+	('Limpieza de tanque de 5,000 litros', 'Bomba de agua sumergible'),
+	('Limpieza de tanque de 5,000 litros', 'Hidrolavadora'),
+	('Limpieza de tanque de 10,000 litros', 'Bomba de agua sumergible'),
+	('Limpieza de tanque de 10,000 litros', 'Hidrolavadora'),
+	('Pulido y encerado de pisos', 'Pulidora de pisos'),
+	('Pulido y encerado de pisos', 'Aspiradora industrial'),
+	('Lavado de alfombras', 'Extractor de alfombras'),
+	('Lavado a presión de áreas exteriores', 'Hidrolavadora');
+
+INSERT INTO @servicios SELECT DISTINCT servicio FROM @act;
+
+INSERT INTO SERVICIOS (nombreServicio)
+SELECT s.nombre FROM @servicios s
+WHERE NOT EXISTS (SELECT 1 FROM SERVICIOS x WHERE x.nombreServicio = s.nombre);
+
+INSERT INTO ACTIVIDADES (servicio_id, descripcion, frecuencia, precio, unidad, rendimiento)
+SELECT sv.servicio_id, a.descripcion, NULL, NULL, a.unidad, a.rendimiento
+FROM @act a
+INNER JOIN SERVICIOS sv ON sv.nombreServicio = a.servicio
+WHERE NOT EXISTS (SELECT 1 FROM ACTIVIDADES x WHERE x.descripcion = a.descripcion);
+
+UPDATE x
+SET x.unidad = a.unidad, x.rendimiento = a.rendimiento
+FROM ACTIVIDADES x
+INNER JOIN @act a ON a.descripcion = x.descripcion
+WHERE x.rendimiento IS NULL;
+
+INSERT INTO ACTIVIDAD_RANGOS (actividad_id, desde, hasta, personas)
+SELECT x.actividad_id, r.desde, r.hasta, r.personas
+FROM @act a
+INNER JOIN ACTIVIDADES x ON x.descripcion = a.descripcion
+INNER JOIN @rango r ON r.perfil = a.perfil
+WHERE NOT EXISTS (SELECT 1 FROM ACTIVIDAD_RANGOS y WHERE y.actividad_id = x.actividad_id);
+
+IF NOT EXISTS (SELECT 1 FROM COMPRAS WHERE numero_factura = 'INVENTARIO-INICIAL')
+BEGIN
+	DECLARE @nuevosP TABLE (producto_id INT, nombre VARCHAR(50));
+	DECLARE @nuevosE TABLE (equipo_id INT, nombre VARCHAR(50));
+	DECLARE @proveedor INT;
+	DECLARE @compra INT;
+	DECLARE @disponible INT = (SELECT TOP 1 estado_equipo_id FROM ESTADO_EQUIPOS WHERE nombreEstadoEquipo = 'Disponible');
+
+	IF NOT EXISTS (SELECT 1 FROM PROVEEDORES WHERE nombreProveedor = 'Proveedor inicial')
+		INSERT INTO PROVEEDORES (nombreProveedor, telefonoProveedor, correoProveedor) VALUES ('Proveedor inicial', '', '');
+
+	SELECT TOP 1 @proveedor = proveedor_id FROM PROVEEDORES WHERE nombreProveedor = 'Proveedor inicial';
+
+	INSERT INTO COMPRAS (proveedor_id, firma_empleado_id, numero_factura, fechaCompra)
+	VALUES (@proveedor, NULL, 'INVENTARIO-INICIAL', CAST(GETDATE() AS DATE));
+
+	SET @compra = CAST(SCOPE_IDENTITY() AS INT);
+
+	INSERT INTO PRODUCTOS (nombreProducto, tipoProducto, stock)
+	OUTPUT inserted.producto_id, inserted.nombreProducto INTO @nuevosP
+	SELECT p.nombre, p.tipo, p.stock FROM @prod p
+	WHERE NOT EXISTS (SELECT 1 FROM PRODUCTOS x WHERE x.nombreProducto = p.nombre);
+
+	INSERT INTO COMPRAS_PRODUCTOS (compra_id, producto_id, cantidad, precio_unitario)
+	SELECT @compra, n.producto_id, p.stock, p.costo
+	FROM @nuevosP n INNER JOIN @prod p ON p.nombre = n.nombre;
+
+	INSERT INTO EQUIPOS (nombreEquipo, tipoEquipo, marcaEquipo, modeloEquipo, estado_equipo_id)
+	OUTPUT inserted.equipo_id, inserted.nombreEquipo INTO @nuevosE
+	SELECT e.nombre, e.tipo, e.marca, e.modelo, @disponible
+	FROM @eq e
+	INNER JOIN (VALUES (1), (2), (3), (4)) n(numero) ON n.numero <= e.unidades
+	WHERE NOT EXISTS (SELECT 1 FROM EQUIPOS x WHERE x.nombreEquipo = e.nombre);
+
+	INSERT INTO COMPRAS_EQUIPOS (compra_id, equipo_id, precio_unitario)
+	SELECT @compra, n.equipo_id, e.costo
+	FROM @nuevosE n INNER JOIN @eq e ON e.nombre = n.nombre;
+END
+
+INSERT INTO ACTIVIDAD_PRODUCTOS (actividad_id, producto_id, cantidad_por_unidad)
+SELECT x.actividad_id, p.producto_id, a.cantidad
+FROM @ap a
+INNER JOIN ACTIVIDADES x ON x.descripcion = a.actividad
+INNER JOIN PRODUCTOS p ON p.nombreProducto = a.producto
+WHERE NOT EXISTS (SELECT 1 FROM ACTIVIDAD_PRODUCTOS y WHERE y.actividad_id = x.actividad_id);
+
+INSERT INTO ACTIVIDAD_EQUIPOS (actividad_id, nombreEquipo)
+SELECT x.actividad_id, a.equipo
+FROM @ae a
+INNER JOIN ACTIVIDADES x ON x.descripcion = a.actividad
+WHERE NOT EXISTS (SELECT 1 FROM ACTIVIDAD_EQUIPOS y WHERE y.actividad_id = x.actividad_id);
 GO
 
 -- Actualización de bases creadas con versiones anteriores (si la base ya está al día, no cambia nada)
@@ -661,6 +953,9 @@ GO
 
 IF COL_LENGTH('USUARIOS', 'foto_perfil') IS NULL
 	ALTER TABLE USUARIOS ADD foto_perfil VARBINARY(MAX) NULL;
+GO
+
+DROP PROCEDURE IF EXISTS sp_ListarProductosEquipos;
 GO
 
 -- Login y recuperación de contraseña
@@ -2101,7 +2396,9 @@ BEGIN
 	SELECT actividad_id,
 		   ISNULL(servicio_id, 0) AS servicio_id,
 		   ISNULL(descripcion, '') +
-		   CASE WHEN ISNULL(frecuencia, '') = '' THEN '' ELSE ' (' + frecuencia + ')' END AS texto
+		   CASE WHEN ISNULL(frecuencia, '') = '' THEN '' ELSE ' (' + frecuencia + ')' END AS texto,
+		   ISNULL(descripcion, '') AS nombre,
+		   ISNULL(unidad, 'unidad') AS unidad
 	FROM ACTIVIDADES
 	ORDER BY descripcion;
 END
@@ -2112,32 +2409,207 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT empleado_id,
-		   LTRIM(ISNULL(nombreEmpleado, '') + ' ' + ISNULL(apellidoEmpleado, '')) AS nombreCompleto
-	FROM EMPLEADOS
-	WHERE estadoEmpleado = 1
-	ORDER BY nombreEmpleado, apellidoEmpleado;
+	SELECT e.empleado_id,
+		   LTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')) AS nombreCompleto
+	FROM EMPLEADOS e
+	WHERE e.estadoEmpleado = 1
+	  AND NOT EXISTS (SELECT 1
+					  FROM ORDEN_EMPLEADOS oe
+					  INNER JOIN ORDENES o ON o.orden_id = oe.orden_id
+					  INNER JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
+					  WHERE oe.empleado_id = e.empleado_id AND eo.nombreEstadoOrden = 'En proceso')
+	ORDER BY e.nombreEmpleado, e.apellidoEmpleado;
 END
 GO
 
-CREATE OR ALTER PROCEDURE sp_ListarProductosEquipos
+-- Costeo de actividades
+-- Precio = (mano de obra + insumos + equipo + transporte + supervision) + gastos administrativos,
+-- dividido entre (1 - margen). El ISV se suma al total del documento.
+-- Los valores (salario minimo, cargas, margen, etc.) estan en la tabla PARAMETROS_COSTEO.
+
+CREATE OR ALTER FUNCTION dbo.fn_CotizarLineas (@lineas dbo.tipo_lista_medidas READONLY)
+RETURNS TABLE
+AS
+RETURN
+(
+	WITH par AS
+	(
+		SELECT CAST(MAX(CASE WHEN clave = 'SALARIO_MINIMO' THEN valor END) AS FLOAT) AS salario,
+			   CAST(MAX(CASE WHEN clave = 'CARGAS_SOCIALES' THEN valor END) AS FLOAT) AS cargas,
+			   CAST(MAX(CASE WHEN clave = 'HORAS_MES' THEN valor END) AS FLOAT) AS horasMes,
+			   CAST(MAX(CASE WHEN clave = 'FACTOR_SUPERVISOR' THEN valor END) AS FLOAT) AS factorSup,
+			   CAST(MAX(CASE WHEN clave = 'CUADRILLAS_POR_SUPERVISOR' THEN valor END) AS FLOAT) AS cuadrillas,
+			   CAST(MAX(CASE WHEN clave = 'LITROS_GASOLINA_VIAJE' THEN valor END) AS FLOAT)
+			   * CAST(MAX(CASE WHEN clave = 'PRECIO_LITRO_GASOLINA' THEN valor END) AS FLOAT) AS transporte,
+			   CAST(MAX(CASE WHEN clave = 'VIDA_UTIL_EQUIPO_MESES' THEN valor END) AS FLOAT) AS vidaUtil,
+			   CAST(MAX(CASE WHEN clave = 'MANTENIMIENTO_EQUIPO_MENSUAL' THEN valor END) AS FLOAT) AS mantenimiento,
+			   CAST(MAX(CASE WHEN clave = 'GASTOS_ADMINISTRATIVOS' THEN valor END) AS FLOAT) AS admin,
+			   CAST(MAX(CASE WHEN clave = 'MARGEN_UTILIDAD' THEN valor END) AS FLOAT) AS margen
+		FROM PARAMETROS_COSTEO
+	),
+	pedido AS
+	(
+		SELECT actividad_id, SUM(medida) AS medida
+		FROM @lineas
+		GROUP BY actividad_id
+	),
+	base AS
+	(
+		SELECT a.actividad_id,
+			   a.descripcion,
+			   ISNULL(a.unidad, 'unidad') AS unidad,
+			   CAST(l.medida AS FLOAT) AS medida,
+			   CAST(a.rendimiento AS FLOAT) AS rendimiento,
+			   CAST(ISNULL(a.precio, 0) AS FLOAT) AS precioFijo,
+			   ISNULL(r.personas, 1) AS personas
+		FROM pedido l
+		INNER JOIN ACTIVIDADES a ON a.actividad_id = l.actividad_id
+		OUTER APPLY (SELECT TOP 1 ar.personas
+					 FROM ACTIVIDAD_RANGOS ar
+					 WHERE ar.actividad_id = a.actividad_id AND ar.desde <= l.medida
+					 ORDER BY ar.desde DESC) r
+	),
+	horas AS
+	(
+		SELECT b.*,
+			   CASE WHEN ISNULL(b.rendimiento, 0) > 0
+					THEN b.medida / (b.rendimiento * b.personas) ELSE 0 END AS horasTrabajo
+		FROM base b
+	),
+	costos AS
+	(
+		SELECT h.*,
+			   CASE WHEN ISNULL(h.rendimiento, 0) > 0
+					THEN h.medida / h.rendimiento * (p.salario * (1 + p.cargas) / p.horasMes)
+					ELSE 0 END AS manoObra,
+			   h.medida * CAST(ISNULL((SELECT SUM(ap.cantidad_por_unidad * ISNULL(pr.precio, 0))
+									   FROM ACTIVIDAD_PRODUCTOS ap
+									   OUTER APPLY (SELECT TOP 1 cp.precio_unitario AS precio
+													FROM COMPRAS_PRODUCTOS cp
+													WHERE cp.producto_id = ap.producto_id
+													ORDER BY cp.compra_producto_id DESC) pr
+									   WHERE ap.actividad_id = h.actividad_id), 0) AS FLOAT) AS insumos,
+			   h.horasTrabajo * CAST(ISNULL((SELECT SUM(eq.precio)
+											 FROM ACTIVIDAD_EQUIPOS ae
+											 CROSS APPLY (SELECT AVG(ce.precio_unitario) AS precio
+														  FROM COMPRAS_EQUIPOS ce
+														  INNER JOIN EQUIPOS e ON e.equipo_id = ce.equipo_id
+														  WHERE e.nombreEquipo = ae.nombreEquipo) eq
+											 WHERE ae.actividad_id = h.actividad_id), 0) AS FLOAT)
+			   * (1 / p.vidaUtil + p.mantenimiento) / p.horasMes AS equipo,
+			   h.horasTrabajo * (p.salario * p.factorSup * (1 + p.cargas) / p.horasMes) / p.cuadrillas AS supervision,
+			   CASE WHEN SUM(h.horasTrabajo) OVER () > 0
+					THEN p.transporte * h.horasTrabajo / SUM(h.horasTrabajo) OVER ()
+					ELSE p.transporte / COUNT(*) OVER () END AS transporte,
+			   p.admin, p.margen
+		FROM horas h
+		CROSS JOIN par p
+	),
+	total AS
+	(
+		SELECT c.*,
+			   c.manoObra + c.insumos + c.equipo + c.transporte + c.supervision AS directo
+		FROM costos c
+	)
+	SELECT t.actividad_id,
+		   LEFT(t.descripcion + ' (' +
+				CASE WHEN t.medida = FLOOR(t.medida)
+					 THEN CAST(CAST(t.medida AS BIGINT) AS VARCHAR(20))
+					 ELSE CAST(CAST(t.medida AS DECIMAL(12, 2)) AS VARCHAR(20)) END +
+				' ' + t.unidad + ')', 150) AS concepto,
+		   t.descripcion,
+		   t.unidad,
+		   CAST(t.medida AS DECIMAL(12, 2)) AS medida,
+		   t.personas,
+		   CAST(t.horasTrabajo AS DECIMAL(12, 2)) AS horas,
+		   CAST(t.manoObra AS DECIMAL(12, 2)) AS mano_obra,
+		   CAST(t.insumos AS DECIMAL(12, 2)) AS insumos,
+		   CAST(t.equipo AS DECIMAL(12, 2)) AS equipo,
+		   CAST(t.transporte AS DECIMAL(12, 2)) AS transporte,
+		   CAST(t.supervision AS DECIMAL(12, 2)) AS supervision,
+		   CAST(t.directo * t.admin AS DECIMAL(12, 2)) AS gastos_admin,
+		   CAST(t.directo * (1 + t.admin) AS DECIMAL(12, 2)) AS costo_total,
+		   CAST(CASE WHEN ISNULL(t.rendimiento, 0) > 0
+					 THEN t.directo * (1 + t.admin) / (1 - t.margen)
+					 ELSE t.precioFijo * t.medida END AS DECIMAL(12, 2)) AS precio
+	FROM total t
+);
+GO
+
+CREATE OR ALTER PROCEDURE sp_CotizarLineas
+	@lineas dbo.tipo_lista_medidas READONLY
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT 'P' AS tipo, p.producto_id AS id, ISNULL(p.nombreProducto, '') AS nombre,
-		   ISNULL(p.stock, 0) AS stock, '' AS detalle
-	FROM PRODUCTOS p
+	SELECT actividad_id, concepto, unidad, medida, personas, horas,
+		   mano_obra, insumos, equipo, transporte, supervision, gastos_admin, costo_total, precio
+	FROM dbo.fn_CotizarLineas(@lineas)
+	ORDER BY actividad_id;
+END
+GO
+
+-- Lo que necesita una cotizacion: productos (cantidad redondeada hacia arriba) y un equipo de cada tipo.
+CREATE OR ALTER FUNCTION dbo.fn_NecesidadesCotizacion (@cotizacion_id VARCHAR(50))
+RETURNS TABLE
+AS
+RETURN
+(
+	SELECT 'P' AS tipo,
+		   p.producto_id,
+		   p.nombreProducto AS nombre,
+		   CAST(CEILING(SUM(d.medida * ap.cantidad_por_unidad)) AS INT) AS cantidad
+	FROM COTIZACION_DETALLE d
+	INNER JOIN ACTIVIDAD_PRODUCTOS ap ON ap.actividad_id = d.actividad_id
+	INNER JOIN PRODUCTOS p ON p.producto_id = ap.producto_id
+	WHERE d.cotizacion_id = @cotizacion_id
+	GROUP BY p.producto_id, p.nombreProducto
 
 	UNION ALL
 
-	SELECT 'E', e.equipo_id, ISNULL(e.nombreEquipo, ''), 0,
-		   LTRIM(RTRIM(ISNULL(e.marcaEquipo, '') + ' ' + ISNULL(e.modeloEquipo, '')))
-	FROM EQUIPOS e
-	WHERE NOT EXISTS (SELECT 1 FROM ORDEN_EQUIPOS oe
-					  WHERE oe.equipo_id = e.equipo_id AND ISNULL(oe.devuelto, 0) = 0)
+	SELECT 'E', NULL, ae.nombreEquipo, 1
+	FROM COTIZACION_DETALLE d
+	INNER JOIN ACTIVIDAD_EQUIPOS ae ON ae.actividad_id = d.actividad_id
+	WHERE d.cotizacion_id = @cotizacion_id
+	GROUP BY ae.nombreEquipo
+);
+GO
 
-	ORDER BY tipo DESC, nombre;
+CREATE OR ALTER PROCEDURE sp_ResumenCotizacion
+	@cotizacion_id VARCHAR(50)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT 'Personas' AS tipo,
+		   'Empleados necesarios' AS nombre,
+		   ISNULL(MAX(d.personas), 0) AS cantidad,
+		   (SELECT COUNT(1) FROM EMPLEADOS e
+			WHERE e.estadoEmpleado = 1
+			  AND NOT EXISTS (SELECT 1 FROM ORDEN_EMPLEADOS oe
+							  INNER JOIN ORDENES o ON o.orden_id = oe.orden_id
+							  INNER JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
+							  WHERE oe.empleado_id = e.empleado_id AND eo.nombreEstadoOrden = 'En proceso')) AS disponible
+	FROM COTIZACION_DETALLE d
+	WHERE d.cotizacion_id = @cotizacion_id
+
+	UNION ALL
+
+	SELECT 'Producto', n.nombre, n.cantidad, ISNULL(p.stock, 0)
+	FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id) n
+	INNER JOIN PRODUCTOS p ON p.producto_id = n.producto_id
+	WHERE n.tipo = 'P'
+
+	UNION ALL
+
+	SELECT 'Equipo', n.nombre, n.cantidad,
+		   (SELECT COUNT(1) FROM EQUIPOS e
+			INNER JOIN ESTADO_EQUIPOS ee ON ee.estado_equipo_id = e.estado_equipo_id
+			WHERE e.nombreEquipo = n.nombre AND ee.nombreEstadoEquipo = 'Disponible'
+			  AND NOT EXISTS (SELECT 1 FROM ORDEN_EQUIPOS oe
+							  WHERE oe.equipo_id = e.equipo_id AND ISNULL(oe.devuelto, 0) = 0))
+	FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id) n
+	WHERE n.tipo = 'E';
 END
 GO
 
@@ -2163,6 +2635,9 @@ BEGIN
 		   CASE WHEN c.identificacionCliente IS NULL THEN 'Cliente no registrado'
 				WHEN c.estadoCliente = 0 THEN 'Cliente inactivo'
 				WHEN q.valida_hasta < CAST(GETDATE() AS DATE) THEN 'Vencida'
+				WHEN q.servicio_id IS NULL OR NOT EXISTS (SELECT 1 FROM COTIZACION_DETALLE d
+														  WHERE d.cotizacion_id = q.cotizacion_id
+															AND d.actividad_id IS NOT NULL) THEN 'Sin actividades'
 				ELSE 'Disponible' END AS estado,
 		   CASE WHEN c.identificacionCliente IS NULL
 				THEN 'El cliente de esta cotización no está registrado. Regístrelo en Clientes antes de crear la orden.'
@@ -2170,7 +2645,14 @@ BEGIN
 				THEN 'El cliente de esta cotización está inactivo.'
 				WHEN q.valida_hasta < CAST(GETDATE() AS DATE)
 				THEN 'Esta cotización ya venció. Haga una cotización nueva.'
-				ELSE '' END AS motivo
+				WHEN q.servicio_id IS NULL OR NOT EXISTS (SELECT 1 FROM COTIZACION_DETALLE d
+														  WHERE d.cotizacion_id = q.cotizacion_id
+															AND d.actividad_id IS NOT NULL)
+				THEN 'Esta cotización es antigua y no tiene actividades. Haga una cotización nueva.'
+				ELSE '' END AS motivo,
+		   ISNULL(q.servicio_id, 0) AS servicio_id,
+		   ISNULL((SELECT MAX(d.personas) FROM COTIZACION_DETALLE d
+				   WHERE d.cotizacion_id = q.cotizacion_id), 0) AS personas
 	FROM COTIZACIONES q
 	LEFT JOIN CLIENTES c ON c.identificacionCliente = q.identificacionCliente
 	WHERE NOT EXISTS (SELECT 1 FROM ORDENES o WHERE o.cotizacion_id = q.cotizacion_id)
@@ -2191,7 +2673,10 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT linea, concepto, cantidad, precio_unitario,
-		   CAST(cantidad * precio_unitario AS MONEY) AS subtotal
+		   CAST(cantidad * precio_unitario AS MONEY) AS subtotal,
+		   ISNULL(actividad_id, 0) AS actividad_id,
+		   ISNULL(medida, 0) AS medida,
+		   ISNULL(personas, 0) AS personas
 	FROM COTIZACION_DETALLE
 	WHERE cotizacion_id = @cotizacion_id
 	ORDER BY linea;
@@ -2201,7 +2686,6 @@ GO
 CREATE OR ALTER PROCEDURE sp_InsertarOrden
 	@identificacionCliente VARCHAR(30),
 	@locacion_id INT,
-	@servicio_id INT,
 	@supervisor_id INT,
 	@vehiculo_id INT,
 	@fecha_solicitud DATE,
@@ -2210,10 +2694,7 @@ CREATE OR ALTER PROCEDURE sp_InsertarOrden
 	@observaciones VARCHAR(200),
 	@turno VARCHAR(20),
 	@piso_area VARCHAR(20),
-	@actividades dbo.tipo_lista_actividades READONLY,
 	@empleados dbo.tipo_lista_empleados READONLY,
-	@productos dbo.tipo_lista_productos READONLY,
-	@equipos dbo.tipo_lista_equipos READONLY,
 	@cotizacion_id VARCHAR(50),
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT,
@@ -2229,6 +2710,8 @@ BEGIN
 
 	SET @identificacionCliente = LTRIM(RTRIM(ISNULL(@identificacionCliente, '')));
 	SET @cotizacion_id = LTRIM(RTRIM(ISNULL(@cotizacion_id, '')));
+
+	DECLARE @servicio_id INT, @personas INT, @nombre VARCHAR(100);
 
 	IF @cotizacion_id = ''
 	BEGIN
@@ -2262,6 +2745,15 @@ BEGIN
 		RETURN;
 	END
 
+	SELECT @servicio_id = servicio_id FROM COTIZACIONES WHERE cotizacion_id = @cotizacion_id;
+
+	IF @servicio_id IS NULL
+	   OR NOT EXISTS (SELECT 1 FROM COTIZACION_DETALLE WHERE cotizacion_id = @cotizacion_id AND actividad_id IS NOT NULL)
+	BEGIN
+		SET @mensaje = 'La cotizacion no tiene actividades. Haga una nueva.';
+		RETURN;
+	END
+
 	IF NOT EXISTS (SELECT 1 FROM CLIENTES
 				   WHERE identificacionCliente = @identificacionCliente AND estadoCliente = 1)
 	BEGIN
@@ -2276,25 +2768,72 @@ BEGIN
 		RETURN;
 	END
 
+	IF NOT EXISTS (SELECT 1 FROM EMPLEADOS WHERE empleado_id = @supervisor_id AND estadoEmpleado = 1)
+	BEGIN
+		SET @mensaje = 'El supervisor no existe o esta inactivo.';
+		RETURN;
+	END
+
 	IF NOT EXISTS (SELECT 1 FROM VEHICULOS WHERE vehiculo_id = @vehiculo_id AND estadoVehiculo = 1)
 	BEGIN
 		SET @mensaje = 'El vehiculo no existe o esta inactivo.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM @productos x
-			   INNER JOIN PRODUCTOS p ON p.producto_id = x.producto_id
-			   WHERE x.cantidad > ISNULL(p.stock, 0))
+	SELECT @personas = ISNULL(MAX(personas), 0) FROM COTIZACION_DETALLE WHERE cotizacion_id = @cotizacion_id;
+
+	IF (SELECT COUNT(1) FROM @empleados) < @personas
 	BEGIN
-		SET @mensaje = 'No hay stock suficiente de uno de los productos.';
+		SET @mensaje = 'La cotizacion necesita ' + CAST(@personas AS VARCHAR(10)) + ' empleados.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM @equipos x
-			   INNER JOIN ORDEN_EQUIPOS oe ON oe.equipo_id = x.equipo_id
-			   WHERE ISNULL(oe.devuelto, 0) = 0)
+	IF EXISTS (SELECT 1 FROM @empleados x
+			   WHERE NOT EXISTS (SELECT 1 FROM EMPLEADOS e WHERE e.empleado_id = x.empleado_id AND e.estadoEmpleado = 1))
 	BEGIN
-		SET @mensaje = 'Uno de los equipos ya esta asignado a otra orden.';
+		SET @mensaje = 'Uno de los empleados no existe o esta inactivo.';
+		RETURN;
+	END
+
+	SELECT TOP 1 @nombre = LTRIM(RTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')))
+	FROM @empleados x
+	INNER JOIN EMPLEADOS e ON e.empleado_id = x.empleado_id
+	INNER JOIN ORDEN_EMPLEADOS oe ON oe.empleado_id = x.empleado_id
+	INNER JOIN ORDENES o ON o.orden_id = oe.orden_id
+	INNER JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
+	WHERE eo.nombreEstadoOrden = 'En proceso';
+
+	IF @nombre IS NOT NULL
+	BEGIN
+		SET @mensaje = LEFT(@nombre + ' esta en una orden en proceso.', 100);
+		RETURN;
+	END
+
+	SET @nombre = NULL;
+
+	SELECT TOP 1 @nombre = n.nombre
+	FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id) n
+	INNER JOIN PRODUCTOS p ON p.producto_id = n.producto_id
+	WHERE n.tipo = 'P' AND n.cantidad > ISNULL(p.stock, 0);
+
+	IF @nombre IS NOT NULL
+	BEGIN
+		SET @mensaje = LEFT('No hay stock suficiente de ' + @nombre + '.', 100);
+		RETURN;
+	END
+
+	SELECT TOP 1 @nombre = n.nombre
+	FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id) n
+	WHERE n.tipo = 'E'
+	  AND NOT EXISTS (SELECT 1 FROM EQUIPOS e
+					  INNER JOIN ESTADO_EQUIPOS ee ON ee.estado_equipo_id = e.estado_equipo_id
+					  WHERE e.nombreEquipo = n.nombre AND ee.nombreEstadoEquipo = 'Disponible'
+						AND NOT EXISTS (SELECT 1 FROM ORDEN_EQUIPOS oe
+										WHERE oe.equipo_id = e.equipo_id AND ISNULL(oe.devuelto, 0) = 0));
+
+	IF @nombre IS NOT NULL
+	BEGIN
+		SET @mensaje = LEFT('No hay equipo disponible: ' + @nombre + '.', 100);
 		RETURN;
 	END
 
@@ -2317,21 +2856,34 @@ BEGIN
 				0, @identificacionCliente, @cotizacion_id);
 
 		INSERT INTO ORDEN_ACTIVIDADES (orden_id, actividad_id, estado, duracion_min)
-		SELECT @orden_id, actividad_id, 0, NULL FROM @actividades;
+		SELECT DISTINCT @orden_id, actividad_id, 0, NULL
+		FROM COTIZACION_DETALLE
+		WHERE cotizacion_id = @cotizacion_id AND actividad_id IS NOT NULL;
 
 		INSERT INTO ORDEN_EMPLEADOS (orden_id, empleado_id, turno, piso_area)
 		SELECT @orden_id, empleado_id, @turno, @piso_area FROM @empleados;
 
 		INSERT INTO ORDEN_PRODUCTOS (orden_id, producto_id, cantidad)
-		SELECT @orden_id, producto_id, cantidad FROM @productos;
+		SELECT @orden_id, producto_id, cantidad
+		FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id)
+		WHERE tipo = 'P';
 
 		UPDATE p
-		SET p.stock = ISNULL(p.stock, 0) - x.cantidad
+		SET p.stock = ISNULL(p.stock, 0) - n.cantidad
 		FROM PRODUCTOS p
-		INNER JOIN @productos x ON x.producto_id = p.producto_id;
+		INNER JOIN dbo.fn_NecesidadesCotizacion(@cotizacion_id) n ON n.producto_id = p.producto_id
+		WHERE n.tipo = 'P';
 
 		INSERT INTO ORDEN_EQUIPOS (orden_id, equipo_id, fecha_asignacion, devuelto)
-		SELECT @orden_id, equipo_id, @fecha_servicio, 0 FROM @equipos;
+		SELECT @orden_id,
+			   (SELECT MIN(e.equipo_id) FROM EQUIPOS e
+				INNER JOIN ESTADO_EQUIPOS ee ON ee.estado_equipo_id = e.estado_equipo_id
+				WHERE e.nombreEquipo = n.nombre AND ee.nombreEstadoEquipo = 'Disponible'
+				  AND NOT EXISTS (SELECT 1 FROM ORDEN_EQUIPOS oe
+								  WHERE oe.equipo_id = e.equipo_id AND ISNULL(oe.devuelto, 0) = 0)),
+			   @fecha_servicio, 0
+		FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id) n
+		WHERE n.tipo = 'E';
 
 		COMMIT TRANSACTION;
 
@@ -2771,6 +3323,25 @@ BEGIN
 	BEGIN
 		SET @mensaje = 'La orden ya esta ' + LOWER(@actual) + ' y no se puede cambiar.';
 		RETURN;
+	END
+
+	IF @nuevo = 'En proceso' AND ISNULL(@actual, '') <> 'En proceso'
+	BEGIN
+		DECLARE @ocupado VARCHAR(100);
+
+		SELECT TOP 1 @ocupado = LTRIM(RTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')))
+		FROM ORDEN_EMPLEADOS mi
+		INNER JOIN ORDEN_EMPLEADOS otro ON otro.empleado_id = mi.empleado_id AND otro.orden_id <> mi.orden_id
+		INNER JOIN ORDENES oo ON oo.orden_id = otro.orden_id
+		INNER JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = oo.estado_orden_id
+		INNER JOIN EMPLEADOS e ON e.empleado_id = mi.empleado_id
+		WHERE mi.orden_id = @orden_id AND eo.nombreEstadoOrden = 'En proceso';
+
+		IF @ocupado IS NOT NULL
+		BEGIN
+			SET @mensaje = LEFT(@ocupado + ' ya esta en otra orden en proceso.', 100);
+			RETURN;
+		END
 	END
 
 	BEGIN TRY
@@ -3325,22 +3896,36 @@ BEGIN
 END
 GO
 
--- Las líneas de la orden salen de sus actividades (ahí están los precios).
--- Productos y equipos no tienen precio de venta, por eso no se cobran aquí.
+-- Las líneas de la orden salen de su cotización (una por actividad). Sin cotización, de las actividades.
 CREATE OR ALTER PROCEDURE sp_DetalleOrdenFactura
 	@orden_id VARCHAR(50)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT ISNULL(a.descripcion, '') +
-		   CASE WHEN ISNULL(a.frecuencia, '') = '' THEN '' ELSE ' (' + a.frecuencia + ')' END AS concepto,
-		   1 AS cantidad,
-		   CAST(ISNULL(a.precio, 0) AS DECIMAL(12, 2)) AS precio_unitario
-	FROM ORDEN_ACTIVIDADES oa
-	INNER JOIN ACTIVIDADES a ON a.actividad_id = oa.actividad_id
-	WHERE oa.orden_id = @orden_id
-	ORDER BY a.descripcion;
+	IF EXISTS (SELECT 1 FROM ORDENES o
+			   INNER JOIN COTIZACION_DETALLE d ON d.cotizacion_id = o.cotizacion_id
+			   WHERE o.orden_id = @orden_id)
+	BEGIN
+		SELECT d.concepto,
+			   d.cantidad,
+			   CAST(d.precio_unitario AS DECIMAL(12, 2)) AS precio_unitario
+		FROM ORDENES o
+		INNER JOIN COTIZACION_DETALLE d ON d.cotizacion_id = o.cotizacion_id
+		WHERE o.orden_id = @orden_id
+		ORDER BY d.linea;
+	END
+	ELSE
+	BEGIN
+		SELECT ISNULL(a.descripcion, '') +
+			   CASE WHEN ISNULL(a.frecuencia, '') = '' THEN '' ELSE ' (' + a.frecuencia + ')' END AS concepto,
+			   1 AS cantidad,
+			   CAST(ISNULL(a.precio, 0) AS DECIMAL(12, 2)) AS precio_unitario
+		FROM ORDEN_ACTIVIDADES oa
+		INNER JOIN ACTIVIDADES a ON a.actividad_id = oa.actividad_id
+		WHERE oa.orden_id = @orden_id
+		ORDER BY a.descripcion;
+	END
 END
 GO
 
@@ -3356,7 +3941,8 @@ CREATE OR ALTER PROCEDURE sp_InsertarCotizacion
 	@fecha_cotizacion DATE,
 	@valida_hasta DATE,
 	@observaciones VARCHAR(200),
-	@lineas dbo.tipo_lista_lineas READONLY,
+	@servicio_id INT,
+	@lineas dbo.tipo_lista_medidas READONLY,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT,
 	@cotizacion_id VARCHAR(50) OUTPUT
@@ -3389,9 +3975,27 @@ BEGIN
 		RETURN;
 	END
 
+	IF NOT EXISTS (SELECT 1 FROM SERVICIOS WHERE servicio_id = @servicio_id)
+	BEGIN
+		SET @mensaje = 'El servicio no existe.';
+		RETURN;
+	END
+
 	IF NOT EXISTS (SELECT 1 FROM @lineas)
 	BEGIN
-		SET @mensaje = 'La cotizacion necesita al menos una linea.';
+		SET @mensaje = 'La cotizacion necesita al menos una actividad.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM @lineas WHERE medida <= 0)
+	BEGIN
+		SET @mensaje = 'Todas las actividades necesitan una medida mayor que 0.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM @lineas x WHERE NOT EXISTS (SELECT 1 FROM ACTIVIDADES a WHERE a.actividad_id = x.actividad_id))
+	BEGIN
+		SET @mensaje = 'Una de las actividades no existe.';
 		RETURN;
 	END
 
@@ -3399,8 +4003,9 @@ BEGIN
 		BEGIN TRANSACTION;
 
 		DECLARE @siguiente INT;
-		DECLARE @subtotal DECIMAL(12, 2) = (SELECT ISNULL(SUM(cantidad * precio_unitario), 0) FROM @lineas);
-		DECLARE @total DECIMAL(12, 2) = @subtotal + ROUND(@subtotal * 0.15, 2);
+		DECLARE @tasa DECIMAL(6, 4) = ISNULL((SELECT valor FROM PARAMETROS_COSTEO WHERE clave = 'ISV'), 0.15);
+		DECLARE @subtotal DECIMAL(12, 2) = (SELECT ISNULL(SUM(precio), 0) FROM dbo.fn_CotizarLineas(@lineas));
+		DECLARE @total DECIMAL(12, 2) = @subtotal + ROUND(@subtotal * @tasa, 2);
 
 		SELECT @siguiente = ISNULL(MAX(TRY_CAST(SUBSTRING(cotizacion_id, 5, 20) AS INT)), 0) + 1
 		FROM COTIZACIONES WITH (UPDLOCK, HOLDLOCK)
@@ -3410,15 +4015,17 @@ BEGIN
 
 		INSERT INTO COTIZACIONES (cotizacion_id, identificacionCliente, nombreEmpresa, nombreCliente,
 								  apellidoCliente, telefonoCliente, correoCliente, locacion_id, direccion,
-								  fechaCotizacion, valida_hasta, observaciones, precio_cotizado)
+								  fechaCotizacion, valida_hasta, observaciones, precio_cotizado, servicio_id)
 		VALUES (@cotizacion_id, NULLIF(LTRIM(RTRIM(@identificacionCliente)), ''), NULLIF(@nombreEmpresa, ''),
 				@nombreCliente, NULLIF(@apellidoCliente, ''), NULLIF(@telefonoCliente, ''),
 				NULLIF(@correoCliente, ''), @locacion_id, @direccion,
-				@fecha_cotizacion, @valida_hasta, NULLIF(@observaciones, ''), @total);
+				@fecha_cotizacion, @valida_hasta, NULLIF(@observaciones, ''), @total, @servicio_id);
 
-		INSERT INTO COTIZACION_DETALLE (cotizacion_id, linea, concepto, cantidad, precio_unitario)
-		SELECT @cotizacion_id, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), concepto, cantidad, precio_unitario
-		FROM @lineas;
+		INSERT INTO COTIZACION_DETALLE (cotizacion_id, linea, concepto, cantidad, precio_unitario,
+										actividad_id, medida, personas)
+		SELECT @cotizacion_id, ROW_NUMBER() OVER (ORDER BY actividad_id), concepto, 1, precio,
+			   actividad_id, medida, personas
+		FROM dbo.fn_CotizarLineas(@lineas);
 
 		COMMIT TRANSACTION;
 
@@ -3590,28 +4197,63 @@ BEGIN
 
 	SELECT f.factura_id,
 		   f.orden_id,
-		   o.identificacionCliente,
-		   ISNULL(c.nombreEmpresa, o.identificacionCliente) AS cliente,
-		   s.nombreServicio,
 		   f.fechaFactura,
 		   f.tipo_pago,
 		   f.estado_pago,
 		   f.fecha_pago,
-		   f.forma_pago_id,
-		   fp.nombreFormaPago,
-		   f.precio_facturado,
-		   cc.cuenta_id,
-		   cc.prima,
-		   cc.numero_cuotas,
-		   cc.frecuencia,
-		   cc.estado_cuenta
+		   ISNULL(fp.nombreFormaPago, '') AS nombreFormaPago,
+		   ISNULL(f.precio_facturado, 0) AS precio_facturado,
+		   ISNULL(o.identificacionCliente, '') AS identificacionCliente,
+		   ISNULL(c.nombreEmpresa, '') AS nombreEmpresa,
+		   ISNULL(c.nombreCliente, '') AS nombreCliente,
+		   ISNULL(c.apellidoCliente, '') AS apellidoCliente,
+		   ISNULL(c.telefonoCliente, '') AS telefonoCliente,
+		   ISNULL(c.correoCliente, '') AS correoCliente,
+		   ISNULL(l.nombreLocacion, '') AS nombreLocacion,
+		   ISNULL(l.tipoLocacion, '') AS tipoLocacion,
+		   ISNULL(l.direccion, '') AS direccion
 	FROM FACTURAS f
 	INNER JOIN ORDENES o ON o.orden_id = f.orden_id
 	LEFT JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
-	LEFT JOIN SERVICIOS s ON s.servicio_id = o.servicio_id
+	LEFT JOIN LOCACIONES l ON l.locacion_id = o.locacion_id
 	LEFT JOIN FORMAS_PAGOS fp ON fp.forma_pago_id = f.forma_pago_id
-	LEFT JOIN CUENTAS_POR_COBRAR cc ON cc.factura_id = f.factura_id
 	WHERE f.factura_id = @factura_id;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_DetalleFactura
+	@factura_id INT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT linea,
+		   CASE WHEN adicional = 1 THEN 'Adicional' ELSE 'Servicio' END AS tipo,
+		   concepto,
+		   cantidad,
+		   precio_unitario,
+		   CAST(cantidad * precio_unitario AS DECIMAL(12, 2)) AS subtotal
+	FROM FACTURA_DETALLE
+	WHERE factura_id = @factura_id
+	ORDER BY linea;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_CuotasFactura
+	@factura_id INT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT q.numero_cuota,
+		   q.fecha_vencimiento,
+		   q.monto_cuota,
+		   ISNULL(q.monto_pagado, 0) AS monto_pagado,
+		   q.estado_cuota
+	FROM CUENTAS_POR_COBRAR cpc
+	INNER JOIN CUOTAS q ON q.cuenta_id = cpc.cuenta_id
+	WHERE cpc.factura_id = @factura_id
+	ORDER BY q.numero_cuota;
 END
 GO
 
@@ -4275,6 +4917,20 @@ BEGIN
 			LEFT(HOST_NAME(), 50),
 			GETDATE());
 END
+GO
+
+-- Limpieza de tipos que ya no se usan (solo existen en bases creadas con versiones anteriores)
+
+IF TYPE_ID('dbo.tipo_lista_actividades') IS NOT NULL
+	DROP TYPE dbo.tipo_lista_actividades;
+GO
+
+IF TYPE_ID('dbo.tipo_lista_productos') IS NOT NULL
+	DROP TYPE dbo.tipo_lista_productos;
+GO
+
+IF TYPE_ID('dbo.tipo_lista_equipos') IS NOT NULL
+	DROP TYPE dbo.tipo_lista_equipos;
 GO
 
 SET NOEXEC OFF;

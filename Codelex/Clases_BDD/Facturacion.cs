@@ -28,7 +28,13 @@ namespace Codelex.Clases_BDD
         public int FormaPagoId = 0;
         public int Cuotas = 1;
 
-        // Detalle (listas paralelas, igual que productos en DatosOrden)
+        // Cotización: servicio y actividades (listas paralelas; la medida llega como la escribió el usuario)
+        public int ServicioId = 0;
+        public List<int> ActividadesId = new List<int>();
+        public List<string> ActividadesNombre = new List<string>();
+        public List<string> ActividadesMedida = new List<string>();
+
+        // Factura: detalle (listas paralelas, igual que productos en DatosOrden)
         public List<string> LineasConcepto = new List<string>();
         public List<int> LineasCantidad = new List<int>();
         public List<decimal> LineasPrecio = new List<decimal>();
@@ -42,6 +48,11 @@ namespace Codelex.Clases_BDD
         public DataTable ListarServicios()
         {
             return Consultar(Procedimiento("sp_ListarServicios"));
+        }
+
+        public DataTable ListarActividades()
+        {
+            return Consultar(Procedimiento("sp_ListarActividades"));
         }
 
         public DataTable ListarFormasPago()
@@ -81,6 +92,41 @@ namespace Codelex.Clases_BDD
         {
             SqlCommand comando = Procedimiento("sp_CuotasFactura");
             comando.Parameters.AddWithValue("@factura_id", facturaId);
+            return Consultar(comando);
+        }
+
+        // Calcula el precio de cada actividad con la fórmula de costeo (la fórmula vive en la base de datos).
+        // Las medidas vacías se ignoran; si alguna no es válida, mensaje dice cuál.
+        public DataTable CotizarActividades(List<int> ids, List<string> medidas, out string mensaje)
+        {
+            mensaje = "";
+
+            DataTable tabla = new DataTable();
+            tabla.Columns.Add("actividad_id", typeof(int));
+            tabla.Columns.Add("medida", typeof(decimal));
+
+            for (int i = 0; i < ids.Count; i++)
+            {
+                if (medidas[i].Trim() == "")
+                    continue;
+
+                decimal medida;
+                string error = ValidarMedida(medidas[i], out medida);
+
+                if (error != "")
+                {
+                    mensaje = error;
+                    continue;
+                }
+
+                tabla.Rows.Add(ids[i], medida);
+            }
+
+            if (tabla.Rows.Count == 0)
+                return new DataTable();
+
+            SqlCommand comando = Procedimiento("sp_CotizarLineas");
+            AgregarLista(comando, "@lineas", "dbo.tipo_lista_medidas", tabla);
             return Consultar(comando);
         }
 
@@ -138,6 +184,42 @@ namespace Codelex.Clases_BDD
             return "";
         }
 
+        public string ValidarMedida(string texto, out decimal medida)
+        {
+            medida = 0;
+            texto = texto.Trim().Replace(',', '.');
+
+            if (texto == "")
+                return "Escriba la cantidad (m² o unidades).";
+            if (!decimal.TryParse(texto, NumberStyles.Number, CultureInfo.InvariantCulture, out medida))
+                return "La cantidad \"" + texto + "\" no es válida.";
+            if (medida <= 0)
+                return "La cantidad debe ser mayor que 0.";
+            if (medida > 1000000)
+                return "La cantidad es demasiado grande.";
+
+            return "";
+        }
+
+        private string ValidarActividades(DatosDocumento datos)
+        {
+            if (datos.ServicioId <= 0)
+                return "Seleccione el servicio.";
+            if (datos.ActividadesId.Count == 0)
+                return "Agregue al menos una actividad.";
+
+            for (int i = 0; i < datos.ActividadesId.Count; i++)
+            {
+                decimal medida;
+                string error = ValidarMedida(datos.ActividadesMedida[i], out medida);
+
+                if (error != "")
+                    return datos.ActividadesNombre[i] + ": " + error;
+            }
+
+            return "";
+        }
+
         private string ValidarCotizacion(DatosDocumento datos)
         {
             if (datos.Contacto.Trim() == "")
@@ -166,7 +248,7 @@ namespace Codelex.Clases_BDD
             if (datos.Observaciones.Trim().Length > 200)
                 return "Las observaciones no pueden tener más de 200 caracteres.";
 
-            return ValidarDetalle(datos);
+            return ValidarActividades(datos);
         }
 
         private string ValidarFactura(DatosDocumento datos)
@@ -219,7 +301,8 @@ namespace Codelex.Clases_BDD
             comando.Parameters.AddWithValue("@valida_hasta", datos.ValidaHasta.Value);
             comando.Parameters.AddWithValue("@observaciones", datos.Observaciones.Trim());
 
-            AgregarLista(comando, "@lineas", "dbo.tipo_lista_lineas", TablaDeLineas(datos));
+            comando.Parameters.AddWithValue("@servicio_id", datos.ServicioId);
+            AgregarLista(comando, "@lineas", "dbo.tipo_lista_medidas", TablaDeMedidas(datos));
 
             SqlParameter idParametro = new SqlParameter("@cotizacion_id", SqlDbType.VarChar, 50);
             idParametro.Direction = ParameterDirection.Output;
@@ -274,6 +357,22 @@ namespace Codelex.Clases_BDD
             SqlParameter parametro = comando.Parameters.AddWithValue(nombre, tabla);
             parametro.SqlDbType = SqlDbType.Structured;
             parametro.TypeName = tipo;
+        }
+
+        private DataTable TablaDeMedidas(DatosDocumento datos)
+        {
+            DataTable tabla = new DataTable();
+            tabla.Columns.Add("actividad_id", typeof(int));
+            tabla.Columns.Add("medida", typeof(decimal));
+
+            for (int i = 0; i < datos.ActividadesId.Count; i++)
+            {
+                decimal medida;
+                ValidarMedida(datos.ActividadesMedida[i], out medida);
+                tabla.Rows.Add(datos.ActividadesId[i], medida);
+            }
+
+            return tabla;
         }
 
         private DataTable TablaDeLineas(DatosDocumento datos)

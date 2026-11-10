@@ -15,6 +15,7 @@ Todas las llamadas a SQL Server. Las pantallas no escriben consultas: solo llama
 | `datos-orden.cs, gestion-ordenes-bd.cs, mi-trabajo-bd.cs` | Órdenes, gestión de órdenes y órdenes del empleado. |
 | `facturacion.cs` | Cotizaciones, facturas, cuotas y abonos. |
 | `inventario-bd.cs, reportes-bd.cs` | Inventario y reportes. |
+| `servicio-bd.cs` | Servicios, actividades y la liga de productos y equipos con las actividades. |
 | `usuario.cs, usuario-bd.cs, foto-perfil-bd.cs, cuentas-recordadas.cs` | Inicio de sesión, usuarios, foto de perfil y cuentas recordadas. |
 
 ## Dependencias

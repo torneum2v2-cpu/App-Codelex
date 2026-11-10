@@ -17,6 +17,7 @@ Cada módulo tiene su propio `README.md` con su propósito, dependencias y forma
 | `Codelex/sistema-Ordenes` | Ingreso y gestión de órdenes |
 | `Codelex/sistema-FacturasCotizaciones` | Cotizaciones, facturas, cuotas y abonos |
 | `Codelex/sistema-Inventario` | Productos, equipos, proveedores y compras |
+| `Codelex/sistema-Servicios` | Servicios y sus actividades, con rangos de personas, productos y equipos |
 | `Codelex/sistema-Reportes` | Reportes de órdenes, asistencia y empleados |
 | `Codelex/sistema-Comunes` | Ventanas de mensaje y de carga, foto de perfil |
 | `Codelex/sistema-AccesoDatos` | Acceso a la base de datos (solo procedimientos almacenados) |

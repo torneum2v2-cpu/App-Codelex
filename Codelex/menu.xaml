@@ -345,6 +345,13 @@
                                         <TextBlock Text="Inventario" Margin="14,0,0,0" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </RadioButton>
+                                <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="servicios" Click="navClic">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Path Style="{StaticResource NavIcon}"
+                                          Data="M12,2 L2,7 L12,12 L22,7 Z M2,17 L12,22 L22,17 M2,12 L12,17 L22,12"/>
+                                        <TextBlock Text="Servicios" Margin="14,0,0,0" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </RadioButton>
                                 <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="usuarios" Click="navClic">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Style="{StaticResource NavIcon}"

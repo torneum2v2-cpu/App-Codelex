@@ -2793,9 +2793,446 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE sp_InsertarProducto
+-- Servicios y actividades
+-- Un servicio agrupa actividades. Cada actividad necesita rangos de personas, al menos un producto y al menos un equipo.
+
+CREATE OR ALTER PROCEDURE sp_ListarServiciosGestion
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT s.servicio_id,
+		   ISNULL(s.nombre_servicio, '') AS nombre_servicio,
+		   (SELECT COUNT(*) FROM actividades a WHERE a.servicio_id = s.servicio_id) AS cantidad_actividades
+	FROM servicios s
+	ORDER BY s.nombre_servicio;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ListarServiciosConActividades
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT s.servicio_id, s.nombre_servicio
+	FROM servicios s
+	WHERE EXISTS (SELECT 1 FROM actividades a WHERE a.servicio_id = s.servicio_id)
+	ORDER BY s.nombre_servicio;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_GuardarServicio
+	@servicio_id INT,
+	@nombre_servicio VARCHAR(30),
+	@id_guardado INT OUTPUT,
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @id_guardado = @servicio_id;
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	SET @nombre_servicio = LTRIM(RTRIM(ISNULL(@nombre_servicio, '')));
+
+	IF @nombre_servicio = ''
+	BEGIN
+		SET @mensaje = 'El nombre del servicio es obligatorio.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM servicios WHERE nombre_servicio = @nombre_servicio AND servicio_id <> ISNULL(@servicio_id, 0))
+	BEGIN
+		SET @mensaje = 'Ya existe un servicio con ese nombre.';
+		RETURN;
+	END
+
+	IF ISNULL(@servicio_id, 0) = 0
+	BEGIN
+		INSERT INTO servicios (nombre_servicio) VALUES (@nombre_servicio);
+		SET @id_guardado = CAST(SCOPE_IDENTITY() AS INT);
+		SET @mensaje = 'Servicio registrado. Ahora agréguele sus actividades.';
+	END
+	ELSE
+	BEGIN
+		IF NOT EXISTS (SELECT 1 FROM servicios WHERE servicio_id = @servicio_id)
+		BEGIN
+			SET @mensaje = 'El servicio no existe.';
+			RETURN;
+		END
+
+		UPDATE servicios SET nombre_servicio = @nombre_servicio WHERE servicio_id = @servicio_id;
+		SET @mensaje = 'Servicio actualizado correctamente.';
+	END
+
+	SET @resultado = 1;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_EliminarServicio
+	@servicio_id INT,
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	IF NOT EXISTS (SELECT 1 FROM servicios WHERE servicio_id = @servicio_id)
+	BEGIN
+		SET @mensaje = 'El servicio no existe.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM actividades WHERE servicio_id = @servicio_id)
+	BEGIN
+		SET @mensaje = 'Primero elimine las actividades del servicio.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM cotizaciones WHERE servicio_id = @servicio_id)
+	   OR EXISTS (SELECT 1 FROM ordenes WHERE servicio_id = @servicio_id)
+	BEGIN
+		SET @mensaje = 'El servicio ya se usó en cotizaciones u órdenes y no se puede eliminar.';
+		RETURN;
+	END
+
+	DELETE FROM servicios WHERE servicio_id = @servicio_id;
+
+	SET @resultado = 1;
+	SET @mensaje = 'Servicio eliminado correctamente.';
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ListarActividadesGestion
+	@servicio_id INT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT a.actividad_id,
+		   ISNULL(a.servicio_id, 0) AS servicio_id,
+		   ISNULL(s.nombre_servicio, '') AS nombre_servicio,
+		   ISNULL(a.descripcion, '') AS descripcion,
+		   ISNULL(a.unidad, '') AS unidad,
+		   ISNULL(a.rendimiento, 0) AS rendimiento,
+		   (SELECT COUNT(*) FROM actividad_rangos r WHERE r.actividad_id = a.actividad_id) AS cantidad_rangos,
+		   (SELECT COUNT(*) FROM actividad_productos p WHERE p.actividad_id = a.actividad_id) AS cantidad_productos,
+		   (SELECT COUNT(*) FROM actividad_equipos e WHERE e.actividad_id = a.actividad_id) AS cantidad_equipos
+	FROM actividades a
+	LEFT JOIN servicios s ON s.servicio_id = a.servicio_id
+	WHERE ISNULL(@servicio_id, 0) = 0 OR a.servicio_id = @servicio_id
+	ORDER BY s.nombre_servicio, a.descripcion;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ListarRangosActividad
+	@actividad_id INT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT desde, hasta, cantidad_personas
+	FROM actividad_rangos
+	WHERE actividad_id = @actividad_id
+	ORDER BY desde;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ListarProductosActividad
+	@actividad_id INT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT p.producto_id,
+		   ISNULL(p.nombre_producto, '') AS nombre_producto,
+		   ISNULL(p.tipo_producto, '') AS tipo_producto,
+		   ap.cantidad_por_unidad
+	FROM actividad_productos ap
+	INNER JOIN productos p ON p.producto_id = ap.producto_id
+	WHERE ap.actividad_id = @actividad_id
+	ORDER BY p.nombre_producto;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ListarEquiposActividad
+	@actividad_id INT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT nombre_equipo
+	FROM actividad_equipos
+	WHERE actividad_id = @actividad_id
+	ORDER BY nombre_equipo;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ListarProductosCatalogo
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT producto_id,
+		   ISNULL(nombre_producto, '') AS nombre_producto,
+		   ISNULL(tipo_producto, '') AS tipo_producto
+	FROM productos
+	ORDER BY nombre_producto;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ListarEquiposCatalogo
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT nombre_equipo
+	FROM
+	(
+		SELECT nombre_equipo FROM equipos WHERE nombre_equipo IS NOT NULL
+		UNION
+		SELECT nombre_equipo FROM actividad_equipos
+	) t
+	ORDER BY nombre_equipo;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_GuardarActividad
+	@actividad_id INT,
+	@servicio_id INT,
+	@descripcion VARCHAR(50),
+	@unidad VARCHAR(20),
+	@rendimiento DECIMAL(10, 2),
+	@rangos dbo.tipo_actividad_rangos READONLY,
+	@productos dbo.tipo_actividad_productos READONLY,
+	@productos_nuevos dbo.tipo_actividad_productos_nuevos READONLY,
+	@equipos dbo.tipo_actividad_equipos READONLY,
+	@id_guardado INT OUTPUT,
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @id_guardado = ISNULL(@actividad_id, 0);
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	SET @descripcion = LTRIM(RTRIM(ISNULL(@descripcion, '')));
+	SET @unidad = LTRIM(RTRIM(ISNULL(@unidad, '')));
+
+	IF NOT EXISTS (SELECT 1 FROM servicios WHERE servicio_id = @servicio_id)
+	BEGIN
+		SET @mensaje = 'Elija el servicio de la actividad.';
+		RETURN;
+	END
+
+	IF @descripcion = ''
+	BEGIN
+		SET @mensaje = 'El nombre de la actividad es obligatorio.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM actividades WHERE descripcion = @descripcion AND actividad_id <> ISNULL(@actividad_id, 0))
+	BEGIN
+		SET @mensaje = 'Ya existe una actividad con ese nombre.';
+		RETURN;
+	END
+
+	IF @unidad = ''
+	BEGIN
+		SET @mensaje = 'La unidad de medida es obligatoria.';
+		RETURN;
+	END
+
+	IF ISNULL(@rendimiento, 0) <= 0
+	BEGIN
+		SET @mensaje = 'El rendimiento debe ser mayor que cero.';
+		RETURN;
+	END
+
+	IF NOT EXISTS (SELECT 1 FROM @rangos)
+	BEGIN
+		SET @mensaje = 'Agregue al menos un rango de personas.';
+		RETURN;
+	END
+
+	IF (SELECT MIN(desde) FROM @rangos) <> 0
+	BEGIN
+		SET @mensaje = 'El primer rango de personas debe empezar en 0.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM @rangos WHERE desde < 0 OR cantidad_personas < 1 OR (hasta IS NOT NULL AND hasta <= desde))
+	BEGIN
+		SET @mensaje = 'Hay un rango de personas con valores no válidos.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT desde FROM @rangos GROUP BY desde HAVING COUNT(*) > 1)
+	BEGIN
+		SET @mensaje = 'Hay rangos de personas repetidos.';
+		RETURN;
+	END
+
+	IF NOT EXISTS (SELECT 1 FROM @productos) AND NOT EXISTS (SELECT 1 FROM @productos_nuevos)
+	BEGIN
+		SET @mensaje = 'La actividad necesita al menos un producto.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM @productos WHERE cantidad_por_unidad <= 0)
+	   OR EXISTS (SELECT 1 FROM @productos_nuevos WHERE cantidad_por_unidad <= 0)
+	BEGIN
+		SET @mensaje = 'La cantidad de cada producto debe ser mayor que cero.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM @productos t WHERE NOT EXISTS (SELECT 1 FROM productos p WHERE p.producto_id = t.producto_id))
+	BEGIN
+		SET @mensaje = 'Hay un producto que no existe.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM @productos_nuevos WHERE LTRIM(RTRIM(nombre_producto)) = '')
+	BEGIN
+		SET @mensaje = 'El nombre de un producto nuevo está vacío.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM @productos_nuevos n
+			   WHERE EXISTS (SELECT 1 FROM productos p
+							 WHERE p.nombre_producto = LTRIM(RTRIM(n.nombre_producto))
+							   AND ISNULL(p.tipo_producto, '') = LTRIM(RTRIM(n.tipo_producto))))
+	   OR EXISTS (SELECT LTRIM(RTRIM(nombre_producto)), LTRIM(RTRIM(tipo_producto)) FROM @productos_nuevos
+				  GROUP BY LTRIM(RTRIM(nombre_producto)), LTRIM(RTRIM(tipo_producto)) HAVING COUNT(*) > 1)
+	BEGIN
+		SET @mensaje = 'Un producto nuevo ya está registrado.';
+		RETURN;
+	END
+
+	IF NOT EXISTS (SELECT 1 FROM @equipos)
+	BEGIN
+		SET @mensaje = 'La actividad necesita al menos un equipo.';
+		RETURN;
+	END
+
+	IF ISNULL(@actividad_id, 0) <> 0 AND NOT EXISTS (SELECT 1 FROM actividades WHERE actividad_id = @actividad_id)
+	BEGIN
+		SET @mensaje = 'La actividad no existe.';
+		RETURN;
+	END
+
+	BEGIN TRY
+		BEGIN TRANSACTION;
+
+		IF ISNULL(@actividad_id, 0) = 0
+		BEGIN
+			INSERT INTO actividades (servicio_id, descripcion, frecuencia, precio, unidad, rendimiento)
+			VALUES (@servicio_id, @descripcion, NULL, NULL, @unidad, @rendimiento);
+
+			SET @id_guardado = CAST(SCOPE_IDENTITY() AS INT);
+			SET @mensaje = 'Actividad registrada correctamente.';
+		END
+		ELSE
+		BEGIN
+			UPDATE actividades
+			SET servicio_id = @servicio_id, descripcion = @descripcion, unidad = @unidad, rendimiento = @rendimiento
+			WHERE actividad_id = @actividad_id;
+
+			DELETE FROM actividad_rangos WHERE actividad_id = @actividad_id;
+			DELETE FROM actividad_productos WHERE actividad_id = @actividad_id;
+			DELETE FROM actividad_equipos WHERE actividad_id = @actividad_id;
+
+			SET @mensaje = 'Actividad actualizada correctamente.';
+		END
+
+		INSERT INTO actividad_rangos (actividad_id, desde, hasta, cantidad_personas)
+		SELECT @id_guardado, desde, hasta, cantidad_personas FROM @rangos;
+
+		INSERT INTO actividad_productos (actividad_id, producto_id, cantidad_por_unidad)
+		SELECT @id_guardado, producto_id, cantidad_por_unidad FROM @productos;
+
+		INSERT INTO productos (nombre_producto, tipo_producto, stock)
+		SELECT LTRIM(RTRIM(nombre_producto)), LTRIM(RTRIM(tipo_producto)), 0 FROM @productos_nuevos;
+
+		INSERT INTO actividad_productos (actividad_id, producto_id, cantidad_por_unidad)
+		SELECT @id_guardado, p.producto_id, n.cantidad_por_unidad
+		FROM @productos_nuevos n
+		INNER JOIN productos p ON p.nombre_producto = LTRIM(RTRIM(n.nombre_producto))
+							  AND ISNULL(p.tipo_producto, '') = LTRIM(RTRIM(n.tipo_producto));
+
+		INSERT INTO actividad_equipos (actividad_id, nombre_equipo)
+		SELECT @id_guardado, nombre_equipo FROM @equipos;
+
+		COMMIT TRANSACTION;
+		SET @resultado = 1;
+	END TRY
+	BEGIN CATCH
+		IF @@TRANCOUNT > 0
+			ROLLBACK TRANSACTION;
+
+		SET @id_guardado = ISNULL(@actividad_id, 0);
+		SET @mensaje = LEFT('No se pudo guardar la actividad: ' + ERROR_MESSAGE(), 100);
+	END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_EliminarActividad
+	@actividad_id INT,
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	IF NOT EXISTS (SELECT 1 FROM actividades WHERE actividad_id = @actividad_id)
+	BEGIN
+		SET @mensaje = 'La actividad no existe.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM detalles_cotizacion WHERE actividad_id = @actividad_id)
+	   OR EXISTS (SELECT 1 FROM orden_actividades WHERE actividad_id = @actividad_id)
+	BEGIN
+		SET @mensaje = 'La actividad ya se usó en cotizaciones u órdenes y no se puede eliminar.';
+		RETURN;
+	END
+
+	BEGIN TRY
+		BEGIN TRANSACTION;
+
+		DELETE FROM actividad_rangos WHERE actividad_id = @actividad_id;
+		DELETE FROM actividad_productos WHERE actividad_id = @actividad_id;
+		DELETE FROM actividad_equipos WHERE actividad_id = @actividad_id;
+		DELETE FROM actividades WHERE actividad_id = @actividad_id;
+
+		COMMIT TRANSACTION;
+		SET @resultado = 1;
+		SET @mensaje = 'Actividad eliminada correctamente.';
+	END TRY
+	BEGIN CATCH
+		IF @@TRANCOUNT > 0
+			ROLLBACK TRANSACTION;
+
+		SET @mensaje = LEFT('No se pudo eliminar la actividad: ' + ERROR_MESSAGE(), 100);
+	END CATCH
+END
+GO
+
+-- Un producto nuevo nace ligado a las actividades donde se usa (como minimo una).
+CREATE OR ALTER PROCEDURE sp_InsertarProductoConActividades
 	@nombre_producto VARCHAR(50),
 	@tipo_producto VARCHAR(20),
+	@actividades dbo.tipo_producto_actividades READONLY,
 	@producto_id INT OUTPUT,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
@@ -2816,18 +3253,95 @@ BEGIN
 		RETURN;
 	END
 
+	IF NOT EXISTS (SELECT 1 FROM @actividades)
+	BEGIN
+		SET @mensaje = 'Elija al menos una actividad donde se usa el producto.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM @actividades WHERE cantidad_por_unidad <= 0)
+	BEGIN
+		SET @mensaje = 'La cantidad por unidad debe ser mayor que cero.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM @actividades t WHERE NOT EXISTS (SELECT 1 FROM actividades a WHERE a.actividad_id = t.actividad_id))
+	BEGIN
+		SET @mensaje = 'Hay una actividad que no existe.';
+		RETURN;
+	END
+
 	IF EXISTS (SELECT 1 FROM productos WHERE nombre_producto = @nombre_producto AND ISNULL(tipo_producto, '') = @tipo_producto)
 	BEGIN
 		SET @mensaje = 'Ese producto ya está registrado.';
 		RETURN;
 	END
 
-	INSERT INTO productos (nombre_producto, tipo_producto, stock)
-	VALUES (@nombre_producto, @tipo_producto, 0);
+	BEGIN TRY
+		BEGIN TRANSACTION;
 
-	SET @producto_id = CAST(SCOPE_IDENTITY() AS INT);
+		INSERT INTO productos (nombre_producto, tipo_producto, stock)
+		VALUES (@nombre_producto, @tipo_producto, 0);
+
+		SET @producto_id = CAST(SCOPE_IDENTITY() AS INT);
+
+		INSERT INTO actividad_productos (actividad_id, producto_id, cantidad_por_unidad)
+		SELECT actividad_id, @producto_id, cantidad_por_unidad FROM @actividades;
+
+		COMMIT TRANSACTION;
+		SET @resultado = 1;
+		SET @mensaje = 'Producto registrado y ligado a sus actividades.';
+	END TRY
+	BEGIN CATCH
+		IF @@TRANCOUNT > 0
+			ROLLBACK TRANSACTION;
+
+		SET @producto_id = NULL;
+		SET @mensaje = LEFT('No se pudo registrar el producto: ' + ERROR_MESSAGE(), 100);
+	END CATCH
+END
+GO
+
+-- Un equipo nuevo se liga por nombre a las actividades que lo usan (como minimo una).
+CREATE OR ALTER PROCEDURE sp_VincularEquipoActividades
+	@nombre_equipo VARCHAR(50),
+	@actividades dbo.tipo_equipo_actividades READONLY,
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	SET @nombre_equipo = LTRIM(RTRIM(ISNULL(@nombre_equipo, '')));
+
+	IF @nombre_equipo = ''
+	BEGIN
+		SET @mensaje = 'El nombre del equipo es obligatorio.';
+		RETURN;
+	END
+
+	IF NOT EXISTS (SELECT 1 FROM @actividades)
+	BEGIN
+		SET @mensaje = 'Elija al menos una actividad donde se usa el equipo.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM @actividades t WHERE NOT EXISTS (SELECT 1 FROM actividades a WHERE a.actividad_id = t.actividad_id))
+	BEGIN
+		SET @mensaje = 'Hay una actividad que no existe.';
+		RETURN;
+	END
+
+	INSERT INTO actividad_equipos (actividad_id, nombre_equipo)
+	SELECT t.actividad_id, @nombre_equipo
+	FROM @actividades t
+	WHERE NOT EXISTS (SELECT 1 FROM actividad_equipos x WHERE x.actividad_id = t.actividad_id AND x.nombre_equipo = @nombre_equipo);
+
 	SET @resultado = 1;
-	SET @mensaje = 'Producto registrado correctamente.';
+	SET @mensaje = 'Equipo ligado a sus actividades.';
 END
 GO
 

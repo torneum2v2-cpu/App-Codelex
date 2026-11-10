@@ -10,13 +10,13 @@ Consultar productos y equipos, registrar compras (ingresos) con su proveedor, y 
 |---|---|
 | `inventario.xaml(.cs)` | Consulta de productos y equipos con búsqueda. |
 | `agregar-inventario.xaml(.cs)` | Ingreso de una compra con productos y equipos. |
-| `nuevo-producto-equipo.xaml(.cs)` | Alta de un producto o equipo nuevo. |
+| `nuevo-producto-equipo.xaml(.cs)` | Alta de un producto o equipo nuevo; obliga a elegir al menos una actividad donde se usa. |
 | `nuevo-proveedor.xaml(.cs)` | Alta de un proveedor nuevo. |
 
 ## Dependencias
 
 - Clase `InventarioBD` de `sistema-AccesoDatos`.
-- Procedimientos: `sp_BuscarInventario`, `sp_ListarProductosInventario`, `sp_ListarEquiposInventario`, `sp_ListarProveedores`, `sp_InsertarProducto`, `sp_InsertarProveedor`, `sp_RegistrarIngresoInventario`.
+- Procedimientos: `sp_BuscarInventario`, `sp_ListarProductosInventario`, `sp_ListarEquiposInventario`, `sp_ListarProveedores`, `sp_InsertarProductoConActividades`, `sp_VincularEquipoActividades`, `sp_InsertarProveedor`, `sp_RegistrarIngresoInventario`.
 - Tablas: `productos`, `equipos`, `proveedores`, `compras`, `compras_productos`, `compras_equipos`.
 
 ## Cómo ejecutarlo

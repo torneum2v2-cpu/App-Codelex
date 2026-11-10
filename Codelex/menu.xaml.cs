@@ -22,6 +22,7 @@ namespace Codelex
         private const string ICONO_CLIENTES = "M5,7 A4,4 0 1 0 13,7 A4,4 0 1 0 5,7 M2,21 V19 A4,4 0 0 1 6,15 H12 A4,4 0 0 1 16,19 V21 M16,3.1 A4,4 0 0 1 16,10.9 M22,21 V19 A4,4 0 0 0 19,15.1";
         private const string ICONO_EMPLEADOS = "M4,4 H20 A2,2 0 0 1 22,6 V18 A2,2 0 0 1 20,20 H4 A2,2 0 0 1 2,18 V6 A2,2 0 0 1 4,4 Z M7,9 A2,2 0 1 0 11,9 A2,2 0 1 0 7,9 M5,16 A4,4 0 0 1 13,16 M15,9 H19 M15,13 H19";
         private const string ICONO_INVENTARIO = "M3,7 L12,3 L21,7 L21,17 L12,21 L3,17 Z M3,7 L12,11 L21,7 M12,11 L12,21";
+        private const string ICONO_SERVICIOS = "M12,2 L2,7 L12,12 L22,7 Z M2,17 L12,22 L22,17 M2,12 L12,17 L22,12";
         private const string ICONO_USUARIOS = "M20,21 V19 A4,4 0 0 0 16,15 H8 A4,4 0 0 0 4,19 V21 M8,7 A4,4 0 1 0 16,7 A4,4 0 1 0 8,7";
 
         private const string ICONO_GESTION_VEHICULOS = "M8,6 H21 M8,12 H21 M8,18 H21 M3,6 H3.01 M3,12 H3.01 M3,18 H3.01";
@@ -37,6 +38,7 @@ namespace Codelex
             { "clientes", NivelAcceso.Medio },
             { "empleados", NivelAcceso.Medio },
             { "inventario", NivelAcceso.Medio },
+            { "servicios", NivelAcceso.Medio },
             { "usuarios", NivelAcceso.Medio },
 
             { "reportes", NivelAcceso.Avanzado }
@@ -56,6 +58,7 @@ namespace Codelex
             { "Locaciones", NivelAcceso.Medio },
             { "Empleados", NivelAcceso.Medio },
             { "Inventario", NivelAcceso.Medio },
+            { "Servicios", NivelAcceso.Medio },
             { "Usuarios", NivelAcceso.Medio },
 
             { "Reportes", NivelAcceso.Avanzado }
@@ -395,6 +398,7 @@ namespace Codelex
                 opciones.Add(new OpcionMenu("Clientes", "Administra tus clientes y sus locaciones.", ICONO_CLIENTES, "clientes"));
                 opciones.Add(new OpcionMenu("Empleados", "Gestiona el personal y sus accesos al sistema.", ICONO_EMPLEADOS, "empleados"));
                 opciones.Add(new OpcionMenu("Inventario", "Controla productos, existencias y movimientos.", ICONO_INVENTARIO, "inventario"));
+                opciones.Add(new OpcionMenu("Servicios", "Crea servicios con sus actividades, productos y equipos.", ICONO_SERVICIOS, "servicios"));
                 opciones.Add(new OpcionMenu("Usuarios", "Administra las cuentas de acceso al sistema.", ICONO_USUARIOS, "usuarios"));
             }
             else if (clave == "miperfil")
@@ -435,6 +439,11 @@ namespace Codelex
             {
                 encabezado("Inventario", "Elige qué deseas gestionar.");
                 opciones.Add(new OpcionMenu("Consulta de inventario", "Consulta existencias y agrega productos y equipos.", ICONO_INVENTARIO, "Inventario"));
+            }
+            else if (clave == "servicios")
+            {
+                encabezado("Servicios", "Elige qué deseas gestionar.");
+                opciones.Add(new OpcionMenu("Servicios y actividades", "Crea servicios y define sus actividades con productos, equipos y personal.", ICONO_SERVICIOS, "Servicios"));
             }
             else if (clave == "usuarios")
             {
@@ -509,6 +518,8 @@ namespace Codelex
                 abrirModulo(new Usuarios());
             else if (destino == "Inventario")
                 abrirModulo(new Inventario());
+            else if (destino == "Servicios")
+                abrirModulo(new Servicios());
             else if (destino == "Empleados")
                 abrirModulo(new Empleados());
             else if (destino == "Locaciones")

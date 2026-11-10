@@ -424,10 +424,6 @@
                                     <TextBlock Text="Teléfono" Style="{StaticResource Etiqueta}"/>
                                     <TextBox x:Name="txtTelefono" MaxLength="8" PreviewTextInput="SoloNumeros"/>
                                 </StackPanel>
-                                <StackPanel Grid.Row="3" Grid.Column="2" Margin="0,0,0,12">
-                                    <TextBlock Text="ID de huella *" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtHuella" MaxLength="50"/>
-                                </StackPanel>
                                 <StackPanel Grid.Row="4" Grid.ColumnSpan="3" Margin="0">
                                     <TextBlock Text="Correo" Style="{StaticResource Etiqueta}"/>
                                     <TextBox x:Name="txtCorreo" MaxLength="50"/>
@@ -447,7 +443,7 @@
                                            FontWeight="SemiBold" FontSize="12.5" VerticalAlignment="Center"/>
                             </WrapPanel>
 
-                            <TextBlock Text="La identidad (13 dígitos) y el ID de huella son únicos: no pueden repetirse entre empleados."
+                            <TextBlock Text="La identidad (13 dígitos) es única: no puede repetirse entre empleados."
                                        Style="{StaticResource Nota}" Margin="0,14,0,0"/>
 
                             <TextBlock x:Name="txtModo" Text="Nuevo empleado: llene los datos y presione Crear."
@@ -531,7 +527,6 @@
                                         <DataGridTextColumn Header="Apellido" Binding="{Binding apellidoEmpleado}" Width="*"/>
                                         <DataGridTextColumn Header="Identidad" Binding="{Binding identidad}" Width="*"/>
                                         <DataGridTextColumn Header="Teléfono" Binding="{Binding telefonoEmpleado}" Width="86"/>
-                                        <DataGridTextColumn Header="ID huella" Binding="{Binding huella_id}" Width="*"/>
                                         <DataGridTextColumn Header="Usuario" Binding="{Binding usuario}" Width="*"/>
                                         <DataGridTextColumn Header="Estado" Binding="{Binding estado}" Width="80"/>
                                     </DataGrid.Columns>

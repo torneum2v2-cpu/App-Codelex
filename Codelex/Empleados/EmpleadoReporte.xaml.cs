@@ -97,7 +97,6 @@ namespace Codelex
                 txtIdentidad.Text = fila["identidad"].ToString();
                 txtTelefono.Text = fila["telefonoEmpleado"].ToString();
                 txtCorreo.Text = fila["correoEmpleado"].ToString();
-                txtHuella.Text = fila["huella_id"].ToString();
                 txtUsuario.Text = fila["usuario"].ToString();
                 txtEstado.Text = fila["estado"].ToString();
             }

@@ -32,7 +32,6 @@ CREATE TABLE EMPLEADOS
 	identidad VARCHAR(30) UNIQUE NOT NULL,
 	telefonoEmpleado Varchar(50),
 	correoEmpleado VARCHAR(50),
-	huella_id VARCHAR(50) UNIQUE NOT NULL,
 	estadoEmpleado BIT NOT NULL CONSTRAINT DF_EMPLEADOS_estadoEmpleado DEFAULT 1
 )
 GO
@@ -86,7 +85,11 @@ GO
 IF OBJECT_ID('CLIENTES') IS NULL
 CREATE TABLE CLIENTES
 (
-	identificacionCliente VARCHAR(30) NOT NULL CONSTRAINT PK_CLIENTES PRIMARY KEY,
+	cliente_id INT IDENTITY(1, 1) NOT NULL CONSTRAINT PK_CLIENTES PRIMARY KEY,
+	identificacionCliente VARCHAR(30) NOT NULL CONSTRAINT UQ_CLIENTES_identificacion UNIQUE,
+	tipoIdentificacion VARCHAR(10) NOT NULL
+		CONSTRAINT DF_CLIENTES_tipoIdentificacion DEFAULT 'RTN'
+		CONSTRAINT CK_CLIENTES_tipoIdentificacion CHECK (tipoIdentificacion IN ('RTN', 'Identidad')),
 	nombreEmpresa VARCHAR(50),
 	nombreCliente VARCHAR(50),
 	apellidoCliente VARCHAR(50),
@@ -103,7 +106,7 @@ CREATE TABLE LOCACIONES
 	nombreLocacion VARCHAR(60),
 	direccion VARCHAR(80),
 	tipoLocacion VARCHAR(25),
-	identificacionCliente VARCHAR(30) CONSTRAINT FK_LOCACIONES_CLIENTES REFERENCES CLIENTES(identificacionCliente)
+	identificacionCliente VARCHAR(30) CONSTRAINT FK_LOCACIONES_CLIENTES REFERENCES CLIENTES(identificacionCliente) ON UPDATE CASCADE
 )
 GO
 
@@ -138,7 +141,7 @@ IF OBJECT_ID('ORDENES') IS NULL
 CREATE TABLE ORDENES
 (
 	orden_id VARCHAR(50) PRIMARY KEY NOT NULL,
-	identificacionCliente VARCHAR(30) CONSTRAINT FK_ORDENES_CLIENTES REFERENCES CLIENTES(identificacionCliente),
+	identificacionCliente VARCHAR(30) CONSTRAINT FK_ORDENES_CLIENTES REFERENCES CLIENTES(identificacionCliente) ON UPDATE CASCADE,
 	locacion_id INT FOREIGN KEY REFERENCES LOCACIONES(locacion_id),
 	servicio_id INT FOREIGN KEY REFERENCES SERVICIOS(servicio_id),
 	supervisor_id INT FOREIGN KEY REFERENCES EMPLEADOS(empleado_id),
@@ -469,6 +472,65 @@ CREATE TABLE ABONOS
 	forma_pago_id INT FOREIGN KEY REFERENCES FORMAS_PAGOS(forma_pago_id),
 	saldo_despues MONEY NOT NULL
 )
+GO
+
+IF COL_LENGTH('CLIENTES', 'cliente_id') IS NULL AND COL_LENGTH('CLIENTES', 'identificacionCliente') IS NOT NULL
+BEGIN
+	DECLARE @sql NVARCHAR(MAX) = N'';
+
+	SELECT @sql = @sql + N'ALTER TABLE ' + QUOTENAME(OBJECT_NAME(parent_object_id))
+				+ N' DROP CONSTRAINT ' + QUOTENAME(name) + N'; '
+	FROM sys.foreign_keys
+	WHERE referenced_object_id = OBJECT_ID('CLIENTES');
+
+	SELECT @sql = @sql + N'ALTER TABLE CLIENTES DROP CONSTRAINT ' + QUOTENAME(name) + N'; '
+	FROM sys.key_constraints
+	WHERE parent_object_id = OBJECT_ID('CLIENTES') AND type = 'PK';
+
+	SET @sql = @sql + N'ALTER TABLE CLIENTES ADD cliente_id INT IDENTITY(1, 1) NOT NULL; '
+			 + N'ALTER TABLE CLIENTES ADD CONSTRAINT PK_CLIENTES PRIMARY KEY (cliente_id); '
+			 + N'ALTER TABLE CLIENTES ADD CONSTRAINT UQ_CLIENTES_identificacion UNIQUE (identificacionCliente); '
+			 + N'ALTER TABLE LOCACIONES ADD CONSTRAINT FK_LOCACIONES_CLIENTES '
+			 + N'FOREIGN KEY (identificacionCliente) REFERENCES CLIENTES(identificacionCliente) ON UPDATE CASCADE; '
+			 + N'ALTER TABLE ORDENES ADD CONSTRAINT FK_ORDENES_CLIENTES '
+			 + N'FOREIGN KEY (identificacionCliente) REFERENCES CLIENTES(identificacionCliente) ON UPDATE CASCADE; ';
+
+	EXEC sp_executesql @sql;
+END
+GO
+
+IF COL_LENGTH('CLIENTES', 'tipoIdentificacion') IS NULL
+	ALTER TABLE CLIENTES
+	ADD tipoIdentificacion VARCHAR(10) NOT NULL
+		CONSTRAINT DF_CLIENTES_tipoIdentificacion DEFAULT 'RTN';
+GO
+
+IF OBJECT_ID('CK_CLIENTES_tipoIdentificacion') IS NULL
+	ALTER TABLE CLIENTES
+	ADD CONSTRAINT CK_CLIENTES_tipoIdentificacion CHECK (tipoIdentificacion IN ('RTN', 'Identidad'));
+GO
+
+UPDATE CLIENTES
+SET tipoIdentificacion = 'Identidad'
+WHERE tipoIdentificacion = 'RTN'
+  AND LEN(identificacionCliente) = 13
+  AND identificacionCliente NOT LIKE '%[^0-9]%';
+GO
+
+IF COL_LENGTH('EMPLEADOS', 'huella_id') IS NOT NULL
+BEGIN
+	DECLARE @quitar NVARCHAR(MAX) = N'';
+
+	SELECT @quitar = @quitar + N'ALTER TABLE EMPLEADOS DROP CONSTRAINT ' + QUOTENAME(kc.name) + N'; '
+	FROM sys.key_constraints kc
+	INNER JOIN sys.index_columns ic ON ic.object_id = kc.parent_object_id AND ic.index_id = kc.unique_index_id
+	INNER JOIN sys.columns c ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+	WHERE kc.parent_object_id = OBJECT_ID('EMPLEADOS') AND c.name = 'huella_id';
+
+	SET @quitar = @quitar + N'ALTER TABLE EMPLEADOS DROP COLUMN huella_id; ';
+
+	EXEC sp_executesql @quitar;
+END
 GO
 
 -- Tipos de tabla que usan los procedimientos

@@ -45,6 +45,7 @@ namespace Codelex
 
             DataRow fila = tabla.Rows[0];
 
+            lblTipoId.Text = fila["tipoIdentificacion"].ToString();
             txtRTN.Text = fila["identificacionCliente"].ToString();
             txtEmpresa.Text = fila["nombreEmpresa"].ToString();
             txtContacto.Text = fila["nombreCliente"].ToString();

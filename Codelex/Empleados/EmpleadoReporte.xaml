@@ -453,10 +453,6 @@
                                     <TextBox x:Name="txtCorreo" IsReadOnly="True"/>
                                 </StackPanel>
                                 <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,12">
-                                    <TextBlock Text="ID de huella" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtHuella" IsReadOnly="True"/>
-                                </StackPanel>
-                                <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,12">
                                     <TextBlock Text="Usuario" Style="{StaticResource Etiqueta}"/>
                                     <TextBox x:Name="txtUsuario" IsReadOnly="True"/>
                                 </StackPanel>

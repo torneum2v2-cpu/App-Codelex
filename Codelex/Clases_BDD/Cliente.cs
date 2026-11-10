@@ -6,6 +6,54 @@ namespace Codelex.Clases_BDD
 {
     class Cliente
     {
+        public const string TipoRtn = "RTN";
+        public const string TipoIdentidad = "Identidad";
+
+        public List<string> TiposIdentificacion()
+        {
+            List<string> tipos = new List<string>();
+            tipos.Add(TipoRtn);
+            tipos.Add(TipoIdentidad);
+            return tipos;
+        }
+
+        // RTN: 14 dígitos. Identidad: 13 dígitos.
+        public int LargoIdentificacion(string tipo)
+        {
+            if (tipo == TipoIdentidad)
+                return 13;
+
+            return 14;
+        }
+
+        public string TipoPorLongitud(string numero)
+        {
+            if (numero.Trim().Length == 13)
+                return TipoIdentidad;
+
+            return TipoRtn;
+        }
+
+        public string ValidarIdentificacion(string tipo, string numero)
+        {
+            numero = numero.Trim();
+
+            if (numero == "")
+                return "El RTN / identidad es obligatorio.";
+            if (tipo != TipoRtn && tipo != TipoIdentidad)
+                return "Seleccione si es RTN o identidad.";
+            if (!SoloNumeros(numero))
+                return "El " + tipo + " solo puede tener números, sin guiones ni espacios.";
+            if (numero.Trim('0') == "")
+                return "El " + tipo + " no puede ser todo ceros.";
+
+            int largo = LargoIdentificacion(tipo);
+            if (numero.Length != largo)
+                return "El " + tipo + " debe tener " + largo + " dígitos. Tiene " + numero.Length + ".";
+
+            return "";
+        }
+
         public DataTable BuscarClientes(string texto, string buscarPor, string filtroEstado)
         {
             object estado = DBNull.Value;
@@ -41,16 +89,16 @@ namespace Codelex.Clases_BDD
             return ConsultarPorCliente("sp_ListarFacturasPorCliente", rtn);
         }
 
-        public bool InsertarCliente(string rtn, string empresa, string nombre, string apellido,
+        public bool InsertarCliente(string tipo, string rtn, string empresa, string nombre, string apellido,
                                     string telefono, string correo, out string mensaje)
         {
-            return GuardarCliente("sp_InsertarCliente", rtn, empresa, nombre, apellido, telefono, correo, out mensaje);
+            return GuardarCliente("sp_InsertarCliente", 0, tipo, rtn, empresa, nombre, apellido, telefono, correo, out mensaje);
         }
 
-        public bool ActualizarCliente(string rtn, string empresa, string nombre, string apellido,
+        public bool ActualizarCliente(int clienteId, string tipo, string rtn, string empresa, string nombre, string apellido,
                                       string telefono, string correo, out string mensaje)
         {
-            return GuardarCliente("sp_ActualizarCliente", rtn, empresa, nombre, apellido, telefono, correo, out mensaje);
+            return GuardarCliente("sp_ActualizarCliente", clienteId, tipo, rtn, empresa, nombre, apellido, telefono, correo, out mensaje);
         }
 
         public bool CambiarEstadoCliente(string rtn, bool activo, out string mensaje)
@@ -73,19 +121,15 @@ namespace Codelex.Clases_BDD
             return true;
         }
 
-        private string ValidarCliente(string rtn, string empresa, string nombre, string apellido,
+        private string ValidarCliente(string tipo, string rtn, string empresa, string nombre, string apellido,
                                       string telefono, string correo)
         {
-            rtn = rtn.Trim();
             telefono = telefono.Trim();
             correo = correo.Trim();
 
-            if (rtn == "")
-                return "El RTN / identidad es obligatorio.";
-            if (!SoloNumeros(rtn))
-                return "El RTN / identidad solo puede tener números, sin guiones ni espacios.";
-            if (rtn.Length < 13 || rtn.Length > 14)
-                return "El RTN / identidad debe tener 13 o 14 dígitos. Tiene " + rtn.Length + ".";
+            string problema = ValidarIdentificacion(tipo, rtn);
+            if (problema != "")
+                return problema;
 
             if (empresa.Trim() == "")
                 return "La empresa es obligatoria.";
@@ -109,15 +153,20 @@ namespace Codelex.Clases_BDD
             return "";
         }
 
-        private bool GuardarCliente(string procedimiento, string rtn, string empresa, string nombre, string apellido,
-                                    string telefono, string correo, out string mensaje)
+        private bool GuardarCliente(string procedimiento, int clienteId, string tipo, string rtn, string empresa,
+                                    string nombre, string apellido, string telefono, string correo, out string mensaje)
         {
-            mensaje = ValidarCliente(rtn, empresa, nombre, apellido, telefono, correo);
+            mensaje = ValidarCliente(tipo, rtn, empresa, nombre, apellido, telefono, correo);
             if (mensaje != "")
                 return false;
 
             SqlCommand comando = Procedimiento(procedimiento);
+
+            if (clienteId > 0)
+                comando.Parameters.AddWithValue("@cliente_id", clienteId);
+
             comando.Parameters.AddWithValue("@identificacionCliente", rtn.Trim());
+            comando.Parameters.AddWithValue("@tipoIdentificacion", tipo);
             comando.Parameters.AddWithValue("@nombreEmpresa", empresa.Trim());
             comando.Parameters.AddWithValue("@nombreCliente", nombre.Trim());
             comando.Parameters.AddWithValue("@apellidoCliente", apellido.Trim());

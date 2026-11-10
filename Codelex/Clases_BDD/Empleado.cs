@@ -55,16 +55,16 @@ namespace Codelex.Clases_BDD
         }
 
         public bool InsertarEmpleado(int cargoId, string nombre, string apellido, string identidad,
-                                     string telefono, string correo, string huella,
+                                     string telefono, string correo,
                                      out int empleadoId, out string mensaje)
         {
             empleadoId = 0;
-            mensaje = ValidarEmpleado(cargoId, nombre, apellido, identidad, telefono, correo, huella);
+            mensaje = ValidarEmpleado(cargoId, nombre, apellido, identidad, telefono, correo);
             if (mensaje != "")
                 return false;
 
             SqlCommand comando = Procedimiento("sp_InsertarEmpleado");
-            AgregarParametrosEmpleado(comando, cargoId, nombre, apellido, identidad, telefono, correo, huella);
+            AgregarParametrosEmpleado(comando, cargoId, nombre, apellido, identidad, telefono, correo);
 
             SqlParameter id = new SqlParameter("@empleado_id", SqlDbType.Int);
             id.Direction = ParameterDirection.Output;
@@ -77,15 +77,15 @@ namespace Codelex.Clases_BDD
         }
 
         public bool ActualizarEmpleado(int empleadoId, int cargoId, string nombre, string apellido, string identidad,
-                                       string telefono, string correo, string huella, out string mensaje)
+                                       string telefono, string correo, out string mensaje)
         {
-            mensaje = ValidarEmpleado(cargoId, nombre, apellido, identidad, telefono, correo, huella);
+            mensaje = ValidarEmpleado(cargoId, nombre, apellido, identidad, telefono, correo);
             if (mensaje != "")
                 return false;
 
             SqlCommand comando = Procedimiento("sp_ActualizarEmpleado");
             comando.Parameters.AddWithValue("@empleado_id", empleadoId);
-            AgregarParametrosEmpleado(comando, cargoId, nombre, apellido, identidad, telefono, correo, huella);
+            AgregarParametrosEmpleado(comando, cargoId, nombre, apellido, identidad, telefono, correo);
 
             return Ejecutar(comando, out mensaje);
         }
@@ -111,7 +111,7 @@ namespace Codelex.Clases_BDD
         }
 
         private string ValidarEmpleado(int cargoId, string nombre, string apellido, string identidad,
-                                       string telefono, string correo, string huella)
+                                       string telefono, string correo)
         {
             identidad = identidad.Trim();
             telefono = telefono.Trim();
@@ -142,14 +142,11 @@ namespace Codelex.Clases_BDD
             if (correo != "" && (!correo.Contains("@") || !correo.Contains(".")))
                 return "El correo no es válido. Ejemplo: nombre@empresa.com";
 
-            if (huella.Trim() == "")
-                return "El ID de huella es obligatorio.";
-
             return "";
         }
 
         private void AgregarParametrosEmpleado(SqlCommand comando, int cargoId, string nombre, string apellido,
-                                               string identidad, string telefono, string correo, string huella)
+                                               string identidad, string telefono, string correo)
         {
             comando.Parameters.AddWithValue("@cargo_id", cargoId);
             comando.Parameters.AddWithValue("@nombreEmpleado", nombre.Trim());
@@ -157,7 +154,6 @@ namespace Codelex.Clases_BDD
             comando.Parameters.AddWithValue("@identidad", identidad.Trim());
             comando.Parameters.AddWithValue("@telefonoEmpleado", telefono.Trim());
             comando.Parameters.AddWithValue("@correoEmpleado", correo.Trim());
-            comando.Parameters.AddWithValue("@huella_id", huella.Trim());
         }
 
         private DataTable ConsultarPorRango(string procedimiento, int empleadoId, DateTime desde, DateTime hasta)

@@ -76,7 +76,6 @@ namespace Codelex
                 txtIdentidad.Text = fila["identidad"].ToString();
                 txtTelefono.Text = fila["telefonoEmpleado"].ToString();
                 txtCorreo.Text = fila["correoEmpleado"].ToString();
-                txtHuella.Text = fila["huella_id"].ToString();
                 if (fila["usuario"] == DBNull.Value)
                     txtUsuario.Text = "—";
                 else
@@ -101,7 +100,6 @@ namespace Codelex
             txtIdentidad.Text = "";
             txtTelefono.Text = "";
             txtCorreo.Text = "";
-            txtHuella.Text = "";
             txtUsuario.Text = "—";
 
             ActualizarBotones();
@@ -170,7 +168,7 @@ namespace Codelex
 
                 bool guardado = empleadoBD.InsertarEmpleado(
                     CargoSeleccionado(), txtNombre.Text, txtApellido.Text, txtIdentidad.Text,
-                    txtTelefono.Text, txtCorreo.Text, txtHuella.Text, out nuevoId, out mensaje);
+                    txtTelefono.Text, txtCorreo.Text, out nuevoId, out mensaje);
 
                 MostrarMensaje(guardado, mensaje);
 
@@ -197,7 +195,7 @@ namespace Codelex
 
                 bool guardado = empleadoBD.ActualizarEmpleado(
                     empleadoActual, CargoSeleccionado(), txtNombre.Text, txtApellido.Text, txtIdentidad.Text,
-                    txtTelefono.Text, txtCorreo.Text, txtHuella.Text, out mensaje);
+                    txtTelefono.Text, txtCorreo.Text, out mensaje);
 
                 MostrarMensaje(guardado, mensaje);
 

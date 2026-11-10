@@ -1,6 +1,7 @@
 ﻿using Codelex.Clases_BDD;
 using System.Data;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace Codelex
@@ -9,6 +10,7 @@ namespace Codelex
     {
         Cliente clienteBD = new Cliente();
 
+        int clienteId = 0;
         string clienteActual = "";
         bool clienteActualActivo = true;
 
@@ -23,8 +25,21 @@ namespace Codelex
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            foreach (string tipo in clienteBD.TiposIdentificacion())
+            {
+                cmbTipoId.Items.Add(tipo);
+            }
+
+            cmbTipoId.SelectionChanged += cmbTipoId_SelectionChanged;
+            cmbTipoId.SelectedIndex = 0;
+
             LimpiarFormulario();
             CargarClientes();
+        }
+
+        private void cmbTipoId_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            txtRTN.MaxLength = clienteBD.LargoIdentificacion("" + cmbTipoId.SelectedItem);
         }
 
         private void CargarClientes()
@@ -54,9 +69,11 @@ namespace Codelex
 
                 DataRow fila = tabla.Rows[0];
 
+                clienteId = Convert.ToInt32(fila["cliente_id"]);
                 clienteActual = "" + fila["identificacionCliente"];
                 clienteActualActivo = Convert.ToBoolean(fila["estadoCliente"]);
 
+                cmbTipoId.SelectedItem = "" + fila["tipoIdentificacion"];
                 txtRTN.Text = clienteActual;
                 txtEmpresa.Text = fila["nombreEmpresa"].ToString();
                 txtNombre.Text = fila["nombreCliente"].ToString();
@@ -74,9 +91,11 @@ namespace Codelex
 
         private void LimpiarFormulario()
         {
+            clienteId = 0;
             clienteActual = "";
             clienteActualActivo = true;
 
+            cmbTipoId.SelectedIndex = 0;
             txtRTN.Text = "";
             txtEmpresa.Text = "";
             txtNombre.Text = "";
@@ -92,7 +111,6 @@ namespace Codelex
         {
             if (clienteActual == "")
             {
-                txtRTN.IsReadOnly = false;
                 btnCrear.IsEnabled = true;
                 btnActualizar.IsEnabled = false;
                 btnCambiarEstado.IsEnabled = false;
@@ -102,7 +120,6 @@ namespace Codelex
             }
             else
             {
-                txtRTN.IsReadOnly = true;
                 btnCrear.IsEnabled = false;
                 btnActualizar.IsEnabled = true;
                 btnCambiarEstado.IsEnabled = true;
@@ -139,7 +156,7 @@ namespace Codelex
                 string mensaje;
 
                 bool guardado = clienteBD.InsertarCliente(
-                    txtRTN.Text, txtEmpresa.Text, txtNombre.Text, txtApellido.Text,
+                    "" + cmbTipoId.SelectedItem, txtRTN.Text, txtEmpresa.Text, txtNombre.Text, txtApellido.Text,
                     txtTelefono.Text, txtCorreo.Text, out mensaje);
 
                 MostrarMensaje(guardado, mensaje);
@@ -166,7 +183,7 @@ namespace Codelex
                 string mensaje;
 
                 bool guardado = clienteBD.ActualizarCliente(
-                    clienteActual, txtEmpresa.Text, txtNombre.Text, txtApellido.Text,
+                    clienteId, "" + cmbTipoId.SelectedItem, txtRTN.Text, txtEmpresa.Text, txtNombre.Text, txtApellido.Text,
                     txtTelefono.Text, txtCorreo.Text, out mensaje);
 
                 MostrarMensaje(guardado, mensaje);
@@ -174,6 +191,7 @@ namespace Codelex
                 if (guardado)
                 {
                     CargarClientes();
+                    CargarEnFormulario(txtRTN.Text.Trim());
                 }
             }
             catch (Exception ex)

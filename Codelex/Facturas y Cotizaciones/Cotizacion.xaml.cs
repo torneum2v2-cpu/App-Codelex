@@ -27,7 +27,7 @@ namespace Codelex.Facturas_y_Cotizaciones
 
             cmbTipoLocacion.IsEnabled = false;
 
-            TxtIdentidad.MaxLength = 30;
+            TxtIdentidad.MaxLength = 14;
             TxtEmpresa.MaxLength = 50;
             TxtContacto.MaxLength = 50;
             TxtApellido.MaxLength = 50;

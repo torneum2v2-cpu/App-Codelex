@@ -280,8 +280,14 @@ namespace Codelex.Clases_BDD
         {
             if (datos.Contacto.Trim() == "")
                 return "Escriba el nombre del contacto.";
-            if (datos.Rtn.Trim().Length > 30)
-                return "El RTN no puede tener más de 30 caracteres.";
+            if (datos.Rtn.Trim() != "")
+            {
+                Cliente clienteBD = new Cliente();
+                string problema = clienteBD.ValidarIdentificacion(clienteBD.TipoPorLongitud(datos.Rtn), datos.Rtn);
+
+                if (problema != "")
+                    return problema;
+            }
             if (datos.Empresa.Trim().Length > 50 || datos.Contacto.Trim().Length > 50
                 || datos.Apellido.Trim().Length > 50)
                 return "La empresa y el nombre no pueden tener más de 50 caracteres.";

@@ -86,7 +86,6 @@
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
 
@@ -100,12 +99,7 @@
                                         <TextBox x:Name="txtMonto" KeyDown="txtMonto_KeyDown"/>
                                     </StackPanel>
 
-                                    <StackPanel Grid.Column="2" Margin="0,0,10,0">
-                                        <TextBlock Text="Método de pago:" Style="{StaticResource Etiqueta}"/>
-                                        <ComboBox x:Name="cmbMetodoPago"/>
-                                    </StackPanel>
-
-                                    <StackPanel Grid.Column="3">
+                                    <StackPanel Grid.Column="2">
                                         <TextBlock Text=" " Style="{StaticResource Etiqueta}"/>
                                         <Button x:Name="btnSimular" Content="Ver cómo quedaría" Style="{StaticResource SecondaryButton}"
                                                 Click="btnSimular_Click"/>

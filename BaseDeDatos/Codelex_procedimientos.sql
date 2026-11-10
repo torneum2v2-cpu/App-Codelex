@@ -3347,7 +3347,8 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT q.numero_cuota,
+	SELECT q.cuota_id,
+		   q.numero_cuota,
 		   q.fecha_vencimiento,
 		   q.monto_cuota,
 		   ISNULL(q.monto_pagado, 0) AS monto_pagado,
@@ -3446,10 +3447,35 @@ BEGIN
 END
 GO
 
+-- Deja la cuenta y la factura en su estado correcto despues de un pago.
+CREATE OR ALTER PROCEDURE sp_RecalcularEstadoFactura
+	@factura_id INT,
+	@fecha DATE
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	DECLARE @cuenta_id INT = (SELECT cuenta_id FROM CUENTAS_POR_COBRAR WHERE factura_id = @factura_id);
+
+	IF NOT EXISTS (SELECT 1 FROM CUOTAS WHERE cuenta_id = @cuenta_id AND estado_cuota <> 'Pagada')
+	BEGIN
+		UPDATE CUENTAS_POR_COBRAR SET estado_cuenta = 'Pagada' WHERE cuenta_id = @cuenta_id;
+
+		UPDATE FACTURAS
+		SET estado_pago = 'Pagada', fecha_pago = @fecha
+		WHERE factura_id = @factura_id;
+	END
+	ELSE IF EXISTS (SELECT 1 FROM CUOTAS WHERE cuenta_id = @cuenta_id AND estado_cuota = 'Vencida')
+		UPDATE CUENTAS_POR_COBRAR SET estado_cuenta = 'Vencida' WHERE cuenta_id = @cuenta_id;
+	ELSE
+		UPDATE CUENTAS_POR_COBRAR SET estado_cuenta = 'Vigente' WHERE cuenta_id = @cuenta_id;
+END
+GO
+
+-- El abono usa el metodo de pago que se eligio al crear la factura.
 CREATE OR ALTER PROCEDURE sp_RegistrarAbono
 	@factura_id INT,
 	@monto MONEY,
-	@forma_pago_id INT,
 	@fecha_abono DATE = NULL,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
@@ -3462,9 +3488,10 @@ BEGIN
 	SET @mensaje = '';
 	SET @fecha_abono = ISNULL(@fecha_abono, CAST(GETDATE() AS DATE));
 
-	DECLARE @tipo VARCHAR(10), @estado VARCHAR(50), @cuenta_id INT, @saldo MONEY;
+	DECLARE @tipo VARCHAR(10), @estado VARCHAR(50), @forma_pago_id INT, @saldo MONEY;
 
-	SELECT @tipo = tipo_pago, @estado = estado_pago FROM FACTURAS WHERE factura_id = @factura_id;
+	SELECT @tipo = tipo_pago, @estado = estado_pago, @forma_pago_id = forma_pago_id
+	FROM FACTURAS WHERE factura_id = @factura_id;
 
 	IF @tipo IS NULL
 	BEGIN
@@ -3484,18 +3511,10 @@ BEGIN
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM FORMAS_PAGOS WHERE forma_pago_id = @forma_pago_id)
-	BEGIN
-		SET @mensaje = 'La forma de pago no existe.';
-		RETURN;
-	END
-
-	SELECT @cuenta_id = cc.cuenta_id,
-		   @saldo = SUM(q.monto_cuota - ISNULL(q.monto_pagado, 0))
+	SELECT @saldo = SUM(q.monto_cuota - ISNULL(q.monto_pagado, 0))
 	FROM CUENTAS_POR_COBRAR cc
 	INNER JOIN CUOTAS q ON q.cuenta_id = cc.cuenta_id
-	WHERE cc.factura_id = @factura_id
-	GROUP BY cc.cuenta_id;
+	WHERE cc.factura_id = @factura_id;
 
 	IF ISNULL(@monto, 0) <= 0
 	BEGIN
@@ -3527,26 +3546,88 @@ BEGIN
 		INNER JOIN @nuevas n ON n.cuota_id = q.cuota_id
 		WHERE n.aplicado > 0;
 
-		INSERT INTO ABONOS (factura_id, fecha_abono, monto, forma_pago_id, saldo_despues)
-		VALUES (@factura_id, @fecha_abono, @monto, @forma_pago_id, @saldo - @monto);
+		INSERT INTO ABONOS (factura_id, fecha_abono, monto, forma_pago_id, saldo_despues, concepto)
+		VALUES (@factura_id, @fecha_abono, @monto, @forma_pago_id, @saldo - @monto, 'Abono');
 
-		IF NOT EXISTS (SELECT 1 FROM CUOTAS WHERE cuenta_id = @cuenta_id AND estado_cuota <> 'Pagada')
-		BEGIN
-			UPDATE CUENTAS_POR_COBRAR SET estado_cuenta = 'Pagada' WHERE cuenta_id = @cuenta_id;
-
-			UPDATE FACTURAS
-			SET estado_pago = 'Pagada', fecha_pago = @fecha_abono, forma_pago_id = @forma_pago_id
-			WHERE factura_id = @factura_id;
-		END
-		ELSE IF EXISTS (SELECT 1 FROM CUOTAS WHERE cuenta_id = @cuenta_id AND estado_cuota = 'Vencida')
-			UPDATE CUENTAS_POR_COBRAR SET estado_cuenta = 'Vencida' WHERE cuenta_id = @cuenta_id;
-		ELSE
-			UPDATE CUENTAS_POR_COBRAR SET estado_cuenta = 'Vigente' WHERE cuenta_id = @cuenta_id;
+		EXEC sp_RecalcularEstadoFactura @factura_id, @fecha_abono;
 
 		COMMIT TRANSACTION;
 
 		SET @resultado = 1;
 		SET @mensaje = 'El abono se registro correctamente.';
+	END TRY
+	BEGIN CATCH
+		IF @@TRANCOUNT > 0
+			ROLLBACK TRANSACTION;
+
+		SET @mensaje = LEFT(ERROR_MESSAGE(), 100);
+	END CATCH
+END
+GO
+
+-- Salda de un solo clic lo que falta de una cuota, con el metodo de pago de la factura.
+CREATE OR ALTER PROCEDURE sp_SaldarCuota
+	@cuota_id INT,
+	@fecha_pago DATE = NULL,
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SET XACT_ABORT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+	SET @fecha_pago = ISNULL(@fecha_pago, CAST(GETDATE() AS DATE));
+
+	DECLARE @factura_id INT, @forma_pago_id INT, @numero INT, @saldo MONEY, @saldo_total MONEY;
+
+	SELECT @factura_id = cc.factura_id,
+		   @forma_pago_id = f.forma_pago_id,
+		   @numero = q.numero_cuota,
+		   @saldo = q.monto_cuota - ISNULL(q.monto_pagado, 0)
+	FROM CUOTAS q
+	INNER JOIN CUENTAS_POR_COBRAR cc ON cc.cuenta_id = q.cuenta_id
+	INNER JOIN FACTURAS f ON f.factura_id = cc.factura_id
+	WHERE q.cuota_id = @cuota_id;
+
+	IF @factura_id IS NULL
+	BEGIN
+		SET @mensaje = 'La cuota no existe.';
+		RETURN;
+	END
+
+	IF @saldo <= 0
+	BEGIN
+		SET @mensaje = 'La cuota ya esta pagada.';
+		RETURN;
+	END
+
+	SELECT @saldo_total = SUM(q.monto_cuota - ISNULL(q.monto_pagado, 0))
+	FROM CUENTAS_POR_COBRAR cc
+	INNER JOIN CUOTAS q ON q.cuenta_id = cc.cuenta_id
+	WHERE cc.factura_id = @factura_id;
+
+	BEGIN TRY
+		BEGIN TRANSACTION;
+
+		UPDATE CUOTAS
+		SET monto_pagado = monto_cuota,
+			estado_cuota = 'Pagada',
+			fecha_pago = @fecha_pago,
+			forma_pago_id = @forma_pago_id
+		WHERE cuota_id = @cuota_id;
+
+		INSERT INTO ABONOS (factura_id, fecha_abono, monto, forma_pago_id, saldo_despues, concepto)
+		VALUES (@factura_id, @fecha_pago, @saldo, @forma_pago_id, @saldo_total - @saldo,
+				'Cuota ' + CAST(@numero AS VARCHAR(5)));
+
+		EXEC sp_RecalcularEstadoFactura @factura_id, @fecha_pago;
+
+		COMMIT TRANSACTION;
+
+		SET @resultado = 1;
+		SET @mensaje = 'La cuota ' + CAST(@numero AS VARCHAR(5)) + ' quedo saldada.';
 	END TRY
 	BEGIN CATCH
 		IF @@TRANCOUNT > 0
@@ -3563,7 +3644,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT a.fecha_abono, a.monto, ISNULL(fp.nombreFormaPago, '') AS nombreFormaPago, a.saldo_despues
+	SELECT a.fecha_abono, a.concepto, a.monto, ISNULL(fp.nombreFormaPago, '') AS nombreFormaPago, a.saldo_despues
 	FROM ABONOS a
 	LEFT JOIN FORMAS_PAGOS fp ON fp.forma_pago_id = a.forma_pago_id
 	WHERE a.factura_id = @factura_id
@@ -3666,98 +3747,6 @@ BEGIN
 	WHERE estado_cuenta = 'Vigente'
 	  AND EXISTS (SELECT 1 FROM CUOTAS q WHERE q.cuenta_id = CUENTAS_POR_COBRAR.cuenta_id
 				  AND q.estado_cuota = 'Vencida');
-END
-GO
-
-CREATE OR ALTER PROCEDURE sp_RegistrarPagoCuota
-	@cuota_id INT,
-	@monto MONEY,
-	@forma_pago_id INT,
-	@fecha_pago DATE = NULL,
-	@resultado INT OUTPUT,
-	@mensaje VARCHAR(100) OUTPUT
-AS
-BEGIN
-	SET NOCOUNT ON;
-	SET XACT_ABORT ON;
-
-	SET @resultado = 0;
-	SET @mensaje = '';
-	SET @fecha_pago = ISNULL(@fecha_pago, CAST(GETDATE() AS DATE));
-
-	DECLARE @cuenta_id INT, @factura_id INT, @saldo MONEY;
-
-	SELECT @cuenta_id = q.cuenta_id,
-		   @factura_id = cc.factura_id,
-		   @saldo = q.monto_cuota - ISNULL(q.monto_pagado, 0)
-	FROM CUOTAS q
-	INNER JOIN CUENTAS_POR_COBRAR cc ON cc.cuenta_id = q.cuenta_id
-	WHERE q.cuota_id = @cuota_id;
-
-	IF @cuenta_id IS NULL
-	BEGIN
-		SET @mensaje = 'La cuota no existe.';
-		RETURN;
-	END
-
-	IF @saldo <= 0
-	BEGIN
-		SET @mensaje = 'La cuota ya esta pagada.';
-		RETURN;
-	END
-
-	IF ISNULL(@monto, 0) <= 0
-	BEGIN
-		SET @mensaje = 'El monto debe ser mayor que 0.';
-		RETURN;
-	END
-
-	IF @monto > @saldo
-	BEGIN
-		SET @mensaje = 'El monto supera el saldo de la cuota: ' + CAST(@saldo AS VARCHAR(20)) + '.';
-		RETURN;
-	END
-
-	IF NOT EXISTS (SELECT 1 FROM FORMAS_PAGOS WHERE forma_pago_id = @forma_pago_id)
-	BEGIN
-		SET @mensaje = 'La forma de pago no existe.';
-		RETURN;
-	END
-
-	BEGIN TRY
-		BEGIN TRANSACTION;
-
-		UPDATE CUOTAS
-		SET monto_pagado = ISNULL(monto_pagado, 0) + @monto,
-			fecha_pago = @fecha_pago,
-			forma_pago_id = @forma_pago_id,
-			estado_cuota = CASE WHEN ISNULL(monto_pagado, 0) + @monto >= monto_cuota THEN 'Pagada' ELSE 'Parcial' END
-		WHERE cuota_id = @cuota_id;
-
-		IF NOT EXISTS (SELECT 1 FROM CUOTAS WHERE cuenta_id = @cuenta_id AND estado_cuota <> 'Pagada')
-		BEGIN
-			UPDATE CUENTAS_POR_COBRAR SET estado_cuenta = 'Pagada' WHERE cuenta_id = @cuenta_id;
-
-			UPDATE FACTURAS
-			SET estado_pago = 'Pagada', fecha_pago = @fecha_pago, forma_pago_id = @forma_pago_id
-			WHERE factura_id = @factura_id;
-		END
-		ELSE IF EXISTS (SELECT 1 FROM CUOTAS WHERE cuenta_id = @cuenta_id AND estado_cuota = 'Vencida')
-			UPDATE CUENTAS_POR_COBRAR SET estado_cuenta = 'Vencida' WHERE cuenta_id = @cuenta_id;
-		ELSE
-			UPDATE CUENTAS_POR_COBRAR SET estado_cuenta = 'Vigente' WHERE cuenta_id = @cuenta_id;
-
-		COMMIT TRANSACTION;
-
-		SET @resultado = 1;
-		SET @mensaje = 'El pago de la cuota se registro correctamente.';
-	END TRY
-	BEGIN CATCH
-		IF @@TRANCOUNT > 0
-			ROLLBACK TRANSACTION;
-
-		SET @mensaje = LEFT(ERROR_MESSAGE(), 100);
-	END CATCH
 END
 GO
 

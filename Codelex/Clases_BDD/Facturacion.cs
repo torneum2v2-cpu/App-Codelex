@@ -164,13 +164,11 @@ namespace Codelex.Clases_BDD
             return Consultar(comando);
         }
 
-        public bool RegistrarAbono(int facturaId, string montoTexto, decimal saldo, int formaPagoId, out string mensaje)
+        // El abono usa el método de pago que se eligió al crear la factura.
+        public bool RegistrarAbono(int facturaId, string montoTexto, decimal saldo, out string mensaje)
         {
             decimal monto;
             mensaje = ValidarAbono(montoTexto, saldo, out monto);
-
-            if (mensaje == "" && formaPagoId <= 0)
-                mensaje = "Seleccione el método de pago.";
 
             if (mensaje != "")
                 return false;
@@ -178,8 +176,41 @@ namespace Codelex.Clases_BDD
             SqlCommand comando = Procedimiento("sp_RegistrarAbono");
             comando.Parameters.AddWithValue("@factura_id", facturaId);
             comando.Parameters.AddWithValue("@monto", monto);
-            comando.Parameters.AddWithValue("@forma_pago_id", formaPagoId);
             comando.Parameters.AddWithValue("@fecha_abono", DateTime.Today);
+            return Ejecutar(comando, out mensaje);
+        }
+
+        // La cuota elegida; si no se eligió ninguna, la primera que todavía tiene saldo.
+        public DataRow? ElegirCuota(DataTable cuotas, DataRowView? seleccion, out string mensaje)
+        {
+            mensaje = "";
+
+            if (seleccion != null)
+            {
+                if (Convert.ToDecimal(seleccion["saldo"]) <= 0)
+                {
+                    mensaje = "Esa cuota ya está pagada.";
+                    return null;
+                }
+
+                return seleccion.Row;
+            }
+
+            foreach (DataRow cuota in cuotas.Rows)
+            {
+                if (Convert.ToDecimal(cuota["saldo"]) > 0)
+                    return cuota;
+            }
+
+            mensaje = "No hay cuotas pendientes.";
+            return null;
+        }
+
+        public bool SaldarCuota(int cuotaId, out string mensaje)
+        {
+            SqlCommand comando = Procedimiento("sp_SaldarCuota");
+            comando.Parameters.AddWithValue("@cuota_id", cuotaId);
+            comando.Parameters.AddWithValue("@fecha_pago", DateTime.Today);
             return Ejecutar(comando, out mensaje);
         }
 

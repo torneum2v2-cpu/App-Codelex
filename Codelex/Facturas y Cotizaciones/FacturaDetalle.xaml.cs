@@ -16,6 +16,7 @@ namespace Codelex.Facturas_y_Cotizaciones
         Facturacion facturaBD = new Facturacion();
         int facturaId;
         decimal saldoActual = 0;
+        DataTable cuotasActuales = new DataTable();
         bool huboCambios = false;
 
         public FacturaDetalle(int facturaId)
@@ -112,22 +113,62 @@ namespace Codelex.Facturas_y_Cotizaciones
             {
                 facturaBD.ActualizarCuotasVencidas();
 
-                DataTable cuotas = facturaBD.CuotasFactura(facturaId);
-                dgCuotas.ItemsSource = cuotas.DefaultView;
-                lblTituloCuotas.Text = "Cuotas (" + cuotas.Rows.Count + ")";
+                cuotasActuales = facturaBD.CuotasFactura(facturaId);
+                dgCuotas.ItemsSource = cuotasActuales.DefaultView;
+                lblTituloCuotas.Text = "Cuotas (" + cuotasActuales.Rows.Count + ")";
 
                 DataTable abonos = facturaBD.ListarAbonos(facturaId);
                 dgAbonos.ItemsSource = abonos.DefaultView;
 
                 btnAbono.Visibility = Visibility.Collapsed;
+                btnSaldar.Visibility = Visibility.Collapsed;
                 if (saldoActual > 0)
+                {
                     btnAbono.Visibility = Visibility.Visible;
+                    btnSaldar.Visibility = Visibility.Visible;
+                }
 
                 pnlCuotas.Visibility = Visibility.Visible;
             }
             else
             {
                 pnlCuotas.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void btnSaldar_Click(object sender, RoutedEventArgs e)
+        {
+            string mensaje;
+            DataRow? cuota = facturaBD.ElegirCuota(cuotasActuales, dgCuotas.SelectedItem as DataRowView, out mensaje);
+
+            if (cuota == null)
+            {
+                MensajeCodelex.Mostrar(this, "Factura", mensaje, false);
+                return;
+            }
+
+            string pregunta = "¿Saldar la cuota " + cuota["numero_cuota"] + " por "
+                              + facturaBD.Dinero(Convert.ToDecimal(cuota["saldo"])) + "?";
+
+            MessageBoxResult respuesta = MessageBox.Show(pregunta, "Factura", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (respuesta != MessageBoxResult.Yes)
+                return;
+
+            try
+            {
+                bool saldada = facturaBD.SaldarCuota(Convert.ToInt32(cuota["cuota_id"]), out mensaje);
+
+                MensajeCodelex.Mostrar(this, "Factura", mensaje, saldada);
+
+                if (saldada)
+                {
+                    huboCambios = true;
+                    CargarFactura();
+                }
+            }
+            catch (Exception ex)
+            {
+                MensajeCodelex.Mostrar(this, "Factura", ex.Message, false);
             }
         }
 

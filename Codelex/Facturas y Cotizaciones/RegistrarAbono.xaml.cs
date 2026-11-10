@@ -33,13 +33,6 @@ namespace Codelex.Facturas_y_Cotizaciones
         {
             try
             {
-                DataTable formas = facturaBD.ListarFormasPago();
-                foreach (DataRow fila in formas.Rows)
-                {
-                    cmbMetodoPago.Items.Add(new ItemLista(Convert.ToInt32(fila["forma_pago_id"]), "" + fila["nombreFormaPago"], ""));
-                }
-
-                cmbMetodoPago.SelectedIndex = 0;
                 txtMonto.Focus();
             }
             catch (Exception ex)
@@ -74,16 +67,10 @@ namespace Codelex.Facturas_y_Cotizaciones
 
         private void btnRegistrar_Click(object sender, RoutedEventArgs e)
         {
-            ItemLista metodo = cmbMetodoPago.SelectedItem as ItemLista;
-            int formaPagoId = 0;
-
-            if (metodo != null)
-                formaPagoId = metodo.Id;
-
             try
             {
                 string mensaje;
-                bool registrado = facturaBD.RegistrarAbono(facturaId, txtMonto.Text, saldo, formaPagoId, out mensaje);
+                bool registrado = facturaBD.RegistrarAbono(facturaId, txtMonto.Text, saldo, out mensaje);
 
                 MensajeCodelex.Mostrar(this, "Abonos", mensaje, registrado);
 

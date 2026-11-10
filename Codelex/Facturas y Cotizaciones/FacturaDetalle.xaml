@@ -221,18 +221,24 @@
                                         <TextBlock x:Name="lblSaldo" Style="{StaticResource TituloCard}"/>
                                     </StackPanel>
 
-                                    <Button x:Name="btnAbono" Grid.Column="1" Content="Registrar abono" Style="{StaticResource PrimaryButton}"
-                                            Width="170" Click="btnAbono_Click"
-                                            ToolTip="Abona un monto: se aplica a las cuotas más antiguas"/>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                        <Button x:Name="btnSaldar" Content="Saldar cuota" Style="{StaticResource PrimaryButton}"
+                                                Width="150" Margin="0,0,10,0" Click="btnSaldar_Click"
+                                                ToolTip="Paga completa la cuota seleccionada (o la primera pendiente)"/>
+                                        <Button x:Name="btnAbono" Content="Registrar abono" Style="{StaticResource SecondaryButton}"
+                                                Width="170" Click="btnAbono_Click"
+                                                ToolTip="Abona un monto: se aplica a las cuotas más antiguas"/>
+                                    </StackPanel>
                                 </Grid>
 
-                                <TextBlock x:Name="lblTituloAbonos" Text="Abonos registrados" Style="{StaticResource TituloCard}" Margin="0,16,0,8"/>
+                                <TextBlock x:Name="lblTituloAbonos" Text="Pagos registrados" Style="{StaticResource TituloCard}" Margin="0,16,0,8"/>
 
                                 <DataGrid x:Name="dgAbonos" Style="{StaticResource Tabla}" Cursor="Arrow" Height="130"
                                           AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True" SelectionMode="Single">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="Fecha" Binding="{Binding fecha_abono, StringFormat=dd/MM/yyyy}" Width="*"/>
-                                        <DataGridTextColumn Header="Abono (L)" Binding="{Binding monto, StringFormat=N2}" Width="*"/>
+                                        <DataGridTextColumn Header="Concepto" Binding="{Binding concepto}" Width="*"/>
+                                        <DataGridTextColumn Header="Monto (L)" Binding="{Binding monto, StringFormat=N2}" Width="*"/>
                                         <DataGridTextColumn Header="Método" Binding="{Binding nombreFormaPago}" Width="*"/>
                                         <DataGridTextColumn Header="Saldo después (L)" Binding="{Binding saldo_despues, StringFormat=N2}" Width="*"/>
                                     </DataGrid.Columns>

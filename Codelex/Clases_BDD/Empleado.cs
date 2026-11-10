@@ -113,7 +113,7 @@ namespace Codelex.Clases_BDD
         private string ValidarEmpleado(int cargoId, string nombre, string apellido, string identidad,
                                        string telefono, string correo)
         {
-            identidad = identidad.Trim();
+            identidad = Cliente.LimpiarNumero(identidad);
             telefono = telefono.Trim();
             correo = correo.Trim();
 
@@ -151,7 +151,7 @@ namespace Codelex.Clases_BDD
             comando.Parameters.AddWithValue("@cargo_id", cargoId);
             comando.Parameters.AddWithValue("@nombreEmpleado", nombre.Trim());
             comando.Parameters.AddWithValue("@apellidoEmpleado", apellido.Trim());
-            comando.Parameters.AddWithValue("@identidad", identidad.Trim());
+            comando.Parameters.AddWithValue("@identidad", Cliente.LimpiarNumero(identidad));
             comando.Parameters.AddWithValue("@telefonoEmpleado", telefono.Trim());
             comando.Parameters.AddWithValue("@correoEmpleado", correo.Trim());
         }

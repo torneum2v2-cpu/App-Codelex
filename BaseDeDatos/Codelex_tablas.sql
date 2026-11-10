@@ -516,6 +516,28 @@ IF OBJECT_ID('CK_CLIENTES_tipoIdentificacion') IS NULL
 	ADD CONSTRAINT CK_CLIENTES_tipoIdentificacion CHECK (tipoIdentificacion IN ('RTN', 'Identidad'));
 GO
 
+-- Los numeros de identidad y RTN se guardan sin guiones ni espacios (corrige datos viejos)
+UPDATE COTIZACIONES
+SET identificacionCliente = REPLACE(REPLACE(identificacionCliente, '-', ''), ' ', '')
+WHERE identificacionCliente LIKE '%[- ]%';
+GO
+
+UPDATE CLIENTES
+SET identificacionCliente = REPLACE(REPLACE(identificacionCliente, '-', ''), ' ', '')
+WHERE identificacionCliente LIKE '%[- ]%'
+  AND NOT EXISTS (SELECT 1 FROM CLIENTES x
+				  WHERE x.identificacionCliente = REPLACE(REPLACE(CLIENTES.identificacionCliente, '-', ''), ' ', '')
+					AND x.cliente_id <> CLIENTES.cliente_id);
+GO
+
+UPDATE EMPLEADOS
+SET identidad = REPLACE(REPLACE(identidad, '-', ''), ' ', '')
+WHERE identidad LIKE '%[- ]%'
+  AND NOT EXISTS (SELECT 1 FROM EMPLEADOS x
+				  WHERE x.identidad = REPLACE(REPLACE(EMPLEADOS.identidad, '-', ''), ' ', '')
+					AND x.empleado_id <> EMPLEADOS.empleado_id);
+GO
+
 UPDATE CLIENTES
 SET tipoIdentificacion = 'Identidad'
 WHERE tipoIdentificacion = 'RTN'

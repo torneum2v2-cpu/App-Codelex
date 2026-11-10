@@ -28,15 +28,21 @@ namespace Codelex.Clases_BDD
 
         public string TipoPorLongitud(string numero)
         {
-            if (numero.Trim().Length == 13)
+            if (LimpiarNumero(numero).Length == 13)
                 return TipoIdentidad;
 
             return TipoRtn;
         }
 
+        // Los números de identidad y RTN se guardan sin guiones ni espacios.
+        public static string LimpiarNumero(string texto)
+        {
+            return texto.Replace("-", "").Replace(" ", "").Trim();
+        }
+
         public string ValidarIdentificacion(string tipo, string numero)
         {
-            numero = numero.Trim();
+            numero = LimpiarNumero(numero);
 
             if (numero == "")
                 return "El RTN / identidad es obligatorio.";
@@ -165,7 +171,7 @@ namespace Codelex.Clases_BDD
             if (clienteId > 0)
                 comando.Parameters.AddWithValue("@cliente_id", clienteId);
 
-            comando.Parameters.AddWithValue("@identificacionCliente", rtn.Trim());
+            comando.Parameters.AddWithValue("@identificacionCliente", LimpiarNumero(rtn));
             comando.Parameters.AddWithValue("@tipoIdentificacion", tipo);
             comando.Parameters.AddWithValue("@nombreEmpresa", empresa.Trim());
             comando.Parameters.AddWithValue("@nombreCliente", nombre.Trim());

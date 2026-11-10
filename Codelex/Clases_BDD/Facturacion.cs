@@ -311,10 +311,11 @@ namespace Codelex.Clases_BDD
         {
             if (datos.Contacto.Trim() == "")
                 return "Escriba el nombre del contacto.";
-            if (datos.Rtn.Trim() != "")
+            if (Cliente.LimpiarNumero(datos.Rtn) != "")
             {
                 Cliente clienteBD = new Cliente();
-                string problema = clienteBD.ValidarIdentificacion(clienteBD.TipoPorLongitud(datos.Rtn), datos.Rtn);
+                string rtn = Cliente.LimpiarNumero(datos.Rtn);
+                string problema = clienteBD.ValidarIdentificacion(clienteBD.TipoPorLongitud(rtn), rtn);
 
                 if (problema != "")
                     return problema;
@@ -386,7 +387,7 @@ namespace Codelex.Clases_BDD
                 return false;
 
             SqlCommand comando = Procedimiento("sp_InsertarCotizacion");
-            comando.Parameters.AddWithValue("@identificacionCliente", datos.Rtn.Trim());
+            comando.Parameters.AddWithValue("@identificacionCliente", Cliente.LimpiarNumero(datos.Rtn));
             comando.Parameters.AddWithValue("@nombreEmpresa", datos.Empresa.Trim());
             comando.Parameters.AddWithValue("@nombreCliente", datos.Contacto.Trim());
             comando.Parameters.AddWithValue("@apellidoCliente", datos.Apellido.Trim());

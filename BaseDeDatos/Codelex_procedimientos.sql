@@ -930,6 +930,14 @@ BEGIN
 		RETURN;
 	END
 
+	SET @identidad = REPLACE(REPLACE(LTRIM(RTRIM(ISNULL(@identidad, ''))), '-', ''), ' ', '');
+
+	IF @identidad LIKE '%[^0-9]%' OR LEN(@identidad) <> 13
+	BEGIN
+		SET @mensaje = 'La identidad debe tener 13 digitos, sin guiones.';
+		RETURN;
+	END
+
 	IF EXISTS (SELECT 1 FROM EMPLEADOS WHERE identidad = @identidad)
 	BEGIN
 		SET @mensaje = 'Ya existe un empleado con esa identidad.';
@@ -973,6 +981,14 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM CARGOS WHERE cargo_id = @cargo_id)
 	BEGIN
 		SET @mensaje = 'El cargo seleccionado no existe.';
+		RETURN;
+	END
+
+	SET @identidad = REPLACE(REPLACE(LTRIM(RTRIM(ISNULL(@identidad, ''))), '-', ''), ' ', '');
+
+	IF @identidad LIKE '%[^0-9]%' OR LEN(@identidad) <> 13
+	BEGIN
+		SET @mensaje = 'La identidad debe tener 13 digitos, sin guiones.';
 		RETURN;
 	END
 
@@ -1142,7 +1158,7 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	SET @identidad = LTRIM(RTRIM(ISNULL(@identidad, '')));
+	SET @identidad = REPLACE(REPLACE(LTRIM(RTRIM(ISNULL(@identidad, ''))), '-', ''), ' ', '');
 
 	DECLARE @empleado_id INT, @activo BIT;
 
@@ -3046,6 +3062,7 @@ BEGIN
 	SET @cotizacion_id = '';
 
 	SET @nombreCliente = LTRIM(RTRIM(ISNULL(@nombreCliente, '')));
+	SET @identificacionCliente = REPLACE(REPLACE(LTRIM(RTRIM(ISNULL(@identificacionCliente, ''))), '-', ''), ' ', '');
 
 	IF @nombreCliente = ''
 	BEGIN

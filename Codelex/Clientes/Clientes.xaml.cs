@@ -164,7 +164,7 @@ namespace Codelex
                 if (guardado)
                 {
                     CargarClientes();
-                    CargarEnFormulario(txtRTN.Text.Trim());
+                    CargarEnFormulario(Cliente.LimpiarNumero(txtRTN.Text));
                 }
             }
             catch (Exception ex)
@@ -191,7 +191,7 @@ namespace Codelex
                 if (guardado)
                 {
                     CargarClientes();
-                    CargarEnFormulario(txtRTN.Text.Trim());
+                    CargarEnFormulario(Cliente.LimpiarNumero(txtRTN.Text));
                 }
             }
             catch (Exception ex)

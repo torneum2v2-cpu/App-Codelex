@@ -516,6 +516,28 @@ IF OBJECT_ID('CK_CLIENTES_tipoIdentificacion') IS NULL
 	ADD CONSTRAINT CK_CLIENTES_tipoIdentificacion CHECK (tipoIdentificacion IN ('RTN', 'Identidad'));
 GO
 
+-- Los numeros de identidad y RTN se guardan sin guiones ni espacios (corrige datos viejos)
+UPDATE COTIZACIONES
+SET identificacionCliente = REPLACE(REPLACE(identificacionCliente, '-', ''), ' ', '')
+WHERE identificacionCliente LIKE '%[- ]%';
+GO
+
+UPDATE CLIENTES
+SET identificacionCliente = REPLACE(REPLACE(identificacionCliente, '-', ''), ' ', '')
+WHERE identificacionCliente LIKE '%[- ]%'
+  AND NOT EXISTS (SELECT 1 FROM CLIENTES x
+				  WHERE x.identificacionCliente = REPLACE(REPLACE(CLIENTES.identificacionCliente, '-', ''), ' ', '')
+					AND x.cliente_id <> CLIENTES.cliente_id);
+GO
+
+UPDATE EMPLEADOS
+SET identidad = REPLACE(REPLACE(identidad, '-', ''), ' ', '')
+WHERE identidad LIKE '%[- ]%'
+  AND NOT EXISTS (SELECT 1 FROM EMPLEADOS x
+				  WHERE x.identidad = REPLACE(REPLACE(EMPLEADOS.identidad, '-', ''), ' ', '')
+					AND x.empleado_id <> EMPLEADOS.empleado_id);
+GO
+
 UPDATE CLIENTES
 SET tipoIdentificacion = 'Identidad'
 WHERE tipoIdentificacion = 'RTN'
@@ -1064,6 +1086,28 @@ GO
 IF OBJECT_ID('CK_CLIENTES_tipoIdentificacion') IS NULL
 	ALTER TABLE CLIENTES
 	ADD CONSTRAINT CK_CLIENTES_tipoIdentificacion CHECK (tipoIdentificacion IN ('RTN', 'Identidad'));
+GO
+
+-- Los numeros de identidad y RTN se guardan sin guiones ni espacios (corrige datos viejos)
+UPDATE COTIZACIONES
+SET identificacionCliente = REPLACE(REPLACE(identificacionCliente, '-', ''), ' ', '')
+WHERE identificacionCliente LIKE '%[- ]%';
+GO
+
+UPDATE CLIENTES
+SET identificacionCliente = REPLACE(REPLACE(identificacionCliente, '-', ''), ' ', '')
+WHERE identificacionCliente LIKE '%[- ]%'
+  AND NOT EXISTS (SELECT 1 FROM CLIENTES x
+				  WHERE x.identificacionCliente = REPLACE(REPLACE(CLIENTES.identificacionCliente, '-', ''), ' ', '')
+					AND x.cliente_id <> CLIENTES.cliente_id);
+GO
+
+UPDATE EMPLEADOS
+SET identidad = REPLACE(REPLACE(identidad, '-', ''), ' ', '')
+WHERE identidad LIKE '%[- ]%'
+  AND NOT EXISTS (SELECT 1 FROM EMPLEADOS x
+				  WHERE x.identidad = REPLACE(REPLACE(EMPLEADOS.identidad, '-', ''), ' ', '')
+					AND x.empleado_id <> EMPLEADOS.empleado_id);
 GO
 
 UPDATE CLIENTES
@@ -2011,6 +2055,14 @@ BEGIN
 		RETURN;
 	END
 
+	SET @identidad = REPLACE(REPLACE(LTRIM(RTRIM(ISNULL(@identidad, ''))), '-', ''), ' ', '');
+
+	IF @identidad LIKE '%[^0-9]%' OR LEN(@identidad) <> 13
+	BEGIN
+		SET @mensaje = 'La identidad debe tener 13 digitos, sin guiones.';
+		RETURN;
+	END
+
 	IF EXISTS (SELECT 1 FROM EMPLEADOS WHERE identidad = @identidad)
 	BEGIN
 		SET @mensaje = 'Ya existe un empleado con esa identidad.';
@@ -2054,6 +2106,14 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM CARGOS WHERE cargo_id = @cargo_id)
 	BEGIN
 		SET @mensaje = 'El cargo seleccionado no existe.';
+		RETURN;
+	END
+
+	SET @identidad = REPLACE(REPLACE(LTRIM(RTRIM(ISNULL(@identidad, ''))), '-', ''), ' ', '');
+
+	IF @identidad LIKE '%[^0-9]%' OR LEN(@identidad) <> 13
+	BEGIN
+		SET @mensaje = 'La identidad debe tener 13 digitos, sin guiones.';
 		RETURN;
 	END
 
@@ -2223,7 +2283,7 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	SET @identidad = LTRIM(RTRIM(ISNULL(@identidad, '')));
+	SET @identidad = REPLACE(REPLACE(LTRIM(RTRIM(ISNULL(@identidad, ''))), '-', ''), ' ', '');
 
 	DECLARE @empleado_id INT, @activo BIT;
 
@@ -4127,6 +4187,7 @@ BEGIN
 	SET @cotizacion_id = '';
 
 	SET @nombreCliente = LTRIM(RTRIM(ISNULL(@nombreCliente, '')));
+	SET @identificacionCliente = REPLACE(REPLACE(LTRIM(RTRIM(ISNULL(@identificacionCliente, ''))), '-', ''), ' ', '');
 
 	IF @nombreCliente = ''
 	BEGIN

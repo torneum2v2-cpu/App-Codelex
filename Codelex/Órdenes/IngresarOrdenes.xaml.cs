@@ -3,6 +3,7 @@ using System.Data;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace Codelex
 {
@@ -202,6 +203,7 @@ namespace Codelex
 
             CargarEmpleadosDisponibles();
             LimpiarCliente();
+            IrAPaso(1);
         }
 
         private void CargarCotizacion(DataRow cotizacion)
@@ -342,6 +344,18 @@ namespace Codelex
 
         private void btnGuardarOrden_Click(object sender, RoutedEventArgs e)
         {
+            for (int paso = 1; paso <= 3; paso++)
+            {
+                string problema = ValidarPaso(paso);
+
+                if (problema != "")
+                {
+                    IrAPaso(paso);
+                    MostrarErrorPaso(problema);
+                    return;
+                }
+            }
+
             DatosOrden datos = new DatosOrden();
 
             datos.CotizacionId = cotizacionId;
@@ -393,6 +407,165 @@ namespace Codelex
             }
 
             Close();
+        }
+
+        // ---------- Pasos ----------
+
+        int pasoActual = 1;
+
+        private void IrAPaso(int paso)
+        {
+            pasoActual = paso;
+
+            panelPaso1.Visibility = paso == 1 ? Visibility.Visible : Visibility.Collapsed;
+            panelPaso2.Visibility = paso == 2 ? Visibility.Visible : Visibility.Collapsed;
+            panelPaso3.Visibility = paso == 3 ? Visibility.Visible : Visibility.Collapsed;
+
+            btnAtras.Visibility = paso > 1 ? Visibility.Visible : Visibility.Collapsed;
+            btnSiguiente.Visibility = paso < 3 ? Visibility.Visible : Visibility.Collapsed;
+            btnGuardarOrden.Visibility = paso == 3 ? Visibility.Visible : Visibility.Collapsed;
+
+            txtErrorPaso.Visibility = Visibility.Collapsed;
+
+            PintarIndicador(1, circulo1, numero1, titulo1);
+            PintarIndicador(2, circulo2, numero2, titulo2);
+            PintarIndicador(3, circulo3, numero3, titulo3);
+
+            if (paso == 3)
+                ArmarResumen();
+
+            scrollPasos.ScrollToTop();
+        }
+
+        private void PintarIndicador(int numero, Border circulo, TextBlock texto, TextBlock titulo)
+        {
+            if (numero < pasoActual)
+            {
+                circulo.Background = (Brush)FindResource("PillText");
+                texto.Text = "✓";
+                texto.Foreground = Brushes.White;
+                titulo.Foreground = (Brush)FindResource("DarkText");
+                titulo.FontWeight = FontWeights.SemiBold;
+            }
+            else if (numero == pasoActual)
+            {
+                circulo.Background = (Brush)FindResource("Primary");
+                texto.Text = numero.ToString();
+                texto.Foreground = Brushes.White;
+                titulo.Foreground = (Brush)FindResource("DarkText");
+                titulo.FontWeight = FontWeights.Bold;
+            }
+            else
+            {
+                circulo.Background = (Brush)FindResource("CardLine");
+                texto.Text = numero.ToString();
+                texto.Foreground = (Brush)FindResource("SoftText");
+                titulo.Foreground = (Brush)FindResource("SoftText");
+                titulo.FontWeight = FontWeights.SemiBold;
+            }
+        }
+
+        // Avanza hasta el paso pedido validando cada paso intermedio. Si uno falla, se queda en él.
+        private void AvanzarHasta(int destino)
+        {
+            for (int paso = pasoActual; paso < destino; paso++)
+            {
+                string problema = ValidarPaso(paso);
+
+                if (problema != "")
+                {
+                    IrAPaso(paso);
+                    MostrarErrorPaso(problema);
+                    return;
+                }
+            }
+
+            IrAPaso(destino);
+        }
+
+        private string ValidarPaso(int paso)
+        {
+            if (paso == 1)
+            {
+                if (cotizacionId == "")
+                    return "Seleccione una cotización.";
+                if (clienteRtn == "")
+                    return "La cotización no tiene un cliente registrado.";
+            }
+            else if (paso == 2)
+            {
+                if (lstActividadesOrden.Items.Count == 0)
+                    return "La orden necesita al menos una actividad.";
+                if (dpFechaSolicitud.SelectedDate == null)
+                    return "Seleccione la fecha de solicitud.";
+                if (dpFechaLimpieza.SelectedDate == null)
+                    return "Seleccione la fecha de limpieza.";
+                if (dpFechaLimpieza.SelectedDate < dpFechaSolicitud.SelectedDate)
+                    return "La fecha de limpieza no puede ser anterior a la fecha de solicitud.";
+                if (IdSeleccionado(cmbEstado) == 0)
+                    return "Seleccione el estado de la orden.";
+                if (IdSeleccionado(cmbSupervisor) == 0)
+                    return "Seleccione el supervisor.";
+                if (IdSeleccionado(cmbLocacion) == 0)
+                    return "Seleccione la locación.";
+            }
+            else if (paso == 3)
+            {
+                if (lstEmpleadosAsignados.Items.Count == 0)
+                    return "Asigne al menos un empleado.";
+                if (lstEmpleadosAsignados.Items.Count < personasNecesarias)
+                    return "La cotización necesita " + personasNecesarias + " empleados. Asigne más.";
+                if (cmbTurno.SelectedItem == null)
+                    return "Seleccione el turno.";
+                if (txtPiso_area.Text.Trim() == "")
+                    return "Escriba el piso o área.";
+                if (IdSeleccionado(cmbVehiculo) == 0)
+                    return "Seleccione el vehículo.";
+            }
+
+            return "";
+        }
+
+        private void MostrarErrorPaso(string mensaje)
+        {
+            txtErrorPaso.Text = mensaje;
+            txtErrorPaso.Visibility = Visibility.Visible;
+        }
+
+        private void ArmarResumen()
+        {
+            string fecha = dpFechaLimpieza.SelectedDate == null
+                ? ""
+                : dpFechaLimpieza.SelectedDate.Value.ToString("dd/MM/yyyy");
+
+            txtResumen.Text =
+                "Cotización: " + txtCotizacion.Text + "  |  " + txtTotalCotizacion.Text + "\n" +
+                "Cliente: " + TxtEmpresa.Text + " (" + TxtContacto.Text + " " + TxtApellido.Text + ")\n" +
+                "Servicio: " + txtServicio.Text + " (" + lstActividadesOrden.Items.Count + " actividades)\n" +
+                "Lugar: " + cmbLocacion.SelectedItem + " - " + txtDireccion_limpieza.Text + "\n" +
+                "Fecha de limpieza: " + fecha + "\n" +
+                "Supervisor: " + cmbSupervisor.SelectedItem;
+        }
+
+        private void Paso_Click(object sender, MouseButtonEventArgs e)
+        {
+            int destino = int.Parse("" + ((FrameworkElement)sender).Tag);
+
+            if (destino < pasoActual)
+                IrAPaso(destino);
+            else if (destino > pasoActual)
+                AvanzarHasta(destino);
+        }
+
+        private void btnSiguiente_Click(object sender, RoutedEventArgs e)
+        {
+            AvanzarHasta(pasoActual + 1);
+        }
+
+        private void btnAtras_Click(object sender, RoutedEventArgs e)
+        {
+            if (pasoActual > 1)
+                IrAPaso(pasoActual - 1);
         }
 
         private void DragWindow(object sender, MouseButtonEventArgs e)

@@ -219,11 +219,12 @@
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="Actividad" Binding="{Binding Nombre, Mode=OneWay}" IsReadOnly="True" Width="*"/>
                                         <DataGridTextColumn Header="Se mide en" Binding="{Binding Unidad, Mode=OneWay}" IsReadOnly="True" Width="120"/>
-                                        <DataGridTemplateColumn Header="Cantidad (escríbala aquí)" Width="190">
+                                        <DataGridTemplateColumn Header="Cantidad" Width="190">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBox Text="{Binding Medida, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                                             MaxLength="12" Margin="0,4" LostFocus="Medida_LostFocus"/>
+                                                    <TextBox Style="{StaticResource CeldaCantidad}"
+                                                             Text="{Binding Medida, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+                                                             MaxLength="12" LostFocus="Medida_LostFocus"/>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>

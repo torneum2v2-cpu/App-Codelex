@@ -459,6 +459,18 @@ IF OBJECT_ID('FK_COTIZACION_DETALLE_ACTIVIDADES') IS NULL
 	ADD CONSTRAINT FK_COTIZACION_DETALLE_ACTIVIDADES FOREIGN KEY (actividad_id) REFERENCES ACTIVIDADES(actividad_id);
 GO
 
+IF OBJECT_ID('ABONOS') IS NULL
+CREATE TABLE ABONOS
+(
+	abono_id INT PRIMARY KEY IDENTITY,
+	factura_id INT NOT NULL FOREIGN KEY REFERENCES FACTURAS(factura_id),
+	fecha_abono DATE NOT NULL,
+	monto MONEY NOT NULL,
+	forma_pago_id INT FOREIGN KEY REFERENCES FORMAS_PAGOS(forma_pago_id),
+	saldo_despues MONEY NOT NULL
+)
+GO
+
 -- Tipos de tabla que usan los procedimientos
 
 IF TYPE_ID('dbo.tipo_lista_empleados') IS NULL
@@ -491,16 +503,6 @@ IF TYPE_ID('dbo.tipo_lista_medidas') IS NULL
 	(
 		actividad_id INT NOT NULL,
 		medida DECIMAL(12, 2) NOT NULL
-	);
-GO
-
-IF TYPE_ID('dbo.tipo_lista_lineas') IS NULL
-	CREATE TYPE dbo.tipo_lista_lineas AS TABLE
-	(
-		concepto VARCHAR(150) NOT NULL,
-		cantidad INT NOT NULL,
-		precio_unitario DECIMAL(12, 2) NOT NULL,
-		adicional BIT NOT NULL
 	);
 GO
 
@@ -3864,38 +3866,6 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE sp_ListarOrdenesFacturables
-	@texto VARCHAR(50) = NULL
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
-
-	SELECT o.orden_id,
-		   o.fecha_servicio,
-		   c.identificacionCliente, c.nombreEmpresa, c.nombreCliente, c.apellidoCliente,
-		   c.telefonoCliente, c.correoCliente,
-		   l.locacion_id, l.nombreLocacion, l.tipoLocacion, l.direccion,
-		   s.nombreServicio
-	FROM ORDENES o
-	INNER JOIN ESTADO_ORDENES e ON e.estado_orden_id = o.estado_orden_id
-	INNER JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
-	INNER JOIN LOCACIONES l ON l.locacion_id = o.locacion_id
-	LEFT JOIN SERVICIOS s ON s.servicio_id = o.servicio_id
-	WHERE e.nombreEstadoOrden = 'Completada'
-	  AND NOT EXISTS (SELECT 1 FROM FACTURAS f WHERE f.orden_id = o.orden_id)
-	  AND (@texto = ''
-		   OR o.orden_id LIKE '%' + @texto + '%'
-		   OR c.identificacionCliente LIKE '%' + @texto + '%'
-		   OR c.nombreEmpresa LIKE '%' + @texto + '%'
-		   OR c.nombreCliente LIKE '%' + @texto + '%'
-		   OR c.apellidoCliente LIKE '%' + @texto + '%'
-		   OR ISNULL(c.nombreCliente, '') + ' ' + ISNULL(c.apellidoCliente, '') LIKE '%' + @texto + '%')
-	ORDER BY o.fecha_servicio DESC, o.orden_id DESC;
-END
-GO
-
 -- Las líneas de la orden salen de su cotización (una por actividad). Sin cotización, de las actividades.
 CREATE OR ALTER PROCEDURE sp_DetalleOrdenFactura
 	@orden_id VARCHAR(50)
@@ -4048,7 +4018,6 @@ CREATE OR ALTER PROCEDURE sp_InsertarFactura
 	@fecha_factura DATE,
 	@forma_pago_id INT,
 	@numero_cuotas INT,
-	@lineas dbo.tipo_lista_lineas READONLY,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT,
 	@factura_id INT OUTPUT
@@ -4087,17 +4056,21 @@ BEGIN
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM @lineas)
+	CREATE TABLE #lineas (concepto VARCHAR(150), cantidad INT, precio_unitario DECIMAL(12, 2));
+	INSERT INTO #lineas EXEC sp_DetalleOrdenFactura @orden_id;
+
+	IF NOT EXISTS (SELECT 1 FROM #lineas)
 	BEGIN
-		SET @mensaje = 'La factura necesita al menos una linea.';
+		SET @mensaje = 'La orden no tiene servicios para facturar.';
 		RETURN;
 	END
 
 	BEGIN TRY
 		BEGIN TRANSACTION;
 
-		DECLARE @subtotal DECIMAL(12, 2) = (SELECT ISNULL(SUM(cantidad * precio_unitario), 0) FROM @lineas);
-		DECLARE @total DECIMAL(12, 2) = @subtotal + ROUND(@subtotal * 0.15, 2);
+		DECLARE @tasa DECIMAL(6, 4) = ISNULL((SELECT valor FROM PARAMETROS_COSTEO WHERE clave = 'ISV'), 0.15);
+		DECLARE @subtotal DECIMAL(12, 2) = (SELECT ISNULL(SUM(cantidad * precio_unitario), 0) FROM #lineas);
+		DECLARE @total DECIMAL(12, 2) = @subtotal + ROUND(@subtotal * @tasa, 2);
 		DECLARE @contado BIT = CASE WHEN @numero_cuotas = 1 THEN 1 ELSE 0 END;
 
 		INSERT INTO FACTURAS (orden_id, fechaFactura, tipo_pago, estado_pago, fecha_pago,
@@ -4111,8 +4084,8 @@ BEGIN
 		SET @factura_id = CAST(SCOPE_IDENTITY() AS INT);
 
 		INSERT INTO FACTURA_DETALLE (factura_id, linea, concepto, cantidad, precio_unitario, adicional)
-		SELECT @factura_id, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), concepto, cantidad, precio_unitario, adicional
-		FROM @lineas;
+		SELECT @factura_id, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), concepto, cantidad, precio_unitario, 0
+		FROM #lineas;
 
 		IF @contado = 0
 		BEGIN
@@ -4211,12 +4184,21 @@ BEGIN
 		   ISNULL(c.correoCliente, '') AS correoCliente,
 		   ISNULL(l.nombreLocacion, '') AS nombreLocacion,
 		   ISNULL(l.tipoLocacion, '') AS tipoLocacion,
-		   ISNULL(l.direccion, '') AS direccion
+		   ISNULL(l.direccion, '') AS direccion,
+		   pg.pagado,
+		   ISNULL(f.precio_facturado, 0) - pg.pagado AS saldo
 	FROM FACTURAS f
 	INNER JOIN ORDENES o ON o.orden_id = f.orden_id
 	LEFT JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
 	LEFT JOIN LOCACIONES l ON l.locacion_id = o.locacion_id
 	LEFT JOIN FORMAS_PAGOS fp ON fp.forma_pago_id = f.forma_pago_id
+	CROSS APPLY (SELECT CASE WHEN f.tipo_pago = 'Credito'
+							 THEN ISNULL((SELECT SUM(ISNULL(q.monto_pagado, 0))
+										  FROM CUENTAS_POR_COBRAR cc
+										  INNER JOIN CUOTAS q ON q.cuenta_id = cc.cuenta_id
+										  WHERE cc.factura_id = f.factura_id), 0)
+							 WHEN f.estado_pago = 'Pagada' THEN ISNULL(f.precio_facturado, 0)
+							 ELSE 0 END AS pagado) pg
 	WHERE f.factura_id = @factura_id;
 END
 GO
@@ -4249,11 +4231,223 @@ BEGIN
 		   q.fecha_vencimiento,
 		   q.monto_cuota,
 		   ISNULL(q.monto_pagado, 0) AS monto_pagado,
+		   q.monto_cuota - ISNULL(q.monto_pagado, 0) AS saldo,
 		   q.estado_cuota
 	FROM CUENTAS_POR_COBRAR cpc
 	INNER JOIN CUOTAS q ON q.cuenta_id = cpc.cuenta_id
 	WHERE cpc.factura_id = @factura_id
 	ORDER BY q.numero_cuota;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ObtenerOrdenFactura
+	@orden_id VARCHAR(50)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT o.orden_id,
+		   o.fecha_servicio,
+		   ISNULL(o.cotizacion_id, '') AS cotizacion_id,
+		   ISNULL(o.identificacionCliente, '') AS identificacionCliente,
+		   ISNULL(c.nombreEmpresa, '') AS nombreEmpresa,
+		   ISNULL(c.nombreCliente, '') AS nombreCliente,
+		   ISNULL(c.apellidoCliente, '') AS apellidoCliente,
+		   ISNULL(c.telefonoCliente, '') AS telefonoCliente,
+		   ISNULL(c.correoCliente, '') AS correoCliente,
+		   ISNULL(l.nombreLocacion, '') AS nombreLocacion,
+		   ISNULL(l.tipoLocacion, '') AS tipoLocacion,
+		   ISNULL(l.direccion, '') AS direccion,
+		   ISNULL(s.nombreServicio, '') AS nombreServicio,
+		   CASE WHEN eo.nombreEstadoOrden = 'Completada'
+				 AND NOT EXISTS (SELECT 1 FROM FACTURAS f WHERE f.orden_id = o.orden_id)
+				THEN 1 ELSE 0 END AS facturable
+	FROM ORDENES o
+	LEFT JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
+	LEFT JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
+	LEFT JOIN LOCACIONES l ON l.locacion_id = o.locacion_id
+	LEFT JOIN SERVICIOS s ON s.servicio_id = o.servicio_id
+	WHERE o.orden_id = @orden_id;
+END
+GO
+
+-- Cómo quedan las cuotas si se abona un monto: el abono cubre primero las cuotas más antiguas.
+CREATE OR ALTER FUNCTION dbo.fn_AplicarAbono (@factura_id INT, @monto MONEY)
+RETURNS TABLE
+AS
+RETURN
+(
+	WITH c AS
+	(
+		SELECT q.cuota_id, q.numero_cuota, q.fecha_vencimiento, q.monto_cuota,
+			   ISNULL(q.monto_pagado, 0) AS pagado,
+			   q.monto_cuota - ISNULL(q.monto_pagado, 0) AS pendiente
+		FROM CUOTAS q
+		INNER JOIN CUENTAS_POR_COBRAR cc ON cc.cuenta_id = q.cuenta_id
+		WHERE cc.factura_id = @factura_id
+	),
+	a AS
+	(
+		SELECT c.*,
+			   ISNULL(SUM(c.pendiente) OVER (ORDER BY c.numero_cuota
+											 ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0) AS antes
+		FROM c
+	),
+	b AS
+	(
+		SELECT a.*,
+			   CASE WHEN @monto - a.antes <= 0 THEN 0
+					WHEN @monto - a.antes >= a.pendiente THEN a.pendiente
+					ELSE @monto - a.antes END AS aplicado
+		FROM a
+	)
+	SELECT b.cuota_id, b.numero_cuota, b.fecha_vencimiento, b.monto_cuota, b.pagado,
+		   b.aplicado,
+		   b.pagado + b.aplicado AS nuevo_pagado,
+		   b.monto_cuota - b.pagado - b.aplicado AS nuevo_saldo,
+		   CASE WHEN b.pagado + b.aplicado >= b.monto_cuota THEN 'Pagada'
+				WHEN b.fecha_vencimiento < CAST(GETDATE() AS DATE) THEN 'Vencida'
+				WHEN b.pagado + b.aplicado > 0 THEN 'Parcial'
+				ELSE 'Pendiente' END AS nuevo_estado
+	FROM b
+);
+GO
+
+CREATE OR ALTER PROCEDURE sp_SimularAbono
+	@factura_id INT,
+	@monto MONEY
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT numero_cuota, fecha_vencimiento, monto_cuota, pagado, aplicado, nuevo_pagado, nuevo_saldo, nuevo_estado
+	FROM dbo.fn_AplicarAbono(@factura_id, @monto)
+	ORDER BY numero_cuota;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_RegistrarAbono
+	@factura_id INT,
+	@monto MONEY,
+	@forma_pago_id INT,
+	@fecha_abono DATE = NULL,
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SET XACT_ABORT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+	SET @fecha_abono = ISNULL(@fecha_abono, CAST(GETDATE() AS DATE));
+
+	DECLARE @tipo VARCHAR(10), @estado VARCHAR(50), @cuenta_id INT, @saldo MONEY;
+
+	SELECT @tipo = tipo_pago, @estado = estado_pago FROM FACTURAS WHERE factura_id = @factura_id;
+
+	IF @tipo IS NULL
+	BEGIN
+		SET @mensaje = 'La factura no existe.';
+		RETURN;
+	END
+
+	IF @tipo <> 'Credito'
+	BEGIN
+		SET @mensaje = 'Solo las facturas a credito reciben abonos.';
+		RETURN;
+	END
+
+	IF @estado = 'Pagada'
+	BEGIN
+		SET @mensaje = 'La factura ya esta pagada.';
+		RETURN;
+	END
+
+	IF NOT EXISTS (SELECT 1 FROM FORMAS_PAGOS WHERE forma_pago_id = @forma_pago_id)
+	BEGIN
+		SET @mensaje = 'La forma de pago no existe.';
+		RETURN;
+	END
+
+	SELECT @cuenta_id = cc.cuenta_id,
+		   @saldo = SUM(q.monto_cuota - ISNULL(q.monto_pagado, 0))
+	FROM CUENTAS_POR_COBRAR cc
+	INNER JOIN CUOTAS q ON q.cuenta_id = cc.cuenta_id
+	WHERE cc.factura_id = @factura_id
+	GROUP BY cc.cuenta_id;
+
+	IF ISNULL(@monto, 0) <= 0
+	BEGIN
+		SET @mensaje = 'El abono debe ser mayor que 0.';
+		RETURN;
+	END
+
+	IF @monto > @saldo
+	BEGIN
+		SET @mensaje = 'El abono supera el saldo pendiente: ' + CAST(@saldo AS VARCHAR(20)) + '.';
+		RETURN;
+	END
+
+	DECLARE @nuevas TABLE (cuota_id INT, aplicado MONEY, nuevo_pagado MONEY, nuevo_estado VARCHAR(20));
+
+	INSERT INTO @nuevas
+	SELECT cuota_id, aplicado, nuevo_pagado, nuevo_estado
+	FROM dbo.fn_AplicarAbono(@factura_id, @monto);
+
+	BEGIN TRY
+		BEGIN TRANSACTION;
+
+		UPDATE q
+		SET q.monto_pagado = n.nuevo_pagado,
+			q.estado_cuota = n.nuevo_estado,
+			q.fecha_pago = @fecha_abono,
+			q.forma_pago_id = @forma_pago_id
+		FROM CUOTAS q
+		INNER JOIN @nuevas n ON n.cuota_id = q.cuota_id
+		WHERE n.aplicado > 0;
+
+		INSERT INTO ABONOS (factura_id, fecha_abono, monto, forma_pago_id, saldo_despues)
+		VALUES (@factura_id, @fecha_abono, @monto, @forma_pago_id, @saldo - @monto);
+
+		IF NOT EXISTS (SELECT 1 FROM CUOTAS WHERE cuenta_id = @cuenta_id AND estado_cuota <> 'Pagada')
+		BEGIN
+			UPDATE CUENTAS_POR_COBRAR SET estado_cuenta = 'Pagada' WHERE cuenta_id = @cuenta_id;
+
+			UPDATE FACTURAS
+			SET estado_pago = 'Pagada', fecha_pago = @fecha_abono, forma_pago_id = @forma_pago_id
+			WHERE factura_id = @factura_id;
+		END
+		ELSE IF EXISTS (SELECT 1 FROM CUOTAS WHERE cuenta_id = @cuenta_id AND estado_cuota = 'Vencida')
+			UPDATE CUENTAS_POR_COBRAR SET estado_cuenta = 'Vencida' WHERE cuenta_id = @cuenta_id;
+		ELSE
+			UPDATE CUENTAS_POR_COBRAR SET estado_cuenta = 'Vigente' WHERE cuenta_id = @cuenta_id;
+
+		COMMIT TRANSACTION;
+
+		SET @resultado = 1;
+		SET @mensaje = 'El abono se registro correctamente.';
+	END TRY
+	BEGIN CATCH
+		IF @@TRANCOUNT > 0
+			ROLLBACK TRANSACTION;
+
+		SET @mensaje = LEFT(ERROR_MESSAGE(), 100);
+	END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ListarAbonosFactura
+	@factura_id INT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT a.fecha_abono, a.monto, ISNULL(fp.nombreFormaPago, '') AS nombreFormaPago, a.saldo_despues
+	FROM ABONOS a
+	LEFT JOIN FORMAS_PAGOS fp ON fp.forma_pago_id = a.forma_pago_id
+	WHERE a.factura_id = @factura_id
+	ORDER BY a.abono_id;
 END
 GO
 
@@ -4931,6 +5125,13 @@ GO
 
 IF TYPE_ID('dbo.tipo_lista_equipos') IS NOT NULL
 	DROP TYPE dbo.tipo_lista_equipos;
+GO
+
+IF TYPE_ID('dbo.tipo_lista_lineas') IS NOT NULL
+	DROP TYPE dbo.tipo_lista_lineas;
+GO
+
+DROP PROCEDURE IF EXISTS sp_ListarOrdenesFacturables;
 GO
 
 SET NOEXEC OFF;

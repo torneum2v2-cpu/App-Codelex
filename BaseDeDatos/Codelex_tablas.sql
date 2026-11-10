@@ -459,6 +459,18 @@ IF OBJECT_ID('FK_COTIZACION_DETALLE_ACTIVIDADES') IS NULL
 	ADD CONSTRAINT FK_COTIZACION_DETALLE_ACTIVIDADES FOREIGN KEY (actividad_id) REFERENCES ACTIVIDADES(actividad_id);
 GO
 
+IF OBJECT_ID('ABONOS') IS NULL
+CREATE TABLE ABONOS
+(
+	abono_id INT PRIMARY KEY IDENTITY,
+	factura_id INT NOT NULL FOREIGN KEY REFERENCES FACTURAS(factura_id),
+	fecha_abono DATE NOT NULL,
+	monto MONEY NOT NULL,
+	forma_pago_id INT FOREIGN KEY REFERENCES FORMAS_PAGOS(forma_pago_id),
+	saldo_despues MONEY NOT NULL
+)
+GO
+
 -- Tipos de tabla que usan los procedimientos
 
 IF TYPE_ID('dbo.tipo_lista_empleados') IS NULL
@@ -491,16 +503,6 @@ IF TYPE_ID('dbo.tipo_lista_medidas') IS NULL
 	(
 		actividad_id INT NOT NULL,
 		medida DECIMAL(12, 2) NOT NULL
-	);
-GO
-
-IF TYPE_ID('dbo.tipo_lista_lineas') IS NULL
-	CREATE TYPE dbo.tipo_lista_lineas AS TABLE
-	(
-		concepto VARCHAR(150) NOT NULL,
-		cantidad INT NOT NULL,
-		precio_unitario DECIMAL(12, 2) NOT NULL,
-		adicional BIT NOT NULL
 	);
 GO
 

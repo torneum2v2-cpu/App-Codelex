@@ -23,27 +23,55 @@ namespace Codelex.Clases_BDD
         public DateTime? ValidaHasta = null;
         public string Observaciones = "";
 
-        // Solo factura
-        public string OrdenId = "";
-        public int FormaPagoId = 0;
-        public int Cuotas = 1;
-
         // Cotización: servicio y actividades (listas paralelas; la medida llega como la escribió el usuario)
         public int ServicioId = 0;
         public List<int> ActividadesId = new List<int>();
         public List<string> ActividadesNombre = new List<string>();
         public List<string> ActividadesMedida = new List<string>();
 
-        // Factura: detalle (listas paralelas, igual que productos en DatosOrden)
-        public List<string> LineasConcepto = new List<string>();
-        public List<int> LineasCantidad = new List<int>();
-        public List<decimal> LineasPrecio = new List<decimal>();
-        public List<bool> LineasAdicional = new List<bool>();
+    }
+
+    // Lo único que el usuario decide al facturar: cómo se paga.
+    class DatosFactura
+    {
+        public string OrdenId = "";
+        public string TipoPago = "";
+        public int FormaPagoId = 0;
+        public int Cuotas = 0;
+        public DateTime Fecha = DateTime.Today;
     }
 
     class Facturacion : BaseDatos
     {
         public const decimal TasaIsv = 0.15m;
+        public const string Contado = "Contado";
+        public const string Credito = "Crédito";
+
+        public List<string> TiposPago()
+        {
+            List<string> tipos = new List<string>();
+            tipos.Add(Contado);
+            tipos.Add(Credito);
+            return tipos;
+        }
+
+        public List<int> OpcionesCuotas()
+        {
+            List<int> cuotas = new List<int>();
+
+            for (int i = 2; i <= 24; i++)
+            {
+                cuotas.Add(i);
+            }
+
+            return cuotas;
+        }
+
+        // Número de factura con formato profesional: 000-001-01-00000001
+        public static string NumeroFactura(int facturaId)
+        {
+            return "000-001-01-" + facturaId.ToString().PadLeft(8, '0');
+        }
 
         public DataTable ListarServicios()
         {
@@ -60,10 +88,10 @@ namespace Codelex.Clases_BDD
             return Consultar(Procedimiento("sp_ListarFormasPago"));
         }
 
-        public DataTable ListarOrdenesFacturables(string texto)
+        public DataTable ObtenerOrdenFactura(string ordenId)
         {
-            SqlCommand comando = Procedimiento("sp_ListarOrdenesFacturables");
-            comando.Parameters.AddWithValue("@texto", texto.Trim());
+            SqlCommand comando = Procedimiento("sp_ObtenerOrdenFactura");
+            comando.Parameters.AddWithValue("@orden_id", ordenId);
             return Consultar(comando);
         }
 
@@ -71,7 +99,21 @@ namespace Codelex.Clases_BDD
         {
             SqlCommand comando = Procedimiento("sp_DetalleOrdenFactura");
             comando.Parameters.AddWithValue("@orden_id", ordenId);
-            return Consultar(comando);
+
+            DataTable tabla = Consultar(comando);
+            tabla.Columns.Add("tipo", typeof(string), "'Servicio'");
+            tabla.Columns.Add("subtotal", typeof(decimal), "cantidad * precio_unitario");
+            return tabla;
+        }
+
+        public string ValidarOrdenFacturable(DataTable orden)
+        {
+            if (orden.Rows.Count == 0)
+                return "No se encontró la orden.";
+            if (Convert.ToInt32(orden.Rows[0]["facturable"]) == 0)
+                return "Esta orden no se puede facturar: debe estar completada y sin factura.";
+
+            return "";
         }
 
         public DataTable ObtenerFactura(int facturaId)
@@ -93,6 +135,52 @@ namespace Codelex.Clases_BDD
             SqlCommand comando = Procedimiento("sp_CuotasFactura");
             comando.Parameters.AddWithValue("@factura_id", facturaId);
             return Consultar(comando);
+        }
+
+        public void ActualizarCuotasVencidas()
+        {
+            Consultar(Procedimiento("sp_ActualizarCuotasVencidas"));
+        }
+
+        public DataTable ListarAbonos(int facturaId)
+        {
+            SqlCommand comando = Procedimiento("sp_ListarAbonosFactura");
+            comando.Parameters.AddWithValue("@factura_id", facturaId);
+            return Consultar(comando);
+        }
+
+        // Cómo quedarían las cuotas si se abona ese monto.
+        public DataTable SimularAbono(int facturaId, string montoTexto, decimal saldo, out string mensaje)
+        {
+            decimal monto;
+            mensaje = ValidarAbono(montoTexto, saldo, out monto);
+
+            if (mensaje != "")
+                return new DataTable();
+
+            SqlCommand comando = Procedimiento("sp_SimularAbono");
+            comando.Parameters.AddWithValue("@factura_id", facturaId);
+            comando.Parameters.AddWithValue("@monto", monto);
+            return Consultar(comando);
+        }
+
+        public bool RegistrarAbono(int facturaId, string montoTexto, decimal saldo, int formaPagoId, out string mensaje)
+        {
+            decimal monto;
+            mensaje = ValidarAbono(montoTexto, saldo, out monto);
+
+            if (mensaje == "" && formaPagoId <= 0)
+                mensaje = "Seleccione el método de pago.";
+
+            if (mensaje != "")
+                return false;
+
+            SqlCommand comando = Procedimiento("sp_RegistrarAbono");
+            comando.Parameters.AddWithValue("@factura_id", facturaId);
+            comando.Parameters.AddWithValue("@monto", monto);
+            comando.Parameters.AddWithValue("@forma_pago_id", formaPagoId);
+            comando.Parameters.AddWithValue("@fecha_abono", DateTime.Today);
+            return Ejecutar(comando, out mensaje);
         }
 
         // Calcula el precio de cada actividad con la fórmula de costeo (la fórmula vive en la base de datos).
@@ -151,38 +239,6 @@ namespace Codelex.Clases_BDD
         }
 
         // ---------- Validaciones ----------
-
-        public string ValidarLinea(string concepto, string cantidadTexto, string precioTexto,
-                                   out int cantidad, out decimal precio)
-        {
-            cantidad = 0;
-            precio = 0;
-
-            concepto = concepto.Trim();
-            cantidadTexto = cantidadTexto.Trim();
-            precioTexto = precioTexto.Trim();
-
-            if (concepto == "")
-                return "Escriba o seleccione el concepto.";
-            if (concepto.Length > 150)
-                return "El concepto no puede tener más de 150 caracteres.";
-
-            if (cantidadTexto == "")
-                return "Escriba la cantidad.";
-            if (!int.TryParse(cantidadTexto, out cantidad))
-                return "La cantidad no es válida.";
-            if (cantidad <= 0)
-                return "La cantidad debe ser mayor que 0.";
-
-            if (precioTexto == "")
-                return "Escriba el precio.";
-            if (!decimal.TryParse(precioTexto, NumberStyles.Number, CultureInfo.InvariantCulture, out precio))
-                return "El precio no es válido.";
-            if (precio <= 0)
-                return "El precio debe ser mayor que 0.";
-
-            return "";
-        }
 
         public string ValidarMedida(string texto, out decimal medida)
         {
@@ -251,24 +307,33 @@ namespace Codelex.Clases_BDD
             return ValidarActividades(datos);
         }
 
-        private string ValidarFactura(DatosDocumento datos)
+        public string ValidarAbono(string texto, decimal saldo, out decimal monto)
         {
-            if (datos.OrdenId.Trim() == "")
-                return "Seleccione una orden de la lista inferior.";
-            if (!datos.Fecha.HasValue)
-                return "Seleccione la fecha.";
-            if (datos.FormaPagoId <= 0)
-                return "Seleccione el método de pago.";
-            if (datos.Cuotas <= 0 || datos.Cuotas > 24)
-                return "Seleccione el número de cuotas.";
+            monto = 0;
+            texto = texto.Trim().Replace(",", "");
 
-            return ValidarDetalle(datos);
+            if (texto == "")
+                return "Escriba el monto del abono.";
+            if (!decimal.TryParse(texto, NumberStyles.Number, CultureInfo.InvariantCulture, out monto))
+                return "El monto no es válido.";
+            if (monto <= 0)
+                return "El abono debe ser mayor que 0.";
+            if (monto > saldo)
+                return "El abono no puede ser mayor que el saldo pendiente (" + Dinero(saldo) + ").";
+
+            return "";
         }
 
-        private string ValidarDetalle(DatosDocumento datos)
+        private string ValidarFactura(DatosFactura datos)
         {
-            if (datos.LineasConcepto.Count == 0)
-                return "Agregue al menos un servicio al detalle.";
+            if (datos.OrdenId.Trim() == "")
+                return "No se indicó la orden a facturar.";
+            if (datos.TipoPago != Contado && datos.TipoPago != Credito)
+                return "Seleccione si es al contado o a crédito.";
+            if (datos.FormaPagoId <= 0)
+                return "Seleccione el método de pago.";
+            if (datos.TipoPago == Credito && (datos.Cuotas < 2 || datos.Cuotas > 24))
+                return "Seleccione el número de cuotas.";
 
             return "";
         }
@@ -319,21 +384,23 @@ namespace Codelex.Clases_BDD
             return guardada;
         }
 
-        public bool GuardarFactura(DatosDocumento datos, out string mensaje, out string facturaId)
+        public bool GuardarFactura(DatosFactura datos, out string mensaje, out int facturaId)
         {
-            facturaId = "";
+            facturaId = 0;
 
             mensaje = ValidarFactura(datos);
             if (mensaje != "")
                 return false;
 
+            int cuotas = 1;
+            if (datos.TipoPago == Credito)
+                cuotas = datos.Cuotas;
+
             SqlCommand comando = Procedimiento("sp_InsertarFactura");
             comando.Parameters.AddWithValue("@orden_id", datos.OrdenId.Trim());
-            comando.Parameters.AddWithValue("@fecha_factura", datos.Fecha.Value);
+            comando.Parameters.AddWithValue("@fecha_factura", datos.Fecha);
             comando.Parameters.AddWithValue("@forma_pago_id", datos.FormaPagoId);
-            comando.Parameters.AddWithValue("@numero_cuotas", datos.Cuotas);
-
-            AgregarLista(comando, "@lineas", "dbo.tipo_lista_lineas", TablaDeLineas(datos));
+            comando.Parameters.AddWithValue("@numero_cuotas", cuotas);
 
             SqlParameter idParametro = new SqlParameter("@factura_id", SqlDbType.Int);
             idParametro.Direction = ParameterDirection.Output;
@@ -343,8 +410,8 @@ namespace Codelex.Clases_BDD
 
             if (guardada)
             {
-                facturaId = "FAC-" + ("" + idParametro.Value).PadLeft(6, '0');
-                mensaje = "Factura " + facturaId + " registrada correctamente.";
+                facturaId = Convert.ToInt32(idParametro.Value);
+                mensaje = "Factura " + NumeroFactura(facturaId) + " registrada correctamente.";
             }
 
             return guardada;
@@ -370,23 +437,6 @@ namespace Codelex.Clases_BDD
                 decimal medida;
                 ValidarMedida(datos.ActividadesMedida[i], out medida);
                 tabla.Rows.Add(datos.ActividadesId[i], medida);
-            }
-
-            return tabla;
-        }
-
-        private DataTable TablaDeLineas(DatosDocumento datos)
-        {
-            DataTable tabla = new DataTable();
-            tabla.Columns.Add("concepto", typeof(string));
-            tabla.Columns.Add("cantidad", typeof(int));
-            tabla.Columns.Add("precio_unitario", typeof(decimal));
-            tabla.Columns.Add("adicional", typeof(bool));
-
-            for (int i = 0; i < datos.LineasConcepto.Count; i++)
-            {
-                tabla.Rows.Add(datos.LineasConcepto[i], datos.LineasCantidad[i],
-                               datos.LineasPrecio[i], datos.LineasAdicional[i]);
             }
 
             return tabla;

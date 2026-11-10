@@ -15,6 +15,8 @@ namespace Codelex.Facturas_y_Cotizaciones
     {
         Facturacion facturaBD = new Facturacion();
         int facturaId;
+        decimal saldoActual = 0;
+        bool huboCambios = false;
 
         public FacturaDetalle(int facturaId)
         {
@@ -49,14 +51,16 @@ namespace Codelex.Facturas_y_Cotizaciones
 
             DataRow f = cabecera.Rows[0];
 
-            string numero = "FAC-" + facturaId.ToString().PadLeft(6, '0');
+            string numero = Facturacion.NumeroFactura(facturaId);
             lblTitulo.Text = "Factura " + numero;
 
             dNumero.Text = numero;
             dFecha.Text = Fecha(f["fechaFactura"]);
             dOrden.Text = "" + f["orden_id"];
             dFormaPago.Text = Vacio("" + f["nombreFormaPago"]);
-            dTipoPago.Text = ("" + f["tipo_pago"]) == "Credito" ? "Crédito" : "Contado";
+            dTipoPago.Text = Facturacion.Contado;
+            if (("" + f["tipo_pago"]) == "Credito")
+                dTipoPago.Text = Facturacion.Credito;
 
             string estadoPago = "" + f["estado_pago"];
             dEstadoPago.Text = estadoPago;
@@ -99,17 +103,51 @@ namespace Codelex.Facturas_y_Cotizaciones
             lblIsv.Text = facturaBD.Dinero(isv);
             lblTotal.Text = facturaBD.Dinero(total);
 
-            // Cuotas (solo si la factura fue a crédito)
+            saldoActual = Convert.ToDecimal(f["saldo"]);
+            lblPagado.Text = facturaBD.Dinero(Convert.ToDecimal(f["pagado"]));
+            lblSaldo.Text = facturaBD.Dinero(saldoActual);
+
+            // Cuotas y abonos (solo si la factura fue a crédito)
             if (("" + f["tipo_pago"]) == "Credito")
             {
+                facturaBD.ActualizarCuotasVencidas();
+
                 DataTable cuotas = facturaBD.CuotasFactura(facturaId);
                 dgCuotas.ItemsSource = cuotas.DefaultView;
                 lblTituloCuotas.Text = "Cuotas (" + cuotas.Rows.Count + ")";
+
+                DataTable abonos = facturaBD.ListarAbonos(facturaId);
+                dgAbonos.ItemsSource = abonos.DefaultView;
+
+                btnAbono.Visibility = Visibility.Collapsed;
+                if (saldoActual > 0)
+                    btnAbono.Visibility = Visibility.Visible;
+
                 pnlCuotas.Visibility = Visibility.Visible;
             }
             else
             {
                 pnlCuotas.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void btnAbono_Click(object sender, RoutedEventArgs e)
+        {
+            RegistrarAbono ventana = new RegistrarAbono(facturaId, saldoActual);
+            ventana.Owner = this;
+
+            if (ventana.ShowDialog() == true)
+            {
+                huboCambios = true;
+
+                try
+                {
+                    CargarFactura();
+                }
+                catch (Exception ex)
+                {
+                    MensajeCodelex.Mostrar(this, "Factura", ex.Message, false);
+                }
             }
         }
 
@@ -148,6 +186,7 @@ namespace Codelex.Facturas_y_Cotizaciones
 
         private void Salir_Click(object sender, RoutedEventArgs e)
         {
+            DialogResult = huboCambios;
             Close();
         }
     }

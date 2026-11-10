@@ -530,7 +530,7 @@ namespace Codelex.Órdenes
                     return "Sin factura";
 
                 List<string> lineas = new List<string>();
-                lineas.Add("Factura N.° " + d["factura_id"] + " - " + d["estado_pago"]);
+                lineas.Add("Factura N.° " + Facturacion.NumeroFactura(Convert.ToInt32(d["factura_id"])) + " - " + d["estado_pago"]);
 
                 if (d["precio_facturado"] is not DBNull)
                     lineas.Add("Monto: L " + Convert.ToDecimal(d["precio_facturado"]).ToString("N2", CultureInfo.InvariantCulture));
@@ -676,8 +676,10 @@ namespace Codelex.Órdenes
 
                 FacturaDetalle ventana = new FacturaDetalle(facturaIdActual);
                 ventana.Owner = this;
-                ventana.ShowDialog();
-            }   
+
+                if (ventana.ShowDialog() == true && dgOrdenes.SelectedItem is FilaOrden fila)
+                    CargarOrdenes(fila.OrdenId, true);
+            }
 
             private void btnActualizar_Click(object sender, RoutedEventArgs e)
                 {

@@ -91,12 +91,12 @@ namespace Codelex
                     return;
 
                 DataRow fila = tabla.Rows[0];
-                txtNombre.Text = fila["nombreEmpleado"].ToString();
-                txtApellido.Text = fila["apellidoEmpleado"].ToString();
-                txtCargo.Text = fila["nombreCargo"].ToString();
+                txtNombre.Text = fila["nombre_empleado"].ToString();
+                txtApellido.Text = fila["apellido_empleado"].ToString();
+                txtCargo.Text = fila["nombre_cargo"].ToString();
                 txtIdentidad.Text = fila["identidad"].ToString();
-                txtTelefono.Text = fila["telefonoEmpleado"].ToString();
-                txtCorreo.Text = fila["correoEmpleado"].ToString();
+                txtTelefono.Text = fila["telefono_empleado"].ToString();
+                txtCorreo.Text = fila["correo_empleado"].ToString();
                 txtUsuario.Text = fila["usuario"].ToString();
                 txtEstado.Text = fila["estado"].ToString();
             }
@@ -178,7 +178,7 @@ namespace Codelex
                 sb.AppendLine("ASISTENCIA");
                 sb.AppendLine("Fecha;Entrada;Salida;Horas");
                 foreach (DataRow f in asistencias.Rows)
-                    sb.AppendLine(Csv(f["fechaAsistencia"]) + ";" + Csv(f["hora_entrada"]) + ";" + Csv(f["hora_salida"]) + ";" +
+                    sb.AppendLine(Csv(f["fecha_asistencia"]) + ";" + Csv(f["hora_entrada"]) + ";" + Csv(f["hora_salida"]) + ";" +
                                   Convert.ToDecimal(f["horas"]).ToString("N2", CultureInfo.InvariantCulture));
                 sb.AppendLine(txtTotalHoras.Text.Replace(":", ";"));
                 sb.AppendLine();
@@ -186,7 +186,7 @@ namespace Codelex
                 sb.AppendLine("ORDENES ASIGNADAS");
                 sb.AppendLine("Orden;Cliente;Servicio;Fecha;Turno;Piso / area");
                 foreach (DataRow f in ordenes.Rows)
-                    sb.AppendLine(Csv(f["orden_id"]) + ";" + Csv(f["cliente"]) + ";" + Csv(f["nombreServicio"]) + ";" +
+                    sb.AppendLine(Csv(f["orden_id"]) + ";" + Csv(f["cliente"]) + ";" + Csv(f["nombre_servicio"]) + ";" +
                                   Csv(f["fecha_servicio"]) + ";" + Csv(f["turno"]) + ";" + Csv(f["piso_area"]));
                 sb.AppendLine(txtTotalOrdenes.Text.Replace(":", ";"));
 

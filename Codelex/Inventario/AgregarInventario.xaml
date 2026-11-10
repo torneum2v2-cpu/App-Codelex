@@ -530,8 +530,8 @@
                                               AutoGenerateColumns="False" IsReadOnly="True"
                                               CanUserAddRows="False" SelectionMode="Single">
                                         <DataGrid.Columns>
-                                            <DataGridTextColumn Header="Nombre" Binding="{Binding nombreProducto}" Width="*"/>
-                                            <DataGridTextColumn Header="Tipo" Binding="{Binding tipoProducto}" Width="*"/>
+                                            <DataGridTextColumn Header="Nombre" Binding="{Binding nombre_producto}" Width="*"/>
+                                            <DataGridTextColumn Header="Tipo" Binding="{Binding tipo_producto}" Width="*"/>
                                             <DataGridTextColumn Header="Stock" Binding="{Binding stock}" Width="80"/>
                                         </DataGrid.Columns>
                                     </DataGrid>
@@ -539,10 +539,10 @@
                                               AutoGenerateColumns="False" IsReadOnly="True"
                                               CanUserAddRows="False" SelectionMode="Single">
                                         <DataGrid.Columns>
-                                            <DataGridTextColumn Header="Nombre" Binding="{Binding nombreEquipo}" Width="*"/>
-                                            <DataGridTextColumn Header="Tipo" Binding="{Binding tipoEquipo}" Width="*"/>
-                                            <DataGridTextColumn Header="Marca" Binding="{Binding marcaEquipo}" Width="*"/>
-                                            <DataGridTextColumn Header="Modelo" Binding="{Binding modeloEquipo}" Width="*"/>
+                                            <DataGridTextColumn Header="Nombre" Binding="{Binding nombre_equipo}" Width="*"/>
+                                            <DataGridTextColumn Header="Tipo" Binding="{Binding tipo_equipo}" Width="*"/>
+                                            <DataGridTextColumn Header="Marca" Binding="{Binding marca_equipo}" Width="*"/>
+                                            <DataGridTextColumn Header="Modelo" Binding="{Binding modelo_equipo}" Width="*"/>
                                             <DataGridTextColumn Header="Unidades" Binding="{Binding total}" Width="90"/>
                                         </DataGrid.Columns>
                                     </DataGrid>

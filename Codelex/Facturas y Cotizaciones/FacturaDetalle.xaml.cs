@@ -56,9 +56,9 @@ namespace Codelex.Facturas_y_Cotizaciones
             lblTitulo.Text = "Factura " + numero;
 
             dNumero.Text = numero;
-            dFecha.Text = Fecha(f["fechaFactura"]);
+            dFecha.Text = Fecha(f["fecha_factura"]);
             dOrden.Text = "" + f["orden_id"];
-            dFormaPago.Text = Vacio("" + f["nombreFormaPago"]);
+            dFormaPago.Text = Vacio("" + f["nombre_forma_pago"]);
             dTipoPago.Text = Facturacion.Contado;
             if (("" + f["tipo_pago"]) == "Credito")
                 dTipoPago.Text = Facturacion.Credito;
@@ -76,14 +76,14 @@ namespace Codelex.Facturas_y_Cotizaciones
                 dEstadoPago.Foreground = Pincel("#9A6B00");
             }
 
-            dRtn.Text = Vacio("" + f["identificacionCliente"]);
-            dEmpresa.Text = Vacio("" + f["nombreEmpresa"]);
-            dContacto.Text = Vacio((("" + f["nombreCliente"]) + " " + ("" + f["apellidoCliente"])).Trim());
-            dTelefono.Text = Vacio("" + f["telefonoCliente"]);
-            dCorreo.Text = Vacio("" + f["correoCliente"]);
+            dRtn.Text = Vacio("" + f["identificacion_cliente"]);
+            dEmpresa.Text = Vacio("" + f["nombre_empresa"]);
+            dContacto.Text = Vacio((("" + f["nombre_cliente"]) + " " + ("" + f["apellido_cliente"])).Trim());
+            dTelefono.Text = Vacio("" + f["telefono_cliente"]);
+            dCorreo.Text = Vacio("" + f["correo_cliente"]);
 
-            dLocacion.Text = Vacio("" + f["nombreLocacion"]);
-            dTipoLocacion.Text = Vacio("" + f["tipoLocacion"]);
+            dLocacion.Text = Vacio("" + f["nombre_locacion"]);
+            dTipoLocacion.Text = Vacio("" + f["tipo_locacion"]);
             dDireccion.Text = Vacio("" + f["direccion"]);
 
             // Detalle y totales

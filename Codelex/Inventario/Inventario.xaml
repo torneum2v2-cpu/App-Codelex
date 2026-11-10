@@ -337,7 +337,7 @@
                                     <DataGridTextColumn Header="Tipo" Binding="{Binding tipo}" Width="100"/>
                                     <DataGridTextColumn Header="Nombre" Binding="{Binding nombre}" Width="*"/>
                                     <DataGridTextColumn Header="Categoría" Binding="{Binding categoria}" Width="*"/>
-                                    <DataGridTextColumn Header="Marca / modelo" Binding="{Binding marcaModelo}" Width="*"/>
+                                    <DataGridTextColumn Header="Marca / modelo" Binding="{Binding marca_modelo}" Width="*"/>
                                     <DataGridTextColumn Header="Disponible" Binding="{Binding disponible}" Width="100"/>
                                     <DataGridTextColumn Header="Total" Binding="{Binding total}" Width="80"/>
                                     <DataGridTextColumn Header="Último proveedor" Binding="{Binding proveedor}" Width="*"/>

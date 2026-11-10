@@ -407,8 +407,8 @@
                                           PreviewMouseLeftButtonUp="dgVehiculos_Click">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="Placa" Binding="{Binding placa}" Width="*"/>
-                                        <DataGridTextColumn Header="Marca" Binding="{Binding marcaVehiculo}" Width="*"/>
-                                        <DataGridTextColumn Header="Modelo" Binding="{Binding modeloVehiculo}" Width="*"/>
+                                        <DataGridTextColumn Header="Marca" Binding="{Binding marca_vehiculo}" Width="*"/>
+                                        <DataGridTextColumn Header="Modelo" Binding="{Binding modelo_vehiculo}" Width="*"/>
                                         <DataGridTextColumn Header="Estado" Binding="{Binding estado}" Width="100"/>
                                     </DataGrid.Columns>
                                 </DataGrid>

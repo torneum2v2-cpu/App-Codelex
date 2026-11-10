@@ -40,7 +40,7 @@ namespace Codelex.Clases_BDD
         {
             SqlCommand comando = Procedimiento("sp_CambiarEstadoVehiculo");
             comando.Parameters.AddWithValue("@vehiculo_id", vehiculoId);
-            comando.Parameters.AddWithValue("@estadoVehiculo", activo);
+            comando.Parameters.AddWithValue("@estado_vehiculo", activo);
 
             return Ejecutar(comando, out mensaje);
         }
@@ -97,8 +97,8 @@ namespace Codelex.Clases_BDD
                 comando.Parameters.AddWithValue("@vehiculo_id", vehiculoId);
 
             comando.Parameters.AddWithValue("@placa", placa.Trim().ToUpper());
-            comando.Parameters.AddWithValue("@marcaVehiculo", marca.Trim());
-            comando.Parameters.AddWithValue("@modeloVehiculo", modelo.Trim());
+            comando.Parameters.AddWithValue("@marca_vehiculo", marca.Trim());
+            comando.Parameters.AddWithValue("@modelo_vehiculo", modelo.Trim());
 
             return Ejecutar(comando, out mensaje);
         }

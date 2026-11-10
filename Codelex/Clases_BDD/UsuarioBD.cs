@@ -31,7 +31,7 @@ namespace Codelex.Clases_BDD
 
             SqlCommand comando = Procedimiento("sp_BuscarUsuarios");
             comando.Parameters.AddWithValue("@texto", texto);
-            comando.Parameters.AddWithValue("@buscarPor", buscarPor);
+            comando.Parameters.AddWithValue("@buscar_por", buscarPor);
             comando.Parameters.AddWithValue("@estado", estado);
             return Consultar(comando);
         }
@@ -47,7 +47,7 @@ namespace Codelex.Clases_BDD
         {
             SqlCommand comando = Procedimiento("sp_ExisteUsuario");
             comando.Parameters.AddWithValue("@usuario", usuario.Trim());
-            comando.Parameters.AddWithValue("@excluirUsuarioId", excluirUsuarioId);
+            comando.Parameters.AddWithValue("@excluir_usuario_id", excluirUsuarioId);
 
             DataTable tabla = Consultar(comando);
             return Convert.ToInt32(tabla.Rows[0]["cantidad"]) > 0;
@@ -81,7 +81,7 @@ namespace Codelex.Clases_BDD
         {
             SqlCommand comando = Procedimiento("sp_CambiarEstadoUsuario");
             comando.Parameters.AddWithValue("@usuario_id", usuarioId);
-            comando.Parameters.AddWithValue("@estadoUsuario", activo);
+            comando.Parameters.AddWithValue("@estado_usuario", activo);
 
             return Ejecutar(comando, out mensaje);
         }

@@ -50,7 +50,7 @@ namespace Codelex.BDD
             EmpleadoId = Convert.ToInt32(fila["empleado_id"]);
             Rol = "" + fila["rol"];
             NombreUsuario = "" + fila["usuario"];
-            NombreCompleto = fila["nombreEmpleado"] + " " + fila["apellidoEmpleado"];
+            NombreCompleto = fila["nombre_empleado"] + " " + fila["apellido_empleado"];
             TieneLlave = fila["passkey_id"] != DBNull.Value;
 
             if (TieneLlave)

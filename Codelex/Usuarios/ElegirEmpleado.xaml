@@ -304,10 +304,10 @@
                                       CanUserAddRows="False" SelectionMode="Single"
                                       MouseDoubleClick="dgEmpleados_DoubleClick">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Nombre" Binding="{Binding nombreEmpleado}" Width="*"/>
-                                    <DataGridTextColumn Header="Apellido" Binding="{Binding apellidoEmpleado}" Width="*"/>
+                                    <DataGridTextColumn Header="Nombre" Binding="{Binding nombre_empleado}" Width="*"/>
+                                    <DataGridTextColumn Header="Apellido" Binding="{Binding apellido_empleado}" Width="*"/>
                                     <DataGridTextColumn Header="Identidad" Binding="{Binding identidad}" Width="1.2*"/>
-                                    <DataGridTextColumn Header="Cargo" Binding="{Binding nombreCargo}" Width="*"/>
+                                    <DataGridTextColumn Header="Cargo" Binding="{Binding nombre_cargo}" Width="*"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </DockPanel>

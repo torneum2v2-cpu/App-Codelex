@@ -304,12 +304,12 @@
                                       CanUserAddRows="False" SelectionMode="Single"
                                       MouseDoubleClick="dgClientes_DoubleClick">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="RTN / Identidad" Binding="{Binding identificacionCliente}" Width="1.2*"/>
-                                    <DataGridTextColumn Header="Empresa" Binding="{Binding nombreEmpresa}" Width="1.3*"/>
-                                    <DataGridTextColumn Header="Contacto" Binding="{Binding nombreCliente}" Width="*"/>
-                                    <DataGridTextColumn Header="Apellido" Binding="{Binding apellidoCliente}" Width="*"/>
-                                    <DataGridTextColumn Header="Teléfono" Binding="{Binding telefonoCliente}" Width="0.8*"/>
-                                    <DataGridTextColumn Header="Correo" Binding="{Binding correoCliente}" Width="1.3*"/>
+                                    <DataGridTextColumn Header="RTN / Identidad" Binding="{Binding identificacion_cliente}" Width="1.2*"/>
+                                    <DataGridTextColumn Header="Empresa" Binding="{Binding nombre_empresa}" Width="1.3*"/>
+                                    <DataGridTextColumn Header="Contacto" Binding="{Binding nombre_cliente}" Width="*"/>
+                                    <DataGridTextColumn Header="Apellido" Binding="{Binding apellido_cliente}" Width="*"/>
+                                    <DataGridTextColumn Header="Teléfono" Binding="{Binding telefono_cliente}" Width="0.8*"/>
+                                    <DataGridTextColumn Header="Correo" Binding="{Binding correo_cliente}" Width="1.3*"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </DockPanel>

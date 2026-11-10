@@ -66,7 +66,7 @@ namespace Codelex.Facturas_y_Cotizaciones
             DataTable servicios = facturaBD.ListarServicios();
             foreach (DataRow fila in servicios.Rows)
             {
-                cmbServicio.Items.Add(new ItemLista(Convert.ToInt32(fila["servicio_id"]), "" + fila["nombreServicio"], ""));
+                cmbServicio.Items.Add(new ItemLista(Convert.ToInt32(fila["servicio_id"]), "" + fila["nombre_servicio"], ""));
             }
         }
 
@@ -78,7 +78,7 @@ namespace Codelex.Facturas_y_Cotizaciones
 
             foreach (DataRow fila in locacionesCliente.Rows)
             {
-                cmbLocacion.Items.Add(new ItemLista(Convert.ToInt32(fila["locacion_id"]), "" + fila["nombreLocacion"], ""));
+                cmbLocacion.Items.Add(new ItemLista(Convert.ToInt32(fila["locacion_id"]), "" + fila["nombre_locacion"], ""));
             }
 
             if (locacionesCliente.Rows.Count == 0)
@@ -138,14 +138,14 @@ namespace Codelex.Facturas_y_Cotizaciones
 
         private void LlenarCliente(DataRow fila)
         {
-            string rtn = "" + fila["identificacionCliente"];
+            string rtn = "" + fila["identificacion_cliente"];
 
             TxtIdentidad.Text = rtn;
-            TxtEmpresa.Text = "" + fila["nombreEmpresa"];
-            TxtContacto.Text = "" + fila["nombreCliente"];
-            TxtApellido.Text = "" + fila["apellidoCliente"];
-            TxtTelefono.Text = "" + fila["telefonoCliente"];
-            TxtCorreo.Text = "" + fila["correoCliente"];
+            TxtEmpresa.Text = "" + fila["nombre_empresa"];
+            TxtContacto.Text = "" + fila["nombre_cliente"];
+            TxtApellido.Text = "" + fila["apellido_cliente"];
+            TxtTelefono.Text = "" + fila["telefono_cliente"];
+            TxtCorreo.Text = "" + fila["correo_cliente"];
 
             try
             {
@@ -174,7 +174,7 @@ namespace Codelex.Facturas_y_Cotizaciones
             {
                 if (Convert.ToInt32(fila["locacion_id"]) == locacionId)
                 {
-                    cmbTipoLocacion.Items.Add("" + fila["tipoLocacion"]);
+                    cmbTipoLocacion.Items.Add("" + fila["tipo_locacion"]);
                     cmbTipoLocacion.SelectedIndex = 0;
                     txtDireccion.Text = "" + fila["direccion"];
                 }
@@ -303,14 +303,14 @@ namespace Codelex.Facturas_y_Cotizaciones
                         if (linea.ActividadId == Convert.ToInt32(fila["actividad_id"]))
                         {
                             linea.Precio = Convert.ToDecimal(fila["precio"]);
-                            linea.Personas = Convert.ToInt32(fila["personas"]);
+                            linea.Personas = Convert.ToInt32(fila["cantidad_personas"]);
                         }
                     }
 
                     subtotal += Convert.ToDecimal(fila["precio"]);
 
-                    if (Convert.ToInt32(fila["personas"]) > personas)
-                        personas = Convert.ToInt32(fila["personas"]);
+                    if (Convert.ToInt32(fila["cantidad_personas"]) > personas)
+                        personas = Convert.ToInt32(fila["cantidad_personas"]);
                 }
 
                 if (mensaje != "")

@@ -77,11 +77,11 @@ namespace Codelex
 
         private void CargarListas()
         {
-            LlenarCombo(cmbEstado, ordenBD.ListarEstadosOrden(), "estado_orden_id", "nombreEstadoOrden");
+            LlenarCombo(cmbEstado, ordenBD.ListarEstadosOrden(), "estado_orden_id", "nombre_estado_orden");
             servicios = ordenBD.ListarServicios();
 
             empleados = ordenBD.ListarEmpleados();
-            LlenarCombo(cmbSupervisor, empleados, "empleado_id", "nombreCompleto");
+            LlenarCombo(cmbSupervisor, empleados, "empleado_id", "nombre_completo");
 
             cmbTurno.Items.Clear();
             cmbTurno.Items.Add("Mañana");
@@ -109,7 +109,7 @@ namespace Codelex
 
             foreach (DataRow fila in tabla.Rows)
             {
-                string texto = fila["placa"] + " - " + fila["marcaVehiculo"] + " " + fila["modeloVehiculo"];
+                string texto = fila["placa"] + " - " + fila["marca_vehiculo"] + " " + fila["modelo_vehiculo"];
                 cmbVehiculo.Items.Add(new ItemLista(Convert.ToInt32(fila["vehiculo_id"]), texto, ""));
             }
         }
@@ -121,7 +121,7 @@ namespace Codelex
 
             foreach (DataRow fila in empleados.Rows)
             {
-                lstEmpleadosDisponibles.Items.Add(new ItemLista(Convert.ToInt32(fila["empleado_id"]), "" + fila["nombreCompleto"], ""));
+                lstEmpleadosDisponibles.Items.Add(new ItemLista(Convert.ToInt32(fila["empleado_id"]), "" + fila["nombre_completo"], ""));
             }
         }
 
@@ -133,7 +133,7 @@ namespace Codelex
 
             foreach (DataRow fila in locacionesCliente.Rows)
             {
-                cmbLocacion.Items.Add(new ItemLista(Convert.ToInt32(fila["locacion_id"]), "" + fila["nombreLocacion"], ""));
+                cmbLocacion.Items.Add(new ItemLista(Convert.ToInt32(fila["locacion_id"]), "" + fila["nombre_locacion"], ""));
             }
 
             if (locacionesCliente.Rows.Count == 0)
@@ -212,10 +212,10 @@ namespace Codelex
 
             cotizacionId = "" + cotizacion["cotizacion_id"];
             txtCotizacion.Text = cotizacionId;
-            txtDescripcionLimpieza.Text = "" + cotizacion["observaciones"];
+            txtDescripcionLimpieza.Text = "" + cotizacion["observacion"];
             txtTotalCotizacion.Text = "Total cotizado: L " + Convert.ToDecimal(cotizacion["precio_cotizado"]).ToString("N2");
 
-            DataTable cliente = clienteBD.ObtenerCliente("" + cotizacion["identificacionCliente"]);
+            DataTable cliente = clienteBD.ObtenerCliente("" + cotizacion["identificacion_cliente"]);
             if (cliente.Rows.Count > 0)
                 LlenarCliente(cliente.Rows[0]);
 
@@ -225,7 +225,7 @@ namespace Codelex
             foreach (DataRow servicio in servicios.Rows)
             {
                 if (Convert.ToInt32(servicio["servicio_id"]) == Convert.ToInt32(cotizacion["servicio_id"]))
-                    txtServicio.Text = "" + servicio["nombreServicio"];
+                    txtServicio.Text = "" + servicio["nombre_servicio"];
             }
 
             DataTable detalle = ordenBD.DetalleCotizacion(cotizacionId);
@@ -293,14 +293,14 @@ namespace Codelex
 
         private void LlenarCliente(DataRow fila)
         {
-            clienteRtn = "" + fila["identificacionCliente"];
+            clienteRtn = "" + fila["identificacion_cliente"];
 
             TxtIdentidad.Text = clienteRtn;
-            TxtEmpresa.Text = "" + fila["nombreEmpresa"];
-            TxtContacto.Text = "" + fila["nombreCliente"];
-            TxtApellido.Text = "" + fila["apellidoCliente"];
-            TxtTelefono.Text = "" + fila["telefonoCliente"];
-            TxtCorreo.Text = "" + fila["correoCliente"];
+            TxtEmpresa.Text = "" + fila["nombre_empresa"];
+            TxtContacto.Text = "" + fila["nombre_cliente"];
+            TxtApellido.Text = "" + fila["apellido_cliente"];
+            TxtTelefono.Text = "" + fila["telefono_cliente"];
+            TxtCorreo.Text = "" + fila["correo_cliente"];
 
             try
             {
@@ -325,7 +325,7 @@ namespace Codelex
             {
                 if (Convert.ToInt32(fila["locacion_id"]) == locacionId)
                 {
-                    cmbTipoLocacion.Items.Add("" + fila["tipoLocacion"]);
+                    cmbTipoLocacion.Items.Add("" + fila["tipo_locacion"]);
                     cmbTipoLocacion.SelectedIndex = 0;
                     txtDireccion_limpieza.Text = "" + fila["direccion"];
                 }

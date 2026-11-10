@@ -30,7 +30,7 @@ namespace Codelex
             try
             {
                 CargarProveedores(0);
-                LlenarCombo(cmbEmpleado, inventarioBD.ListarEmpleados(), "empleado_id", "nombreCompleto");
+                LlenarCombo(cmbEmpleado, inventarioBD.ListarEmpleados(), "empleado_id", "nombre_completo");
                 CargarArticulos();
             }
             catch (Exception ex)
@@ -43,7 +43,7 @@ namespace Codelex
 
         private void CargarProveedores(int seleccionar)
         {
-            LlenarCombo(cmbProveedor, inventarioBD.ListarProveedores(), "proveedor_id", "nombreProveedor");
+            LlenarCombo(cmbProveedor, inventarioBD.ListarProveedores(), "proveedor_id", "nombre_proveedor");
 
             foreach (ItemLista item in cmbProveedor.Items)
             {
@@ -178,7 +178,7 @@ namespace Codelex
                 }
 
                 agregado = inventarioBD.AgregarProductoALista(lista, Convert.ToInt32(producto["producto_id"]),
-                    "" + producto["nombreProducto"], "" + producto["tipoProducto"],
+                    "" + producto["nombre_producto"], "" + producto["tipo_producto"],
                     txtCantidad.Text, txtPrecio.Text, out mensaje);
             }
             else
@@ -191,8 +191,8 @@ namespace Codelex
                     return;
                 }
 
-                agregado = inventarioBD.AgregarEquipoALista(lista, "" + equipo["nombreEquipo"], "" + equipo["tipoEquipo"],
-                    "" + equipo["marcaEquipo"], "" + equipo["modeloEquipo"],
+                agregado = inventarioBD.AgregarEquipoALista(lista, "" + equipo["nombre_equipo"], "" + equipo["tipo_equipo"],
+                    "" + equipo["marca_equipo"], "" + equipo["modelo_equipo"],
                     txtCantidad.Text, txtPrecio.Text, out mensaje);
             }
 

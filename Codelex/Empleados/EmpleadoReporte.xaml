@@ -393,7 +393,7 @@
                                                   SelectionChanged="cmbEmpleado_SelectionChanged">
                                             <ComboBox.ItemTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding nombreCompleto}"/>
+                                                    <TextBlock Text="{Binding nombre_completo}"/>
                                                 </DataTemplate>
                                             </ComboBox.ItemTemplate>
                                         </ComboBox>
@@ -479,7 +479,7 @@
                                     <DataGrid x:Name="dgAsistencia" Style="{StaticResource Tabla}" AutoGenerateColumns="False"
                                               IsReadOnly="True" CanUserAddRows="False" Cursor="Arrow">
                                         <DataGrid.Columns>
-                                            <DataGridTextColumn Header="Fecha" Binding="{Binding fechaAsistencia}" Width="*"/>
+                                            <DataGridTextColumn Header="Fecha" Binding="{Binding fecha_asistencia}" Width="*"/>
                                             <DataGridTextColumn Header="Entrada" Binding="{Binding hora_entrada}" Width="*"/>
                                             <DataGridTextColumn Header="Salida" Binding="{Binding hora_salida}" Width="*"/>
                                             <DataGridTextColumn Header="Horas" Binding="{Binding horas, StringFormat=N2}" Width="*"/>
@@ -498,7 +498,7 @@
                                         <DataGrid.Columns>
                                             <DataGridTextColumn Header="Orden" Binding="{Binding orden_id}" Width="*"/>
                                             <DataGridTextColumn Header="Cliente" Binding="{Binding cliente}" Width="1.2*"/>
-                                            <DataGridTextColumn Header="Servicio" Binding="{Binding nombreServicio}" Width="*"/>
+                                            <DataGridTextColumn Header="Servicio" Binding="{Binding nombre_servicio}" Width="*"/>
                                             <DataGridTextColumn Header="Fecha" Binding="{Binding fecha_servicio}" Width="*"/>
                                             <DataGridTextColumn Header="Turno" Binding="{Binding turno}" Width="*"/>
                                             <DataGridTextColumn Header="Piso / área" Binding="{Binding piso_area}" Width="*"/>

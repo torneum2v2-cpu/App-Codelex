@@ -305,9 +305,9 @@
                                       MouseDoubleClick="dgCotizaciones_DoubleClick">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="N.°" Binding="{Binding cotizacion_id}" Width="0.9*"/>
-                                    <DataGridTextColumn Header="Fecha" Binding="{Binding fechaCotizacion, StringFormat=dd/MM/yyyy}" Width="0.8*"/>
+                                    <DataGridTextColumn Header="Fecha" Binding="{Binding fecha_cotizacion, StringFormat=dd/MM/yyyy}" Width="0.8*"/>
                                     <DataGridTextColumn Header="Válida hasta" Binding="{Binding valida_hasta, StringFormat=dd/MM/yyyy}" Width="0.8*"/>
-                                    <DataGridTextColumn Header="RTN / Identidad" Binding="{Binding identificacionCliente}" Width="1.1*"/>
+                                    <DataGridTextColumn Header="RTN / Identidad" Binding="{Binding identificacion_cliente}" Width="1.1*"/>
                                     <DataGridTextColumn Header="Cliente" Binding="{Binding cliente}" Width="1.5*"/>
                                     <DataGridTextColumn Header="Total (L)" Binding="{Binding precio_cotizado, StringFormat=N2}" Width="0.8*"/>
                                     <DataGridTextColumn Header="Estado" Binding="{Binding estado}" Width="1.1*"/>

@@ -65,17 +65,17 @@ namespace Codelex
                 DataRow fila = tabla.Rows[0];
 
                 empleadoActual = Convert.ToInt32(fila["empleado_id"]);
-                empleadoActualActivo = Convert.ToBoolean(fila["estadoEmpleado"]);
+                empleadoActualActivo = Convert.ToBoolean(fila["estado_empleado"]);
 
                 if (fila["cargo_id"] == DBNull.Value)
                     cmbCargo.SelectedValue = null;
                 else
                     cmbCargo.SelectedValue = fila["cargo_id"];
-                txtNombre.Text = fila["nombreEmpleado"].ToString();
-                txtApellido.Text = fila["apellidoEmpleado"].ToString();
+                txtNombre.Text = fila["nombre_empleado"].ToString();
+                txtApellido.Text = fila["apellido_empleado"].ToString();
                 txtIdentidad.Text = fila["identidad"].ToString();
-                txtTelefono.Text = fila["telefonoEmpleado"].ToString();
-                txtCorreo.Text = fila["correoEmpleado"].ToString();
+                txtTelefono.Text = fila["telefono_empleado"].ToString();
+                txtCorreo.Text = fila["correo_empleado"].ToString();
                 if (fila["usuario"] == DBNull.Value)
                     txtUsuario.Text = "—";
                 else

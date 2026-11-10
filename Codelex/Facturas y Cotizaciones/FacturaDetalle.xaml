@@ -239,7 +239,7 @@
                                         <DataGridTextColumn Header="Fecha" Binding="{Binding fecha_abono, StringFormat=dd/MM/yyyy}" Width="*"/>
                                         <DataGridTextColumn Header="Concepto" Binding="{Binding concepto}" Width="*"/>
                                         <DataGridTextColumn Header="Monto (L)" Binding="{Binding monto, StringFormat=N2}" Width="*"/>
-                                        <DataGridTextColumn Header="Método" Binding="{Binding nombreFormaPago}" Width="*"/>
+                                        <DataGridTextColumn Header="Método" Binding="{Binding nombre_forma_pago}" Width="*"/>
                                         <DataGridTextColumn Header="Saldo después (L)" Binding="{Binding saldo_despues, StringFormat=N2}" Width="*"/>
                                     </DataGrid.Columns>
                                 </DataGrid>

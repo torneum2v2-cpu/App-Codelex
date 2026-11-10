@@ -70,7 +70,7 @@ namespace Codelex.Clases_BDD
 
             SqlCommand comando = Procedimiento("sp_BuscarClientes");
             comando.Parameters.AddWithValue("@texto", texto);
-            comando.Parameters.AddWithValue("@buscarPor", buscarPor);
+            comando.Parameters.AddWithValue("@buscar_por", buscarPor);
             comando.Parameters.AddWithValue("@estado", estado);
             return Consultar(comando);
         }
@@ -110,8 +110,8 @@ namespace Codelex.Clases_BDD
         public bool CambiarEstadoCliente(string rtn, bool activo, out string mensaje)
         {
             SqlCommand comando = Procedimiento("sp_CambiarEstadoCliente");
-            comando.Parameters.AddWithValue("@identificacionCliente", rtn.Trim());
-            comando.Parameters.AddWithValue("@estadoCliente", activo);
+            comando.Parameters.AddWithValue("@identificacion_cliente", rtn.Trim());
+            comando.Parameters.AddWithValue("@estado_cliente", activo);
 
             return Ejecutar(comando, out mensaje);
         }
@@ -171,13 +171,13 @@ namespace Codelex.Clases_BDD
             if (clienteId > 0)
                 comando.Parameters.AddWithValue("@cliente_id", clienteId);
 
-            comando.Parameters.AddWithValue("@identificacionCliente", LimpiarNumero(rtn));
-            comando.Parameters.AddWithValue("@tipoIdentificacion", tipo);
-            comando.Parameters.AddWithValue("@nombreEmpresa", empresa.Trim());
-            comando.Parameters.AddWithValue("@nombreCliente", nombre.Trim());
-            comando.Parameters.AddWithValue("@apellidoCliente", apellido.Trim());
-            comando.Parameters.AddWithValue("@telefonoCliente", telefono.Trim());
-            comando.Parameters.AddWithValue("@correoCliente", correo.Trim());
+            comando.Parameters.AddWithValue("@identificacion_cliente", LimpiarNumero(rtn));
+            comando.Parameters.AddWithValue("@tipo_identificacion", tipo);
+            comando.Parameters.AddWithValue("@nombre_empresa", empresa.Trim());
+            comando.Parameters.AddWithValue("@nombre_cliente", nombre.Trim());
+            comando.Parameters.AddWithValue("@apellido_cliente", apellido.Trim());
+            comando.Parameters.AddWithValue("@telefono_cliente", telefono.Trim());
+            comando.Parameters.AddWithValue("@correo_cliente", correo.Trim());
 
             return Ejecutar(comando, out mensaje);
         }
@@ -192,7 +192,7 @@ namespace Codelex.Clases_BDD
         private DataTable ConsultarPorCliente(string procedimiento, string rtn)
         {
             SqlCommand comando = Procedimiento(procedimiento);
-            comando.Parameters.AddWithValue("@identificacionCliente", rtn.Trim());
+            comando.Parameters.AddWithValue("@identificacion_cliente", rtn.Trim());
             return Consultar(comando);
         }
 

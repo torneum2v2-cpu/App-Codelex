@@ -14,309 +14,309 @@ GO
 
 -- Tablas
 
-IF OBJECT_ID('CARGOS') IS NULL
-CREATE TABLE CARGOS
+IF OBJECT_ID('cargos') IS NULL
+CREATE TABLE cargos
 (
 	cargo_id INT PRIMARY KEY IDENTITY,
-	nombreCargo VARCHAR(50) UNIQUE
+	nombre_cargo VARCHAR(50) UNIQUE
 )
 GO
 
-IF OBJECT_ID('EMPLEADOS') IS NULL
-CREATE TABLE EMPLEADOS
+IF OBJECT_ID('empleados') IS NULL
+CREATE TABLE empleados
 (
 	empleado_id INT PRIMARY KEY IDENTITY,
-	cargo_id INT FOREIGN KEY REFERENCES CARGOS(cargo_id),
-	nombreEmpleado VARCHAR(30),
-	apellidoEmpleado VARCHAR(30),
+	cargo_id INT FOREIGN KEY REFERENCES cargos(cargo_id),
+	nombre_empleado VARCHAR(30),
+	apellido_empleado VARCHAR(30),
 	identidad VARCHAR(30) UNIQUE NOT NULL,
-	telefonoEmpleado Varchar(50),
-	correoEmpleado VARCHAR(50),
-	estadoEmpleado BIT NOT NULL CONSTRAINT DF_EMPLEADOS_estadoEmpleado DEFAULT 1
+	telefono_empleado Varchar(50),
+	correo_empleado VARCHAR(50),
+	estado_empleado BIT NOT NULL CONSTRAINT DF_EMPLEADOS_estadoEmpleado DEFAULT 1
 )
 GO
 
-IF OBJECT_ID('ROLES') IS NULL
-CREATE TABLE ROLES
+IF OBJECT_ID('roles') IS NULL
+CREATE TABLE roles
 (
 	rol_id INT PRIMARY KEY IDENTITY,
-	nombreRol VARCHAR(50) UNIQUE NOT NULL
+	nombre_rol VARCHAR(50) UNIQUE NOT NULL
 )
 GO
 
-IF OBJECT_ID('USUARIOS') IS NULL
-CREATE TABLE USUARIOS
+IF OBJECT_ID('usuarios') IS NULL
+CREATE TABLE usuarios
 (
 	usuario_id INT PRIMARY KEY IDENTITY,
-	empleado_id INT FOREIGN KEY REFERENCES EMPLEADOS(empleado_id) NOT NULL UNIQUE,
+	empleado_id INT FOREIGN KEY REFERENCES empleados(empleado_id) NOT NULL UNIQUE,
 	usuario VARCHAR(50) UNIQUE NOT NULL,
 	contrasena_hash VARCHAR(255),
 	passkey_id VARBINARY(1023) NULL,
 	passkey_clave VARBINARY(1024) NULL,
 	foto_perfil VARBINARY(MAX) NULL,
-	rol_id INT NULL CONSTRAINT FK_USUARIOS_ROLES REFERENCES ROLES(rol_id),
-	estadoUsuario BIT NOT NULL CONSTRAINT DF_USUARIOS_estadoUsuario DEFAULT 1
+	rol_id INT NULL CONSTRAINT FK_USUARIOS_ROLES REFERENCES roles(rol_id),
+	estado_usuario BIT NOT NULL CONSTRAINT DF_USUARIOS_estadoUsuario DEFAULT 1
 )
 GO
 
-IF OBJECT_ID('BITACORAS') IS NULL
-CREATE TABLE BITACORAS
+IF OBJECT_ID('bitacoras') IS NULL
+CREATE TABLE bitacoras
 (
 	bitacora_id INT PRIMARY KEY IDENTITY,
-	usuario_id INT FOREIGN KEY REFERENCES USUARIOS(usuario_id),
+	usuario_id INT FOREIGN KEY REFERENCES usuarios(usuario_id),
 	accion VARCHAR(50),
 	tabla Varchar(50),
-	equipoSistema VARCHAR(50),
-	fechaBitacora DATETIME
+	equipo_sistema VARCHAR(50),
+	fecha_bitacora DATETIME
 )
 GO
 
-IF OBJECT_ID('ASISTENCIAS') IS NULL
-CREATE TABLE ASISTENCIAS
+IF OBJECT_ID('asistencias') IS NULL
+CREATE TABLE asistencias
 (
 	asistencia_id INT PRIMARY KEY IDENTITY,
-	empleado_id INT FOREIGN KEY REFERENCES EMPLEADOS(empleado_id),
-	fechaAsistencia DATE,
+	empleado_id INT FOREIGN KEY REFERENCES empleados(empleado_id),
+	fecha_asistencia DATE,
 	hora_entrada TIME,
 	hora_salida TIME
 )
 GO
 
-IF OBJECT_ID('CLIENTES') IS NULL
-CREATE TABLE CLIENTES
+IF OBJECT_ID('clientes') IS NULL
+CREATE TABLE clientes
 (
 	cliente_id INT IDENTITY(1, 1) NOT NULL CONSTRAINT PK_CLIENTES PRIMARY KEY,
-	identificacionCliente VARCHAR(30) NOT NULL CONSTRAINT UQ_CLIENTES_identificacion UNIQUE,
-	tipoIdentificacion VARCHAR(10) NOT NULL
+	identificacion_cliente VARCHAR(30) NOT NULL CONSTRAINT UQ_CLIENTES_identificacion UNIQUE,
+	tipo_identificacion VARCHAR(10) NOT NULL
 		CONSTRAINT DF_CLIENTES_tipoIdentificacion DEFAULT 'RTN'
-		CONSTRAINT CK_CLIENTES_tipoIdentificacion CHECK (tipoIdentificacion IN ('RTN', 'Identidad')),
-	nombreEmpresa VARCHAR(50),
-	nombreCliente VARCHAR(50),
-	apellidoCliente VARCHAR(50),
-	telefonoCliente VARCHAR(50),
-	correoCliente VARCHAR(50),
-	estadoCliente BIT NOT NULL CONSTRAINT DF_CLIENTES_estadoCliente DEFAULT 1
+		CONSTRAINT CK_CLIENTES_tipoIdentificacion CHECK (tipo_identificacion IN ('RTN', 'Identidad')),
+	nombre_empresa VARCHAR(50),
+	nombre_cliente VARCHAR(50),
+	apellido_cliente VARCHAR(50),
+	telefono_cliente VARCHAR(50),
+	correo_cliente VARCHAR(50),
+	estado_cliente BIT NOT NULL CONSTRAINT DF_CLIENTES_estadoCliente DEFAULT 1
 )
 GO
 
-IF OBJECT_ID('LOCACIONES') IS NULL
-CREATE TABLE LOCACIONES
+IF OBJECT_ID('locaciones') IS NULL
+CREATE TABLE locaciones
 (
 	locacion_id INT PRIMARY KEY IDENTITY,
-	nombreLocacion VARCHAR(60),
+	nombre_locacion VARCHAR(60),
 	direccion VARCHAR(80),
-	tipoLocacion VARCHAR(25),
-	identificacionCliente VARCHAR(30) CONSTRAINT FK_LOCACIONES_CLIENTES REFERENCES CLIENTES(identificacionCliente) ON UPDATE CASCADE
+	tipo_locacion VARCHAR(25),
+	identificacion_cliente VARCHAR(30) CONSTRAINT FK_LOCACIONES_CLIENTES REFERENCES clientes(identificacion_cliente) ON UPDATE CASCADE
 )
 GO
 
-IF OBJECT_ID('SERVICIOS') IS NULL
-CREATE TABLE SERVICIOS
+IF OBJECT_ID('servicios') IS NULL
+CREATE TABLE servicios
 (
 	servicio_id INT PRIMARY KEY IDENTITY,
-	nombreServicio VARCHAR(30)
+	nombre_servicio VARCHAR(30)
 )
 GO
 
-IF OBJECT_ID('VEHICULOS') IS NULL
-CREATE TABLE VEHICULOS
+IF OBJECT_ID('vehiculos') IS NULL
+CREATE TABLE vehiculos
 (
 	vehiculo_id INT PRIMARY KEY IDENTITY,
 	placa VARCHAR(15) UNIQUE,
-	marcaVehiculo varchar(20),
-	modeloVehiculo Varchar(25),
-	estadoVehiculo BIT NOT NULL CONSTRAINT DF_VEHICULOS_estadoVehiculo DEFAULT 1
+	marca_vehiculo varchar(20),
+	modelo_vehiculo Varchar(25),
+	estado_vehiculo BIT NOT NULL CONSTRAINT DF_VEHICULOS_estadoVehiculo DEFAULT 1
 )
 GO
 
-IF OBJECT_ID('ESTADO_ORDENES') IS NULL
-CREATE TABLE ESTADO_ORDENES
+IF OBJECT_ID('estados_orden') IS NULL
+CREATE TABLE estados_orden
 (
 	estado_orden_id INT PRIMARY KEY IDENTITY,
-	nombreEstadoOrden VARCHAR(25) UNIQUE
+	nombre_estado_orden VARCHAR(25) UNIQUE
 )
 GO
 
-IF OBJECT_ID('ORDENES') IS NULL
-CREATE TABLE ORDENES
+IF OBJECT_ID('ordenes') IS NULL
+CREATE TABLE ordenes
 (
 	orden_id VARCHAR(50) PRIMARY KEY NOT NULL,
-	identificacionCliente VARCHAR(30) CONSTRAINT FK_ORDENES_CLIENTES REFERENCES CLIENTES(identificacionCliente) ON UPDATE CASCADE,
-	locacion_id INT FOREIGN KEY REFERENCES LOCACIONES(locacion_id),
-	servicio_id INT FOREIGN KEY REFERENCES SERVICIOS(servicio_id),
-	supervisor_id INT FOREIGN KEY REFERENCES EMPLEADOS(empleado_id),
-	vehiculo_id INT FOREIGN KEY REFERENCES VEHICULOS(vehiculo_id),
+	identificacion_cliente VARCHAR(30) CONSTRAINT FK_ORDENES_CLIENTES REFERENCES clientes(identificacion_cliente) ON UPDATE CASCADE,
+	locacion_id INT FOREIGN KEY REFERENCES locaciones(locacion_id),
+	servicio_id INT FOREIGN KEY REFERENCES servicios(servicio_id),
+	supervisor_id INT FOREIGN KEY REFERENCES empleados(empleado_id),
+	vehiculo_id INT FOREIGN KEY REFERENCES vehiculos(vehiculo_id),
 	fecha_solicitud DATE,
 	fecha_servicio DATE,
-	estado_orden_id INT FOREIGN KEY REFERENCES ESTADO_ORDENES(estado_orden_id),
-	observaciones VARCHAR(200),
+	estado_orden_id INT FOREIGN KEY REFERENCES estados_orden(estado_orden_id),
+	observacion VARCHAR(200),
 	conformidad_cliente BIT
 )
 GO
 
-IF OBJECT_ID('ACTIVIDADES') IS NULL
-CREATE TABLE ACTIVIDADES
+IF OBJECT_ID('actividades') IS NULL
+CREATE TABLE actividades
 (
 	actividad_id INT PRIMARY KEY IDENTITY,
-	servicio_id INT FOREIGN KEY REFERENCES SERVICIOS(servicio_id),
+	servicio_id INT FOREIGN KEY REFERENCES servicios(servicio_id),
 	descripcion VARCHAR(50),
 	frecuencia VARCHAR(50),
 	precio MONEY
 )
 GO
 
-IF OBJECT_ID('PROVEEDORES') IS NULL
-CREATE TABLE PROVEEDORES
+IF OBJECT_ID('proveedores') IS NULL
+CREATE TABLE proveedores
 (
 	proveedor_id INT PRIMARY KEY IDENTITY,
-	nombreProveedor VARCHAR(50),
-	telefonoProveedor VARCHAR(50),
-	correoProveedor VARCHAR(50)
+	nombre_proveedor VARCHAR(50),
+	telefono_proveedor VARCHAR(50),
+	correo_proveedor VARCHAR(50)
 )
 GO
 
-IF OBJECT_ID('PRODUCTOS') IS NULL
-CREATE TABLE PRODUCTOS
+IF OBJECT_ID('productos') IS NULL
+CREATE TABLE productos
 (
 	producto_id INT PRIMARY KEY IDENTITY,
-	nombreProducto VARCHAR(50),
-	tipoProducto VARCHAR(20),
+	nombre_producto VARCHAR(50),
+	tipo_producto VARCHAR(20),
 	stock INT
 )
 GO
 
-IF OBJECT_ID('COMPRAS') IS NULL
-CREATE TABLE COMPRAS
+IF OBJECT_ID('compras') IS NULL
+CREATE TABLE compras
 (
 	compra_id INT PRIMARY KEY IDENTITY,
-	proveedor_id INT FOREIGN KEY REFERENCES PROVEEDORES(proveedor_id),
-	firma_empleado_id INT FOREIGN KEY REFERENCES EMPLEADOS(empleado_id),
+	proveedor_id INT FOREIGN KEY REFERENCES proveedores(proveedor_id),
+	firma_empleado_id INT FOREIGN KEY REFERENCES empleados(empleado_id),
 	numero_factura VARCHAR(50) UNIQUE,
-	fechaCompra DATE
+	fecha_compra DATE
 )
 GO
 
-IF OBJECT_ID('COMPRAS_PRODUCTOS') IS NULL
-CREATE TABLE COMPRAS_PRODUCTOS
+IF OBJECT_ID('compras_productos') IS NULL
+CREATE TABLE compras_productos
 (
 	compra_producto_id INT IDENTITY CONSTRAINT PK_COMPRAS_PRODUCTOS PRIMARY KEY,
-	compra_id INT NOT NULL FOREIGN KEY REFERENCES COMPRAS(compra_id),
-	producto_id INT FOREIGN KEY REFERENCES PRODUCTOS(producto_id),
+	compra_id INT NOT NULL FOREIGN KEY REFERENCES compras(compra_id),
+	producto_id INT FOREIGN KEY REFERENCES productos(producto_id),
 	cantidad INT,
 	precio_unitario MONEY
 )
 GO
 
-IF OBJECT_ID('ESTADO_EQUIPOS') IS NULL
-CREATE TABLE ESTADO_EQUIPOS
+IF OBJECT_ID('estados_equipo') IS NULL
+CREATE TABLE estados_equipo
 (
 	estado_equipo_id INT PRIMARY KEY IDENTITY,
-	nombreEstadoEquipo VARCHAR(30) UNIQUE
+	nombre_estado_equipo VARCHAR(30) UNIQUE
 )
 GO
 
-IF OBJECT_ID('EQUIPOS') IS NULL
-CREATE TABLE EQUIPOS
+IF OBJECT_ID('equipos') IS NULL
+CREATE TABLE equipos
 (
 	equipo_id INT PRIMARY KEY IDENTITY,
-	nombreEquipo VARCHAR(50),
-	tipoEquipo VARCHAR(50),
-	marcaEquipo VARCHAR(50),
-	modeloEquipo VARCHAR(50),
-	estado_equipo_id INT FOREIGN KEY REFERENCES ESTADO_EQUIPOS(estado_equipo_id)
+	nombre_equipo VARCHAR(50),
+	tipo_equipo VARCHAR(50),
+	marca_equipo VARCHAR(50),
+	modelo_equipo VARCHAR(50),
+	estado_equipo_id INT FOREIGN KEY REFERENCES estados_equipo(estado_equipo_id)
 )
 GO
 
-IF OBJECT_ID('ORDEN_EMPLEADOS') IS NULL
-CREATE TABLE ORDEN_EMPLEADOS
+IF OBJECT_ID('orden_empleados') IS NULL
+CREATE TABLE orden_empleados
 (
-	orden_id VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES ORDENES(orden_id),
-	empleado_id INT NOT NULL FOREIGN KEY REFERENCES EMPLEADOS(empleado_id),
+	orden_id VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES ordenes(orden_id),
+	empleado_id INT NOT NULL FOREIGN KEY REFERENCES empleados(empleado_id),
 	turno VARCHAR(20),
 	piso_area VARCHAR(20),
 	CONSTRAINT PK_ORDEN_EMPLEADOS PRIMARY KEY (orden_id, empleado_id)
 )
 GO
 
-IF OBJECT_ID('ORDEN_PRODUCTOS') IS NULL
-CREATE TABLE ORDEN_PRODUCTOS
+IF OBJECT_ID('orden_productos') IS NULL
+CREATE TABLE orden_productos
 (
-	orden_id VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES ORDENES(orden_id),
-	producto_id INT NOT NULL FOREIGN KEY REFERENCES PRODUCTOS(producto_id),
+	orden_id VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES ordenes(orden_id),
+	producto_id INT NOT NULL FOREIGN KEY REFERENCES productos(producto_id),
 	cantidad INT,
 	CONSTRAINT PK_ORDEN_PRODUCTOS PRIMARY KEY (orden_id, producto_id)
 )
 GO
 
-IF OBJECT_ID('ORDEN_EQUIPOS') IS NULL
-CREATE TABLE ORDEN_EQUIPOS
+IF OBJECT_ID('orden_equipos') IS NULL
+CREATE TABLE orden_equipos
 (
-	orden_id VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES ORDENES(orden_id),
-	equipo_id INT NOT NULL FOREIGN KEY REFERENCES EQUIPOS(equipo_id),
+	orden_id VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES ordenes(orden_id),
+	equipo_id INT NOT NULL FOREIGN KEY REFERENCES equipos(equipo_id),
 	fecha_asignacion DATE,
 	devuelto BIT,
 	CONSTRAINT PK_ORDEN_EQUIPOS PRIMARY KEY (orden_id, equipo_id)
 )
 GO
 
-IF OBJECT_ID('ORDEN_ACTIVIDADES') IS NULL
-CREATE TABLE ORDEN_ACTIVIDADES
+IF OBJECT_ID('orden_actividades') IS NULL
+CREATE TABLE orden_actividades
 (
-	orden_id VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES ORDENES(orden_id),
-	actividad_id INT NOT NULL FOREIGN KEY REFERENCES ACTIVIDADES(actividad_id),
+	orden_id VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES ordenes(orden_id),
+	actividad_id INT NOT NULL FOREIGN KEY REFERENCES actividades(actividad_id),
 	estado BIT,
 	duracion_min INT,
 	CONSTRAINT PK_ORDEN_ACTIVIDADES PRIMARY KEY (orden_id, actividad_id)
 )
 GO
 
-IF OBJECT_ID('FORMAS_PAGOS') IS NULL
-CREATE TABLE FORMAS_PAGOS
+IF OBJECT_ID('formas_pago') IS NULL
+CREATE TABLE formas_pago
 (
 	forma_pago_id INT PRIMARY KEY IDENTITY,
-	nombreFormaPago VARCHAR(30) UNIQUE
+	nombre_forma_pago VARCHAR(30) UNIQUE
 )
 GO
 
-IF OBJECT_ID('FACTURAS') IS NULL
-CREATE TABLE FACTURAS
+IF OBJECT_ID('facturas') IS NULL
+CREATE TABLE facturas
 (
 	factura_id INT PRIMARY KEY IDENTITY,
-	orden_id VARCHAR(50) FOREIGN KEY REFERENCES ORDENES(orden_id) UNIQUE,
-	fechaFactura DATE,
+	orden_id VARCHAR(50) FOREIGN KEY REFERENCES ordenes(orden_id) UNIQUE,
+	fecha_factura DATE,
 	tipo_pago VARCHAR(10) NOT NULL DEFAULT 'Contado'
 		CHECK (tipo_pago IN ('Contado', 'Credito')),
 	estado_pago VARCHAR(50) DEFAULT 'Pendiente'
 		CHECK (estado_pago IN ('Pendiente', 'Pagada')),
 	fecha_pago DATE,
-	forma_pago_id INT FOREIGN KEY REFERENCES FORMAS_PAGOS(forma_pago_id),
+	forma_pago_id INT FOREIGN KEY REFERENCES formas_pago(forma_pago_id),
 	precio_facturado MONEY
 )
 GO
 
-IF OBJECT_ID('COTIZACIONES') IS NULL
-CREATE TABLE COTIZACIONES
+IF OBJECT_ID('cotizaciones') IS NULL
+CREATE TABLE cotizaciones
 (
 	cotizacion_id VARCHAR(50) PRIMARY KEY NOT NULL,
-	identificacionCliente VARCHAR(30),
-	nombreEmpresa VARCHAR(50),
-	nombreCliente VARCHAR(50),
-	apellidoCliente VARCHAR(50),
-	telefonoCliente VARCHAR(50),
-	correoCliente VARCHAR(50),
-	locacion_id INT NULL FOREIGN KEY REFERENCES LOCACIONES(locacion_id),
+	identificacion_cliente VARCHAR(30),
+	nombre_empresa VARCHAR(50),
+	nombre_cliente VARCHAR(50),
+	apellido_cliente VARCHAR(50),
+	telefono_cliente VARCHAR(50),
+	correo_cliente VARCHAR(50),
+	locacion_id INT NULL FOREIGN KEY REFERENCES locaciones(locacion_id),
 	direccion VARCHAR(80),
-	fechaCotizacion DATE,
+	fecha_cotizacion DATE,
 	valida_hasta DATE,
-	observaciones VARCHAR(200),
+	observacion VARCHAR(200),
 	precio_cotizado MONEY
 )
 GO
 
-IF OBJECT_ID('COTIZACION_DETALLE') IS NULL
-CREATE TABLE COTIZACION_DETALLE
+IF OBJECT_ID('detalles_cotizacion') IS NULL
+CREATE TABLE detalles_cotizacion
 (
-	cotizacion_id VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES COTIZACIONES(cotizacion_id),
+	cotizacion_id VARCHAR(50) NOT NULL FOREIGN KEY REFERENCES cotizaciones(cotizacion_id),
 	linea INT NOT NULL,
 	concepto VARCHAR(150) NOT NULL,
 	cantidad INT NOT NULL,
@@ -325,19 +325,19 @@ CREATE TABLE COTIZACION_DETALLE
 )
 GO
 
-IF COL_LENGTH('ORDENES', 'cotizacion_id') IS NULL
-	ALTER TABLE ORDENES ADD cotizacion_id VARCHAR(50) NULL;
+IF COL_LENGTH('ordenes', 'cotizacion_id') IS NULL
+	ALTER TABLE ordenes ADD cotizacion_id VARCHAR(50) NULL;
 GO
 
 IF OBJECT_ID('FK_ORDENES_COTIZACIONES') IS NULL
-	ALTER TABLE ORDENES
-	ADD CONSTRAINT FK_ORDENES_COTIZACIONES FOREIGN KEY (cotizacion_id) REFERENCES COTIZACIONES(cotizacion_id);
+	ALTER TABLE ordenes
+	ADD CONSTRAINT FK_ORDENES_COTIZACIONES FOREIGN KEY (cotizacion_id) REFERENCES cotizaciones(cotizacion_id);
 GO
 
-IF OBJECT_ID('FACTURA_DETALLE') IS NULL
-CREATE TABLE FACTURA_DETALLE
+IF OBJECT_ID('detalles_factura') IS NULL
+CREATE TABLE detalles_factura
 (
-	factura_id INT NOT NULL FOREIGN KEY REFERENCES FACTURAS(factura_id),
+	factura_id INT NOT NULL FOREIGN KEY REFERENCES facturas(factura_id),
 	linea INT NOT NULL,
 	concepto VARCHAR(150) NOT NULL,
 	cantidad INT NOT NULL,
@@ -347,21 +347,21 @@ CREATE TABLE FACTURA_DETALLE
 )
 GO
 
-IF OBJECT_ID('COMPRAS_EQUIPOS') IS NULL
-CREATE TABLE COMPRAS_EQUIPOS
+IF OBJECT_ID('compras_equipos') IS NULL
+CREATE TABLE compras_equipos
 (
 	compra_equipo_id INT IDENTITY CONSTRAINT PK_COMPRAS_EQUIPOS PRIMARY KEY,
-	compra_id INT NOT NULL FOREIGN KEY REFERENCES COMPRAS(compra_id),
-	equipo_id INT FOREIGN KEY REFERENCES EQUIPOS(equipo_id),
+	compra_id INT NOT NULL FOREIGN KEY REFERENCES compras(compra_id),
+	equipo_id INT FOREIGN KEY REFERENCES equipos(equipo_id),
 	precio_unitario MONEY
 )
 GO
 
-IF OBJECT_ID('CUENTAS_POR_COBRAR') IS NULL
-CREATE TABLE CUENTAS_POR_COBRAR
+IF OBJECT_ID('cuentas_por_cobrar') IS NULL
+CREATE TABLE cuentas_por_cobrar
 (
 	cuenta_id INT PRIMARY KEY IDENTITY,
-	factura_id INT FOREIGN KEY REFERENCES FACTURAS(factura_id) NOT NULL UNIQUE,
+	factura_id INT FOREIGN KEY REFERENCES facturas(factura_id) NOT NULL UNIQUE,
 	monto_total MONEY NOT NULL,
 	prima MONEY,
 	numero_cuotas INT NOT NULL,
@@ -372,33 +372,33 @@ CREATE TABLE CUENTAS_POR_COBRAR
 )
 GO
 
-IF OBJECT_ID('CUOTAS') IS NULL
-CREATE TABLE CUOTAS
+IF OBJECT_ID('cuotas') IS NULL
+CREATE TABLE cuotas
 (
 	cuota_id INT PRIMARY KEY IDENTITY,
-	cuenta_id INT FOREIGN KEY REFERENCES CUENTAS_POR_COBRAR(cuenta_id) NOT NULL,
+	cuenta_id INT FOREIGN KEY REFERENCES cuentas_por_cobrar(cuenta_id) NOT NULL,
 	numero_cuota INT NOT NULL,
 	fecha_vencimiento DATE NOT NULL,
 	monto_cuota MONEY NOT NULL,
 	monto_pagado MONEY DEFAULT 0,
 	fecha_pago DATE,
-	forma_pago_id INT FOREIGN KEY REFERENCES FORMAS_PAGOS(forma_pago_id),
+	forma_pago_id INT FOREIGN KEY REFERENCES formas_pago(forma_pago_id),
 	estado_cuota VARCHAR(20) DEFAULT 'Pendiente'
 		CHECK (estado_cuota IN ('Pendiente', 'Parcial', 'Pagada', 'Vencida')),
 	CONSTRAINT UQ_CUOTAS_cuenta_numero UNIQUE (cuenta_id, numero_cuota)
 )
 GO
 
-IF COL_LENGTH('ACTIVIDADES', 'unidad') IS NULL
-	ALTER TABLE ACTIVIDADES ADD unidad VARCHAR(20) NULL;
+IF COL_LENGTH('actividades', 'unidad') IS NULL
+	ALTER TABLE actividades ADD unidad VARCHAR(20) NULL;
 GO
 
-IF COL_LENGTH('ACTIVIDADES', 'rendimiento') IS NULL
-	ALTER TABLE ACTIVIDADES ADD rendimiento DECIMAL(10, 2) NULL;
+IF COL_LENGTH('actividades', 'rendimiento') IS NULL
+	ALTER TABLE actividades ADD rendimiento DECIMAL(10, 2) NULL;
 GO
 
-IF OBJECT_ID('PARAMETROS_COSTEO') IS NULL
-CREATE TABLE PARAMETROS_COSTEO
+IF OBJECT_ID('parametros_costeo') IS NULL
+CREATE TABLE parametros_costeo
 (
 	clave VARCHAR(40) PRIMARY KEY,
 	valor DECIMAL(14, 4) NOT NULL,
@@ -406,156 +406,156 @@ CREATE TABLE PARAMETROS_COSTEO
 )
 GO
 
-IF OBJECT_ID('ACTIVIDAD_RANGOS') IS NULL
-CREATE TABLE ACTIVIDAD_RANGOS
+IF OBJECT_ID('actividad_rangos') IS NULL
+CREATE TABLE actividad_rangos
 (
-	actividad_id INT NOT NULL FOREIGN KEY REFERENCES ACTIVIDADES(actividad_id),
+	actividad_id INT NOT NULL FOREIGN KEY REFERENCES actividades(actividad_id),
 	desde DECIMAL(12, 2) NOT NULL,
 	hasta DECIMAL(12, 2) NULL,
-	personas INT NOT NULL,
+	cantidad_personas INT NOT NULL,
 	CONSTRAINT PK_ACTIVIDAD_RANGOS PRIMARY KEY (actividad_id, desde)
 )
 GO
 
-IF OBJECT_ID('ACTIVIDAD_PRODUCTOS') IS NULL
-CREATE TABLE ACTIVIDAD_PRODUCTOS
+IF OBJECT_ID('actividad_productos') IS NULL
+CREATE TABLE actividad_productos
 (
-	actividad_id INT NOT NULL FOREIGN KEY REFERENCES ACTIVIDADES(actividad_id),
-	producto_id INT NOT NULL FOREIGN KEY REFERENCES PRODUCTOS(producto_id),
+	actividad_id INT NOT NULL FOREIGN KEY REFERENCES actividades(actividad_id),
+	producto_id INT NOT NULL FOREIGN KEY REFERENCES productos(producto_id),
 	cantidad_por_unidad DECIMAL(10, 4) NOT NULL,
 	CONSTRAINT PK_ACTIVIDAD_PRODUCTOS PRIMARY KEY (actividad_id, producto_id)
 )
 GO
 
-IF OBJECT_ID('ACTIVIDAD_EQUIPOS') IS NULL
-CREATE TABLE ACTIVIDAD_EQUIPOS
+IF OBJECT_ID('actividad_equipos') IS NULL
+CREATE TABLE actividad_equipos
 (
-	actividad_id INT NOT NULL FOREIGN KEY REFERENCES ACTIVIDADES(actividad_id),
-	nombreEquipo VARCHAR(50) NOT NULL,
-	CONSTRAINT PK_ACTIVIDAD_EQUIPOS PRIMARY KEY (actividad_id, nombreEquipo)
+	actividad_id INT NOT NULL FOREIGN KEY REFERENCES actividades(actividad_id),
+	nombre_equipo VARCHAR(50) NOT NULL,
+	CONSTRAINT PK_ACTIVIDAD_EQUIPOS PRIMARY KEY (actividad_id, nombre_equipo)
 )
 GO
 
-IF COL_LENGTH('COTIZACIONES', 'servicio_id') IS NULL
-	ALTER TABLE COTIZACIONES ADD servicio_id INT NULL;
+IF COL_LENGTH('cotizaciones', 'servicio_id') IS NULL
+	ALTER TABLE cotizaciones ADD servicio_id INT NULL;
 GO
 
 IF OBJECT_ID('FK_COTIZACIONES_SERVICIOS') IS NULL
-	ALTER TABLE COTIZACIONES
-	ADD CONSTRAINT FK_COTIZACIONES_SERVICIOS FOREIGN KEY (servicio_id) REFERENCES SERVICIOS(servicio_id);
+	ALTER TABLE cotizaciones
+	ADD CONSTRAINT FK_COTIZACIONES_SERVICIOS FOREIGN KEY (servicio_id) REFERENCES servicios(servicio_id);
 GO
 
-IF COL_LENGTH('COTIZACION_DETALLE', 'actividad_id') IS NULL
-	ALTER TABLE COTIZACION_DETALLE ADD actividad_id INT NULL;
+IF COL_LENGTH('detalles_cotizacion', 'actividad_id') IS NULL
+	ALTER TABLE detalles_cotizacion ADD actividad_id INT NULL;
 GO
 
-IF COL_LENGTH('COTIZACION_DETALLE', 'medida') IS NULL
-	ALTER TABLE COTIZACION_DETALLE ADD medida DECIMAL(12, 2) NULL;
+IF COL_LENGTH('detalles_cotizacion', 'medida') IS NULL
+	ALTER TABLE detalles_cotizacion ADD medida DECIMAL(12, 2) NULL;
 GO
 
-IF COL_LENGTH('COTIZACION_DETALLE', 'personas') IS NULL
-	ALTER TABLE COTIZACION_DETALLE ADD personas INT NULL;
+IF COL_LENGTH('detalles_cotizacion', 'cantidad_personas') IS NULL
+	ALTER TABLE detalles_cotizacion ADD cantidad_personas INT NULL;
 GO
 
 IF OBJECT_ID('FK_COTIZACION_DETALLE_ACTIVIDADES') IS NULL
-	ALTER TABLE COTIZACION_DETALLE
-	ADD CONSTRAINT FK_COTIZACION_DETALLE_ACTIVIDADES FOREIGN KEY (actividad_id) REFERENCES ACTIVIDADES(actividad_id);
+	ALTER TABLE detalles_cotizacion
+	ADD CONSTRAINT FK_COTIZACION_DETALLE_ACTIVIDADES FOREIGN KEY (actividad_id) REFERENCES actividades(actividad_id);
 GO
 
-IF OBJECT_ID('ABONOS') IS NULL
-CREATE TABLE ABONOS
+IF OBJECT_ID('abonos') IS NULL
+CREATE TABLE abonos
 (
 	abono_id INT PRIMARY KEY IDENTITY,
-	factura_id INT NOT NULL FOREIGN KEY REFERENCES FACTURAS(factura_id),
+	factura_id INT NOT NULL FOREIGN KEY REFERENCES facturas(factura_id),
 	fecha_abono DATE NOT NULL,
 	monto MONEY NOT NULL,
-	forma_pago_id INT FOREIGN KEY REFERENCES FORMAS_PAGOS(forma_pago_id),
+	forma_pago_id INT FOREIGN KEY REFERENCES formas_pago(forma_pago_id),
 	saldo_despues MONEY NOT NULL
 )
 GO
 
-IF COL_LENGTH('ABONOS', 'concepto') IS NULL
-	ALTER TABLE ABONOS
+IF COL_LENGTH('abonos', 'concepto') IS NULL
+	ALTER TABLE abonos
 	ADD concepto VARCHAR(20) NOT NULL
 		CONSTRAINT DF_ABONOS_concepto DEFAULT 'Abono';
 GO
 
-IF COL_LENGTH('CLIENTES', 'cliente_id') IS NULL AND COL_LENGTH('CLIENTES', 'identificacionCliente') IS NOT NULL
+IF COL_LENGTH('clientes', 'cliente_id') IS NULL AND COL_LENGTH('clientes', 'identificacion_cliente') IS NOT NULL
 BEGIN
 	DECLARE @sql NVARCHAR(MAX) = N'';
 
 	SELECT @sql = @sql + N'ALTER TABLE ' + QUOTENAME(OBJECT_NAME(parent_object_id))
 				+ N' DROP CONSTRAINT ' + QUOTENAME(name) + N'; '
 	FROM sys.foreign_keys
-	WHERE referenced_object_id = OBJECT_ID('CLIENTES');
+	WHERE referenced_object_id = OBJECT_ID('clientes');
 
-	SELECT @sql = @sql + N'ALTER TABLE CLIENTES DROP CONSTRAINT ' + QUOTENAME(name) + N'; '
+	SELECT @sql = @sql + N'ALTER TABLE clientes DROP CONSTRAINT ' + QUOTENAME(name) + N'; '
 	FROM sys.key_constraints
-	WHERE parent_object_id = OBJECT_ID('CLIENTES') AND type = 'PK';
+	WHERE parent_object_id = OBJECT_ID('clientes') AND type = 'PK';
 
-	SET @sql = @sql + N'ALTER TABLE CLIENTES ADD cliente_id INT IDENTITY(1, 1) NOT NULL; '
-			 + N'ALTER TABLE CLIENTES ADD CONSTRAINT PK_CLIENTES PRIMARY KEY (cliente_id); '
-			 + N'ALTER TABLE CLIENTES ADD CONSTRAINT UQ_CLIENTES_identificacion UNIQUE (identificacionCliente); '
-			 + N'ALTER TABLE LOCACIONES ADD CONSTRAINT FK_LOCACIONES_CLIENTES '
-			 + N'FOREIGN KEY (identificacionCliente) REFERENCES CLIENTES(identificacionCliente) ON UPDATE CASCADE; '
-			 + N'ALTER TABLE ORDENES ADD CONSTRAINT FK_ORDENES_CLIENTES '
-			 + N'FOREIGN KEY (identificacionCliente) REFERENCES CLIENTES(identificacionCliente) ON UPDATE CASCADE; ';
+	SET @sql = @sql + N'ALTER TABLE clientes ADD cliente_id INT IDENTITY(1, 1) NOT NULL; '
+			 + N'ALTER TABLE clientes ADD CONSTRAINT PK_CLIENTES PRIMARY KEY (cliente_id); '
+			 + N'ALTER TABLE clientes ADD CONSTRAINT UQ_CLIENTES_identificacion UNIQUE (identificacion_cliente); '
+			 + N'ALTER TABLE locaciones ADD CONSTRAINT FK_LOCACIONES_CLIENTES '
+			 + N'FOREIGN KEY (identificacion_cliente) REFERENCES clientes(identificacion_cliente) ON UPDATE CASCADE; '
+			 + N'ALTER TABLE ordenes ADD CONSTRAINT FK_ORDENES_CLIENTES '
+			 + N'FOREIGN KEY (identificacion_cliente) REFERENCES clientes(identificacion_cliente) ON UPDATE CASCADE; ';
 
 	EXEC sp_executesql @sql;
 END
 GO
 
-IF COL_LENGTH('CLIENTES', 'tipoIdentificacion') IS NULL
-	ALTER TABLE CLIENTES
-	ADD tipoIdentificacion VARCHAR(10) NOT NULL
+IF COL_LENGTH('clientes', 'tipo_identificacion') IS NULL
+	ALTER TABLE clientes
+	ADD tipo_identificacion VARCHAR(10) NOT NULL
 		CONSTRAINT DF_CLIENTES_tipoIdentificacion DEFAULT 'RTN';
 GO
 
 IF OBJECT_ID('CK_CLIENTES_tipoIdentificacion') IS NULL
-	ALTER TABLE CLIENTES
-	ADD CONSTRAINT CK_CLIENTES_tipoIdentificacion CHECK (tipoIdentificacion IN ('RTN', 'Identidad'));
+	ALTER TABLE clientes
+	ADD CONSTRAINT CK_CLIENTES_tipoIdentificacion CHECK (tipo_identificacion IN ('RTN', 'Identidad'));
 GO
 
 -- Los numeros de identidad y RTN se guardan sin guiones ni espacios (corrige datos viejos)
-UPDATE COTIZACIONES
-SET identificacionCliente = REPLACE(REPLACE(identificacionCliente, '-', ''), ' ', '')
-WHERE identificacionCliente LIKE '%[- ]%';
+UPDATE cotizaciones
+SET identificacion_cliente = REPLACE(REPLACE(identificacion_cliente, '-', ''), ' ', '')
+WHERE identificacion_cliente LIKE '%[- ]%';
 GO
 
-UPDATE CLIENTES
-SET identificacionCliente = REPLACE(REPLACE(identificacionCliente, '-', ''), ' ', '')
-WHERE identificacionCliente LIKE '%[- ]%'
-  AND NOT EXISTS (SELECT 1 FROM CLIENTES x
-				  WHERE x.identificacionCliente = REPLACE(REPLACE(CLIENTES.identificacionCliente, '-', ''), ' ', '')
-					AND x.cliente_id <> CLIENTES.cliente_id);
+UPDATE clientes
+SET identificacion_cliente = REPLACE(REPLACE(identificacion_cliente, '-', ''), ' ', '')
+WHERE identificacion_cliente LIKE '%[- ]%'
+  AND NOT EXISTS (SELECT 1 FROM clientes x
+				  WHERE x.identificacion_cliente = REPLACE(REPLACE(clientes.identificacion_cliente, '-', ''), ' ', '')
+					AND x.cliente_id <> clientes.cliente_id);
 GO
 
-UPDATE EMPLEADOS
+UPDATE empleados
 SET identidad = REPLACE(REPLACE(identidad, '-', ''), ' ', '')
 WHERE identidad LIKE '%[- ]%'
-  AND NOT EXISTS (SELECT 1 FROM EMPLEADOS x
-				  WHERE x.identidad = REPLACE(REPLACE(EMPLEADOS.identidad, '-', ''), ' ', '')
-					AND x.empleado_id <> EMPLEADOS.empleado_id);
+  AND NOT EXISTS (SELECT 1 FROM empleados x
+				  WHERE x.identidad = REPLACE(REPLACE(empleados.identidad, '-', ''), ' ', '')
+					AND x.empleado_id <> empleados.empleado_id);
 GO
 
-UPDATE CLIENTES
-SET tipoIdentificacion = 'Identidad'
-WHERE tipoIdentificacion = 'RTN'
-  AND LEN(identificacionCliente) = 13
-  AND identificacionCliente NOT LIKE '%[^0-9]%';
+UPDATE clientes
+SET tipo_identificacion = 'Identidad'
+WHERE tipo_identificacion = 'RTN'
+  AND LEN(identificacion_cliente) = 13
+  AND identificacion_cliente NOT LIKE '%[^0-9]%';
 GO
 
-IF COL_LENGTH('EMPLEADOS', 'huella_id') IS NOT NULL
+IF COL_LENGTH('empleados', 'huella_id') IS NOT NULL
 BEGIN
 	DECLARE @quitar NVARCHAR(MAX) = N'';
 
-	SELECT @quitar = @quitar + N'ALTER TABLE EMPLEADOS DROP CONSTRAINT ' + QUOTENAME(kc.name) + N'; '
+	SELECT @quitar = @quitar + N'ALTER TABLE empleados DROP CONSTRAINT ' + QUOTENAME(kc.name) + N'; '
 	FROM sys.key_constraints kc
 	INNER JOIN sys.index_columns ic ON ic.object_id = kc.parent_object_id AND ic.index_id = kc.unique_index_id
 	INNER JOIN sys.columns c ON c.object_id = ic.object_id AND c.column_id = ic.column_id
-	WHERE kc.parent_object_id = OBJECT_ID('EMPLEADOS') AND c.name = 'huella_id';
+	WHERE kc.parent_object_id = OBJECT_ID('empleados') AND c.name = 'huella_id';
 
-	SET @quitar = @quitar + N'ALTER TABLE EMPLEADOS DROP COLUMN huella_id; ';
+	SET @quitar = @quitar + N'ALTER TABLE empleados DROP COLUMN huella_id; ';
 
 	EXEC sp_executesql @quitar;
 END
@@ -579,10 +579,10 @@ GO
 IF TYPE_ID('dbo.tipo_ingreso_equipos') IS NULL
 	CREATE TYPE dbo.tipo_ingreso_equipos AS TABLE
 	(
-		nombreEquipo VARCHAR(50),
-		tipoEquipo VARCHAR(50),
-		marcaEquipo VARCHAR(50),
-		modeloEquipo VARCHAR(50),
+		nombre_equipo VARCHAR(50),
+		tipo_equipo VARCHAR(50),
+		marca_equipo VARCHAR(50),
+		modelo_equipo VARCHAR(50),
 		cantidad INT,
 		precio_unitario MONEY
 	);
@@ -598,33 +598,33 @@ GO
 
 -- Datos iniciales
 
-INSERT INTO FORMAS_PAGOS (nombreFormaPago)
+INSERT INTO formas_pago (nombre_forma_pago)
 SELECT v.nombre
 FROM (VALUES ('Efectivo'), ('Tarjeta'), ('Transferencia'), ('Cheque')) v(nombre)
-WHERE NOT EXISTS (SELECT 1 FROM FORMAS_PAGOS f WHERE f.nombreFormaPago = v.nombre);
+WHERE NOT EXISTS (SELECT 1 FROM formas_pago f WHERE f.nombre_forma_pago = v.nombre);
 GO
 
-INSERT INTO ROLES (nombreRol)
+INSERT INTO roles (nombre_rol)
 SELECT v.nombre
 FROM (VALUES ('Usuario Básico'), ('Usuario Medio'), ('Usuario Avanzado')) v(nombre)
-WHERE NOT EXISTS (SELECT 1 FROM ROLES r WHERE r.nombreRol = v.nombre);
+WHERE NOT EXISTS (SELECT 1 FROM roles r WHERE r.nombre_rol = v.nombre);
 GO
 
-IF NOT EXISTS (SELECT 1 FROM CARGOS)
-	INSERT INTO CARGOS (nombreCargo) VALUES ('Administrador'), ('Operario'), ('Supervisor');
+IF NOT EXISTS (SELECT 1 FROM cargos)
+	INSERT INTO cargos (nombre_cargo) VALUES ('Administrador'), ('Operario'), ('Supervisor');
 GO
 
-INSERT INTO ESTADO_ORDENES (nombreEstadoOrden)
+INSERT INTO estados_orden (nombre_estado_orden)
 SELECT v.nombre
 FROM (VALUES ('Pendiente'), ('En proceso'), ('Completada'), ('Cancelada')) v(nombre)
-WHERE NOT EXISTS (SELECT 1 FROM ESTADO_ORDENES e WHERE e.nombreEstadoOrden = v.nombre);
+WHERE NOT EXISTS (SELECT 1 FROM estados_orden e WHERE e.nombre_estado_orden = v.nombre);
 GO
 
-IF NOT EXISTS (SELECT 1 FROM ESTADO_EQUIPOS WHERE nombreEstadoEquipo = 'Disponible')
-	INSERT INTO ESTADO_EQUIPOS (nombreEstadoEquipo) VALUES ('Disponible');
+IF NOT EXISTS (SELECT 1 FROM estados_equipo WHERE nombre_estado_equipo = 'Disponible')
+	INSERT INTO estados_equipo (nombre_estado_equipo) VALUES ('Disponible');
 GO
 
-INSERT INTO PARAMETROS_COSTEO (clave, valor, descripcion)
+INSERT INTO parametros_costeo (clave, valor, descripcion)
 SELECT v.clave, v.valor, v.descripcion
 FROM (VALUES
 	('SALARIO_MINIMO', 12500, 'Salario minimo mensual en Honduras (L). Ajustar al vigente'),
@@ -640,12 +640,12 @@ FROM (VALUES
 	('MARGEN_UTILIDAD', 0.50, 'Margen de utilidad sobre el precio de venta'),
 	('ISV', 0.15, 'Impuesto sobre ventas de Honduras')
 ) v(clave, valor, descripcion)
-WHERE NOT EXISTS (SELECT 1 FROM PARAMETROS_COSTEO p WHERE p.clave = v.clave);
+WHERE NOT EXISTS (SELECT 1 FROM parametros_costeo p WHERE p.clave = v.clave);
 GO
 
 DECLARE @servicios TABLE (nombre VARCHAR(30));
 DECLARE @act TABLE (servicio VARCHAR(30), descripcion VARCHAR(50), unidad VARCHAR(20), rendimiento DECIMAL(10, 2), perfil VARCHAR(5));
-DECLARE @rango TABLE (perfil VARCHAR(5), desde DECIMAL(12, 2), hasta DECIMAL(12, 2), personas INT);
+DECLARE @rango TABLE (perfil VARCHAR(5), desde DECIMAL(12, 2), hasta DECIMAL(12, 2), cantidad_personas INT);
 DECLARE @prod TABLE (nombre VARCHAR(50), tipo VARCHAR(20), stock INT, costo MONEY);
 DECLARE @eq TABLE (nombre VARCHAR(50), tipo VARCHAR(50), marca VARCHAR(50), modelo VARCHAR(50), unidades INT, costo MONEY);
 DECLARE @ap TABLE (actividad VARCHAR(50), producto VARCHAR(50), cantidad DECIMAL(10, 4));
@@ -771,80 +771,80 @@ INSERT INTO @ae VALUES
 
 INSERT INTO @servicios SELECT DISTINCT servicio FROM @act;
 
-INSERT INTO SERVICIOS (nombreServicio)
+INSERT INTO servicios (nombre_servicio)
 SELECT s.nombre FROM @servicios s
-WHERE NOT EXISTS (SELECT 1 FROM SERVICIOS x WHERE x.nombreServicio = s.nombre);
+WHERE NOT EXISTS (SELECT 1 FROM servicios x WHERE x.nombre_servicio = s.nombre);
 
-INSERT INTO ACTIVIDADES (servicio_id, descripcion, frecuencia, precio, unidad, rendimiento)
+INSERT INTO actividades (servicio_id, descripcion, frecuencia, precio, unidad, rendimiento)
 SELECT sv.servicio_id, a.descripcion, NULL, NULL, a.unidad, a.rendimiento
 FROM @act a
-INNER JOIN SERVICIOS sv ON sv.nombreServicio = a.servicio
-WHERE NOT EXISTS (SELECT 1 FROM ACTIVIDADES x WHERE x.descripcion = a.descripcion);
+INNER JOIN servicios sv ON sv.nombre_servicio = a.servicio
+WHERE NOT EXISTS (SELECT 1 FROM actividades x WHERE x.descripcion = a.descripcion);
 
 UPDATE x
 SET x.unidad = a.unidad, x.rendimiento = a.rendimiento
-FROM ACTIVIDADES x
+FROM actividades x
 INNER JOIN @act a ON a.descripcion = x.descripcion
 WHERE x.rendimiento IS NULL;
 
-INSERT INTO ACTIVIDAD_RANGOS (actividad_id, desde, hasta, personas)
-SELECT x.actividad_id, r.desde, r.hasta, r.personas
+INSERT INTO actividad_rangos (actividad_id, desde, hasta, cantidad_personas)
+SELECT x.actividad_id, r.desde, r.hasta, r.cantidad_personas
 FROM @act a
-INNER JOIN ACTIVIDADES x ON x.descripcion = a.descripcion
+INNER JOIN actividades x ON x.descripcion = a.descripcion
 INNER JOIN @rango r ON r.perfil = a.perfil
-WHERE NOT EXISTS (SELECT 1 FROM ACTIVIDAD_RANGOS y WHERE y.actividad_id = x.actividad_id);
+WHERE NOT EXISTS (SELECT 1 FROM actividad_rangos y WHERE y.actividad_id = x.actividad_id);
 
-IF NOT EXISTS (SELECT 1 FROM COMPRAS WHERE numero_factura = 'INVENTARIO-INICIAL')
+IF NOT EXISTS (SELECT 1 FROM compras WHERE numero_factura = 'INVENTARIO-INICIAL')
 BEGIN
-	DECLARE @nuevosP TABLE (producto_id INT, nombre VARCHAR(50));
-	DECLARE @nuevosE TABLE (equipo_id INT, nombre VARCHAR(50));
+	DECLARE @nuevos_p TABLE (producto_id INT, nombre VARCHAR(50));
+	DECLARE @nuevos_e TABLE (equipo_id INT, nombre VARCHAR(50));
 	DECLARE @proveedor INT;
 	DECLARE @compra INT;
-	DECLARE @disponible INT = (SELECT TOP 1 estado_equipo_id FROM ESTADO_EQUIPOS WHERE nombreEstadoEquipo = 'Disponible');
+	DECLARE @disponible INT = (SELECT TOP 1 estado_equipo_id FROM estados_equipo WHERE nombre_estado_equipo = 'Disponible');
 
-	IF NOT EXISTS (SELECT 1 FROM PROVEEDORES WHERE nombreProveedor = 'Proveedor inicial')
-		INSERT INTO PROVEEDORES (nombreProveedor, telefonoProveedor, correoProveedor) VALUES ('Proveedor inicial', '', '');
+	IF NOT EXISTS (SELECT 1 FROM proveedores WHERE nombre_proveedor = 'Proveedor inicial')
+		INSERT INTO proveedores (nombre_proveedor, telefono_proveedor, correo_proveedor) VALUES ('Proveedor inicial', '', '');
 
-	SELECT TOP 1 @proveedor = proveedor_id FROM PROVEEDORES WHERE nombreProveedor = 'Proveedor inicial';
+	SELECT TOP 1 @proveedor = proveedor_id FROM proveedores WHERE nombre_proveedor = 'Proveedor inicial';
 
-	INSERT INTO COMPRAS (proveedor_id, firma_empleado_id, numero_factura, fechaCompra)
+	INSERT INTO compras (proveedor_id, firma_empleado_id, numero_factura, fecha_compra)
 	VALUES (@proveedor, NULL, 'INVENTARIO-INICIAL', CAST(GETDATE() AS DATE));
 
 	SET @compra = CAST(SCOPE_IDENTITY() AS INT);
 
-	INSERT INTO PRODUCTOS (nombreProducto, tipoProducto, stock)
-	OUTPUT inserted.producto_id, inserted.nombreProducto INTO @nuevosP
+	INSERT INTO productos (nombre_producto, tipo_producto, stock)
+	OUTPUT inserted.producto_id, inserted.nombre_producto INTO @nuevos_p
 	SELECT p.nombre, p.tipo, p.stock FROM @prod p
-	WHERE NOT EXISTS (SELECT 1 FROM PRODUCTOS x WHERE x.nombreProducto = p.nombre);
+	WHERE NOT EXISTS (SELECT 1 FROM productos x WHERE x.nombre_producto = p.nombre);
 
-	INSERT INTO COMPRAS_PRODUCTOS (compra_id, producto_id, cantidad, precio_unitario)
+	INSERT INTO compras_productos (compra_id, producto_id, cantidad, precio_unitario)
 	SELECT @compra, n.producto_id, p.stock, p.costo
-	FROM @nuevosP n INNER JOIN @prod p ON p.nombre = n.nombre;
+	FROM @nuevos_p n INNER JOIN @prod p ON p.nombre = n.nombre;
 
-	INSERT INTO EQUIPOS (nombreEquipo, tipoEquipo, marcaEquipo, modeloEquipo, estado_equipo_id)
-	OUTPUT inserted.equipo_id, inserted.nombreEquipo INTO @nuevosE
+	INSERT INTO equipos (nombre_equipo, tipo_equipo, marca_equipo, modelo_equipo, estado_equipo_id)
+	OUTPUT inserted.equipo_id, inserted.nombre_equipo INTO @nuevos_e
 	SELECT e.nombre, e.tipo, e.marca, e.modelo, @disponible
 	FROM @eq e
 	INNER JOIN (VALUES (1), (2), (3), (4)) n(numero) ON n.numero <= e.unidades
-	WHERE NOT EXISTS (SELECT 1 FROM EQUIPOS x WHERE x.nombreEquipo = e.nombre);
+	WHERE NOT EXISTS (SELECT 1 FROM equipos x WHERE x.nombre_equipo = e.nombre);
 
-	INSERT INTO COMPRAS_EQUIPOS (compra_id, equipo_id, precio_unitario)
+	INSERT INTO compras_equipos (compra_id, equipo_id, precio_unitario)
 	SELECT @compra, n.equipo_id, e.costo
-	FROM @nuevosE n INNER JOIN @eq e ON e.nombre = n.nombre;
+	FROM @nuevos_e n INNER JOIN @eq e ON e.nombre = n.nombre;
 END
 
-INSERT INTO ACTIVIDAD_PRODUCTOS (actividad_id, producto_id, cantidad_por_unidad)
+INSERT INTO actividad_productos (actividad_id, producto_id, cantidad_por_unidad)
 SELECT x.actividad_id, p.producto_id, a.cantidad
 FROM @ap a
-INNER JOIN ACTIVIDADES x ON x.descripcion = a.actividad
-INNER JOIN PRODUCTOS p ON p.nombreProducto = a.producto
-WHERE NOT EXISTS (SELECT 1 FROM ACTIVIDAD_PRODUCTOS y WHERE y.actividad_id = x.actividad_id);
+INNER JOIN actividades x ON x.descripcion = a.actividad
+INNER JOIN productos p ON p.nombre_producto = a.producto
+WHERE NOT EXISTS (SELECT 1 FROM actividad_productos y WHERE y.actividad_id = x.actividad_id);
 
-INSERT INTO ACTIVIDAD_EQUIPOS (actividad_id, nombreEquipo)
+INSERT INTO actividad_equipos (actividad_id, nombre_equipo)
 SELECT x.actividad_id, a.equipo
 FROM @ae a
-INNER JOIN ACTIVIDADES x ON x.descripcion = a.actividad
-WHERE NOT EXISTS (SELECT 1 FROM ACTIVIDAD_EQUIPOS y WHERE y.actividad_id = x.actividad_id);
+INNER JOIN actividades x ON x.descripcion = a.actividad
+WHERE NOT EXISTS (SELECT 1 FROM actividad_equipos y WHERE y.actividad_id = x.actividad_id);
 GO
 
 SET NOEXEC OFF;

@@ -56,11 +56,11 @@ namespace Codelex
 
                 vehiculoActual = Convert.ToInt32(fila["vehiculo_id"]);
                 placaActual = fila["placa"].ToString();
-                vehiculoActualActivo = Convert.ToBoolean(fila["estadoVehiculo"]);
+                vehiculoActualActivo = Convert.ToBoolean(fila["estado_vehiculo"]);
 
                 txtPlaca.Text = placaActual;
-                txtMarca.Text = fila["marcaVehiculo"].ToString();
-                txtModelo.Text = fila["modeloVehiculo"].ToString();
+                txtMarca.Text = fila["marca_vehiculo"].ToString();
+                txtModelo.Text = fila["modelo_vehiculo"].ToString();
 
                 ActualizarBotones();
             }

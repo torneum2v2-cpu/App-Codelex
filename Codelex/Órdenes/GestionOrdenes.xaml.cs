@@ -56,8 +56,8 @@ namespace Codelex.Órdenes
             public FilaOrden(DataRow fila)
             {
                 OrdenId = "" + fila["orden_id"];
-                Rtn = "" + fila["identificacionCliente"];
-                Empresa = "" + fila["nombreEmpresa"];
+                Rtn = "" + fila["identificacion_cliente"];
+                Empresa = "" + fila["nombre_empresa"];
                 Contacto = "" + fila["contacto"];
                 Servicio = "" + fila["servicio"];
                 SupervisorId = Convert.ToInt32(fila["supervisor_id"]);
@@ -167,7 +167,7 @@ namespace Codelex.Órdenes
                 foreach (DataRow fila in estados.Rows)
                 {
                     int id = Convert.ToInt32(fila["estado_orden_id"]);
-                    string nombre = "" + fila["nombreEstadoOrden"];
+                    string nombre = "" + fila["nombre_estado_orden"];
 
                     cmbFiltroEstado.Items.Add(new OpcionFiltro(id, nombre));
                     cmbCambiarEstado.Items.Add(new OpcionFiltro(id, nombre));
@@ -401,7 +401,7 @@ namespace Codelex.Órdenes
                     string vehiculo = ("" + d["vehiculo"]).Trim();
                     dVehiculo.Text = vehiculo == "" ? "Sin vehículo asignado" : vehiculo;
 
-                    string observaciones = ("" + d["observaciones"]).Trim();
+                    string observaciones = ("" + d["observacion"]).Trim();
                     dObservaciones.Text = observaciones == "" ? "Sin observaciones" : observaciones;
 
                     dConformidad.Text = TextoConformidad(d);
@@ -467,9 +467,9 @@ namespace Codelex.Órdenes
 
             private static string TextoCliente(DataRow d)
             {
-                string empresa = ("" + d["nombreEmpresa"]).Trim();
+                string empresa = ("" + d["nombre_empresa"]).Trim();
                 string contacto = ("" + d["contacto"]).Trim();
-                string rtn = ("" + d["identificacionCliente"]).Trim();
+                string rtn = ("" + d["identificacion_cliente"]).Trim();
 
                 List<string> lineas = new List<string>();
 
@@ -493,7 +493,7 @@ namespace Codelex.Órdenes
             private static string TextoLugar(DataRow d)
             {
                 string locacion = ("" + d["locacion"]).Trim();
-                string tipo = ("" + d["tipoLocacion"]).Trim();
+                string tipo = ("" + d["tipo_locacion"]).Trim();
                 string direccion = ("" + d["direccion"]).Trim();
                 string piso = ("" + d["piso_area"]).Trim();
                 string turno = ("" + d["turno"]).Trim();
@@ -535,7 +535,7 @@ namespace Codelex.Órdenes
                 if (d["precio_facturado"] is not DBNull)
                     lineas.Add("Monto: L " + Convert.ToDecimal(d["precio_facturado"]).ToString("N2", CultureInfo.InvariantCulture));
 
-                if (d["fechaFactura"] is DateTime fecha)
+                if (d["fecha_factura"] is DateTime fecha)
                     lineas.Add("Fecha: " + fecha.ToString("dd/MM/yyyy"));
 
                 return UnirLineas(lineas);

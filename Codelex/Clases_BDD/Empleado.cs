@@ -32,7 +32,7 @@ namespace Codelex.Clases_BDD
 
             SqlCommand comando = Procedimiento("sp_BuscarEmpleados");
             comando.Parameters.AddWithValue("@texto", texto);
-            comando.Parameters.AddWithValue("@buscarPor", buscarPor);
+            comando.Parameters.AddWithValue("@buscar_por", buscarPor);
             comando.Parameters.AddWithValue("@estado", estado);
             return Consultar(comando);
         }
@@ -94,7 +94,7 @@ namespace Codelex.Clases_BDD
         {
             SqlCommand comando = Procedimiento("sp_CambiarEstadoEmpleado");
             comando.Parameters.AddWithValue("@empleado_id", empleadoId);
-            comando.Parameters.AddWithValue("@estadoEmpleado", activo);
+            comando.Parameters.AddWithValue("@estado_empleado", activo);
 
             return Ejecutar(comando, out mensaje);
         }
@@ -149,11 +149,11 @@ namespace Codelex.Clases_BDD
                                                string identidad, string telefono, string correo)
         {
             comando.Parameters.AddWithValue("@cargo_id", cargoId);
-            comando.Parameters.AddWithValue("@nombreEmpleado", nombre.Trim());
-            comando.Parameters.AddWithValue("@apellidoEmpleado", apellido.Trim());
+            comando.Parameters.AddWithValue("@nombre_empleado", nombre.Trim());
+            comando.Parameters.AddWithValue("@apellido_empleado", apellido.Trim());
             comando.Parameters.AddWithValue("@identidad", Cliente.LimpiarNumero(identidad));
-            comando.Parameters.AddWithValue("@telefonoEmpleado", telefono.Trim());
-            comando.Parameters.AddWithValue("@correoEmpleado", correo.Trim());
+            comando.Parameters.AddWithValue("@telefono_empleado", telefono.Trim());
+            comando.Parameters.AddWithValue("@correo_empleado", correo.Trim());
         }
 
         private DataTable ConsultarPorRango(string procedimiento, int empleadoId, DateTime desde, DateTime hasta)

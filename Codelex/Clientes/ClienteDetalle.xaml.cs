@@ -45,13 +45,13 @@ namespace Codelex
 
             DataRow fila = tabla.Rows[0];
 
-            lblTipoId.Text = fila["tipoIdentificacion"].ToString();
-            txtRTN.Text = fila["identificacionCliente"].ToString();
-            txtEmpresa.Text = fila["nombreEmpresa"].ToString();
-            txtContacto.Text = fila["nombreCliente"].ToString();
-            txtApellido.Text = fila["apellidoCliente"].ToString();
-            txtTelefono.Text = fila["telefonoCliente"].ToString();
-            txtCorreo.Text = fila["correoCliente"].ToString();
+            lblTipoId.Text = fila["tipo_identificacion"].ToString();
+            txtRTN.Text = fila["identificacion_cliente"].ToString();
+            txtEmpresa.Text = fila["nombre_empresa"].ToString();
+            txtContacto.Text = fila["nombre_cliente"].ToString();
+            txtApellido.Text = fila["apellido_cliente"].ToString();
+            txtTelefono.Text = fila["telefono_cliente"].ToString();
+            txtCorreo.Text = fila["correo_cliente"].ToString();
             txtEstado.Text = fila["estado"].ToString();
         }
 
@@ -62,7 +62,7 @@ namespace Codelex
 
             foreach (DataRow fila in tabla.Rows)
             {
-                string linea = fila["nombreLocacion"] + " · " + fila["tipoLocacion"] + " · " + fila["direccion"];
+                string linea = fila["nombre_locacion"] + " · " + fila["tipo_locacion"] + " · " + fila["direccion"];
                 lstLocaciones.Items.Add(linea);
             }
         }

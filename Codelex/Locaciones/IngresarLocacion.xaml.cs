@@ -73,12 +73,12 @@ namespace Codelex
 
             DataRow fila = tabla.Rows[0];
 
-            clienteRtn = "" + fila["identificacionCliente"];
+            clienteRtn = "" + fila["identificacion_cliente"];
 
             txtRTN.Text = clienteRtn;
-            txtEmpresa.Text = "" + fila["nombreEmpresa"];
-            txtContacto.Text = fila["nombreCliente"] + " " + fila["apellidoCliente"];
-            txtTelefono.Text = "" + fila["telefonoCliente"];
+            txtEmpresa.Text = "" + fila["nombre_empresa"];
+            txtContacto.Text = fila["nombre_cliente"] + " " + fila["apellido_cliente"];
+            txtTelefono.Text = "" + fila["telefono_cliente"];
 
             CargarLocaciones();
         }
@@ -124,7 +124,7 @@ namespace Codelex
 
             try
             {
-                MostrarCliente("" + fila["identificacionCliente"]);
+                MostrarCliente("" + fila["identificacion_cliente"]);
             }
             catch (Exception ex)
             {

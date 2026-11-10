@@ -22,14 +22,14 @@ BEGIN
 		   u.contrasena_hash,
 		   u.passkey_id,
 		   u.passkey_clave,
-		   e.nombreEmpleado,
-		   e.apellidoEmpleado,
-		   c.nombreCargo,
-		   ISNULL(r.nombreRol, '') AS rol
-	FROM USUARIOS u
-	INNER JOIN EMPLEADOS e ON e.empleado_id = u.empleado_id
-	LEFT JOIN CARGOS c ON c.cargo_id = e.cargo_id
-	LEFT JOIN ROLES r ON r.rol_id = u.rol_id
+		   e.nombre_empleado,
+		   e.apellido_empleado,
+		   c.nombre_cargo,
+		   ISNULL(r.nombre_rol, '') AS rol
+	FROM usuarios u
+	INNER JOIN empleados e ON e.empleado_id = u.empleado_id
+	LEFT JOIN cargos c ON c.cargo_id = e.cargo_id
+	LEFT JOIN roles r ON r.rol_id = u.rol_id
 	WHERE u.usuario = @usuario;
 END
 GO
@@ -41,10 +41,10 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT u.usuario_id,
-		   e.nombreEmpleado,
-		   e.correoEmpleado
-	FROM USUARIOS u
-	INNER JOIN EMPLEADOS e ON e.empleado_id = u.empleado_id
+		   e.nombre_empleado,
+		   e.correo_empleado
+	FROM usuarios u
+	INNER JOIN empleados e ON e.empleado_id = u.empleado_id
 	WHERE u.usuario = @usuario;
 END
 GO
@@ -61,7 +61,7 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE usuario_id = @usuario_id)
+	IF NOT EXISTS (SELECT 1 FROM usuarios WHERE usuario_id = @usuario_id)
 	BEGIN
 		SET @mensaje = 'El usuario no existe.';
 		RETURN;
@@ -73,7 +73,7 @@ BEGIN
 		RETURN;
 	END
 
-	UPDATE USUARIOS
+	UPDATE usuarios
 	SET contrasena_hash = @nuevo_hash
 	WHERE usuario_id = @usuario_id;
 
@@ -98,9 +98,9 @@ BEGIN
 	DECLARE @cantidad INT;
 
 	SELECT @cantidad = COUNT(1)
-	FROM USUARIOS u
-	INNER JOIN EMPLEADOS e ON e.empleado_id = u.empleado_id
-	WHERE e.correoEmpleado = @correo;
+	FROM usuarios u
+	INNER JOIN empleados e ON e.empleado_id = u.empleado_id
+	WHERE e.correo_empleado = @correo;
 
 	IF @cantidad = 0
 	BEGIN
@@ -116,9 +116,9 @@ BEGIN
 
 	UPDATE u
 	SET u.contrasena_hash = @contrasena_hash
-	FROM USUARIOS u
-	INNER JOIN EMPLEADOS e ON e.empleado_id = u.empleado_id
-	WHERE e.correoEmpleado = @correo;
+	FROM usuarios u
+	INNER JOIN empleados e ON e.empleado_id = u.empleado_id
+	WHERE e.correo_empleado = @correo;
 
 	SET @resultado = 1;
 	SET @mensaje = 'Contrasena cambiada correctamente.';
@@ -138,19 +138,19 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE usuario_id = @usuario_id)
+	IF NOT EXISTS (SELECT 1 FROM usuarios WHERE usuario_id = @usuario_id)
 	BEGIN
 		SET @mensaje = 'El usuario no existe.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM USUARIOS WHERE usuario_id = @usuario_id AND passkey_id IS NOT NULL)
+	IF EXISTS (SELECT 1 FROM usuarios WHERE usuario_id = @usuario_id AND passkey_id IS NOT NULL)
 	BEGIN
 		SET @mensaje = 'Este usuario ya tiene un teléfono registrado.';
 		RETURN;
 	END
 
-	UPDATE USUARIOS
+	UPDATE usuarios
 	SET passkey_id = @passkey_id,
 		passkey_clave = @passkey_clave
 	WHERE usuario_id = @usuario_id;
@@ -171,13 +171,13 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE usuario = @usuario)
+	IF NOT EXISTS (SELECT 1 FROM usuarios WHERE usuario = @usuario)
 	BEGIN
 		SET @mensaje = 'El usuario no existe.';
 		RETURN;
 	END
 
-	UPDATE USUARIOS
+	UPDATE usuarios
 	SET passkey_id = NULL,
 		passkey_clave = NULL
 	WHERE usuario = @usuario;
@@ -194,8 +194,8 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT COUNT(1) AS cantidad
-	FROM EMPLEADOS
-	WHERE correoEmpleado = LTRIM(RTRIM(@correo));
+	FROM empleados
+	WHERE correo_empleado = LTRIM(RTRIM(@correo));
 END
 GO
 
@@ -206,49 +206,49 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT rol_id, nombreRol
-	FROM ROLES
+	SELECT rol_id, nombre_rol
+	FROM roles
 	ORDER BY rol_id;
 END
 GO
 
 CREATE OR ALTER PROCEDURE sp_BuscarUsuarios
 	@texto VARCHAR(50) = NULL,
-	@buscarPor VARCHAR(10) = NULL,
+	@buscar_por VARCHAR(10) = NULL,
 	@estado BIT = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
-	SET @buscarPor = UPPER(LTRIM(RTRIM(ISNULL(@buscarPor, ''))));
+	SET @buscar_por = UPPER(LTRIM(RTRIM(ISNULL(@buscar_por, ''))));
 
-	SELECT u.usuario_id, u.empleado_id, u.usuario, u.rol_id, u.estadoUsuario,
-		   e.nombreEmpleado, e.apellidoEmpleado, e.correoEmpleado, e.telefonoEmpleado,
-		   r.nombreRol AS rol,
-		   CASE WHEN u.estadoUsuario = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
-	FROM USUARIOS u
-	INNER JOIN EMPLEADOS e ON e.empleado_id = u.empleado_id
-	LEFT JOIN ROLES r ON r.rol_id = u.rol_id
-	WHERE (@estado IS NULL OR u.estadoUsuario = @estado)
+	SELECT u.usuario_id, u.empleado_id, u.usuario, u.rol_id, u.estado_usuario,
+		   e.nombre_empleado, e.apellido_empleado, e.correo_empleado, e.telefono_empleado,
+		   r.nombre_rol AS rol,
+		   CASE WHEN u.estado_usuario = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
+	FROM usuarios u
+	INNER JOIN empleados e ON e.empleado_id = u.empleado_id
+	LEFT JOIN roles r ON r.rol_id = u.rol_id
+	WHERE (@estado IS NULL OR u.estado_usuario = @estado)
 	  AND (@texto = ''
-		   OR (@buscarPor = 'NOMBRE'
-			   AND (e.nombreEmpleado LIKE '%' + @texto + '%'
-					OR e.apellidoEmpleado LIKE '%' + @texto + '%'
-					OR ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '') LIKE '%' + @texto + '%'))
-		   OR (@buscarPor = 'USUARIO'
+		   OR (@buscar_por = 'NOMBRE'
+			   AND (e.nombre_empleado LIKE '%' + @texto + '%'
+					OR e.apellido_empleado LIKE '%' + @texto + '%'
+					OR ISNULL(e.nombre_empleado, '') + ' ' + ISNULL(e.apellido_empleado, '') LIKE '%' + @texto + '%'))
+		   OR (@buscar_por = 'USUARIO'
 			   AND u.usuario LIKE '%' + @texto + '%')
-		   OR (@buscarPor = 'CORREO'
-			   AND e.correoEmpleado LIKE '%' + @texto + '%')
-		   OR (@buscarPor = 'ROL'
-			   AND r.nombreRol LIKE '%' + @texto + '%')
-		   OR (@buscarPor NOT IN ('NOMBRE', 'USUARIO', 'CORREO', 'ROL')
+		   OR (@buscar_por = 'CORREO'
+			   AND e.correo_empleado LIKE '%' + @texto + '%')
+		   OR (@buscar_por = 'ROL'
+			   AND r.nombre_rol LIKE '%' + @texto + '%')
+		   OR (@buscar_por NOT IN ('NOMBRE', 'USUARIO', 'CORREO', 'ROL')
 			   AND (u.usuario LIKE '%' + @texto + '%'
-					OR e.nombreEmpleado LIKE '%' + @texto + '%'
-					OR e.apellidoEmpleado LIKE '%' + @texto + '%'
-					OR e.correoEmpleado LIKE '%' + @texto + '%'
-					OR r.nombreRol LIKE '%' + @texto + '%')))
-	ORDER BY e.nombreEmpleado, e.apellidoEmpleado;
+					OR e.nombre_empleado LIKE '%' + @texto + '%'
+					OR e.apellido_empleado LIKE '%' + @texto + '%'
+					OR e.correo_empleado LIKE '%' + @texto + '%'
+					OR r.nombre_rol LIKE '%' + @texto + '%')))
+	ORDER BY e.nombre_empleado, e.apellido_empleado;
 END
 GO
 
@@ -260,31 +260,31 @@ BEGIN
 
 	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
 
-	SELECT e.empleado_id, e.nombreEmpleado, e.apellidoEmpleado, e.identidad,
-		   e.telefonoEmpleado, e.correoEmpleado, c.nombreCargo
-	FROM EMPLEADOS e
-	LEFT JOIN CARGOS c ON c.cargo_id = e.cargo_id
-	WHERE NOT EXISTS (SELECT 1 FROM USUARIOS u WHERE u.empleado_id = e.empleado_id)
+	SELECT e.empleado_id, e.nombre_empleado, e.apellido_empleado, e.identidad,
+		   e.telefono_empleado, e.correo_empleado, c.nombre_cargo
+	FROM empleados e
+	LEFT JOIN cargos c ON c.cargo_id = e.cargo_id
+	WHERE NOT EXISTS (SELECT 1 FROM usuarios u WHERE u.empleado_id = e.empleado_id)
 	  AND (@texto = ''
 		   OR e.identidad LIKE '%' + @texto + '%'
-		   OR e.nombreEmpleado LIKE '%' + @texto + '%'
-		   OR e.apellidoEmpleado LIKE '%' + @texto + '%'
-		   OR ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '') LIKE '%' + @texto + '%')
-	ORDER BY e.nombreEmpleado, e.apellidoEmpleado;
+		   OR e.nombre_empleado LIKE '%' + @texto + '%'
+		   OR e.apellido_empleado LIKE '%' + @texto + '%'
+		   OR ISNULL(e.nombre_empleado, '') + ' ' + ISNULL(e.apellido_empleado, '') LIKE '%' + @texto + '%')
+	ORDER BY e.nombre_empleado, e.apellido_empleado;
 END
 GO
 
 CREATE OR ALTER PROCEDURE sp_ExisteUsuario
 	@usuario VARCHAR(50),
-	@excluirUsuarioId INT = 0
+	@excluir_usuario_id INT = 0
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	SELECT COUNT(1) AS cantidad
-	FROM USUARIOS
+	FROM usuarios
 	WHERE usuario = LTRIM(RTRIM(@usuario))
-	  AND usuario_id <> @excluirUsuarioId;
+	  AND usuario_id <> @excluir_usuario_id;
 END
 GO
 
@@ -310,31 +310,31 @@ BEGIN
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM EMPLEADOS WHERE empleado_id = @empleado_id)
+	IF NOT EXISTS (SELECT 1 FROM empleados WHERE empleado_id = @empleado_id)
 	BEGIN
 		SET @mensaje = 'El empleado no existe.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM USUARIOS WHERE empleado_id = @empleado_id)
+	IF EXISTS (SELECT 1 FROM usuarios WHERE empleado_id = @empleado_id)
 	BEGIN
 		SET @mensaje = 'Ese empleado ya tiene un usuario.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM USUARIOS WHERE usuario = @usuario)
+	IF EXISTS (SELECT 1 FROM usuarios WHERE usuario = @usuario)
 	BEGIN
 		SET @mensaje = 'Ya existe un usuario con ese nombre.';
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM ROLES WHERE rol_id = @rol_id)
+	IF NOT EXISTS (SELECT 1 FROM roles WHERE rol_id = @rol_id)
 	BEGIN
 		SET @mensaje = 'El rol seleccionado no existe.';
 		RETURN;
 	END
 
-	INSERT INTO USUARIOS (empleado_id, usuario, contrasena_hash, rol_id)
+	INSERT INTO usuarios (empleado_id, usuario, contrasena_hash, rol_id)
 	VALUES (@empleado_id, @usuario, @contrasena_hash, @rol_id);
 
 	SET @resultado = 1;
@@ -358,7 +358,7 @@ BEGIN
 
 	SET @usuario = LTRIM(RTRIM(ISNULL(@usuario, '')));
 
-	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE usuario_id = @usuario_id)
+	IF NOT EXISTS (SELECT 1 FROM usuarios WHERE usuario_id = @usuario_id)
 	BEGIN
 		SET @mensaje = 'El usuario no existe.';
 		RETURN;
@@ -370,7 +370,7 @@ BEGIN
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM USUARIOS
+	IF EXISTS (SELECT 1 FROM usuarios
 			   WHERE usuario = @usuario
 				 AND usuario_id <> @usuario_id)
 	BEGIN
@@ -378,14 +378,14 @@ BEGIN
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM ROLES WHERE rol_id = @rol_id)
+	IF NOT EXISTS (SELECT 1 FROM roles WHERE rol_id = @rol_id)
 	BEGIN
 		SET @mensaje = 'El rol seleccionado no existe.';
 		RETURN;
 	END
 
 	-- Si la contraseña viene vacia, se deja la que ya tenia
-	UPDATE USUARIOS
+	UPDATE usuarios
 	SET usuario = @usuario,
 		rol_id = @rol_id,
 		contrasena_hash = CASE WHEN ISNULL(@contrasena_hash, '') = ''
@@ -402,7 +402,7 @@ GO
 
 CREATE OR ALTER PROCEDURE sp_CambiarEstadoUsuario
 	@usuario_id INT,
-	@estadoUsuario BIT,
+	@estado_usuario BIT,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
 AS
@@ -412,18 +412,18 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE usuario_id = @usuario_id)
+	IF NOT EXISTS (SELECT 1 FROM usuarios WHERE usuario_id = @usuario_id)
 	BEGIN
 		SET @mensaje = 'El usuario no existe.';
 		RETURN;
 	END
 
-	UPDATE USUARIOS
-	SET estadoUsuario = @estadoUsuario
+	UPDATE usuarios
+	SET estado_usuario = @estado_usuario
 	WHERE usuario_id = @usuario_id;
 
 	SET @resultado = 1;
-	SET @mensaje = CASE WHEN @estadoUsuario = 1
+	SET @mensaje = CASE WHEN @estado_usuario = 1
 						THEN 'Usuario activado correctamente.'
 						ELSE 'Usuario desactivado correctamente.' END;
 END
@@ -440,20 +440,20 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE usuario_id = @usuario_id)
+	IF NOT EXISTS (SELECT 1 FROM usuarios WHERE usuario_id = @usuario_id)
 	BEGIN
 		SET @mensaje = 'El usuario no existe.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM BITACORAS WHERE usuario_id = @usuario_id)
+	IF EXISTS (SELECT 1 FROM bitacoras WHERE usuario_id = @usuario_id)
 	BEGIN
 		SET @mensaje = 'No se puede eliminar: tiene registros en la bitácora. Desactívelo en su lugar.';
 		RETURN;
 	END
 
 	BEGIN TRY
-		DELETE FROM USUARIOS
+		DELETE FROM usuarios
 		WHERE usuario_id = @usuario_id;
 
 		SET @resultado = 1;
@@ -473,7 +473,7 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT foto_perfil
-	FROM USUARIOS
+	FROM usuarios
 	WHERE usuario_id = @usuario_id;
 END
 GO
@@ -485,7 +485,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	UPDATE USUARIOS
+	UPDATE usuarios
 	SET foto_perfil = @foto
 	WHERE usuario_id = @usuario_id;
 END
@@ -517,13 +517,13 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE sp_InsertarCliente
-	@identificacionCliente VARCHAR(30),
-	@tipoIdentificacion VARCHAR(10),
-	@nombreEmpresa VARCHAR(50),
-	@nombreCliente VARCHAR(50),
-	@apellidoCliente VARCHAR(50),
-	@telefonoCliente VARCHAR(50),
-	@correoCliente VARCHAR(50),
+	@identificacion_cliente VARCHAR(30),
+	@tipo_identificacion VARCHAR(10),
+	@nombre_empresa VARCHAR(50),
+	@nombre_cliente VARCHAR(50),
+	@apellido_cliente VARCHAR(50),
+	@telefono_cliente VARCHAR(50),
+	@correo_cliente VARCHAR(50),
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
 AS
@@ -533,22 +533,22 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	SET @identificacionCliente = LTRIM(RTRIM(ISNULL(@identificacionCliente, '')));
-	SET @mensaje = dbo.fn_ValidarIdentificacion(@tipoIdentificacion, @identificacionCliente);
+	SET @identificacion_cliente = LTRIM(RTRIM(ISNULL(@identificacion_cliente, '')));
+	SET @mensaje = dbo.fn_ValidarIdentificacion(@tipo_identificacion, @identificacion_cliente);
 
 	IF @mensaje <> ''
 		RETURN;
 
-	IF EXISTS (SELECT 1 FROM CLIENTES WHERE identificacionCliente = @identificacionCliente)
+	IF EXISTS (SELECT 1 FROM clientes WHERE identificacion_cliente = @identificacion_cliente)
 	BEGIN
 		SET @mensaje = 'Ya existe un cliente con esa identificacion.';
 		RETURN;
 	END
 
-	INSERT INTO CLIENTES (identificacionCliente, tipoIdentificacion, nombreEmpresa, nombreCliente,
-						  apellidoCliente, telefonoCliente, correoCliente)
-	VALUES (@identificacionCliente, @tipoIdentificacion, @nombreEmpresa, @nombreCliente,
-			@apellidoCliente, @telefonoCliente, @correoCliente);
+	INSERT INTO clientes (identificacion_cliente, tipo_identificacion, nombre_empresa, nombre_cliente,
+						  apellido_cliente, telefono_cliente, correo_cliente)
+	VALUES (@identificacion_cliente, @tipo_identificacion, @nombre_empresa, @nombre_cliente,
+			@apellido_cliente, @telefono_cliente, @correo_cliente);
 
 	SET @resultado = 1;
 	SET @mensaje = 'Cliente registrado correctamente.';
@@ -557,13 +557,13 @@ GO
 
 CREATE OR ALTER PROCEDURE sp_ActualizarCliente
 	@cliente_id INT,
-	@identificacionCliente VARCHAR(30),
-	@tipoIdentificacion VARCHAR(10),
-	@nombreEmpresa VARCHAR(50),
-	@nombreCliente VARCHAR(50),
-	@apellidoCliente VARCHAR(50),
-	@telefonoCliente VARCHAR(50),
-	@correoCliente VARCHAR(50),
+	@identificacion_cliente VARCHAR(30),
+	@tipo_identificacion VARCHAR(10),
+	@nombre_empresa VARCHAR(50),
+	@nombre_cliente VARCHAR(50),
+	@apellido_cliente VARCHAR(50),
+	@telefono_cliente VARCHAR(50),
+	@correo_cliente VARCHAR(50),
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
 AS
@@ -575,7 +575,7 @@ BEGIN
 	SET @mensaje = '';
 
 	DECLARE @anterior VARCHAR(30);
-	SELECT @anterior = identificacionCliente FROM CLIENTES WHERE cliente_id = @cliente_id;
+	SELECT @anterior = identificacion_cliente FROM clientes WHERE cliente_id = @cliente_id;
 
 	IF @anterior IS NULL
 	BEGIN
@@ -583,14 +583,14 @@ BEGIN
 		RETURN;
 	END
 
-	SET @identificacionCliente = LTRIM(RTRIM(ISNULL(@identificacionCliente, '')));
-	SET @mensaje = dbo.fn_ValidarIdentificacion(@tipoIdentificacion, @identificacionCliente);
+	SET @identificacion_cliente = LTRIM(RTRIM(ISNULL(@identificacion_cliente, '')));
+	SET @mensaje = dbo.fn_ValidarIdentificacion(@tipo_identificacion, @identificacion_cliente);
 
 	IF @mensaje <> ''
 		RETURN;
 
-	IF EXISTS (SELECT 1 FROM CLIENTES
-			   WHERE identificacionCliente = @identificacionCliente AND cliente_id <> @cliente_id)
+	IF EXISTS (SELECT 1 FROM clientes
+			   WHERE identificacion_cliente = @identificacion_cliente AND cliente_id <> @cliente_id)
 	BEGIN
 		SET @mensaje = 'Ya existe otro cliente con esa identificacion.';
 		RETURN;
@@ -600,21 +600,21 @@ BEGIN
 		BEGIN TRANSACTION;
 
 		-- Las locaciones y las ordenes se actualizan solas (ON UPDATE CASCADE)
-		UPDATE CLIENTES
-		SET identificacionCliente = @identificacionCliente,
-			tipoIdentificacion = @tipoIdentificacion,
-			nombreEmpresa = @nombreEmpresa,
-			nombreCliente = @nombreCliente,
-			apellidoCliente = @apellidoCliente,
-			telefonoCliente = @telefonoCliente,
-			correoCliente = @correoCliente
+		UPDATE clientes
+		SET identificacion_cliente = @identificacion_cliente,
+			tipo_identificacion = @tipo_identificacion,
+			nombre_empresa = @nombre_empresa,
+			nombre_cliente = @nombre_cliente,
+			apellido_cliente = @apellido_cliente,
+			telefono_cliente = @telefono_cliente,
+			correo_cliente = @correo_cliente
 		WHERE cliente_id = @cliente_id;
 
 		-- Las cotizaciones guardan la identificacion como texto
-		IF @anterior <> @identificacionCliente
-			UPDATE COTIZACIONES
-			SET identificacionCliente = @identificacionCliente
-			WHERE identificacionCliente = @anterior;
+		IF @anterior <> @identificacion_cliente
+			UPDATE cotizaciones
+			SET identificacion_cliente = @identificacion_cliente
+			WHERE identificacion_cliente = @anterior;
 
 		COMMIT TRANSACTION;
 
@@ -631,8 +631,8 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE sp_CambiarEstadoCliente
-	@identificacionCliente VARCHAR(30),
-	@estadoCliente BIT,
+	@identificacion_cliente VARCHAR(30),
+	@estado_cliente BIT,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
 AS
@@ -642,18 +642,18 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	IF NOT EXISTS (SELECT 1 FROM CLIENTES WHERE identificacionCliente = @identificacionCliente)
+	IF NOT EXISTS (SELECT 1 FROM clientes WHERE identificacion_cliente = @identificacion_cliente)
 	BEGIN
 		SET @mensaje = 'El cliente no existe.';
 		RETURN;
 	END
 
-	UPDATE CLIENTES
-	SET estadoCliente = @estadoCliente
-	WHERE identificacionCliente = @identificacionCliente;
+	UPDATE clientes
+	SET estado_cliente = @estado_cliente
+	WHERE identificacion_cliente = @identificacion_cliente;
 
 	SET @resultado = 1;
-	SET @mensaje = CASE WHEN @estadoCliente = 1
+	SET @mensaje = CASE WHEN @estado_cliente = 1
 						THEN 'Cliente activado correctamente.'
 						ELSE 'Cliente desactivado correctamente.' END;
 END
@@ -661,98 +661,98 @@ GO
 
 CREATE OR ALTER PROCEDURE sp_BuscarClientes
 	@texto VARCHAR(50) = NULL,
-	@buscarPor VARCHAR(10) = NULL,
+	@buscar_por VARCHAR(10) = NULL,
 	@estado BIT = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
-	SET @buscarPor = UPPER(LTRIM(RTRIM(ISNULL(@buscarPor, ''))));
+	SET @buscar_por = UPPER(LTRIM(RTRIM(ISNULL(@buscar_por, ''))));
 
-	SELECT c.cliente_id, c.identificacionCliente, c.tipoIdentificacion, c.nombreEmpresa, c.nombreCliente,
-		   c.apellidoCliente, c.telefonoCliente, c.correoCliente, c.estadoCliente,
-		   CASE WHEN c.estadoCliente = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
-	FROM CLIENTES c
-	WHERE (@estado IS NULL OR c.estadoCliente = @estado)
+	SELECT c.cliente_id, c.identificacion_cliente, c.tipo_identificacion, c.nombre_empresa, c.nombre_cliente,
+		   c.apellido_cliente, c.telefono_cliente, c.correo_cliente, c.estado_cliente,
+		   CASE WHEN c.estado_cliente = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
+	FROM clientes c
+	WHERE (@estado IS NULL OR c.estado_cliente = @estado)
 	  AND (@texto = ''
-		   OR (@buscarPor = 'RTN'
-			   AND c.identificacionCliente LIKE '%' + @texto + '%')
-		   OR (@buscarPor = 'NOMBRE'
-			   AND (c.nombreEmpresa LIKE '%' + @texto + '%'
-					OR c.nombreCliente LIKE '%' + @texto + '%'
-					OR c.apellidoCliente LIKE '%' + @texto + '%'
-					OR ISNULL(c.nombreCliente, '') + ' ' + ISNULL(c.apellidoCliente, '') LIKE '%' + @texto + '%'))
-		   OR (@buscarPor NOT IN ('RTN', 'NOMBRE')
-			   AND (c.identificacionCliente LIKE '%' + @texto + '%'
-					OR c.nombreEmpresa LIKE '%' + @texto + '%'
-					OR c.nombreCliente LIKE '%' + @texto + '%'
-					OR c.apellidoCliente LIKE '%' + @texto + '%')))
-	ORDER BY c.nombreEmpresa, c.nombreCliente, c.apellidoCliente;
+		   OR (@buscar_por = 'RTN'
+			   AND c.identificacion_cliente LIKE '%' + @texto + '%')
+		   OR (@buscar_por = 'NOMBRE'
+			   AND (c.nombre_empresa LIKE '%' + @texto + '%'
+					OR c.nombre_cliente LIKE '%' + @texto + '%'
+					OR c.apellido_cliente LIKE '%' + @texto + '%'
+					OR ISNULL(c.nombre_cliente, '') + ' ' + ISNULL(c.apellido_cliente, '') LIKE '%' + @texto + '%'))
+		   OR (@buscar_por NOT IN ('RTN', 'NOMBRE')
+			   AND (c.identificacion_cliente LIKE '%' + @texto + '%'
+					OR c.nombre_empresa LIKE '%' + @texto + '%'
+					OR c.nombre_cliente LIKE '%' + @texto + '%'
+					OR c.apellido_cliente LIKE '%' + @texto + '%')))
+	ORDER BY c.nombre_empresa, c.nombre_cliente, c.apellido_cliente;
 END
 GO
 
 CREATE OR ALTER PROCEDURE sp_ObtenerCliente
-	@identificacionCliente VARCHAR(30)
+	@identificacion_cliente VARCHAR(30)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT c.cliente_id, c.identificacionCliente, c.tipoIdentificacion, c.nombreEmpresa, c.nombreCliente,
-		   c.apellidoCliente, c.telefonoCliente, c.correoCliente, c.estadoCliente,
-		   CASE WHEN c.estadoCliente = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
-	FROM CLIENTES c
-	WHERE c.identificacionCliente = @identificacionCliente;
+	SELECT c.cliente_id, c.identificacion_cliente, c.tipo_identificacion, c.nombre_empresa, c.nombre_cliente,
+		   c.apellido_cliente, c.telefono_cliente, c.correo_cliente, c.estado_cliente,
+		   CASE WHEN c.estado_cliente = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
+	FROM clientes c
+	WHERE c.identificacion_cliente = @identificacion_cliente;
 END
 GO
 
 CREATE OR ALTER PROCEDURE sp_ListarOrdenesPorCliente
-	@identificacionCliente VARCHAR(30)
+	@identificacion_cliente VARCHAR(30)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	SELECT o.orden_id,
-		   s.nombreServicio AS servicio,
+		   s.nombre_servicio AS servicio,
 		   ISNULL(o.fecha_servicio, o.fecha_solicitud) AS fecha,
-		   e.nombreEstadoOrden AS estado
-	FROM ORDENES o
-	LEFT JOIN SERVICIOS s ON s.servicio_id = o.servicio_id
-	LEFT JOIN ESTADO_ORDENES e ON e.estado_orden_id = o.estado_orden_id
-	WHERE o.identificacionCliente = @identificacionCliente
+		   e.nombre_estado_orden AS estado
+	FROM ordenes o
+	LEFT JOIN servicios s ON s.servicio_id = o.servicio_id
+	LEFT JOIN estados_orden e ON e.estado_orden_id = o.estado_orden_id
+	WHERE o.identificacion_cliente = @identificacion_cliente
 	ORDER BY fecha DESC, o.orden_id DESC;
 END
 GO
 
 CREATE OR ALTER PROCEDURE sp_ListarFacturasPorCliente
-	@identificacionCliente VARCHAR(30)
+	@identificacion_cliente VARCHAR(30)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	SELECT f.factura_id,
-		   f.fechaFactura AS fecha,
+		   f.fecha_factura AS fecha,
 		   f.estado_pago,
 		   f.precio_facturado AS monto
-	FROM FACTURAS f
-	INNER JOIN ORDENES o ON o.orden_id = f.orden_id
-	WHERE o.identificacionCliente = @identificacionCliente
-	ORDER BY f.fechaFactura DESC, f.factura_id DESC;
+	FROM facturas f
+	INNER JOIN ordenes o ON o.orden_id = f.orden_id
+	WHERE o.identificacion_cliente = @identificacion_cliente
+	ORDER BY f.fecha_factura DESC, f.factura_id DESC;
 END
 GO
 
 -- Locaciones
 
 CREATE OR ALTER PROCEDURE sp_ListarLocacionesPorCliente
-	@identificacionCliente VARCHAR(30)
+	@identificacion_cliente VARCHAR(30)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT locacion_id, nombreLocacion, direccion, tipoLocacion, identificacionCliente
-	FROM LOCACIONES
-	WHERE identificacionCliente = @identificacionCliente
-	ORDER BY nombreLocacion;
+	SELECT locacion_id, nombre_locacion, direccion, tipo_locacion, identificacion_cliente
+	FROM locaciones
+	WHERE identificacion_cliente = @identificacion_cliente
+	ORDER BY nombre_locacion;
 END
 GO
 
@@ -761,17 +761,17 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT locacion_id, nombreLocacion, direccion, tipoLocacion, identificacionCliente
-	FROM LOCACIONES
-	ORDER BY nombreLocacion;
+	SELECT locacion_id, nombre_locacion, direccion, tipo_locacion, identificacion_cliente
+	FROM locaciones
+	ORDER BY nombre_locacion;
 END
 GO
 
 CREATE OR ALTER PROCEDURE sp_InsertarLocacion
-	@identificacionCliente VARCHAR(30),
-	@nombreLocacion VARCHAR(60),
+	@identificacion_cliente VARCHAR(30),
+	@nombre_locacion VARCHAR(60),
 	@direccion VARCHAR(80),
-	@tipoLocacion VARCHAR(25) = NULL,
+	@tipo_locacion VARCHAR(25) = NULL,
 	@locacion_id INT OUTPUT,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
@@ -783,20 +783,20 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	IF NOT EXISTS (SELECT 1 FROM CLIENTES WHERE identificacionCliente = @identificacionCliente)
+	IF NOT EXISTS (SELECT 1 FROM clientes WHERE identificacion_cliente = @identificacion_cliente)
 	BEGIN
 		SET @mensaje = 'El cliente de la locacion no existe.';
 		RETURN;
 	END
 
-	IF @nombreLocacion IS NULL OR LTRIM(RTRIM(@nombreLocacion)) = ''
+	IF @nombre_locacion IS NULL OR LTRIM(RTRIM(@nombre_locacion)) = ''
 	BEGIN
 		SET @mensaje = 'El nombre de la locacion es obligatorio.';
 		RETURN;
 	END
 
-	INSERT INTO LOCACIONES (identificacionCliente, nombreLocacion, direccion, tipoLocacion)
-	VALUES (@identificacionCliente, @nombreLocacion, @direccion, @tipoLocacion);
+	INSERT INTO locaciones (identificacion_cliente, nombre_locacion, direccion, tipo_locacion)
+	VALUES (@identificacion_cliente, @nombre_locacion, @direccion, @tipo_locacion);
 
 	SET @locacion_id = CAST(SCOPE_IDENTITY() AS INT);
 	SET @resultado = 1;
@@ -806,10 +806,10 @@ GO
 
 CREATE OR ALTER PROCEDURE sp_ActualizarLocacion
 	@locacion_id INT,
-	@identificacionCliente VARCHAR(30),
-	@nombreLocacion VARCHAR(60),
+	@identificacion_cliente VARCHAR(30),
+	@nombre_locacion VARCHAR(60),
 	@direccion VARCHAR(80),
-	@tipoLocacion VARCHAR(25) = NULL,
+	@tipo_locacion VARCHAR(25) = NULL,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
 AS
@@ -819,23 +819,23 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	IF NOT EXISTS (SELECT 1 FROM LOCACIONES WHERE locacion_id = @locacion_id)
+	IF NOT EXISTS (SELECT 1 FROM locaciones WHERE locacion_id = @locacion_id)
 	BEGIN
 		SET @mensaje = 'La locacion no existe.';
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM CLIENTES WHERE identificacionCliente = @identificacionCliente)
+	IF NOT EXISTS (SELECT 1 FROM clientes WHERE identificacion_cliente = @identificacion_cliente)
 	BEGIN
 		SET @mensaje = 'El cliente de la locacion no existe.';
 		RETURN;
 	END
 
-	UPDATE LOCACIONES
-	SET identificacionCliente = @identificacionCliente,
-		nombreLocacion = @nombreLocacion,
+	UPDATE locaciones
+	SET identificacion_cliente = @identificacion_cliente,
+		nombre_locacion = @nombre_locacion,
 		direccion = @direccion,
-		tipoLocacion = @tipoLocacion
+		tipo_locacion = @tipo_locacion
 	WHERE locacion_id = @locacion_id;
 
 	SET @resultado = 1;
@@ -849,42 +849,42 @@ CREATE OR ALTER PROCEDURE sp_ListarCargos
 AS
 BEGIN
 	SET NOCOUNT ON;
-	SELECT cargo_id, nombreCargo FROM CARGOS ORDER BY nombreCargo;
+	SELECT cargo_id, nombre_cargo FROM cargos ORDER BY nombre_cargo;
 END
 GO
 
 CREATE OR ALTER PROCEDURE sp_BuscarEmpleados
 	@texto VARCHAR(50) = '',
-	@buscarPor VARCHAR(20) = '',
+	@buscar_por VARCHAR(20) = '',
 	@estado BIT = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
-	SET @buscarPor = UPPER(LTRIM(RTRIM(ISNULL(@buscarPor, ''))));
+	SET @buscar_por = UPPER(LTRIM(RTRIM(ISNULL(@buscar_por, ''))));
 
-	SELECT e.empleado_id, e.cargo_id, c.nombreCargo,
-		   e.nombreEmpleado, e.apellidoEmpleado,
-		   e.nombreEmpleado + ' ' + e.apellidoEmpleado AS nombreCompleto,
-		   e.identidad, e.telefonoEmpleado, e.correoEmpleado,
-		   u.usuario, e.estadoEmpleado,
-		   CASE WHEN e.estadoEmpleado = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
-	FROM EMPLEADOS e
-	LEFT JOIN CARGOS c ON c.cargo_id = e.cargo_id
-	LEFT JOIN USUARIOS u ON u.empleado_id = e.empleado_id
-	WHERE (@estado IS NULL OR e.estadoEmpleado = @estado)
+	SELECT e.empleado_id, e.cargo_id, c.nombre_cargo,
+		   e.nombre_empleado, e.apellido_empleado,
+		   e.nombre_empleado + ' ' + e.apellido_empleado AS nombre_completo,
+		   e.identidad, e.telefono_empleado, e.correo_empleado,
+		   u.usuario, e.estado_empleado,
+		   CASE WHEN e.estado_empleado = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
+	FROM empleados e
+	LEFT JOIN cargos c ON c.cargo_id = e.cargo_id
+	LEFT JOIN usuarios u ON u.empleado_id = e.empleado_id
+	WHERE (@estado IS NULL OR e.estado_empleado = @estado)
 	  AND (@texto = ''
-		   OR (@buscarPor = 'NOMBRE' AND (e.nombreEmpleado + ' ' + e.apellidoEmpleado) LIKE '%' + @texto + '%')
-		   OR (@buscarPor = 'IDENTIDAD' AND e.identidad LIKE '%' + @texto + '%')
-		   OR (@buscarPor = 'CARGO' AND c.nombreCargo LIKE '%' + @texto + '%')
-		   OR (@buscarPor = ''
-			   AND ((e.nombreEmpleado + ' ' + e.apellidoEmpleado) LIKE '%' + @texto + '%'
+		   OR (@buscar_por = 'NOMBRE' AND (e.nombre_empleado + ' ' + e.apellido_empleado) LIKE '%' + @texto + '%')
+		   OR (@buscar_por = 'IDENTIDAD' AND e.identidad LIKE '%' + @texto + '%')
+		   OR (@buscar_por = 'CARGO' AND c.nombre_cargo LIKE '%' + @texto + '%')
+		   OR (@buscar_por = ''
+			   AND ((e.nombre_empleado + ' ' + e.apellido_empleado) LIKE '%' + @texto + '%'
 				 OR e.identidad LIKE '%' + @texto + '%'
-				 OR c.nombreCargo LIKE '%' + @texto + '%'
-				 OR e.correoEmpleado LIKE '%' + @texto + '%'
+				 OR c.nombre_cargo LIKE '%' + @texto + '%'
+				 OR e.correo_empleado LIKE '%' + @texto + '%'
 				 OR u.usuario LIKE '%' + @texto + '%')))
-	ORDER BY e.nombreEmpleado, e.apellidoEmpleado;
+	ORDER BY e.nombre_empleado, e.apellido_empleado;
 END
 GO
 
@@ -894,25 +894,25 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT e.empleado_id, e.cargo_id, c.nombreCargo,
-		   e.nombreEmpleado, e.apellidoEmpleado, e.identidad,
-		   e.telefonoEmpleado, e.correoEmpleado,
-		   u.usuario, e.estadoEmpleado,
-		   CASE WHEN e.estadoEmpleado = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
-	FROM EMPLEADOS e
-	LEFT JOIN CARGOS c ON c.cargo_id = e.cargo_id
-	LEFT JOIN USUARIOS u ON u.empleado_id = e.empleado_id
+	SELECT e.empleado_id, e.cargo_id, c.nombre_cargo,
+		   e.nombre_empleado, e.apellido_empleado, e.identidad,
+		   e.telefono_empleado, e.correo_empleado,
+		   u.usuario, e.estado_empleado,
+		   CASE WHEN e.estado_empleado = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
+	FROM empleados e
+	LEFT JOIN cargos c ON c.cargo_id = e.cargo_id
+	LEFT JOIN usuarios u ON u.empleado_id = e.empleado_id
 	WHERE e.empleado_id = @empleado_id;
 END
 GO
 
 CREATE OR ALTER PROCEDURE sp_InsertarEmpleado
 	@cargo_id INT,
-	@nombreEmpleado VARCHAR(30),
-	@apellidoEmpleado VARCHAR(30),
+	@nombre_empleado VARCHAR(30),
+	@apellido_empleado VARCHAR(30),
 	@identidad VARCHAR(30),
-	@telefonoEmpleado VARCHAR(50) = NULL,
-	@correoEmpleado VARCHAR(50) = NULL,
+	@telefono_empleado VARCHAR(50) = NULL,
+	@correo_empleado VARCHAR(50) = NULL,
 	@empleado_id INT OUTPUT,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
@@ -924,7 +924,7 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	IF NOT EXISTS (SELECT 1 FROM CARGOS WHERE cargo_id = @cargo_id)
+	IF NOT EXISTS (SELECT 1 FROM cargos WHERE cargo_id = @cargo_id)
 	BEGIN
 		SET @mensaje = 'El cargo seleccionado no existe.';
 		RETURN;
@@ -938,16 +938,16 @@ BEGIN
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM EMPLEADOS WHERE identidad = @identidad)
+	IF EXISTS (SELECT 1 FROM empleados WHERE identidad = @identidad)
 	BEGIN
 		SET @mensaje = 'Ya existe un empleado con esa identidad.';
 		RETURN;
 	END
 
-	INSERT INTO EMPLEADOS (cargo_id, nombreEmpleado, apellidoEmpleado, identidad,
-						   telefonoEmpleado, correoEmpleado)
-	VALUES (@cargo_id, @nombreEmpleado, @apellidoEmpleado, @identidad,
-			NULLIF(@telefonoEmpleado, ''), NULLIF(@correoEmpleado, ''));
+	INSERT INTO empleados (cargo_id, nombre_empleado, apellido_empleado, identidad,
+						   telefono_empleado, correo_empleado)
+	VALUES (@cargo_id, @nombre_empleado, @apellido_empleado, @identidad,
+			NULLIF(@telefono_empleado, ''), NULLIF(@correo_empleado, ''));
 
 	SET @empleado_id = CAST(SCOPE_IDENTITY() AS INT);
 	SET @resultado = 1;
@@ -958,11 +958,11 @@ GO
 CREATE OR ALTER PROCEDURE sp_ActualizarEmpleado
 	@empleado_id INT,
 	@cargo_id INT,
-	@nombreEmpleado VARCHAR(30),
-	@apellidoEmpleado VARCHAR(30),
+	@nombre_empleado VARCHAR(30),
+	@apellido_empleado VARCHAR(30),
 	@identidad VARCHAR(30),
-	@telefonoEmpleado VARCHAR(50) = NULL,
-	@correoEmpleado VARCHAR(50) = NULL,
+	@telefono_empleado VARCHAR(50) = NULL,
+	@correo_empleado VARCHAR(50) = NULL,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
 AS
@@ -972,13 +972,13 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	IF NOT EXISTS (SELECT 1 FROM EMPLEADOS WHERE empleado_id = @empleado_id)
+	IF NOT EXISTS (SELECT 1 FROM empleados WHERE empleado_id = @empleado_id)
 	BEGIN
 		SET @mensaje = 'El empleado no existe.';
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM CARGOS WHERE cargo_id = @cargo_id)
+	IF NOT EXISTS (SELECT 1 FROM cargos WHERE cargo_id = @cargo_id)
 	BEGIN
 		SET @mensaje = 'El cargo seleccionado no existe.';
 		RETURN;
@@ -992,19 +992,19 @@ BEGIN
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM EMPLEADOS WHERE identidad = @identidad AND empleado_id <> @empleado_id)
+	IF EXISTS (SELECT 1 FROM empleados WHERE identidad = @identidad AND empleado_id <> @empleado_id)
 	BEGIN
 		SET @mensaje = 'Ya existe otro empleado con esa identidad.';
 		RETURN;
 	END
 
-	UPDATE EMPLEADOS
+	UPDATE empleados
 	SET cargo_id = @cargo_id,
-		nombreEmpleado = @nombreEmpleado,
-		apellidoEmpleado = @apellidoEmpleado,
+		nombre_empleado = @nombre_empleado,
+		apellido_empleado = @apellido_empleado,
 		identidad = @identidad,
-		telefonoEmpleado = NULLIF(@telefonoEmpleado, ''),
-		correoEmpleado = NULLIF(@correoEmpleado, '')
+		telefono_empleado = NULLIF(@telefono_empleado, ''),
+		correo_empleado = NULLIF(@correo_empleado, '')
 	WHERE empleado_id = @empleado_id;
 
 	SET @resultado = 1;
@@ -1014,7 +1014,7 @@ GO
 
 CREATE OR ALTER PROCEDURE sp_CambiarEstadoEmpleado
 	@empleado_id INT,
-	@estadoEmpleado BIT,
+	@estado_empleado BIT,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
 AS
@@ -1024,16 +1024,16 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	IF NOT EXISTS (SELECT 1 FROM EMPLEADOS WHERE empleado_id = @empleado_id)
+	IF NOT EXISTS (SELECT 1 FROM empleados WHERE empleado_id = @empleado_id)
 	BEGIN
 		SET @mensaje = 'El empleado no existe.';
 		RETURN;
 	END
 
-	UPDATE EMPLEADOS SET estadoEmpleado = @estadoEmpleado WHERE empleado_id = @empleado_id;
+	UPDATE empleados SET estado_empleado = @estado_empleado WHERE empleado_id = @empleado_id;
 
 	SET @resultado = 1;
-	SET @mensaje = CASE WHEN @estadoEmpleado = 1 THEN 'Empleado activado correctamente.'
+	SET @mensaje = CASE WHEN @estado_empleado = 1 THEN 'Empleado activado correctamente.'
 						ELSE 'Empleado desactivado correctamente.' END;
 END
 GO
@@ -1046,16 +1046,16 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT CONVERT(VARCHAR(10), a.fechaAsistencia, 103) AS fechaAsistencia,
+	SELECT CONVERT(VARCHAR(10), a.fecha_asistencia, 103) AS fecha_asistencia,
 		   CONVERT(VARCHAR(5), a.hora_entrada, 108) AS hora_entrada,
 		   CONVERT(VARCHAR(5), a.hora_salida, 108) AS hora_salida,
 		   CASE WHEN a.hora_entrada IS NOT NULL AND a.hora_salida IS NOT NULL
 				THEN CAST(DATEDIFF(MINUTE, a.hora_entrada, a.hora_salida) / 60.0 AS DECIMAL(6, 2))
 				ELSE 0 END AS horas
-	FROM ASISTENCIAS a
+	FROM asistencias a
 	WHERE a.empleado_id = @empleado_id
-	  AND a.fechaAsistencia BETWEEN @desde AND @hasta
-	ORDER BY a.fechaAsistencia;
+	  AND a.fecha_asistencia BETWEEN @desde AND @hasta
+	ORDER BY a.fecha_asistencia;
 END
 GO
 
@@ -1068,14 +1068,14 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT o.orden_id,
-		   ISNULL(c.nombreEmpresa, o.identificacionCliente) AS cliente,
-		   s.nombreServicio,
+		   ISNULL(c.nombre_empresa, o.identificacion_cliente) AS cliente,
+		   s.nombre_servicio,
 		   CONVERT(VARCHAR(10), o.fecha_servicio, 103) AS fecha_servicio,
 		   oe.turno, oe.piso_area
-	FROM ORDEN_EMPLEADOS oe
-	INNER JOIN ORDENES o ON o.orden_id = oe.orden_id
-	LEFT JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
-	LEFT JOIN SERVICIOS s ON s.servicio_id = o.servicio_id
+	FROM orden_empleados oe
+	INNER JOIN ordenes o ON o.orden_id = oe.orden_id
+	LEFT JOIN clientes c ON c.identificacion_cliente = o.identificacion_cliente
+	LEFT JOIN servicios s ON s.servicio_id = o.servicio_id
 	WHERE oe.empleado_id = @empleado_id
 	  AND o.fecha_servicio BETWEEN @desde AND @hasta
 	ORDER BY o.fecha_servicio, o.orden_id;
@@ -1093,44 +1093,44 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	IF NOT EXISTS (SELECT 1 FROM EMPLEADOS WHERE empleado_id = @empleado_id)
+	IF NOT EXISTS (SELECT 1 FROM empleados WHERE empleado_id = @empleado_id)
 	BEGIN
 		SET @mensaje = 'El empleado no existe.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM ORDEN_EMPLEADOS WHERE empleado_id = @empleado_id)
+	IF EXISTS (SELECT 1 FROM orden_empleados WHERE empleado_id = @empleado_id)
 	BEGIN
 		SET @mensaje = 'No se puede eliminar: esta asignado a ordenes. Desactivelo.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM ORDENES WHERE supervisor_id = @empleado_id)
+	IF EXISTS (SELECT 1 FROM ordenes WHERE supervisor_id = @empleado_id)
 	BEGIN
 		SET @mensaje = 'No se puede eliminar: es supervisor de ordenes. Desactivelo.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM ASISTENCIAS WHERE empleado_id = @empleado_id)
+	IF EXISTS (SELECT 1 FROM asistencias WHERE empleado_id = @empleado_id)
 	BEGIN
 		SET @mensaje = 'No se puede eliminar: tiene asistencias registradas. Desactivelo.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM COMPRAS WHERE firma_empleado_id = @empleado_id)
+	IF EXISTS (SELECT 1 FROM compras WHERE firma_empleado_id = @empleado_id)
 	BEGIN
 		SET @mensaje = 'No se puede eliminar: firmo ingresos de inventario. Desactivelo.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM USUARIOS WHERE empleado_id = @empleado_id)
+	IF EXISTS (SELECT 1 FROM usuarios WHERE empleado_id = @empleado_id)
 	BEGIN
 		SET @mensaje = 'No se puede eliminar: tiene un usuario del sistema. Desactivelo.';
 		RETURN;
 	END
 
 	BEGIN TRY
-		DELETE FROM EMPLEADOS WHERE empleado_id = @empleado_id;
+		DELETE FROM empleados WHERE empleado_id = @empleado_id;
 
 		SET @resultado = 1;
 		SET @mensaje = 'Empleado eliminado correctamente.';
@@ -1162,8 +1162,8 @@ BEGIN
 
 	DECLARE @empleado_id INT, @activo BIT;
 
-	SELECT @empleado_id = empleado_id, @activo = estadoEmpleado
-	FROM EMPLEADOS
+	SELECT @empleado_id = empleado_id, @activo = estado_empleado
+	FROM empleados
 	WHERE identidad = @identidad;
 
 	IF @empleado_id IS NULL
@@ -1184,13 +1184,13 @@ BEGIN
 			@salida TIME;
 
 	SELECT TOP 1 @asistencia_id = asistencia_id, @salida = hora_salida
-	FROM ASISTENCIAS
-	WHERE empleado_id = @empleado_id AND fechaAsistencia = @hoy
+	FROM asistencias
+	WHERE empleado_id = @empleado_id AND fecha_asistencia = @hoy
 	ORDER BY asistencia_id DESC;
 
 	IF @asistencia_id IS NULL
 	BEGIN
-		INSERT INTO ASISTENCIAS (empleado_id, fechaAsistencia, hora_entrada, hora_salida)
+		INSERT INTO asistencias (empleado_id, fecha_asistencia, hora_entrada, hora_salida)
 		VALUES (@empleado_id, @hoy, @ahora, NULL);
 
 		SET @tipo = 'ENTRADA';
@@ -1199,7 +1199,7 @@ BEGIN
 	END
 	ELSE IF @salida IS NULL
 	BEGIN
-		UPDATE ASISTENCIAS SET hora_salida = @ahora WHERE asistencia_id = @asistencia_id;
+		UPDATE asistencias SET hora_salida = @ahora WHERE asistencia_id = @asistencia_id;
 
 		SET @tipo = 'SALIDA';
 		SET @resultado = 1;
@@ -1221,17 +1221,17 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT o.orden_id,
-		   COALESCE(NULLIF(c.nombreEmpresa, ''),
-					NULLIF(LTRIM(ISNULL(c.nombreCliente, '') + ' ' + ISNULL(c.apellidoCliente, '')), ''),
-					o.identificacionCliente) AS cliente,
-		   ISNULL(s.nombreServicio, 'Sin servicio') AS nombreServicio,
+		   COALESCE(NULLIF(c.nombre_empresa, ''),
+					NULLIF(LTRIM(ISNULL(c.nombre_cliente, '') + ' ' + ISNULL(c.apellido_cliente, '')), ''),
+					o.identificacion_cliente) AS cliente,
+		   ISNULL(s.nombre_servicio, 'Sin servicio') AS nombre_servicio,
 		   COALESCE(o.fecha_servicio, o.fecha_solicitud) AS fecha,
-		   ISNULL(eo.nombreEstadoOrden, 'Sin estado') AS estado
-	FROM ORDEN_EMPLEADOS oe
-	INNER JOIN ORDENES o ON o.orden_id = oe.orden_id
-	LEFT JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
-	LEFT JOIN SERVICIOS s ON s.servicio_id = o.servicio_id
-	LEFT JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
+		   ISNULL(eo.nombre_estado_orden, 'Sin estado') AS estado
+	FROM orden_empleados oe
+	INNER JOIN ordenes o ON o.orden_id = oe.orden_id
+	LEFT JOIN clientes c ON c.identificacion_cliente = o.identificacion_cliente
+	LEFT JOIN servicios s ON s.servicio_id = o.servicio_id
+	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
 	WHERE oe.empleado_id = @empleado_id
 	ORDER BY COALESCE(o.fecha_servicio, o.fecha_solicitud) DESC, o.orden_id;
 END
@@ -1245,30 +1245,30 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT o.orden_id,
-		   COALESCE(NULLIF(c.nombreEmpresa, ''),
-					NULLIF(LTRIM(ISNULL(c.nombreCliente, '') + ' ' + ISNULL(c.apellidoCliente, '')), ''),
-					o.identificacionCliente) AS cliente,
-		   ISNULL(s.nombreServicio, '') AS servicio,
+		   COALESCE(NULLIF(c.nombre_empresa, ''),
+					NULLIF(LTRIM(ISNULL(c.nombre_cliente, '') + ' ' + ISNULL(c.apellido_cliente, '')), ''),
+					o.identificacion_cliente) AS cliente,
+		   ISNULL(s.nombre_servicio, '') AS servicio,
 		   o.fecha_solicitud,
 		   o.fecha_servicio,
-		   ISNULL(eo.nombreEstadoOrden, 'Sin estado') AS estado,
-		   ISNULL(l.nombreLocacion, '') AS locacion,
+		   ISNULL(eo.nombre_estado_orden, 'Sin estado') AS estado,
+		   ISNULL(l.nombre_locacion, '') AS locacion,
 		   ISNULL(l.direccion, '') AS direccion,
 		   CASE WHEN v.vehiculo_id IS NULL THEN ''
-				ELSE ISNULL(v.placa, '') + ' - ' + ISNULL(v.marcaVehiculo, '') + ' ' + ISNULL(v.modeloVehiculo, '')
+				ELSE ISNULL(v.placa, '') + ' - ' + ISNULL(v.marca_vehiculo, '') + ' ' + ISNULL(v.modelo_vehiculo, '')
 		   END AS vehiculo,
-		   LTRIM(ISNULL(sup.nombreEmpleado, '') + ' ' + ISNULL(sup.apellidoEmpleado, '')) AS supervisor,
+		   LTRIM(ISNULL(sup.nombre_empleado, '') + ' ' + ISNULL(sup.apellido_empleado, '')) AS supervisor,
 		   ISNULL(oe.turno, '') AS turno,
 		   ISNULL(oe.piso_area, '') AS piso_area,
-		   ISNULL(o.observaciones, '') AS observaciones
-	FROM ORDEN_EMPLEADOS oe
-	INNER JOIN ORDENES o ON o.orden_id = oe.orden_id
-	LEFT JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
-	LEFT JOIN SERVICIOS s ON s.servicio_id = o.servicio_id
-	LEFT JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
-	LEFT JOIN LOCACIONES l ON l.locacion_id = o.locacion_id
-	LEFT JOIN VEHICULOS v ON v.vehiculo_id = o.vehiculo_id
-	LEFT JOIN EMPLEADOS sup ON sup.empleado_id = o.supervisor_id
+		   ISNULL(o.observacion, '') AS observacion
+	FROM orden_empleados oe
+	INNER JOIN ordenes o ON o.orden_id = oe.orden_id
+	LEFT JOIN clientes c ON c.identificacion_cliente = o.identificacion_cliente
+	LEFT JOIN servicios s ON s.servicio_id = o.servicio_id
+	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
+	LEFT JOIN locaciones l ON l.locacion_id = o.locacion_id
+	LEFT JOIN vehiculos v ON v.vehiculo_id = o.vehiculo_id
+	LEFT JOIN empleados sup ON sup.empleado_id = o.supervisor_id
 	WHERE oe.orden_id = @orden_id
 	  AND oe.empleado_id = @empleado_id;
 END
@@ -1281,18 +1281,18 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	IF NOT EXISTS (SELECT 1 FROM ORDEN_EMPLEADOS WHERE orden_id = @orden_id AND empleado_id = @empleado_id)
+	IF NOT EXISTS (SELECT 1 FROM orden_empleados WHERE orden_id = @orden_id AND empleado_id = @empleado_id)
 		RETURN;
 
 	SELECT 1 AS orden,
 		   'Equipo de trabajo' AS seccion,
-		   LTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')) AS titulo,
-		   ISNULL(cg.nombreCargo, '')
+		   LTRIM(ISNULL(e.nombre_empleado, '') + ' ' + ISNULL(e.apellido_empleado, '')) AS titulo,
+		   ISNULL(cg.nombre_cargo, '')
 			 + CASE WHEN ISNULL(oe.turno, '') = '' THEN '' ELSE ' - Turno: ' + oe.turno END
 			 + CASE WHEN ISNULL(oe.piso_area, '') = '' THEN '' ELSE ' - ' + oe.piso_area END AS detalle
-	FROM ORDEN_EMPLEADOS oe
-	INNER JOIN EMPLEADOS e ON e.empleado_id = oe.empleado_id
-	LEFT JOIN CARGOS cg ON cg.cargo_id = e.cargo_id
+	FROM orden_empleados oe
+	INNER JOIN empleados e ON e.empleado_id = oe.empleado_id
+	LEFT JOIN cargos cg ON cg.cargo_id = e.cargo_id
 	WHERE oe.orden_id = @orden_id
 	  AND oe.empleado_id <> @empleado_id
 
@@ -1303,29 +1303,29 @@ BEGIN
 		   ISNULL(a.descripcion, ''),
 		   CASE WHEN ISNULL(a.frecuencia, '') = '' THEN '' ELSE a.frecuencia + ' - ' END
 			 + CASE WHEN oa.estado = 1 THEN 'Realizada' ELSE 'Pendiente' END
-	FROM ORDEN_ACTIVIDADES oa
-	INNER JOIN ACTIVIDADES a ON a.actividad_id = oa.actividad_id
+	FROM orden_actividades oa
+	INNER JOIN actividades a ON a.actividad_id = oa.actividad_id
 	WHERE oa.orden_id = @orden_id
 
 	UNION ALL
 
 	SELECT 3,
 		   'Equipos asignados',
-		   ISNULL(q.nombreEquipo, ''),
-		   LTRIM(ISNULL(q.marcaEquipo, '') + ' ' + ISNULL(q.modeloEquipo, ''))
+		   ISNULL(q.nombre_equipo, ''),
+		   LTRIM(ISNULL(q.marca_equipo, '') + ' ' + ISNULL(q.modelo_equipo, ''))
 			 + CASE WHEN oq.devuelto = 1 THEN ' - Devuelto' ELSE ' - En uso' END
-	FROM ORDEN_EQUIPOS oq
-	INNER JOIN EQUIPOS q ON q.equipo_id = oq.equipo_id
+	FROM orden_equipos oq
+	INNER JOIN equipos q ON q.equipo_id = oq.equipo_id
 	WHERE oq.orden_id = @orden_id
 
 	UNION ALL
 
 	SELECT 4,
 		   'Productos',
-		   ISNULL(p.nombreProducto, ''),
+		   ISNULL(p.nombre_producto, ''),
 		   'Cantidad: ' + CAST(ISNULL(op.cantidad, 0) AS VARCHAR(10))
-	FROM ORDEN_PRODUCTOS op
-	INNER JOIN PRODUCTOS p ON p.producto_id = op.producto_id
+	FROM orden_productos op
+	INNER JOIN productos p ON p.producto_id = op.producto_id
 	WHERE op.orden_id = @orden_id
 
 	ORDER BY orden, titulo;
@@ -1336,8 +1336,8 @@ GO
 
 CREATE OR ALTER PROCEDURE sp_InsertarVehiculo
 	@placa VARCHAR(15),
-	@marcaVehiculo VARCHAR(20),
-	@modeloVehiculo VARCHAR(25),
+	@marca_vehiculo VARCHAR(20),
+	@modelo_vehiculo VARCHAR(25),
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
 AS
@@ -1355,14 +1355,14 @@ BEGIN
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM VEHICULOS WHERE placa = @placa)
+	IF EXISTS (SELECT 1 FROM vehiculos WHERE placa = @placa)
 	BEGIN
 		SET @mensaje = 'Ya existe un vehiculo con esa placa.';
 		RETURN;
 	END
 
-	INSERT INTO VEHICULOS (placa, marcaVehiculo, modeloVehiculo)
-	VALUES (@placa, @marcaVehiculo, @modeloVehiculo);
+	INSERT INTO vehiculos (placa, marca_vehiculo, modelo_vehiculo)
+	VALUES (@placa, @marca_vehiculo, @modelo_vehiculo);
 
 	SET @resultado = 1;
 	SET @mensaje = 'Vehiculo registrado correctamente.';
@@ -1372,8 +1372,8 @@ GO
 CREATE OR ALTER PROCEDURE sp_ActualizarVehiculo
 	@vehiculo_id INT,
 	@placa VARCHAR(15),
-	@marcaVehiculo VARCHAR(20),
-	@modeloVehiculo VARCHAR(25),
+	@marca_vehiculo VARCHAR(20),
+	@modelo_vehiculo VARCHAR(25),
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
 AS
@@ -1385,7 +1385,7 @@ BEGIN
 
 	SET @placa = UPPER(LTRIM(RTRIM(ISNULL(@placa, ''))));
 
-	IF NOT EXISTS (SELECT 1 FROM VEHICULOS WHERE vehiculo_id = @vehiculo_id)
+	IF NOT EXISTS (SELECT 1 FROM vehiculos WHERE vehiculo_id = @vehiculo_id)
 	BEGIN
 		SET @mensaje = 'El vehiculo no existe.';
 		RETURN;
@@ -1397,16 +1397,16 @@ BEGIN
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM VEHICULOS WHERE placa = @placa AND vehiculo_id <> @vehiculo_id)
+	IF EXISTS (SELECT 1 FROM vehiculos WHERE placa = @placa AND vehiculo_id <> @vehiculo_id)
 	BEGIN
 		SET @mensaje = 'Ya existe otro vehiculo con esa placa.';
 		RETURN;
 	END
 
-	UPDATE VEHICULOS
+	UPDATE vehiculos
 	SET placa = @placa,
-		marcaVehiculo = @marcaVehiculo,
-		modeloVehiculo = @modeloVehiculo
+		marca_vehiculo = @marca_vehiculo,
+		modelo_vehiculo = @modelo_vehiculo
 	WHERE vehiculo_id = @vehiculo_id;
 
 	SET @resultado = 1;
@@ -1416,7 +1416,7 @@ GO
 
 CREATE OR ALTER PROCEDURE sp_CambiarEstadoVehiculo
 	@vehiculo_id INT,
-	@estadoVehiculo BIT,
+	@estado_vehiculo BIT,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
 AS
@@ -1426,18 +1426,18 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	IF NOT EXISTS (SELECT 1 FROM VEHICULOS WHERE vehiculo_id = @vehiculo_id)
+	IF NOT EXISTS (SELECT 1 FROM vehiculos WHERE vehiculo_id = @vehiculo_id)
 	BEGIN
 		SET @mensaje = 'El vehiculo no existe.';
 		RETURN;
 	END
 
-	UPDATE VEHICULOS
-	SET estadoVehiculo = @estadoVehiculo
+	UPDATE vehiculos
+	SET estado_vehiculo = @estado_vehiculo
 	WHERE vehiculo_id = @vehiculo_id;
 
 	SET @resultado = 1;
-	SET @mensaje = CASE WHEN @estadoVehiculo = 1
+	SET @mensaje = CASE WHEN @estado_vehiculo = 1
 						THEN 'Vehiculo activado correctamente.'
 						ELSE 'Vehiculo desactivado correctamente.' END;
 END
@@ -1452,14 +1452,14 @@ BEGIN
 
 	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
 
-	SELECT v.vehiculo_id, v.placa, v.marcaVehiculo, v.modeloVehiculo, v.estadoVehiculo,
-		   CASE WHEN v.estadoVehiculo = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
-	FROM VEHICULOS v
-	WHERE (@estado IS NULL OR v.estadoVehiculo = @estado)
+	SELECT v.vehiculo_id, v.placa, v.marca_vehiculo, v.modelo_vehiculo, v.estado_vehiculo,
+		   CASE WHEN v.estado_vehiculo = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
+	FROM vehiculos v
+	WHERE (@estado IS NULL OR v.estado_vehiculo = @estado)
 	  AND (@texto = ''
 		   OR v.placa LIKE '%' + @texto + '%'
-		   OR v.marcaVehiculo LIKE '%' + @texto + '%'
-		   OR v.modeloVehiculo LIKE '%' + @texto + '%')
+		   OR v.marca_vehiculo LIKE '%' + @texto + '%'
+		   OR v.modelo_vehiculo LIKE '%' + @texto + '%')
 	ORDER BY v.placa;
 END
 GO
@@ -1470,9 +1470,9 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT v.vehiculo_id, v.placa, v.marcaVehiculo, v.modeloVehiculo, v.estadoVehiculo,
-		   CASE WHEN v.estadoVehiculo = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
-	FROM VEHICULOS v
+	SELECT v.vehiculo_id, v.placa, v.marca_vehiculo, v.modelo_vehiculo, v.estado_vehiculo,
+		   CASE WHEN v.estado_vehiculo = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
+	FROM vehiculos v
 	WHERE v.vehiculo_id = @vehiculo_id;
 END
 GO
@@ -1484,8 +1484,8 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT estado_orden_id, nombreEstadoOrden
-	FROM ESTADO_ORDENES
+	SELECT estado_orden_id, nombre_estado_orden
+	FROM estados_orden
 	ORDER BY estado_orden_id;
 END
 GO
@@ -1495,9 +1495,9 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT servicio_id, nombreServicio
-	FROM SERVICIOS
-	ORDER BY nombreServicio;
+	SELECT servicio_id, nombre_servicio
+	FROM servicios
+	ORDER BY nombre_servicio;
 END
 GO
 
@@ -1512,7 +1512,7 @@ BEGIN
 		   CASE WHEN ISNULL(frecuencia, '') = '' THEN '' ELSE ' (' + frecuencia + ')' END AS texto,
 		   ISNULL(descripcion, '') AS nombre,
 		   ISNULL(unidad, 'unidad') AS unidad
-	FROM ACTIVIDADES
+	FROM actividades
 	ORDER BY descripcion;
 END
 GO
@@ -1523,12 +1523,12 @@ RETURNS BIT
 AS
 BEGIN
 	IF EXISTS (SELECT 1
-			   FROM ORDENES o
-			   INNER JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
-			   WHERE eo.nombreEstadoOrden = 'En proceso'
+			   FROM ordenes o
+			   INNER JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
+			   WHERE eo.nombre_estado_orden = 'En proceso'
 				 AND o.orden_id <> ISNULL(@orden_excluir, '')
 				 AND (o.supervisor_id = @empleado_id
-					  OR EXISTS (SELECT 1 FROM ORDEN_EMPLEADOS oe
+					  OR EXISTS (SELECT 1 FROM orden_empleados oe
 								 WHERE oe.orden_id = o.orden_id AND oe.empleado_id = @empleado_id)))
 		RETURN 1;
 
@@ -1542,11 +1542,11 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT e.empleado_id,
-		   LTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')) AS nombreCompleto
-	FROM EMPLEADOS e
-	WHERE e.estadoEmpleado = 1
+		   LTRIM(ISNULL(e.nombre_empleado, '') + ' ' + ISNULL(e.apellido_empleado, '')) AS nombre_completo
+	FROM empleados e
+	WHERE e.estado_empleado = 1
 	  AND dbo.fn_EmpleadoEnProceso(e.empleado_id, '') = 0
-	ORDER BY e.nombreEmpleado, e.apellidoEmpleado;
+	ORDER BY e.nombre_empleado, e.apellido_empleado;
 END
 GO
 
@@ -1564,16 +1564,16 @@ RETURN
 	(
 		SELECT CAST(MAX(CASE WHEN clave = 'SALARIO_MINIMO' THEN valor END) AS FLOAT) AS salario,
 			   CAST(MAX(CASE WHEN clave = 'CARGAS_SOCIALES' THEN valor END) AS FLOAT) AS cargas,
-			   CAST(MAX(CASE WHEN clave = 'HORAS_MES' THEN valor END) AS FLOAT) AS horasMes,
-			   CAST(MAX(CASE WHEN clave = 'FACTOR_SUPERVISOR' THEN valor END) AS FLOAT) AS factorSup,
+			   CAST(MAX(CASE WHEN clave = 'HORAS_MES' THEN valor END) AS FLOAT) AS horas_mes,
+			   CAST(MAX(CASE WHEN clave = 'FACTOR_SUPERVISOR' THEN valor END) AS FLOAT) AS factor_sup,
 			   CAST(MAX(CASE WHEN clave = 'CUADRILLAS_POR_SUPERVISOR' THEN valor END) AS FLOAT) AS cuadrillas,
 			   CAST(MAX(CASE WHEN clave = 'LITROS_GASOLINA_VIAJE' THEN valor END) AS FLOAT)
 			   * CAST(MAX(CASE WHEN clave = 'PRECIO_LITRO_GASOLINA' THEN valor END) AS FLOAT) AS transporte,
-			   CAST(MAX(CASE WHEN clave = 'VIDA_UTIL_EQUIPO_MESES' THEN valor END) AS FLOAT) AS vidaUtil,
+			   CAST(MAX(CASE WHEN clave = 'VIDA_UTIL_EQUIPO_MESES' THEN valor END) AS FLOAT) AS vida_util,
 			   CAST(MAX(CASE WHEN clave = 'MANTENIMIENTO_EQUIPO_MENSUAL' THEN valor END) AS FLOAT) AS mantenimiento,
 			   CAST(MAX(CASE WHEN clave = 'GASTOS_ADMINISTRATIVOS' THEN valor END) AS FLOAT) AS admin,
 			   CAST(MAX(CASE WHEN clave = 'MARGEN_UTILIDAD' THEN valor END) AS FLOAT) AS margen
-		FROM PARAMETROS_COSTEO
+		FROM parametros_costeo
 	),
 	pedido AS
 	(
@@ -1588,12 +1588,12 @@ RETURN
 			   ISNULL(a.unidad, 'unidad') AS unidad,
 			   CAST(l.medida AS FLOAT) AS medida,
 			   CAST(a.rendimiento AS FLOAT) AS rendimiento,
-			   CAST(ISNULL(a.precio, 0) AS FLOAT) AS precioFijo,
-			   ISNULL(r.personas, 1) AS personas
+			   CAST(ISNULL(a.precio, 0) AS FLOAT) AS precio_fijo,
+			   ISNULL(r.cantidad_personas, 1) AS cantidad_personas
 		FROM pedido l
-		INNER JOIN ACTIVIDADES a ON a.actividad_id = l.actividad_id
-		OUTER APPLY (SELECT TOP 1 ar.personas
-					 FROM ACTIVIDAD_RANGOS ar
+		INNER JOIN actividades a ON a.actividad_id = l.actividad_id
+		OUTER APPLY (SELECT TOP 1 ar.cantidad_personas
+					 FROM actividad_rangos ar
 					 WHERE ar.actividad_id = a.actividad_id AND ar.desde <= l.medida
 					 ORDER BY ar.desde DESC) r
 	),
@@ -1601,33 +1601,33 @@ RETURN
 	(
 		SELECT b.*,
 			   CASE WHEN ISNULL(b.rendimiento, 0) > 0
-					THEN b.medida / (b.rendimiento * b.personas) ELSE 0 END AS horasTrabajo
+					THEN b.medida / (b.rendimiento * b.cantidad_personas) ELSE 0 END AS horas_trabajo
 		FROM base b
 	),
 	costos AS
 	(
 		SELECT h.*,
 			   CASE WHEN ISNULL(h.rendimiento, 0) > 0
-					THEN h.medida / h.rendimiento * (p.salario * (1 + p.cargas) / p.horasMes)
-					ELSE 0 END AS manoObra,
+					THEN h.medida / h.rendimiento * (p.salario * (1 + p.cargas) / p.horas_mes)
+					ELSE 0 END AS mano_obra,
 			   h.medida * CAST(ISNULL((SELECT SUM(ap.cantidad_por_unidad * ISNULL(pr.precio, 0))
-									   FROM ACTIVIDAD_PRODUCTOS ap
+									   FROM actividad_productos ap
 									   OUTER APPLY (SELECT TOP 1 cp.precio_unitario AS precio
-													FROM COMPRAS_PRODUCTOS cp
+													FROM compras_productos cp
 													WHERE cp.producto_id = ap.producto_id
 													ORDER BY cp.compra_producto_id DESC) pr
 									   WHERE ap.actividad_id = h.actividad_id), 0) AS FLOAT) AS insumos,
-			   h.horasTrabajo * CAST(ISNULL((SELECT SUM(eq.precio)
-											 FROM ACTIVIDAD_EQUIPOS ae
+			   h.horas_trabajo * CAST(ISNULL((SELECT SUM(eq.precio)
+											 FROM actividad_equipos ae
 											 CROSS APPLY (SELECT AVG(ce.precio_unitario) AS precio
-														  FROM COMPRAS_EQUIPOS ce
-														  INNER JOIN EQUIPOS e ON e.equipo_id = ce.equipo_id
-														  WHERE e.nombreEquipo = ae.nombreEquipo) eq
+														  FROM compras_equipos ce
+														  INNER JOIN equipos e ON e.equipo_id = ce.equipo_id
+														  WHERE e.nombre_equipo = ae.nombre_equipo) eq
 											 WHERE ae.actividad_id = h.actividad_id), 0) AS FLOAT)
-			   * (1 / p.vidaUtil + p.mantenimiento) / p.horasMes AS equipo,
-			   h.horasTrabajo * (p.salario * p.factorSup * (1 + p.cargas) / p.horasMes) / p.cuadrillas AS supervision,
-			   CASE WHEN SUM(h.horasTrabajo) OVER () > 0
-					THEN p.transporte * h.horasTrabajo / SUM(h.horasTrabajo) OVER ()
+			   * (1 / p.vida_util + p.mantenimiento) / p.horas_mes AS equipo,
+			   h.horas_trabajo * (p.salario * p.factor_sup * (1 + p.cargas) / p.horas_mes) / p.cuadrillas AS supervision,
+			   CASE WHEN SUM(h.horas_trabajo) OVER () > 0
+					THEN p.transporte * h.horas_trabajo / SUM(h.horas_trabajo) OVER ()
 					ELSE p.transporte / COUNT(*) OVER () END AS transporte,
 			   p.admin, p.margen
 		FROM horas h
@@ -1636,7 +1636,7 @@ RETURN
 	total AS
 	(
 		SELECT c.*,
-			   c.manoObra + c.insumos + c.equipo + c.transporte + c.supervision AS directo
+			   c.mano_obra + c.insumos + c.equipo + c.transporte + c.supervision AS directo
 		FROM costos c
 	)
 	SELECT t.actividad_id,
@@ -1648,9 +1648,9 @@ RETURN
 		   t.descripcion,
 		   t.unidad,
 		   CAST(t.medida AS DECIMAL(12, 2)) AS medida,
-		   t.personas,
-		   CAST(t.horasTrabajo AS DECIMAL(12, 2)) AS horas,
-		   CAST(t.manoObra AS DECIMAL(12, 2)) AS mano_obra,
+		   t.cantidad_personas,
+		   CAST(t.horas_trabajo AS DECIMAL(12, 2)) AS horas,
+		   CAST(t.mano_obra AS DECIMAL(12, 2)) AS mano_obra,
 		   CAST(t.insumos AS DECIMAL(12, 2)) AS insumos,
 		   CAST(t.equipo AS DECIMAL(12, 2)) AS equipo,
 		   CAST(t.transporte AS DECIMAL(12, 2)) AS transporte,
@@ -1659,7 +1659,7 @@ RETURN
 		   CAST(t.directo * (1 + t.admin) AS DECIMAL(12, 2)) AS costo_total,
 		   CAST(CASE WHEN ISNULL(t.rendimiento, 0) > 0
 					 THEN t.directo * (1 + t.admin) / (1 - t.margen)
-					 ELSE t.precioFijo * t.medida END AS DECIMAL(12, 2)) AS precio
+					 ELSE t.precio_fijo * t.medida END AS DECIMAL(12, 2)) AS precio
 	FROM total t
 );
 GO
@@ -1670,7 +1670,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT actividad_id, concepto, unidad, medida, personas, horas,
+	SELECT actividad_id, concepto, unidad, medida, cantidad_personas, horas,
 		   mano_obra, insumos, equipo, transporte, supervision, gastos_admin, costo_total, precio
 	FROM dbo.fn_CotizarLineas(@lineas)
 	ORDER BY actividad_id;
@@ -1685,21 +1685,21 @@ RETURN
 (
 	SELECT 'P' AS tipo,
 		   p.producto_id,
-		   p.nombreProducto AS nombre,
+		   p.nombre_producto AS nombre,
 		   CAST(CEILING(SUM(d.medida * ap.cantidad_por_unidad)) AS INT) AS cantidad
-	FROM COTIZACION_DETALLE d
-	INNER JOIN ACTIVIDAD_PRODUCTOS ap ON ap.actividad_id = d.actividad_id
-	INNER JOIN PRODUCTOS p ON p.producto_id = ap.producto_id
+	FROM detalles_cotizacion d
+	INNER JOIN actividad_productos ap ON ap.actividad_id = d.actividad_id
+	INNER JOIN productos p ON p.producto_id = ap.producto_id
 	WHERE d.cotizacion_id = @cotizacion_id
-	GROUP BY p.producto_id, p.nombreProducto
+	GROUP BY p.producto_id, p.nombre_producto
 
 	UNION ALL
 
-	SELECT 'E', NULL, ae.nombreEquipo, 1
-	FROM COTIZACION_DETALLE d
-	INNER JOIN ACTIVIDAD_EQUIPOS ae ON ae.actividad_id = d.actividad_id
+	SELECT 'E', NULL, ae.nombre_equipo, 1
+	FROM detalles_cotizacion d
+	INNER JOIN actividad_equipos ae ON ae.actividad_id = d.actividad_id
 	WHERE d.cotizacion_id = @cotizacion_id
-	GROUP BY ae.nombreEquipo
+	GROUP BY ae.nombre_equipo
 );
 GO
 
@@ -1711,27 +1711,27 @@ BEGIN
 
 	SELECT 'Personas' AS tipo,
 		   'Empleados necesarios' AS nombre,
-		   ISNULL(MAX(d.personas), 0) AS cantidad,
-		   (SELECT COUNT(1) FROM EMPLEADOS e
-			WHERE e.estadoEmpleado = 1
+		   ISNULL(MAX(d.cantidad_personas), 0) AS cantidad,
+		   (SELECT COUNT(1) FROM empleados e
+			WHERE e.estado_empleado = 1
 			  AND dbo.fn_EmpleadoEnProceso(e.empleado_id, '') = 0) AS disponible
-	FROM COTIZACION_DETALLE d
+	FROM detalles_cotizacion d
 	WHERE d.cotizacion_id = @cotizacion_id
 
 	UNION ALL
 
 	SELECT 'Producto', n.nombre, n.cantidad, ISNULL(p.stock, 0)
 	FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id) n
-	INNER JOIN PRODUCTOS p ON p.producto_id = n.producto_id
+	INNER JOIN productos p ON p.producto_id = n.producto_id
 	WHERE n.tipo = 'P'
 
 	UNION ALL
 
 	SELECT 'Equipo', n.nombre, n.cantidad,
-		   (SELECT COUNT(1) FROM EQUIPOS e
-			INNER JOIN ESTADO_EQUIPOS ee ON ee.estado_equipo_id = e.estado_equipo_id
-			WHERE e.nombreEquipo = n.nombre AND ee.nombreEstadoEquipo = 'Disponible'
-			  AND NOT EXISTS (SELECT 1 FROM ORDEN_EQUIPOS oe
+		   (SELECT COUNT(1) FROM equipos e
+			INNER JOIN estados_equipo ee ON ee.estado_equipo_id = e.estado_equipo_id
+			WHERE e.nombre_equipo = n.nombre AND ee.nombre_estado_equipo = 'Disponible'
+			  AND NOT EXISTS (SELECT 1 FROM orden_equipos oe
 							  WHERE oe.equipo_id = e.equipo_id AND ISNULL(oe.devuelto, 0) = 0))
 	FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id) n
 	WHERE n.tipo = 'E';
@@ -1740,54 +1740,54 @@ GO
 
 CREATE OR ALTER PROCEDURE sp_ListarCotizacionesOrden
 	@texto VARCHAR(50) = '',
-	@identificacionCliente VARCHAR(30) = ''
+	@identificacion_cliente VARCHAR(30) = ''
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
-	SET @identificacionCliente = LTRIM(RTRIM(ISNULL(@identificacionCliente, '')));
+	SET @identificacion_cliente = LTRIM(RTRIM(ISNULL(@identificacion_cliente, '')));
 
 	SELECT q.cotizacion_id,
-		   q.fechaCotizacion,
+		   q.fecha_cotizacion,
 		   q.valida_hasta,
-		   ISNULL(q.identificacionCliente, '') AS identificacionCliente,
-		   COALESCE(NULLIF(q.nombreEmpresa, ''),
-					LTRIM(ISNULL(q.nombreCliente, '') + ' ' + ISNULL(q.apellidoCliente, ''))) AS cliente,
+		   ISNULL(q.identificacion_cliente, '') AS identificacion_cliente,
+		   COALESCE(NULLIF(q.nombre_empresa, ''),
+					LTRIM(ISNULL(q.nombre_cliente, '') + ' ' + ISNULL(q.apellido_cliente, ''))) AS cliente,
 		   q.locacion_id,
-		   ISNULL(q.observaciones, '') AS observaciones,
+		   ISNULL(q.observacion, '') AS observacion,
 		   q.precio_cotizado,
-		   CASE WHEN c.identificacionCliente IS NULL THEN 'Cliente no registrado'
-				WHEN c.estadoCliente = 0 THEN 'Cliente inactivo'
+		   CASE WHEN c.identificacion_cliente IS NULL THEN 'Cliente no registrado'
+				WHEN c.estado_cliente = 0 THEN 'Cliente inactivo'
 				WHEN q.valida_hasta < CAST(GETDATE() AS DATE) THEN 'Vencida'
-				WHEN q.servicio_id IS NULL OR NOT EXISTS (SELECT 1 FROM COTIZACION_DETALLE d
+				WHEN q.servicio_id IS NULL OR NOT EXISTS (SELECT 1 FROM detalles_cotizacion d
 														  WHERE d.cotizacion_id = q.cotizacion_id
 															AND d.actividad_id IS NOT NULL) THEN 'Sin actividades'
 				ELSE 'Disponible' END AS estado,
-		   CASE WHEN c.identificacionCliente IS NULL
+		   CASE WHEN c.identificacion_cliente IS NULL
 				THEN 'El cliente de esta cotización no está registrado. Regístrelo en Clientes antes de crear la orden.'
-				WHEN c.estadoCliente = 0
+				WHEN c.estado_cliente = 0
 				THEN 'El cliente de esta cotización está inactivo.'
 				WHEN q.valida_hasta < CAST(GETDATE() AS DATE)
 				THEN 'Esta cotización ya venció. Haga una cotización nueva.'
-				WHEN q.servicio_id IS NULL OR NOT EXISTS (SELECT 1 FROM COTIZACION_DETALLE d
+				WHEN q.servicio_id IS NULL OR NOT EXISTS (SELECT 1 FROM detalles_cotizacion d
 														  WHERE d.cotizacion_id = q.cotizacion_id
 															AND d.actividad_id IS NOT NULL)
 				THEN 'Esta cotización es antigua y no tiene actividades. Haga una cotización nueva.'
 				ELSE '' END AS motivo,
 		   ISNULL(q.servicio_id, 0) AS servicio_id,
-		   ISNULL((SELECT MAX(d.personas) FROM COTIZACION_DETALLE d
-				   WHERE d.cotizacion_id = q.cotizacion_id), 0) AS personas
-	FROM COTIZACIONES q
-	LEFT JOIN CLIENTES c ON c.identificacionCliente = q.identificacionCliente
-	WHERE NOT EXISTS (SELECT 1 FROM ORDENES o WHERE o.cotizacion_id = q.cotizacion_id)
-	  AND (@identificacionCliente = '' OR q.identificacionCliente = @identificacionCliente)
+		   ISNULL((SELECT MAX(d.cantidad_personas) FROM detalles_cotizacion d
+				   WHERE d.cotizacion_id = q.cotizacion_id), 0) AS cantidad_personas
+	FROM cotizaciones q
+	LEFT JOIN clientes c ON c.identificacion_cliente = q.identificacion_cliente
+	WHERE NOT EXISTS (SELECT 1 FROM ordenes o WHERE o.cotizacion_id = q.cotizacion_id)
+	  AND (@identificacion_cliente = '' OR q.identificacion_cliente = @identificacion_cliente)
 	  AND (@texto = ''
 		   OR q.cotizacion_id LIKE '%' + @texto + '%'
-		   OR q.identificacionCliente LIKE '%' + @texto + '%'
-		   OR q.nombreEmpresa LIKE '%' + @texto + '%'
-		   OR ISNULL(q.nombreCliente, '') + ' ' + ISNULL(q.apellidoCliente, '') LIKE '%' + @texto + '%')
-	ORDER BY q.fechaCotizacion DESC, q.cotizacion_id DESC;
+		   OR q.identificacion_cliente LIKE '%' + @texto + '%'
+		   OR q.nombre_empresa LIKE '%' + @texto + '%'
+		   OR ISNULL(q.nombre_cliente, '') + ' ' + ISNULL(q.apellido_cliente, '') LIKE '%' + @texto + '%')
+	ORDER BY q.fecha_cotizacion DESC, q.cotizacion_id DESC;
 END
 GO
 
@@ -1801,22 +1801,22 @@ BEGIN
 		   CAST(cantidad * precio_unitario AS MONEY) AS subtotal,
 		   ISNULL(actividad_id, 0) AS actividad_id,
 		   ISNULL(medida, 0) AS medida,
-		   ISNULL(personas, 0) AS personas
-	FROM COTIZACION_DETALLE
+		   ISNULL(cantidad_personas, 0) AS cantidad_personas
+	FROM detalles_cotizacion
 	WHERE cotizacion_id = @cotizacion_id
 	ORDER BY linea;
 END
 GO
 
 CREATE OR ALTER PROCEDURE sp_InsertarOrden
-	@identificacionCliente VARCHAR(30),
+	@identificacion_cliente VARCHAR(30),
 	@locacion_id INT,
 	@supervisor_id INT,
 	@vehiculo_id INT,
 	@fecha_solicitud DATE,
 	@fecha_servicio DATE,
 	@estado_orden_id INT,
-	@observaciones VARCHAR(200),
+	@observacion VARCHAR(200),
 	@turno VARCHAR(20),
 	@piso_area VARCHAR(20),
 	@empleados dbo.tipo_lista_empleados READONLY,
@@ -1833,10 +1833,10 @@ BEGIN
 	SET @mensaje = '';
 	SET @orden_id = '';
 
-	SET @identificacionCliente = LTRIM(RTRIM(ISNULL(@identificacionCliente, '')));
+	SET @identificacion_cliente = LTRIM(RTRIM(ISNULL(@identificacion_cliente, '')));
 	SET @cotizacion_id = LTRIM(RTRIM(ISNULL(@cotizacion_id, '')));
 
-	DECLARE @servicio_id INT, @personas INT, @nombre VARCHAR(100);
+	DECLARE @servicio_id INT, @cantidad_personas INT, @nombre VARCHAR(100);
 
 	IF @cotizacion_id = ''
 	BEGIN
@@ -1844,56 +1844,56 @@ BEGIN
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM COTIZACIONES WHERE cotizacion_id = @cotizacion_id)
+	IF NOT EXISTS (SELECT 1 FROM cotizaciones WHERE cotizacion_id = @cotizacion_id)
 	BEGIN
 		SET @mensaje = 'La cotizacion no existe.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM ORDENES WHERE cotizacion_id = @cotizacion_id)
+	IF EXISTS (SELECT 1 FROM ordenes WHERE cotizacion_id = @cotizacion_id)
 	BEGIN
 		SET @mensaje = 'Esa cotizacion ya tiene una orden.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM COTIZACIONES
+	IF EXISTS (SELECT 1 FROM cotizaciones
 			   WHERE cotizacion_id = @cotizacion_id AND valida_hasta < CAST(GETDATE() AS DATE))
 	BEGIN
 		SET @mensaje = 'La cotizacion ya vencio.';
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM COTIZACIONES
-				   WHERE cotizacion_id = @cotizacion_id AND identificacionCliente = @identificacionCliente)
+	IF NOT EXISTS (SELECT 1 FROM cotizaciones
+				   WHERE cotizacion_id = @cotizacion_id AND identificacion_cliente = @identificacion_cliente)
 	BEGIN
 		SET @mensaje = 'El cliente no coincide con el de la cotizacion.';
 		RETURN;
 	END
 
-	SELECT @servicio_id = servicio_id FROM COTIZACIONES WHERE cotizacion_id = @cotizacion_id;
+	SELECT @servicio_id = servicio_id FROM cotizaciones WHERE cotizacion_id = @cotizacion_id;
 
 	IF @servicio_id IS NULL
-	   OR NOT EXISTS (SELECT 1 FROM COTIZACION_DETALLE WHERE cotizacion_id = @cotizacion_id AND actividad_id IS NOT NULL)
+	   OR NOT EXISTS (SELECT 1 FROM detalles_cotizacion WHERE cotizacion_id = @cotizacion_id AND actividad_id IS NOT NULL)
 	BEGIN
 		SET @mensaje = 'La cotizacion no tiene actividades. Haga una nueva.';
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM CLIENTES
-				   WHERE identificacionCliente = @identificacionCliente AND estadoCliente = 1)
+	IF NOT EXISTS (SELECT 1 FROM clientes
+				   WHERE identificacion_cliente = @identificacion_cliente AND estado_cliente = 1)
 	BEGIN
 		SET @mensaje = 'El cliente no existe o esta inactivo.';
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM LOCACIONES
-				   WHERE locacion_id = @locacion_id AND identificacionCliente = @identificacionCliente)
+	IF NOT EXISTS (SELECT 1 FROM locaciones
+				   WHERE locacion_id = @locacion_id AND identificacion_cliente = @identificacion_cliente)
 	BEGIN
 		SET @mensaje = 'La locacion no pertenece al cliente.';
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM EMPLEADOS WHERE empleado_id = @supervisor_id AND estadoEmpleado = 1)
+	IF NOT EXISTS (SELECT 1 FROM empleados WHERE empleado_id = @supervisor_id AND estado_empleado = 1)
 	BEGIN
 		SET @mensaje = 'El supervisor no existe o esta inactivo.';
 		RETURN;
@@ -1911,30 +1911,30 @@ BEGIN
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM VEHICULOS WHERE vehiculo_id = @vehiculo_id AND estadoVehiculo = 1)
+	IF NOT EXISTS (SELECT 1 FROM vehiculos WHERE vehiculo_id = @vehiculo_id AND estado_vehiculo = 1)
 	BEGIN
 		SET @mensaje = 'El vehiculo no existe o esta inactivo.';
 		RETURN;
 	END
 
-	SELECT @personas = ISNULL(MAX(personas), 0) FROM COTIZACION_DETALLE WHERE cotizacion_id = @cotizacion_id;
+	SELECT @cantidad_personas = ISNULL(MAX(cantidad_personas), 0) FROM detalles_cotizacion WHERE cotizacion_id = @cotizacion_id;
 
-	IF (SELECT COUNT(1) FROM @empleados) < @personas
+	IF (SELECT COUNT(1) FROM @empleados) < @cantidad_personas
 	BEGIN
-		SET @mensaje = 'La cotizacion necesita ' + CAST(@personas AS VARCHAR(10)) + ' empleados.';
+		SET @mensaje = 'La cotizacion necesita ' + CAST(@cantidad_personas AS VARCHAR(10)) + ' empleados.';
 		RETURN;
 	END
 
 	IF EXISTS (SELECT 1 FROM @empleados x
-			   WHERE NOT EXISTS (SELECT 1 FROM EMPLEADOS e WHERE e.empleado_id = x.empleado_id AND e.estadoEmpleado = 1))
+			   WHERE NOT EXISTS (SELECT 1 FROM empleados e WHERE e.empleado_id = x.empleado_id AND e.estado_empleado = 1))
 	BEGIN
 		SET @mensaje = 'Uno de los empleados no existe o esta inactivo.';
 		RETURN;
 	END
 
-	SELECT TOP 1 @nombre = LTRIM(RTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')))
+	SELECT TOP 1 @nombre = LTRIM(RTRIM(ISNULL(e.nombre_empleado, '') + ' ' + ISNULL(e.apellido_empleado, '')))
 	FROM @empleados x
-	INNER JOIN EMPLEADOS e ON e.empleado_id = x.empleado_id
+	INNER JOIN empleados e ON e.empleado_id = x.empleado_id
 	WHERE dbo.fn_EmpleadoEnProceso(x.empleado_id, '') = 1;
 
 	IF @nombre IS NOT NULL
@@ -1947,7 +1947,7 @@ BEGIN
 
 	SELECT TOP 1 @nombre = n.nombre
 	FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id) n
-	INNER JOIN PRODUCTOS p ON p.producto_id = n.producto_id
+	INNER JOIN productos p ON p.producto_id = n.producto_id
 	WHERE n.tipo = 'P' AND n.cantidad > ISNULL(p.stock, 0);
 
 	IF @nombre IS NOT NULL
@@ -1959,10 +1959,10 @@ BEGIN
 	SELECT TOP 1 @nombre = n.nombre
 	FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id) n
 	WHERE n.tipo = 'E'
-	  AND NOT EXISTS (SELECT 1 FROM EQUIPOS e
-					  INNER JOIN ESTADO_EQUIPOS ee ON ee.estado_equipo_id = e.estado_equipo_id
-					  WHERE e.nombreEquipo = n.nombre AND ee.nombreEstadoEquipo = 'Disponible'
-						AND NOT EXISTS (SELECT 1 FROM ORDEN_EQUIPOS oe
+	  AND NOT EXISTS (SELECT 1 FROM equipos e
+					  INNER JOIN estados_equipo ee ON ee.estado_equipo_id = e.estado_equipo_id
+					  WHERE e.nombre_equipo = n.nombre AND ee.nombre_estado_equipo = 'Disponible'
+						AND NOT EXISTS (SELECT 1 FROM orden_equipos oe
 										WHERE oe.equipo_id = e.equipo_id AND ISNULL(oe.devuelto, 0) = 0));
 
 	IF @nombre IS NOT NULL
@@ -1977,43 +1977,43 @@ BEGIN
 		DECLARE @siguiente INT;
 
 		SELECT @siguiente = ISNULL(MAX(TRY_CAST(SUBSTRING(orden_id, 5, 20) AS INT)), 0) + 1
-		FROM ORDENES WITH (UPDLOCK, HOLDLOCK)
+		FROM ordenes WITH (UPDLOCK, HOLDLOCK)
 		WHERE orden_id LIKE 'ORD-%';
 
 		SET @orden_id = 'ORD-' + RIGHT('000000' + CAST(@siguiente AS VARCHAR(10)), 6);
 
-		INSERT INTO ORDENES (orden_id, locacion_id, servicio_id, supervisor_id, vehiculo_id,
-							 fecha_solicitud, fecha_servicio, estado_orden_id, observaciones,
-							 conformidad_cliente, identificacionCliente, cotizacion_id)
+		INSERT INTO ordenes (orden_id, locacion_id, servicio_id, supervisor_id, vehiculo_id,
+							 fecha_solicitud, fecha_servicio, estado_orden_id, observacion,
+							 conformidad_cliente, identificacion_cliente, cotizacion_id)
 		VALUES (@orden_id, @locacion_id, @servicio_id, @supervisor_id, @vehiculo_id,
-				@fecha_solicitud, @fecha_servicio, @estado_orden_id, @observaciones,
-				0, @identificacionCliente, @cotizacion_id);
+				@fecha_solicitud, @fecha_servicio, @estado_orden_id, @observacion,
+				0, @identificacion_cliente, @cotizacion_id);
 
-		INSERT INTO ORDEN_ACTIVIDADES (orden_id, actividad_id, estado, duracion_min)
+		INSERT INTO orden_actividades (orden_id, actividad_id, estado, duracion_min)
 		SELECT DISTINCT @orden_id, actividad_id, 0, NULL
-		FROM COTIZACION_DETALLE
+		FROM detalles_cotizacion
 		WHERE cotizacion_id = @cotizacion_id AND actividad_id IS NOT NULL;
 
-		INSERT INTO ORDEN_EMPLEADOS (orden_id, empleado_id, turno, piso_area)
+		INSERT INTO orden_empleados (orden_id, empleado_id, turno, piso_area)
 		SELECT @orden_id, empleado_id, @turno, @piso_area FROM @empleados;
 
-		INSERT INTO ORDEN_PRODUCTOS (orden_id, producto_id, cantidad)
+		INSERT INTO orden_productos (orden_id, producto_id, cantidad)
 		SELECT @orden_id, producto_id, cantidad
 		FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id)
 		WHERE tipo = 'P';
 
 		UPDATE p
 		SET p.stock = ISNULL(p.stock, 0) - n.cantidad
-		FROM PRODUCTOS p
+		FROM productos p
 		INNER JOIN dbo.fn_NecesidadesCotizacion(@cotizacion_id) n ON n.producto_id = p.producto_id
 		WHERE n.tipo = 'P';
 
-		INSERT INTO ORDEN_EQUIPOS (orden_id, equipo_id, fecha_asignacion, devuelto)
+		INSERT INTO orden_equipos (orden_id, equipo_id, fecha_asignacion, devuelto)
 		SELECT @orden_id,
-			   (SELECT MIN(e.equipo_id) FROM EQUIPOS e
-				INNER JOIN ESTADO_EQUIPOS ee ON ee.estado_equipo_id = e.estado_equipo_id
-				WHERE e.nombreEquipo = n.nombre AND ee.nombreEstadoEquipo = 'Disponible'
-				  AND NOT EXISTS (SELECT 1 FROM ORDEN_EQUIPOS oe
+			   (SELECT MIN(e.equipo_id) FROM equipos e
+				INNER JOIN estados_equipo ee ON ee.estado_equipo_id = e.estado_equipo_id
+				WHERE e.nombre_equipo = n.nombre AND ee.nombre_estado_equipo = 'Disponible'
+				  AND NOT EXISTS (SELECT 1 FROM orden_equipos oe
 								  WHERE oe.equipo_id = e.equipo_id AND ISNULL(oe.devuelto, 0) = 0)),
 			   @fecha_servicio, 0
 		FROM dbo.fn_NecesidadesCotizacion(@cotizacion_id) n
@@ -2042,21 +2042,21 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT o.orden_id,
-		   o.identificacionCliente,
-		   ISNULL(c.nombreEmpresa, '') AS nombreEmpresa,
-		   LTRIM(RTRIM(ISNULL(c.nombreCliente, '') + ' ' + ISNULL(c.apellidoCliente, ''))) AS contacto,
-		   ISNULL(s.nombreServicio, '') AS servicio,
+		   o.identificacion_cliente,
+		   ISNULL(c.nombre_empresa, '') AS nombre_empresa,
+		   LTRIM(RTRIM(ISNULL(c.nombre_cliente, '') + ' ' + ISNULL(c.apellido_cliente, ''))) AS contacto,
+		   ISNULL(s.nombre_servicio, '') AS servicio,
 		   ISNULL(o.supervisor_id, 0) AS supervisor_id,
-		   LTRIM(RTRIM(ISNULL(sup.nombreEmpleado, '') + ' ' + ISNULL(sup.apellidoEmpleado, ''))) AS supervisor,
+		   LTRIM(RTRIM(ISNULL(sup.nombre_empleado, '') + ' ' + ISNULL(sup.apellido_empleado, ''))) AS supervisor,
 		   o.fecha_solicitud,
 		   o.fecha_servicio,
 		   ISNULL(o.estado_orden_id, 0) AS estado_orden_id,
-		   ISNULL(eo.nombreEstadoOrden, '') AS estado
-	FROM ORDENES o
-	LEFT JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
-	LEFT JOIN SERVICIOS s ON s.servicio_id = o.servicio_id
-	LEFT JOIN EMPLEADOS sup ON sup.empleado_id = o.supervisor_id
-	LEFT JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
+		   ISNULL(eo.nombre_estado_orden, '') AS estado
+	FROM ordenes o
+	LEFT JOIN clientes c ON c.identificacion_cliente = o.identificacion_cliente
+	LEFT JOIN servicios s ON s.servicio_id = o.servicio_id
+	LEFT JOIN empleados sup ON sup.empleado_id = o.supervisor_id
+	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
 	ORDER BY o.fecha_servicio DESC, o.orden_id DESC;
 END
 GO
@@ -2068,32 +2068,32 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT o.orden_id,
-		   o.identificacionCliente,
-		   ISNULL(c.nombreEmpresa, '') AS nombreEmpresa,
-		   LTRIM(RTRIM(ISNULL(c.nombreCliente, '') + ' ' + ISNULL(c.apellidoCliente, ''))) AS contacto,
-		   ISNULL(l.nombreLocacion, '') AS locacion,
-		   ISNULL(l.tipoLocacion, '') AS tipoLocacion,
+		   o.identificacion_cliente,
+		   ISNULL(c.nombre_empresa, '') AS nombre_empresa,
+		   LTRIM(RTRIM(ISNULL(c.nombre_cliente, '') + ' ' + ISNULL(c.apellido_cliente, ''))) AS contacto,
+		   ISNULL(l.nombre_locacion, '') AS locacion,
+		   ISNULL(l.tipo_locacion, '') AS tipo_locacion,
 		   ISNULL(l.direccion, '') AS direccion,
 		   ISNULL(oe.piso_area, '') AS piso_area,
 		   ISNULL(oe.turno, '') AS turno,
 		   CASE WHEN v.vehiculo_id IS NULL THEN ''
-				ELSE LTRIM(RTRIM(ISNULL(v.placa, '') + ' (' + ISNULL(v.marcaVehiculo, '') + ' '
-								 + ISNULL(v.modeloVehiculo, '') + ')')) END AS vehiculo,
-		   ISNULL(o.observaciones, '') AS observaciones,
-		   ISNULL(eo.nombreEstadoOrden, '') AS estado,
+				ELSE LTRIM(RTRIM(ISNULL(v.placa, '') + ' (' + ISNULL(v.marca_vehiculo, '') + ' '
+								 + ISNULL(v.modelo_vehiculo, '') + ')')) END AS vehiculo,
+		   ISNULL(o.observacion, '') AS observacion,
+		   ISNULL(eo.nombre_estado_orden, '') AS estado,
 		   o.conformidad_cliente,
 		   f.factura_id,
 		   f.estado_pago,
 		   f.precio_facturado,
-		   f.fechaFactura
-	FROM ORDENES o
-	LEFT JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
-	LEFT JOIN LOCACIONES l ON l.locacion_id = o.locacion_id
-	LEFT JOIN VEHICULOS v ON v.vehiculo_id = o.vehiculo_id
-	LEFT JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
-	LEFT JOIN FACTURAS f ON f.orden_id = o.orden_id
+		   f.fecha_factura
+	FROM ordenes o
+	LEFT JOIN clientes c ON c.identificacion_cliente = o.identificacion_cliente
+	LEFT JOIN locaciones l ON l.locacion_id = o.locacion_id
+	LEFT JOIN vehiculos v ON v.vehiculo_id = o.vehiculo_id
+	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
+	LEFT JOIN facturas f ON f.orden_id = o.orden_id
 	OUTER APPLY (SELECT TOP 1 x.turno, x.piso_area
-				 FROM ORDEN_EMPLEADOS x
+				 FROM orden_empleados x
 				 WHERE x.orden_id = o.orden_id
 				 ORDER BY x.empleado_id) oe
 	WHERE o.orden_id = @orden_id;
@@ -2116,39 +2116,39 @@ BEGIN
 					+ CASE WHEN oa.duracion_min IS NOT NULL
 						   THEN N' (' + CAST(oa.duracion_min AS NVARCHAR(10)) + N' min)' ELSE N'' END
 					AS NVARCHAR(200)) AS texto
-		FROM ORDEN_ACTIVIDADES oa
-		INNER JOIN ACTIVIDADES a ON a.actividad_id = oa.actividad_id
+		FROM orden_actividades oa
+		INNER JOIN actividades a ON a.actividad_id = oa.actividad_id
 		WHERE oa.orden_id = @orden_id
 
 		UNION ALL
 
 		SELECT 2,
-			   CAST(LTRIM(RTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')))
-					+ CASE WHEN ca.nombreCargo IS NOT NULL THEN N' (' + ca.nombreCargo + N')' ELSE N'' END
+			   CAST(LTRIM(RTRIM(ISNULL(e.nombre_empleado, '') + ' ' + ISNULL(e.apellido_empleado, '')))
+					+ CASE WHEN ca.nombre_cargo IS NOT NULL THEN N' (' + ca.nombre_cargo + N')' ELSE N'' END
 					AS NVARCHAR(200))
-		FROM ORDEN_EMPLEADOS oe
-		INNER JOIN EMPLEADOS e ON e.empleado_id = oe.empleado_id
-		LEFT JOIN CARGOS ca ON ca.cargo_id = e.cargo_id
+		FROM orden_empleados oe
+		INNER JOIN empleados e ON e.empleado_id = oe.empleado_id
+		LEFT JOIN cargos ca ON ca.cargo_id = e.cargo_id
 		WHERE oe.orden_id = @orden_id
 
 		UNION ALL
 
 		SELECT 3,
-			   CAST(N'Producto: ' + ISNULL(p.nombreProducto, '') + N' ' + NCHAR(215) + N' '
+			   CAST(N'Producto: ' + ISNULL(p.nombre_producto, '') + N' ' + NCHAR(215) + N' '
 					+ CAST(ISNULL(op.cantidad, 0) AS NVARCHAR(10)) AS NVARCHAR(200))
-		FROM ORDEN_PRODUCTOS op
-		INNER JOIN PRODUCTOS p ON p.producto_id = op.producto_id
+		FROM orden_productos op
+		INNER JOIN productos p ON p.producto_id = op.producto_id
 		WHERE op.orden_id = @orden_id
 
 		UNION ALL
 
 		SELECT 4,
-			   CAST(N'Equipo: ' + LTRIM(RTRIM(ISNULL(q.nombreEquipo, '') + ' ' + ISNULL(q.marcaEquipo, '')
-											   + ' ' + ISNULL(q.modeloEquipo, '')))
+			   CAST(N'Equipo: ' + LTRIM(RTRIM(ISNULL(q.nombre_equipo, '') + ' ' + ISNULL(q.marca_equipo, '')
+											   + ' ' + ISNULL(q.modelo_equipo, '')))
 					+ CASE WHEN ISNULL(oq.devuelto, 0) = 1 THEN N' (devuelto)' ELSE N' (en uso)' END
 					AS NVARCHAR(200))
-		FROM ORDEN_EQUIPOS oq
-		INNER JOIN EQUIPOS q ON q.equipo_id = oq.equipo_id
+		FROM orden_equipos oq
+		INNER JOIN equipos q ON q.equipo_id = oq.equipo_id
 		WHERE oq.orden_id = @orden_id
 	) listas
 	ORDER BY seccion, texto;
@@ -2167,34 +2167,34 @@ BEGIN
 	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
 
 	SELECT o.orden_id,
-		   o.identificacionCliente,
-		   ISNULL(c.nombreEmpresa, o.identificacionCliente) AS cliente,
-		   s.nombreServicio,
-		   l.nombreLocacion,
+		   o.identificacion_cliente,
+		   ISNULL(c.nombre_empresa, o.identificacion_cliente) AS cliente,
+		   s.nombre_servicio,
+		   l.nombre_locacion,
 		   v.placa,
-		   LTRIM(RTRIM(ISNULL(sup.nombreEmpleado, '') + ' ' + ISNULL(sup.apellidoEmpleado, ''))) AS supervisor,
+		   LTRIM(RTRIM(ISNULL(sup.nombre_empleado, '') + ' ' + ISNULL(sup.apellido_empleado, ''))) AS supervisor,
 		   o.fecha_solicitud,
 		   o.fecha_servicio,
 		   o.estado_orden_id,
-		   eo.nombreEstadoOrden AS estado,
-		   o.observaciones,
+		   eo.nombre_estado_orden AS estado,
+		   o.observacion,
 		   o.conformidad_cliente,
-		   c.nombreEmpresa,
-		   c.nombreCliente,
-		   c.apellidoCliente,
+		   c.nombre_empresa,
+		   c.nombre_cliente,
+		   c.apellido_cliente,
 		   l.direccion,
-		   v.marcaVehiculo,
-		   v.modeloVehiculo
-	FROM ORDENES o
-	LEFT JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
-	LEFT JOIN SERVICIOS s ON s.servicio_id = o.servicio_id
-	LEFT JOIN LOCACIONES l ON l.locacion_id = o.locacion_id
-	LEFT JOIN VEHICULOS v ON v.vehiculo_id = o.vehiculo_id
-	LEFT JOIN EMPLEADOS sup ON sup.empleado_id = o.supervisor_id
-	LEFT JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
+		   v.marca_vehiculo,
+		   v.modelo_vehiculo
+	FROM ordenes o
+	LEFT JOIN clientes c ON c.identificacion_cliente = o.identificacion_cliente
+	LEFT JOIN servicios s ON s.servicio_id = o.servicio_id
+	LEFT JOIN locaciones l ON l.locacion_id = o.locacion_id
+	LEFT JOIN vehiculos v ON v.vehiculo_id = o.vehiculo_id
+	LEFT JOIN empleados sup ON sup.empleado_id = o.supervisor_id
+	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
 	WHERE (@texto = '' OR o.orden_id LIKE '%' + @texto + '%'
-		   OR o.identificacionCliente LIKE '%' + @texto + '%'
-		   OR c.nombreEmpresa LIKE '%' + @texto + '%')
+		   OR o.identificacion_cliente LIKE '%' + @texto + '%'
+		   OR c.nombre_empresa LIKE '%' + @texto + '%')
 	  AND (@estado_orden_id IS NULL OR o.estado_orden_id = @estado_orden_id)
 	  AND (@desde IS NULL OR o.fecha_servicio >= @desde)
 	  AND (@hasta IS NULL OR o.fecha_servicio <= @hasta)
@@ -2209,31 +2209,31 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT o.orden_id,
-		   o.identificacionCliente,
-		   ISNULL(c.nombreEmpresa, o.identificacionCliente) AS cliente,
+		   o.identificacion_cliente,
+		   ISNULL(c.nombre_empresa, o.identificacion_cliente) AS cliente,
 		   o.locacion_id,
-		   l.nombreLocacion,
+		   l.nombre_locacion,
 		   o.servicio_id,
-		   s.nombreServicio,
+		   s.nombre_servicio,
 		   o.supervisor_id,
-		   LTRIM(RTRIM(ISNULL(sup.nombreEmpleado, '') + ' ' + ISNULL(sup.apellidoEmpleado, ''))) AS supervisor,
+		   LTRIM(RTRIM(ISNULL(sup.nombre_empleado, '') + ' ' + ISNULL(sup.apellido_empleado, ''))) AS supervisor,
 		   o.vehiculo_id,
 		   v.placa,
 		   o.fecha_solicitud,
 		   o.fecha_servicio,
 		   o.estado_orden_id,
-		   eo.nombreEstadoOrden AS estado,
-		   o.observaciones,
+		   eo.nombre_estado_orden AS estado,
+		   o.observacion,
 		   ISNULL(o.conformidad_cliente, 0) AS conformidad_cliente,
-		   (SELECT TOP 1 oe.turno FROM ORDEN_EMPLEADOS oe WHERE oe.orden_id = o.orden_id) AS turno,
-		   (SELECT TOP 1 oe.piso_area FROM ORDEN_EMPLEADOS oe WHERE oe.orden_id = o.orden_id) AS piso_area
-	FROM ORDENES o
-	LEFT JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
-	LEFT JOIN LOCACIONES l ON l.locacion_id = o.locacion_id
-	LEFT JOIN SERVICIOS s ON s.servicio_id = o.servicio_id
-	LEFT JOIN EMPLEADOS sup ON sup.empleado_id = o.supervisor_id
-	LEFT JOIN VEHICULOS v ON v.vehiculo_id = o.vehiculo_id
-	LEFT JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
+		   (SELECT TOP 1 oe.turno FROM orden_empleados oe WHERE oe.orden_id = o.orden_id) AS turno,
+		   (SELECT TOP 1 oe.piso_area FROM orden_empleados oe WHERE oe.orden_id = o.orden_id) AS piso_area
+	FROM ordenes o
+	LEFT JOIN clientes c ON c.identificacion_cliente = o.identificacion_cliente
+	LEFT JOIN locaciones l ON l.locacion_id = o.locacion_id
+	LEFT JOIN servicios s ON s.servicio_id = o.servicio_id
+	LEFT JOIN empleados sup ON sup.empleado_id = o.supervisor_id
+	LEFT JOIN vehiculos v ON v.vehiculo_id = o.vehiculo_id
+	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
 	WHERE o.orden_id = @orden_id;
 END
 GO
@@ -2250,8 +2250,8 @@ BEGIN
 		   a.precio,
 		   ISNULL(oa.estado, 0) AS estado,
 		   oa.duracion_min
-	FROM ORDEN_ACTIVIDADES oa
-	INNER JOIN ACTIVIDADES a ON a.actividad_id = oa.actividad_id
+	FROM orden_actividades oa
+	INNER JOIN actividades a ON a.actividad_id = oa.actividad_id
 	WHERE oa.orden_id = @orden_id
 	ORDER BY a.descripcion;
 END
@@ -2264,15 +2264,15 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT e.empleado_id,
-		   LTRIM(RTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, ''))) AS nombreCompleto,
-		   ca.nombreCargo,
+		   LTRIM(RTRIM(ISNULL(e.nombre_empleado, '') + ' ' + ISNULL(e.apellido_empleado, ''))) AS nombre_completo,
+		   ca.nombre_cargo,
 		   oe.turno,
 		   oe.piso_area
-	FROM ORDEN_EMPLEADOS oe
-	INNER JOIN EMPLEADOS e ON e.empleado_id = oe.empleado_id
-	LEFT JOIN CARGOS ca ON ca.cargo_id = e.cargo_id
+	FROM orden_empleados oe
+	INNER JOIN empleados e ON e.empleado_id = oe.empleado_id
+	LEFT JOIN cargos ca ON ca.cargo_id = e.cargo_id
 	WHERE oe.orden_id = @orden_id
-	ORDER BY e.nombreEmpleado, e.apellidoEmpleado;
+	ORDER BY e.nombre_empleado, e.apellido_empleado;
 END
 GO
 
@@ -2283,13 +2283,13 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT p.producto_id,
-		   p.nombreProducto,
-		   p.tipoProducto,
+		   p.nombre_producto,
+		   p.tipo_producto,
 		   op.cantidad
-	FROM ORDEN_PRODUCTOS op
-	INNER JOIN PRODUCTOS p ON p.producto_id = op.producto_id
+	FROM orden_productos op
+	INNER JOIN productos p ON p.producto_id = op.producto_id
 	WHERE op.orden_id = @orden_id
-	ORDER BY p.nombreProducto;
+	ORDER BY p.nombre_producto;
 END
 GO
 
@@ -2300,16 +2300,16 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT e.equipo_id,
-		   e.nombreEquipo,
-		   e.tipoEquipo,
-		   e.marcaEquipo,
-		   e.modeloEquipo,
+		   e.nombre_equipo,
+		   e.tipo_equipo,
+		   e.marca_equipo,
+		   e.modelo_equipo,
 		   oe.fecha_asignacion,
 		   ISNULL(oe.devuelto, 0) AS devuelto
-	FROM ORDEN_EQUIPOS oe
-	INNER JOIN EQUIPOS e ON e.equipo_id = oe.equipo_id
+	FROM orden_equipos oe
+	INNER JOIN equipos e ON e.equipo_id = oe.equipo_id
 	WHERE oe.orden_id = @orden_id
-	ORDER BY e.nombreEquipo, e.equipo_id;
+	ORDER BY e.nombre_equipo, e.equipo_id;
 END
 GO
 
@@ -2321,7 +2321,7 @@ CREATE OR ALTER PROCEDURE sp_ActualizarOrden
 	@vehiculo_id INT,
 	@fecha_solicitud DATE,
 	@fecha_servicio DATE,
-	@observaciones VARCHAR(200),
+	@observacion VARCHAR(200),
 	@turno VARCHAR(20),
 	@piso_area VARCHAR(20),
 	@resultado INT OUTPUT,
@@ -2336,9 +2336,9 @@ BEGIN
 
 	DECLARE @cliente VARCHAR(30), @estado VARCHAR(25);
 
-	SELECT @cliente = o.identificacionCliente, @estado = eo.nombreEstadoOrden
-	FROM ORDENES o
-	LEFT JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
+	SELECT @cliente = o.identificacion_cliente, @estado = eo.nombre_estado_orden
+	FROM ordenes o
+	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
 	WHERE o.orden_id = @orden_id;
 
 	IF @cliente IS NULL
@@ -2353,19 +2353,19 @@ BEGIN
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM LOCACIONES WHERE locacion_id = @locacion_id AND identificacionCliente = @cliente)
+	IF NOT EXISTS (SELECT 1 FROM locaciones WHERE locacion_id = @locacion_id AND identificacion_cliente = @cliente)
 	BEGIN
 		SET @mensaje = 'La locacion no pertenece al cliente.';
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM SERVICIOS WHERE servicio_id = @servicio_id)
+	IF NOT EXISTS (SELECT 1 FROM servicios WHERE servicio_id = @servicio_id)
 	BEGIN
 		SET @mensaje = 'El servicio no existe.';
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM EMPLEADOS WHERE empleado_id = @supervisor_id AND estadoEmpleado = 1)
+	IF NOT EXISTS (SELECT 1 FROM empleados WHERE empleado_id = @supervisor_id AND estado_empleado = 1)
 	BEGIN
 		SET @mensaje = 'El supervisor no existe o esta inactivo.';
 		RETURN;
@@ -2377,7 +2377,7 @@ BEGIN
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM VEHICULOS WHERE vehiculo_id = @vehiculo_id AND estadoVehiculo = 1)
+	IF NOT EXISTS (SELECT 1 FROM vehiculos WHERE vehiculo_id = @vehiculo_id AND estado_vehiculo = 1)
 	BEGIN
 		SET @mensaje = 'El vehiculo no existe o esta inactivo.';
 		RETURN;
@@ -2392,22 +2392,22 @@ BEGIN
 	BEGIN TRY
 		BEGIN TRANSACTION;
 
-		UPDATE ORDENES
+		UPDATE ordenes
 		SET locacion_id = @locacion_id,
 			servicio_id = @servicio_id,
 			supervisor_id = @supervisor_id,
 			vehiculo_id = @vehiculo_id,
 			fecha_solicitud = @fecha_solicitud,
 			fecha_servicio = @fecha_servicio,
-			observaciones = LTRIM(RTRIM(ISNULL(@observaciones, '')))
+			observacion = LTRIM(RTRIM(ISNULL(@observacion, '')))
 		WHERE orden_id = @orden_id;
 
-		UPDATE ORDEN_EMPLEADOS
+		UPDATE orden_empleados
 		SET turno = LTRIM(RTRIM(ISNULL(@turno, ''))),
 			piso_area = LTRIM(RTRIM(ISNULL(@piso_area, '')))
 		WHERE orden_id = @orden_id;
 
-		UPDATE ORDEN_EQUIPOS
+		UPDATE orden_equipos
 		SET fecha_asignacion = @fecha_servicio
 		WHERE orden_id = @orden_id AND ISNULL(devuelto, 0) = 0;
 
@@ -2440,18 +2440,18 @@ BEGIN
 
 	DECLARE @actual VARCHAR(25), @nuevo VARCHAR(25);
 
-	SELECT @actual = eo.nombreEstadoOrden
-	FROM ORDENES o
-	LEFT JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
+	SELECT @actual = eo.nombre_estado_orden
+	FROM ordenes o
+	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
 	WHERE o.orden_id = @orden_id;
 
-	IF NOT EXISTS (SELECT 1 FROM ORDENES WHERE orden_id = @orden_id)
+	IF NOT EXISTS (SELECT 1 FROM ordenes WHERE orden_id = @orden_id)
 	BEGIN
 		SET @mensaje = 'La orden no existe.';
 		RETURN;
 	END
 
-	SELECT @nuevo = nombreEstadoOrden FROM ESTADO_ORDENES WHERE estado_orden_id = @estado_orden_id;
+	SELECT @nuevo = nombre_estado_orden FROM estados_orden WHERE estado_orden_id = @estado_orden_id;
 
 	IF @nuevo IS NULL
 	BEGIN
@@ -2469,10 +2469,10 @@ BEGIN
 	BEGIN
 		DECLARE @ocupado VARCHAR(100);
 
-		SELECT TOP 1 @ocupado = LTRIM(RTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')))
-		FROM EMPLEADOS e
-		WHERE (e.empleado_id = (SELECT supervisor_id FROM ORDENES WHERE orden_id = @orden_id)
-			   OR e.empleado_id IN (SELECT empleado_id FROM ORDEN_EMPLEADOS WHERE orden_id = @orden_id))
+		SELECT TOP 1 @ocupado = LTRIM(RTRIM(ISNULL(e.nombre_empleado, '') + ' ' + ISNULL(e.apellido_empleado, '')))
+		FROM empleados e
+		WHERE (e.empleado_id = (SELECT supervisor_id FROM ordenes WHERE orden_id = @orden_id)
+			   OR e.empleado_id IN (SELECT empleado_id FROM orden_empleados WHERE orden_id = @orden_id))
 		  AND dbo.fn_EmpleadoEnProceso(e.empleado_id, @orden_id) = 1;
 
 		IF @ocupado IS NOT NULL
@@ -2485,22 +2485,22 @@ BEGIN
 	BEGIN TRY
 		BEGIN TRANSACTION;
 
-		UPDATE ORDENES SET estado_orden_id = @estado_orden_id WHERE orden_id = @orden_id;
+		UPDATE ordenes SET estado_orden_id = @estado_orden_id WHERE orden_id = @orden_id;
 
 		-- Al cancelar se devuelve el stock de los productos
 		IF @nuevo = 'Cancelada'
 		BEGIN
 			UPDATE p
 			SET p.stock = ISNULL(p.stock, 0) + op.cantidad
-			FROM PRODUCTOS p
-			INNER JOIN ORDEN_PRODUCTOS op ON op.producto_id = p.producto_id
+			FROM productos p
+			INNER JOIN orden_productos op ON op.producto_id = p.producto_id
 			WHERE op.orden_id = @orden_id;
 		END
 
 		-- Al cerrar la orden (completada o cancelada) los equipos quedan libres
 		IF @nuevo IN ('Completada', 'Cancelada')
 		BEGIN
-			UPDATE ORDEN_EQUIPOS SET devuelto = 1 WHERE orden_id = @orden_id;
+			UPDATE orden_equipos SET devuelto = 1 WHERE orden_id = @orden_id;
 		END
 
 		COMMIT TRANSACTION;
@@ -2531,7 +2531,7 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	IF NOT EXISTS (SELECT 1 FROM ORDEN_ACTIVIDADES WHERE orden_id = @orden_id AND actividad_id = @actividad_id)
+	IF NOT EXISTS (SELECT 1 FROM orden_actividades WHERE orden_id = @orden_id AND actividad_id = @actividad_id)
 	BEGIN
 		SET @mensaje = 'La actividad no pertenece a la orden.';
 		RETURN;
@@ -2543,7 +2543,7 @@ BEGIN
 		RETURN;
 	END
 
-	UPDATE ORDEN_ACTIVIDADES
+	UPDATE orden_actividades
 	SET estado = @estado,
 		duracion_min = CASE WHEN @estado = 1 THEN @duracion_min ELSE NULL END
 	WHERE orden_id = @orden_id AND actividad_id = @actividad_id;
@@ -2565,20 +2565,20 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	IF NOT EXISTS (SELECT 1 FROM ORDEN_EQUIPOS WHERE orden_id = @orden_id AND equipo_id = @equipo_id)
+	IF NOT EXISTS (SELECT 1 FROM orden_equipos WHERE orden_id = @orden_id AND equipo_id = @equipo_id)
 	BEGIN
 		SET @mensaje = 'El equipo no esta asignado a la orden.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM ORDEN_EQUIPOS
+	IF EXISTS (SELECT 1 FROM orden_equipos
 			   WHERE orden_id = @orden_id AND equipo_id = @equipo_id AND ISNULL(devuelto, 0) = 1)
 	BEGIN
 		SET @mensaje = 'El equipo ya fue devuelto.';
 		RETURN;
 	END
 
-	UPDATE ORDEN_EQUIPOS SET devuelto = 1 WHERE orden_id = @orden_id AND equipo_id = @equipo_id;
+	UPDATE orden_equipos SET devuelto = 1 WHERE orden_id = @orden_id AND equipo_id = @equipo_id;
 
 	SET @resultado = 1;
 	SET @mensaje = 'El equipo se devolvio correctamente.';
@@ -2599,12 +2599,12 @@ BEGIN
 
 	DECLARE @estado VARCHAR(25);
 
-	SELECT @estado = eo.nombreEstadoOrden
-	FROM ORDENES o
-	LEFT JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
+	SELECT @estado = eo.nombre_estado_orden
+	FROM ordenes o
+	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
 	WHERE o.orden_id = @orden_id;
 
-	IF NOT EXISTS (SELECT 1 FROM ORDENES WHERE orden_id = @orden_id)
+	IF NOT EXISTS (SELECT 1 FROM ordenes WHERE orden_id = @orden_id)
 	BEGIN
 		SET @mensaje = 'La orden no existe.';
 		RETURN;
@@ -2616,7 +2616,7 @@ BEGIN
 		RETURN;
 	END
 
-	UPDATE ORDENES SET conformidad_cliente = @conformidad WHERE orden_id = @orden_id;
+	UPDATE ordenes SET conformidad_cliente = @conformidad WHERE orden_id = @orden_id;
 
 	SET @resultado = 1;
 	SET @mensaje = 'La conformidad del cliente se registro correctamente.';
@@ -2637,72 +2637,72 @@ BEGIN
 
 	WITH unidades AS
 	(
-		SELECT ISNULL(e.nombreEquipo, '') AS nombreEquipo,
-			   ISNULL(e.tipoEquipo, '') AS tipoEquipo,
-			   ISNULL(e.marcaEquipo, '') AS marcaEquipo,
-			   ISNULL(e.modeloEquipo, '') AS modeloEquipo,
-			   CASE WHEN EXISTS (SELECT 1 FROM ORDEN_EQUIPOS oe
+		SELECT ISNULL(e.nombre_equipo, '') AS nombre_equipo,
+			   ISNULL(e.tipo_equipo, '') AS tipo_equipo,
+			   ISNULL(e.marca_equipo, '') AS marca_equipo,
+			   ISNULL(e.modelo_equipo, '') AS modelo_equipo,
+			   CASE WHEN EXISTS (SELECT 1 FROM orden_equipos oe
 								 WHERE oe.equipo_id = e.equipo_id AND ISNULL(oe.devuelto, 0) = 0)
 					THEN 0 ELSE 1 END AS libre,
-			   (SELECT TOP 1 ce.precio_unitario FROM COMPRAS_EQUIPOS ce
+			   (SELECT TOP 1 ce.precio_unitario FROM compras_equipos ce
 				WHERE ce.equipo_id = e.equipo_id) AS costo
-		FROM EQUIPOS e
+		FROM equipos e
 	),
 	grupos AS
 	(
-		SELECT nombreEquipo, tipoEquipo, marcaEquipo, modeloEquipo,
+		SELECT nombre_equipo, tipo_equipo, marca_equipo, modelo_equipo,
 			   COUNT(1) AS total,
 			   SUM(libre) AS disponible,
 			   SUM(costo) AS valor
 		FROM unidades
-		GROUP BY nombreEquipo, tipoEquipo, marcaEquipo, modeloEquipo
+		GROUP BY nombre_equipo, tipo_equipo, marca_equipo, modelo_equipo
 	)
-	SELECT tipo, nombre, categoria, marcaModelo, disponible, total, proveedor, valor
+	SELECT tipo, nombre, categoria, marca_modelo, disponible, total, proveedor, valor
 	FROM
 	(
 		SELECT 'Producto' AS tipo,
-			   p.nombreProducto AS nombre,
-			   p.tipoProducto AS categoria,
-			   N'—' AS marcaModelo,
+			   p.nombre_producto AS nombre,
+			   p.tipo_producto AS categoria,
+			   N'—' AS marca_modelo,
 			   N'—' AS disponible,
 			   ISNULL(p.stock, 0) AS total,
-			   (SELECT TOP 1 pr.nombreProveedor
-				FROM COMPRAS_PRODUCTOS cp
-				INNER JOIN COMPRAS c ON c.compra_id = cp.compra_id
-				INNER JOIN PROVEEDORES pr ON pr.proveedor_id = c.proveedor_id
+			   (SELECT TOP 1 pr.nombre_proveedor
+				FROM compras_productos cp
+				INNER JOIN compras c ON c.compra_id = cp.compra_id
+				INNER JOIN proveedores pr ON pr.proveedor_id = c.proveedor_id
 				WHERE cp.producto_id = p.producto_id
-				ORDER BY c.fechaCompra DESC, c.compra_id DESC) AS proveedor,
+				ORDER BY c.fecha_compra DESC, c.compra_id DESC) AS proveedor,
 			   CAST(ISNULL(p.stock, 0) *
 					(SELECT SUM(cp.cantidad * cp.precio_unitario) / NULLIF(SUM(cp.cantidad), 0)
-					 FROM COMPRAS_PRODUCTOS cp
+					 FROM compras_productos cp
 					 WHERE cp.producto_id = p.producto_id) AS MONEY) AS valor
-		FROM PRODUCTOS p
+		FROM productos p
 		WHERE @tipo IN ('', 'PRODUCTO')
-		  AND (@texto = '' OR p.nombreProducto LIKE '%' + @texto + '%' OR p.tipoProducto LIKE '%' + @texto + '%')
+		  AND (@texto = '' OR p.nombre_producto LIKE '%' + @texto + '%' OR p.tipo_producto LIKE '%' + @texto + '%')
 
 		UNION ALL
 
 		SELECT 'Equipo' AS tipo,
-			   g.nombreEquipo AS nombre,
-			   g.tipoEquipo AS categoria,
-			   LTRIM(RTRIM(g.marcaEquipo + ' ' + g.modeloEquipo)) AS marcaModelo,
+			   g.nombre_equipo AS nombre,
+			   g.tipo_equipo AS categoria,
+			   LTRIM(RTRIM(g.marca_equipo + ' ' + g.modelo_equipo)) AS marca_modelo,
 			   CAST(g.disponible AS NVARCHAR(10)) AS disponible,
 			   g.total,
-			   (SELECT TOP 1 pr.nombreProveedor
-				FROM EQUIPOS e
-				INNER JOIN COMPRAS_EQUIPOS ce ON ce.equipo_id = e.equipo_id
-				INNER JOIN COMPRAS c ON c.compra_id = ce.compra_id
-				INNER JOIN PROVEEDORES pr ON pr.proveedor_id = c.proveedor_id
-				WHERE ISNULL(e.nombreEquipo, '') = g.nombreEquipo
-				  AND ISNULL(e.tipoEquipo, '') = g.tipoEquipo
-				  AND ISNULL(e.marcaEquipo, '') = g.marcaEquipo
-				  AND ISNULL(e.modeloEquipo, '') = g.modeloEquipo
-				ORDER BY c.fechaCompra DESC, c.compra_id DESC) AS proveedor,
+			   (SELECT TOP 1 pr.nombre_proveedor
+				FROM equipos e
+				INNER JOIN compras_equipos ce ON ce.equipo_id = e.equipo_id
+				INNER JOIN compras c ON c.compra_id = ce.compra_id
+				INNER JOIN proveedores pr ON pr.proveedor_id = c.proveedor_id
+				WHERE ISNULL(e.nombre_equipo, '') = g.nombre_equipo
+				  AND ISNULL(e.tipo_equipo, '') = g.tipo_equipo
+				  AND ISNULL(e.marca_equipo, '') = g.marca_equipo
+				  AND ISNULL(e.modelo_equipo, '') = g.modelo_equipo
+				ORDER BY c.fecha_compra DESC, c.compra_id DESC) AS proveedor,
 			   CAST(g.valor AS MONEY) AS valor
 		FROM grupos g
 		WHERE @tipo IN ('', 'EQUIPO')
-		  AND (@texto = '' OR g.nombreEquipo LIKE '%' + @texto + '%' OR g.tipoEquipo LIKE '%' + @texto + '%'
-			   OR g.marcaEquipo LIKE '%' + @texto + '%' OR g.modeloEquipo LIKE '%' + @texto + '%')
+		  AND (@texto = '' OR g.nombre_equipo LIKE '%' + @texto + '%' OR g.tipo_equipo LIKE '%' + @texto + '%'
+			   OR g.marca_equipo LIKE '%' + @texto + '%' OR g.modelo_equipo LIKE '%' + @texto + '%')
 	) inventario
 	ORDER BY tipo DESC, nombre;
 END
@@ -2716,10 +2716,10 @@ BEGIN
 
 	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
 
-	SELECT producto_id, nombreProducto, tipoProducto, ISNULL(stock, 0) AS stock
-	FROM PRODUCTOS
-	WHERE @texto = '' OR nombreProducto LIKE '%' + @texto + '%' OR tipoProducto LIKE '%' + @texto + '%'
-	ORDER BY nombreProducto;
+	SELECT producto_id, nombre_producto, tipo_producto, ISNULL(stock, 0) AS stock
+	FROM productos
+	WHERE @texto = '' OR nombre_producto LIKE '%' + @texto + '%' OR tipo_producto LIKE '%' + @texto + '%'
+	ORDER BY nombre_producto;
 END
 GO
 
@@ -2731,16 +2731,16 @@ BEGIN
 
 	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
 
-	SELECT ISNULL(nombreEquipo, '') AS nombreEquipo,
-		   ISNULL(tipoEquipo, '') AS tipoEquipo,
-		   ISNULL(marcaEquipo, '') AS marcaEquipo,
-		   ISNULL(modeloEquipo, '') AS modeloEquipo,
+	SELECT ISNULL(nombre_equipo, '') AS nombre_equipo,
+		   ISNULL(tipo_equipo, '') AS tipo_equipo,
+		   ISNULL(marca_equipo, '') AS marca_equipo,
+		   ISNULL(modelo_equipo, '') AS modelo_equipo,
 		   COUNT(1) AS total
-	FROM EQUIPOS
-	WHERE @texto = '' OR nombreEquipo LIKE '%' + @texto + '%' OR tipoEquipo LIKE '%' + @texto + '%'
-	   OR marcaEquipo LIKE '%' + @texto + '%' OR modeloEquipo LIKE '%' + @texto + '%'
-	GROUP BY ISNULL(nombreEquipo, ''), ISNULL(tipoEquipo, ''), ISNULL(marcaEquipo, ''), ISNULL(modeloEquipo, '')
-	ORDER BY nombreEquipo, marcaEquipo, modeloEquipo;
+	FROM equipos
+	WHERE @texto = '' OR nombre_equipo LIKE '%' + @texto + '%' OR tipo_equipo LIKE '%' + @texto + '%'
+	   OR marca_equipo LIKE '%' + @texto + '%' OR modelo_equipo LIKE '%' + @texto + '%'
+	GROUP BY ISNULL(nombre_equipo, ''), ISNULL(tipo_equipo, ''), ISNULL(marca_equipo, ''), ISNULL(modelo_equipo, '')
+	ORDER BY nombre_equipo, marca_equipo, modelo_equipo;
 END
 GO
 
@@ -2749,16 +2749,16 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT proveedor_id, nombreProveedor, telefonoProveedor, correoProveedor
-	FROM PROVEEDORES
-	ORDER BY nombreProveedor;
+	SELECT proveedor_id, nombre_proveedor, telefono_proveedor, correo_proveedor
+	FROM proveedores
+	ORDER BY nombre_proveedor;
 END
 GO
 
 CREATE OR ALTER PROCEDURE sp_InsertarProveedor
-	@nombreProveedor VARCHAR(50),
-	@telefonoProveedor VARCHAR(50),
-	@correoProveedor VARCHAR(50),
+	@nombre_proveedor VARCHAR(50),
+	@telefono_proveedor VARCHAR(50),
+	@correo_proveedor VARCHAR(50),
 	@proveedor_id INT OUTPUT,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
@@ -2770,22 +2770,22 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	SET @nombreProveedor = LTRIM(RTRIM(ISNULL(@nombreProveedor, '')));
+	SET @nombre_proveedor = LTRIM(RTRIM(ISNULL(@nombre_proveedor, '')));
 
-	IF @nombreProveedor = ''
+	IF @nombre_proveedor = ''
 	BEGIN
 		SET @mensaje = 'El nombre del proveedor es obligatorio.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM PROVEEDORES WHERE nombreProveedor = @nombreProveedor)
+	IF EXISTS (SELECT 1 FROM proveedores WHERE nombre_proveedor = @nombre_proveedor)
 	BEGIN
 		SET @mensaje = 'Ya existe un proveedor con ese nombre.';
 		RETURN;
 	END
 
-	INSERT INTO PROVEEDORES (nombreProveedor, telefonoProveedor, correoProveedor)
-	VALUES (@nombreProveedor, @telefonoProveedor, @correoProveedor);
+	INSERT INTO proveedores (nombre_proveedor, telefono_proveedor, correo_proveedor)
+	VALUES (@nombre_proveedor, @telefono_proveedor, @correo_proveedor);
 
 	SET @proveedor_id = CAST(SCOPE_IDENTITY() AS INT);
 	SET @resultado = 1;
@@ -2794,8 +2794,8 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE sp_InsertarProducto
-	@nombreProducto VARCHAR(50),
-	@tipoProducto VARCHAR(20),
+	@nombre_producto VARCHAR(50),
+	@tipo_producto VARCHAR(20),
 	@producto_id INT OUTPUT,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
@@ -2807,23 +2807,23 @@ BEGIN
 	SET @resultado = 0;
 	SET @mensaje = '';
 
-	SET @nombreProducto = LTRIM(RTRIM(ISNULL(@nombreProducto, '')));
-	SET @tipoProducto = LTRIM(RTRIM(ISNULL(@tipoProducto, '')));
+	SET @nombre_producto = LTRIM(RTRIM(ISNULL(@nombre_producto, '')));
+	SET @tipo_producto = LTRIM(RTRIM(ISNULL(@tipo_producto, '')));
 
-	IF @nombreProducto = ''
+	IF @nombre_producto = ''
 	BEGIN
 		SET @mensaje = 'El nombre del producto es obligatorio.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM PRODUCTOS WHERE nombreProducto = @nombreProducto AND ISNULL(tipoProducto, '') = @tipoProducto)
+	IF EXISTS (SELECT 1 FROM productos WHERE nombre_producto = @nombre_producto AND ISNULL(tipo_producto, '') = @tipo_producto)
 	BEGIN
 		SET @mensaje = 'Ese producto ya está registrado.';
 		RETURN;
 	END
 
-	INSERT INTO PRODUCTOS (nombreProducto, tipoProducto, stock)
-	VALUES (@nombreProducto, @tipoProducto, 0);
+	INSERT INTO productos (nombre_producto, tipo_producto, stock)
+	VALUES (@nombre_producto, @tipo_producto, 0);
 
 	SET @producto_id = CAST(SCOPE_IDENTITY() AS INT);
 	SET @resultado = 1;
@@ -2835,7 +2835,7 @@ CREATE OR ALTER PROCEDURE sp_RegistrarIngresoInventario
 	@proveedor_id INT,
 	@firma_empleado_id INT,
 	@numero_factura VARCHAR(50),
-	@fechaCompra DATE,
+	@fecha_compra DATE,
 	@productos dbo.tipo_ingreso_productos READONLY,
 	@equipos dbo.tipo_ingreso_equipos READONLY,
 	@compra_id INT OUTPUT,
@@ -2851,13 +2851,13 @@ BEGIN
 
 	SET @numero_factura = LTRIM(RTRIM(ISNULL(@numero_factura, '')));
 
-	IF NOT EXISTS (SELECT 1 FROM PROVEEDORES WHERE proveedor_id = @proveedor_id)
+	IF NOT EXISTS (SELECT 1 FROM proveedores WHERE proveedor_id = @proveedor_id)
 	BEGIN
 		SET @mensaje = 'El proveedor no existe.';
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM EMPLEADOS WHERE empleado_id = @firma_empleado_id)
+	IF NOT EXISTS (SELECT 1 FROM empleados WHERE empleado_id = @firma_empleado_id)
 	BEGIN
 		SET @mensaje = 'El empleado que recibe no existe.';
 		RETURN;
@@ -2869,7 +2869,7 @@ BEGIN
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM COMPRAS WHERE numero_factura = @numero_factura)
+	IF EXISTS (SELECT 1 FROM compras WHERE numero_factura = @numero_factura)
 	BEGIN
 		SET @mensaje = 'Ya existe una compra con ese número de factura.';
 		RETURN;
@@ -2888,70 +2888,70 @@ BEGIN
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM @productos x WHERE NOT EXISTS (SELECT 1 FROM PRODUCTOS p WHERE p.producto_id = x.producto_id))
+	IF EXISTS (SELECT 1 FROM @productos x WHERE NOT EXISTS (SELECT 1 FROM productos p WHERE p.producto_id = x.producto_id))
 	BEGIN
 		SET @mensaje = 'Uno de los productos de la lista no existe.';
 		RETURN;
 	END
 
-	DECLARE @estadoDisponible INT = (SELECT TOP 1 estado_equipo_id FROM ESTADO_EQUIPOS
-									 WHERE nombreEstadoEquipo = 'Disponible');
+	DECLARE @estado_disponible INT = (SELECT TOP 1 estado_equipo_id FROM estados_equipo
+									 WHERE nombre_estado_equipo = 'Disponible');
 
 	DECLARE @lista TABLE
 	(
 		fila INT IDENTITY(1,1),
-		nombreEquipo VARCHAR(50),
-		tipoEquipo VARCHAR(50),
-		marcaEquipo VARCHAR(50),
-		modeloEquipo VARCHAR(50),
+		nombre_equipo VARCHAR(50),
+		tipo_equipo VARCHAR(50),
+		marca_equipo VARCHAR(50),
+		modelo_equipo VARCHAR(50),
 		cantidad INT,
 		precio_unitario MONEY
 	);
 
-	INSERT INTO @lista (nombreEquipo, tipoEquipo, marcaEquipo, modeloEquipo, cantidad, precio_unitario)
-	SELECT nombreEquipo, tipoEquipo, marcaEquipo, modeloEquipo, cantidad, precio_unitario
+	INSERT INTO @lista (nombre_equipo, tipo_equipo, marca_equipo, modelo_equipo, cantidad, precio_unitario)
+	SELECT nombre_equipo, tipo_equipo, marca_equipo, modelo_equipo, cantidad, precio_unitario
 	FROM @equipos;
 
 	BEGIN TRY
 		BEGIN TRANSACTION;
 
-		INSERT INTO COMPRAS (proveedor_id, firma_empleado_id, numero_factura, fechaCompra)
-		VALUES (@proveedor_id, @firma_empleado_id, @numero_factura, @fechaCompra);
+		INSERT INTO compras (proveedor_id, firma_empleado_id, numero_factura, fecha_compra)
+		VALUES (@proveedor_id, @firma_empleado_id, @numero_factura, @fecha_compra);
 
 		SET @compra_id = CAST(SCOPE_IDENTITY() AS INT);
 
-		INSERT INTO COMPRAS_PRODUCTOS (compra_id, producto_id, cantidad, precio_unitario)
+		INSERT INTO compras_productos (compra_id, producto_id, cantidad, precio_unitario)
 		SELECT @compra_id, producto_id, cantidad, precio_unitario
 		FROM @productos;
 
 		UPDATE p
 		SET p.stock = ISNULL(p.stock, 0) + x.cantidad
-		FROM PRODUCTOS p
+		FROM productos p
 		INNER JOIN (SELECT producto_id, SUM(cantidad) AS cantidad
 					FROM @productos
 					GROUP BY producto_id) x ON x.producto_id = p.producto_id;
 
 		DECLARE @fila INT = 1;
-		DECLARE @totalFilas INT = (SELECT COUNT(1) FROM @lista);
+		DECLARE @total_filas INT = (SELECT COUNT(1) FROM @lista);
 		DECLARE @unidad INT;
 		DECLARE @cantidad INT;
 		DECLARE @precio MONEY;
 		DECLARE @equipo_id INT;
 
-		WHILE @fila <= @totalFilas
+		WHILE @fila <= @total_filas
 		BEGIN
 			SELECT @cantidad = cantidad, @precio = precio_unitario FROM @lista WHERE fila = @fila;
 			SET @unidad = 1;
 
 			WHILE @unidad <= @cantidad
 			BEGIN
-				INSERT INTO EQUIPOS (nombreEquipo, tipoEquipo, marcaEquipo, modeloEquipo, estado_equipo_id)
-				SELECT nombreEquipo, tipoEquipo, marcaEquipo, modeloEquipo, @estadoDisponible
+				INSERT INTO equipos (nombre_equipo, tipo_equipo, marca_equipo, modelo_equipo, estado_equipo_id)
+				SELECT nombre_equipo, tipo_equipo, marca_equipo, modelo_equipo, @estado_disponible
 				FROM @lista WHERE fila = @fila;
 
 				SET @equipo_id = CAST(SCOPE_IDENTITY() AS INT);
 
-				INSERT INTO COMPRAS_EQUIPOS (compra_id, equipo_id, precio_unitario)
+				INSERT INTO compras_equipos (compra_id, equipo_id, precio_unitario)
 				VALUES (@compra_id, @equipo_id, @precio);
 
 				SET @unidad = @unidad + 1;
@@ -2982,10 +2982,10 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT empleado_id,
-		   LTRIM(RTRIM(ISNULL(nombreEmpleado, '') + ' ' + ISNULL(apellidoEmpleado, ''))) AS nombreCompleto
-	FROM EMPLEADOS
-	WHERE estadoEmpleado = 1
-	ORDER BY nombreEmpleado, apellidoEmpleado;
+		   LTRIM(RTRIM(ISNULL(nombre_empleado, '') + ' ' + ISNULL(apellido_empleado, ''))) AS nombre_completo
+	FROM empleados
+	WHERE estado_empleado = 1
+	ORDER BY nombre_empleado, apellido_empleado;
 END
 GO
 
@@ -2996,8 +2996,8 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT forma_pago_id, nombreFormaPago
-	FROM FORMAS_PAGOS
+	SELECT forma_pago_id, nombre_forma_pago
+	FROM formas_pago
 	ORDER BY forma_pago_id;
 END
 GO
@@ -3009,15 +3009,15 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	IF EXISTS (SELECT 1 FROM ORDENES o
-			   INNER JOIN COTIZACION_DETALLE d ON d.cotizacion_id = o.cotizacion_id
+	IF EXISTS (SELECT 1 FROM ordenes o
+			   INNER JOIN detalles_cotizacion d ON d.cotizacion_id = o.cotizacion_id
 			   WHERE o.orden_id = @orden_id)
 	BEGIN
 		SELECT d.concepto,
 			   d.cantidad,
 			   CAST(d.precio_unitario AS DECIMAL(12, 2)) AS precio_unitario
-		FROM ORDENES o
-		INNER JOIN COTIZACION_DETALLE d ON d.cotizacion_id = o.cotizacion_id
+		FROM ordenes o
+		INNER JOIN detalles_cotizacion d ON d.cotizacion_id = o.cotizacion_id
 		WHERE o.orden_id = @orden_id
 		ORDER BY d.linea;
 	END
@@ -3027,8 +3027,8 @@ BEGIN
 			   CASE WHEN ISNULL(a.frecuencia, '') = '' THEN '' ELSE ' (' + a.frecuencia + ')' END AS concepto,
 			   1 AS cantidad,
 			   CAST(ISNULL(a.precio, 0) AS DECIMAL(12, 2)) AS precio_unitario
-		FROM ORDEN_ACTIVIDADES oa
-		INNER JOIN ACTIVIDADES a ON a.actividad_id = oa.actividad_id
+		FROM orden_actividades oa
+		INNER JOIN actividades a ON a.actividad_id = oa.actividad_id
 		WHERE oa.orden_id = @orden_id
 		ORDER BY a.descripcion;
 	END
@@ -3036,17 +3036,17 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE sp_InsertarCotizacion
-	@identificacionCliente VARCHAR(30),
-	@nombreEmpresa VARCHAR(50),
-	@nombreCliente VARCHAR(50),
-	@apellidoCliente VARCHAR(50),
-	@telefonoCliente VARCHAR(50),
-	@correoCliente VARCHAR(50),
+	@identificacion_cliente VARCHAR(30),
+	@nombre_empresa VARCHAR(50),
+	@nombre_cliente VARCHAR(50),
+	@apellido_cliente VARCHAR(50),
+	@telefono_cliente VARCHAR(50),
+	@correo_cliente VARCHAR(50),
 	@locacion_id INT = NULL,
 	@direccion VARCHAR(80),
 	@fecha_cotizacion DATE,
 	@valida_hasta DATE,
-	@observaciones VARCHAR(200),
+	@observacion VARCHAR(200),
 	@servicio_id INT,
 	@lineas dbo.tipo_lista_medidas READONLY,
 	@resultado INT OUTPUT,
@@ -3061,16 +3061,16 @@ BEGIN
 	SET @mensaje = '';
 	SET @cotizacion_id = '';
 
-	SET @nombreCliente = LTRIM(RTRIM(ISNULL(@nombreCliente, '')));
-	SET @identificacionCliente = REPLACE(REPLACE(LTRIM(RTRIM(ISNULL(@identificacionCliente, ''))), '-', ''), ' ', '');
+	SET @nombre_cliente = LTRIM(RTRIM(ISNULL(@nombre_cliente, '')));
+	SET @identificacion_cliente = REPLACE(REPLACE(LTRIM(RTRIM(ISNULL(@identificacion_cliente, ''))), '-', ''), ' ', '');
 
-	IF @nombreCliente = ''
+	IF @nombre_cliente = ''
 	BEGIN
 		SET @mensaje = 'El nombre del contacto es obligatorio.';
 		RETURN;
 	END
 
-	IF @locacion_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM LOCACIONES WHERE locacion_id = @locacion_id)
+	IF @locacion_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM locaciones WHERE locacion_id = @locacion_id)
 	BEGIN
 		SET @mensaje = 'La locacion no existe.';
 		RETURN;
@@ -3082,7 +3082,7 @@ BEGIN
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM SERVICIOS WHERE servicio_id = @servicio_id)
+	IF NOT EXISTS (SELECT 1 FROM servicios WHERE servicio_id = @servicio_id)
 	BEGIN
 		SET @mensaje = 'El servicio no existe.';
 		RETURN;
@@ -3100,7 +3100,7 @@ BEGIN
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM @lineas x WHERE NOT EXISTS (SELECT 1 FROM ACTIVIDADES a WHERE a.actividad_id = x.actividad_id))
+	IF EXISTS (SELECT 1 FROM @lineas x WHERE NOT EXISTS (SELECT 1 FROM actividades a WHERE a.actividad_id = x.actividad_id))
 	BEGIN
 		SET @mensaje = 'Una de las actividades no existe.';
 		RETURN;
@@ -3110,28 +3110,28 @@ BEGIN
 		BEGIN TRANSACTION;
 
 		DECLARE @siguiente INT;
-		DECLARE @tasa DECIMAL(6, 4) = ISNULL((SELECT valor FROM PARAMETROS_COSTEO WHERE clave = 'ISV'), 0.15);
+		DECLARE @tasa DECIMAL(6, 4) = ISNULL((SELECT valor FROM parametros_costeo WHERE clave = 'ISV'), 0.15);
 		DECLARE @subtotal DECIMAL(12, 2) = (SELECT ISNULL(SUM(precio), 0) FROM dbo.fn_CotizarLineas(@lineas));
 		DECLARE @total DECIMAL(12, 2) = @subtotal + ROUND(@subtotal * @tasa, 2);
 
 		SELECT @siguiente = ISNULL(MAX(TRY_CAST(SUBSTRING(cotizacion_id, 5, 20) AS INT)), 0) + 1
-		FROM COTIZACIONES WITH (UPDLOCK, HOLDLOCK)
+		FROM cotizaciones WITH (UPDLOCK, HOLDLOCK)
 		WHERE cotizacion_id LIKE 'COT-%';
 
 		SET @cotizacion_id = 'COT-' + RIGHT('000000' + CAST(@siguiente AS VARCHAR(10)), 6);
 
-		INSERT INTO COTIZACIONES (cotizacion_id, identificacionCliente, nombreEmpresa, nombreCliente,
-								  apellidoCliente, telefonoCliente, correoCliente, locacion_id, direccion,
-								  fechaCotizacion, valida_hasta, observaciones, precio_cotizado, servicio_id)
-		VALUES (@cotizacion_id, NULLIF(LTRIM(RTRIM(@identificacionCliente)), ''), NULLIF(@nombreEmpresa, ''),
-				@nombreCliente, NULLIF(@apellidoCliente, ''), NULLIF(@telefonoCliente, ''),
-				NULLIF(@correoCliente, ''), @locacion_id, @direccion,
-				@fecha_cotizacion, @valida_hasta, NULLIF(@observaciones, ''), @total, @servicio_id);
+		INSERT INTO cotizaciones (cotizacion_id, identificacion_cliente, nombre_empresa, nombre_cliente,
+								  apellido_cliente, telefono_cliente, correo_cliente, locacion_id, direccion,
+								  fecha_cotizacion, valida_hasta, observacion, precio_cotizado, servicio_id)
+		VALUES (@cotizacion_id, NULLIF(LTRIM(RTRIM(@identificacion_cliente)), ''), NULLIF(@nombre_empresa, ''),
+				@nombre_cliente, NULLIF(@apellido_cliente, ''), NULLIF(@telefono_cliente, ''),
+				NULLIF(@correo_cliente, ''), @locacion_id, @direccion,
+				@fecha_cotizacion, @valida_hasta, NULLIF(@observacion, ''), @total, @servicio_id);
 
-		INSERT INTO COTIZACION_DETALLE (cotizacion_id, linea, concepto, cantidad, precio_unitario,
-										actividad_id, medida, personas)
+		INSERT INTO detalles_cotizacion (cotizacion_id, linea, concepto, cantidad, precio_unitario,
+										actividad_id, medida, cantidad_personas)
 		SELECT @cotizacion_id, ROW_NUMBER() OVER (ORDER BY actividad_id), concepto, 1, precio,
-			   actividad_id, medida, personas
+			   actividad_id, medida, cantidad_personas
 		FROM dbo.fn_CotizarLineas(@lineas);
 
 		COMMIT TRANSACTION;
@@ -3167,21 +3167,21 @@ BEGIN
 	SET @mensaje = '';
 	SET @factura_id = NULL;
 
-	IF NOT EXISTS (SELECT 1 FROM ORDENES o
-				   INNER JOIN ESTADO_ORDENES e ON e.estado_orden_id = o.estado_orden_id
-				   WHERE o.orden_id = @orden_id AND e.nombreEstadoOrden = 'Completada')
+	IF NOT EXISTS (SELECT 1 FROM ordenes o
+				   INNER JOIN estados_orden e ON e.estado_orden_id = o.estado_orden_id
+				   WHERE o.orden_id = @orden_id AND e.nombre_estado_orden = 'Completada')
 	BEGIN
 		SET @mensaje = 'La orden no existe o no esta completada.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM FACTURAS WHERE orden_id = @orden_id)
+	IF EXISTS (SELECT 1 FROM facturas WHERE orden_id = @orden_id)
 	BEGIN
 		SET @mensaje = 'Esta orden ya fue facturada.';
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM FORMAS_PAGOS WHERE forma_pago_id = @forma_pago_id)
+	IF NOT EXISTS (SELECT 1 FROM formas_pago WHERE forma_pago_id = @forma_pago_id)
 	BEGIN
 		SET @mensaje = 'El metodo de pago no existe.';
 		RETURN;
@@ -3205,12 +3205,12 @@ BEGIN
 	BEGIN TRY
 		BEGIN TRANSACTION;
 
-		DECLARE @tasa DECIMAL(6, 4) = ISNULL((SELECT valor FROM PARAMETROS_COSTEO WHERE clave = 'ISV'), 0.15);
+		DECLARE @tasa DECIMAL(6, 4) = ISNULL((SELECT valor FROM parametros_costeo WHERE clave = 'ISV'), 0.15);
 		DECLARE @subtotal DECIMAL(12, 2) = (SELECT ISNULL(SUM(cantidad * precio_unitario), 0) FROM #lineas);
 		DECLARE @total DECIMAL(12, 2) = @subtotal + ROUND(@subtotal * @tasa, 2);
 		DECLARE @contado BIT = CASE WHEN @numero_cuotas = 1 THEN 1 ELSE 0 END;
 
-		INSERT INTO FACTURAS (orden_id, fechaFactura, tipo_pago, estado_pago, fecha_pago,
+		INSERT INTO facturas (orden_id, fecha_factura, tipo_pago, estado_pago, fecha_pago,
 							  forma_pago_id, precio_facturado)
 		VALUES (@orden_id, @fecha_factura,
 				CASE WHEN @contado = 1 THEN 'Contado' ELSE 'Credito' END,
@@ -3220,13 +3220,13 @@ BEGIN
 
 		SET @factura_id = CAST(SCOPE_IDENTITY() AS INT);
 
-		INSERT INTO FACTURA_DETALLE (factura_id, linea, concepto, cantidad, precio_unitario, adicional)
+		INSERT INTO detalles_factura (factura_id, linea, concepto, cantidad, precio_unitario, adicional)
 		SELECT @factura_id, ROW_NUMBER() OVER (ORDER BY (SELECT 1)), concepto, cantidad, precio_unitario, 0
 		FROM #lineas;
 
 		IF @contado = 0
 		BEGIN
-			INSERT INTO CUENTAS_POR_COBRAR (factura_id, monto_total, prima, numero_cuotas,
+			INSERT INTO cuentas_por_cobrar (factura_id, monto_total, prima, numero_cuotas,
 											frecuencia, fecha_inicio, estado_cuenta)
 			VALUES (@factura_id, @total, 0, @numero_cuotas, 'Mensual', @fecha_factura, 'Vigente');
 
@@ -3240,7 +3240,7 @@ BEGIN
 				UNION ALL
 				SELECT num + 1 FROM n WHERE num < @numero_cuotas
 			)
-			INSERT INTO CUOTAS (cuenta_id, numero_cuota, fecha_vencimiento, monto_cuota, monto_pagado, estado_cuota)
+			INSERT INTO cuotas (cuenta_id, numero_cuota, fecha_vencimiento, monto_cuota, monto_pagado, estado_cuota)
 			SELECT @cuenta_id, num, DATEADD(MONTH, num, @fecha_factura),
 				   CASE WHEN num = @numero_cuotas THEN @total - @cuota * (@numero_cuotas - 1) ELSE @cuota END,
 				   0, 'Pendiente'
@@ -3276,26 +3276,26 @@ BEGIN
 
 	SELECT f.factura_id,
 		   f.orden_id,
-		   o.identificacionCliente,
-		   ISNULL(c.nombreEmpresa, o.identificacionCliente) AS cliente,
-		   f.fechaFactura,
+		   o.identificacion_cliente,
+		   ISNULL(c.nombre_empresa, o.identificacion_cliente) AS cliente,
+		   f.fecha_factura,
 		   f.tipo_pago,
 		   f.estado_pago,
 		   f.fecha_pago,
-		   fp.nombreFormaPago,
+		   fp.nombre_forma_pago,
 		   f.precio_facturado
-	FROM FACTURAS f
-	INNER JOIN ORDENES o ON o.orden_id = f.orden_id
-	LEFT JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
-	LEFT JOIN FORMAS_PAGOS fp ON fp.forma_pago_id = f.forma_pago_id
+	FROM facturas f
+	INNER JOIN ordenes o ON o.orden_id = f.orden_id
+	LEFT JOIN clientes c ON c.identificacion_cliente = o.identificacion_cliente
+	LEFT JOIN formas_pago fp ON fp.forma_pago_id = f.forma_pago_id
 	WHERE (@texto = '' OR CAST(f.factura_id AS VARCHAR(10)) = @texto
 		   OR f.orden_id LIKE '%' + @texto + '%'
-		   OR o.identificacionCliente LIKE '%' + @texto + '%'
-		   OR c.nombreEmpresa LIKE '%' + @texto + '%')
+		   OR o.identificacion_cliente LIKE '%' + @texto + '%'
+		   OR c.nombre_empresa LIKE '%' + @texto + '%')
 	  AND (@estado_pago = '' OR f.estado_pago = @estado_pago)
-	  AND (@desde IS NULL OR f.fechaFactura >= @desde)
-	  AND (@hasta IS NULL OR f.fechaFactura <= @hasta)
-	ORDER BY f.fechaFactura DESC, f.factura_id DESC;
+	  AND (@desde IS NULL OR f.fecha_factura >= @desde)
+	  AND (@hasta IS NULL OR f.fecha_factura <= @hasta)
+	ORDER BY f.fecha_factura DESC, f.factura_id DESC;
 END
 GO
 
@@ -3307,32 +3307,32 @@ BEGIN
 
 	SELECT f.factura_id,
 		   f.orden_id,
-		   f.fechaFactura,
+		   f.fecha_factura,
 		   f.tipo_pago,
 		   f.estado_pago,
 		   f.fecha_pago,
-		   ISNULL(fp.nombreFormaPago, '') AS nombreFormaPago,
+		   ISNULL(fp.nombre_forma_pago, '') AS nombre_forma_pago,
 		   ISNULL(f.precio_facturado, 0) AS precio_facturado,
-		   ISNULL(o.identificacionCliente, '') AS identificacionCliente,
-		   ISNULL(c.nombreEmpresa, '') AS nombreEmpresa,
-		   ISNULL(c.nombreCliente, '') AS nombreCliente,
-		   ISNULL(c.apellidoCliente, '') AS apellidoCliente,
-		   ISNULL(c.telefonoCliente, '') AS telefonoCliente,
-		   ISNULL(c.correoCliente, '') AS correoCliente,
-		   ISNULL(l.nombreLocacion, '') AS nombreLocacion,
-		   ISNULL(l.tipoLocacion, '') AS tipoLocacion,
+		   ISNULL(o.identificacion_cliente, '') AS identificacion_cliente,
+		   ISNULL(c.nombre_empresa, '') AS nombre_empresa,
+		   ISNULL(c.nombre_cliente, '') AS nombre_cliente,
+		   ISNULL(c.apellido_cliente, '') AS apellido_cliente,
+		   ISNULL(c.telefono_cliente, '') AS telefono_cliente,
+		   ISNULL(c.correo_cliente, '') AS correo_cliente,
+		   ISNULL(l.nombre_locacion, '') AS nombre_locacion,
+		   ISNULL(l.tipo_locacion, '') AS tipo_locacion,
 		   ISNULL(l.direccion, '') AS direccion,
 		   pg.pagado,
 		   ISNULL(f.precio_facturado, 0) - pg.pagado AS saldo
-	FROM FACTURAS f
-	INNER JOIN ORDENES o ON o.orden_id = f.orden_id
-	LEFT JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
-	LEFT JOIN LOCACIONES l ON l.locacion_id = o.locacion_id
-	LEFT JOIN FORMAS_PAGOS fp ON fp.forma_pago_id = f.forma_pago_id
+	FROM facturas f
+	INNER JOIN ordenes o ON o.orden_id = f.orden_id
+	LEFT JOIN clientes c ON c.identificacion_cliente = o.identificacion_cliente
+	LEFT JOIN locaciones l ON l.locacion_id = o.locacion_id
+	LEFT JOIN formas_pago fp ON fp.forma_pago_id = f.forma_pago_id
 	CROSS APPLY (SELECT CASE WHEN f.tipo_pago = 'Credito'
 							 THEN ISNULL((SELECT SUM(ISNULL(q.monto_pagado, 0))
-										  FROM CUENTAS_POR_COBRAR cc
-										  INNER JOIN CUOTAS q ON q.cuenta_id = cc.cuenta_id
+										  FROM cuentas_por_cobrar cc
+										  INNER JOIN cuotas q ON q.cuenta_id = cc.cuenta_id
 										  WHERE cc.factura_id = f.factura_id), 0)
 							 WHEN f.estado_pago = 'Pagada' THEN ISNULL(f.precio_facturado, 0)
 							 ELSE 0 END AS pagado) pg
@@ -3352,7 +3352,7 @@ BEGIN
 		   cantidad,
 		   precio_unitario,
 		   CAST(cantidad * precio_unitario AS DECIMAL(12, 2)) AS subtotal
-	FROM FACTURA_DETALLE
+	FROM detalles_factura
 	WHERE factura_id = @factura_id
 	ORDER BY linea;
 END
@@ -3371,8 +3371,8 @@ BEGIN
 		   ISNULL(q.monto_pagado, 0) AS monto_pagado,
 		   q.monto_cuota - ISNULL(q.monto_pagado, 0) AS saldo,
 		   q.estado_cuota
-	FROM CUENTAS_POR_COBRAR cpc
-	INNER JOIN CUOTAS q ON q.cuenta_id = cpc.cuenta_id
+	FROM cuentas_por_cobrar cpc
+	INNER JOIN cuotas q ON q.cuenta_id = cpc.cuenta_id
 	WHERE cpc.factura_id = @factura_id
 	ORDER BY q.numero_cuota;
 END
@@ -3387,24 +3387,24 @@ BEGIN
 	SELECT o.orden_id,
 		   o.fecha_servicio,
 		   ISNULL(o.cotizacion_id, '') AS cotizacion_id,
-		   ISNULL(o.identificacionCliente, '') AS identificacionCliente,
-		   ISNULL(c.nombreEmpresa, '') AS nombreEmpresa,
-		   ISNULL(c.nombreCliente, '') AS nombreCliente,
-		   ISNULL(c.apellidoCliente, '') AS apellidoCliente,
-		   ISNULL(c.telefonoCliente, '') AS telefonoCliente,
-		   ISNULL(c.correoCliente, '') AS correoCliente,
-		   ISNULL(l.nombreLocacion, '') AS nombreLocacion,
-		   ISNULL(l.tipoLocacion, '') AS tipoLocacion,
+		   ISNULL(o.identificacion_cliente, '') AS identificacion_cliente,
+		   ISNULL(c.nombre_empresa, '') AS nombre_empresa,
+		   ISNULL(c.nombre_cliente, '') AS nombre_cliente,
+		   ISNULL(c.apellido_cliente, '') AS apellido_cliente,
+		   ISNULL(c.telefono_cliente, '') AS telefono_cliente,
+		   ISNULL(c.correo_cliente, '') AS correo_cliente,
+		   ISNULL(l.nombre_locacion, '') AS nombre_locacion,
+		   ISNULL(l.tipo_locacion, '') AS tipo_locacion,
 		   ISNULL(l.direccion, '') AS direccion,
-		   ISNULL(s.nombreServicio, '') AS nombreServicio,
-		   CASE WHEN eo.nombreEstadoOrden = 'Completada'
-				 AND NOT EXISTS (SELECT 1 FROM FACTURAS f WHERE f.orden_id = o.orden_id)
+		   ISNULL(s.nombre_servicio, '') AS nombre_servicio,
+		   CASE WHEN eo.nombre_estado_orden = 'Completada'
+				 AND NOT EXISTS (SELECT 1 FROM facturas f WHERE f.orden_id = o.orden_id)
 				THEN 1 ELSE 0 END AS facturable
-	FROM ORDENES o
-	LEFT JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
-	LEFT JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
-	LEFT JOIN LOCACIONES l ON l.locacion_id = o.locacion_id
-	LEFT JOIN SERVICIOS s ON s.servicio_id = o.servicio_id
+	FROM ordenes o
+	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
+	LEFT JOIN clientes c ON c.identificacion_cliente = o.identificacion_cliente
+	LEFT JOIN locaciones l ON l.locacion_id = o.locacion_id
+	LEFT JOIN servicios s ON s.servicio_id = o.servicio_id
 	WHERE o.orden_id = @orden_id;
 END
 GO
@@ -3420,8 +3420,8 @@ RETURN
 		SELECT q.cuota_id, q.numero_cuota, q.fecha_vencimiento, q.monto_cuota,
 			   ISNULL(q.monto_pagado, 0) AS pagado,
 			   q.monto_cuota - ISNULL(q.monto_pagado, 0) AS pendiente
-		FROM CUOTAS q
-		INNER JOIN CUENTAS_POR_COBRAR cc ON cc.cuenta_id = q.cuenta_id
+		FROM cuotas q
+		INNER JOIN cuentas_por_cobrar cc ON cc.cuenta_id = q.cuenta_id
 		WHERE cc.factura_id = @factura_id
 	),
 	a AS
@@ -3472,20 +3472,20 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	DECLARE @cuenta_id INT = (SELECT cuenta_id FROM CUENTAS_POR_COBRAR WHERE factura_id = @factura_id);
+	DECLARE @cuenta_id INT = (SELECT cuenta_id FROM cuentas_por_cobrar WHERE factura_id = @factura_id);
 
-	IF NOT EXISTS (SELECT 1 FROM CUOTAS WHERE cuenta_id = @cuenta_id AND estado_cuota <> 'Pagada')
+	IF NOT EXISTS (SELECT 1 FROM cuotas WHERE cuenta_id = @cuenta_id AND estado_cuota <> 'Pagada')
 	BEGIN
-		UPDATE CUENTAS_POR_COBRAR SET estado_cuenta = 'Pagada' WHERE cuenta_id = @cuenta_id;
+		UPDATE cuentas_por_cobrar SET estado_cuenta = 'Pagada' WHERE cuenta_id = @cuenta_id;
 
-		UPDATE FACTURAS
+		UPDATE facturas
 		SET estado_pago = 'Pagada', fecha_pago = @fecha
 		WHERE factura_id = @factura_id;
 	END
-	ELSE IF EXISTS (SELECT 1 FROM CUOTAS WHERE cuenta_id = @cuenta_id AND estado_cuota = 'Vencida')
-		UPDATE CUENTAS_POR_COBRAR SET estado_cuenta = 'Vencida' WHERE cuenta_id = @cuenta_id;
+	ELSE IF EXISTS (SELECT 1 FROM cuotas WHERE cuenta_id = @cuenta_id AND estado_cuota = 'Vencida')
+		UPDATE cuentas_por_cobrar SET estado_cuenta = 'Vencida' WHERE cuenta_id = @cuenta_id;
 	ELSE
-		UPDATE CUENTAS_POR_COBRAR SET estado_cuenta = 'Vigente' WHERE cuenta_id = @cuenta_id;
+		UPDATE cuentas_por_cobrar SET estado_cuenta = 'Vigente' WHERE cuenta_id = @cuenta_id;
 END
 GO
 
@@ -3508,7 +3508,7 @@ BEGIN
 	DECLARE @tipo VARCHAR(10), @estado VARCHAR(50), @forma_pago_id INT, @saldo MONEY;
 
 	SELECT @tipo = tipo_pago, @estado = estado_pago, @forma_pago_id = forma_pago_id
-	FROM FACTURAS WHERE factura_id = @factura_id;
+	FROM facturas WHERE factura_id = @factura_id;
 
 	IF @tipo IS NULL
 	BEGIN
@@ -3529,8 +3529,8 @@ BEGIN
 	END
 
 	SELECT @saldo = SUM(q.monto_cuota - ISNULL(q.monto_pagado, 0))
-	FROM CUENTAS_POR_COBRAR cc
-	INNER JOIN CUOTAS q ON q.cuenta_id = cc.cuenta_id
+	FROM cuentas_por_cobrar cc
+	INNER JOIN cuotas q ON q.cuenta_id = cc.cuenta_id
 	WHERE cc.factura_id = @factura_id;
 
 	IF ISNULL(@monto, 0) <= 0
@@ -3559,11 +3559,11 @@ BEGIN
 			q.estado_cuota = n.nuevo_estado,
 			q.fecha_pago = @fecha_abono,
 			q.forma_pago_id = @forma_pago_id
-		FROM CUOTAS q
+		FROM cuotas q
 		INNER JOIN @nuevas n ON n.cuota_id = q.cuota_id
 		WHERE n.aplicado > 0;
 
-		INSERT INTO ABONOS (factura_id, fecha_abono, monto, forma_pago_id, saldo_despues, concepto)
+		INSERT INTO abonos (factura_id, fecha_abono, monto, forma_pago_id, saldo_despues, concepto)
 		VALUES (@factura_id, @fecha_abono, @monto, @forma_pago_id, @saldo - @monto, 'Abono');
 
 		EXEC sp_RecalcularEstadoFactura @factura_id, @fecha_abono;
@@ -3603,9 +3603,9 @@ BEGIN
 		   @forma_pago_id = f.forma_pago_id,
 		   @numero = q.numero_cuota,
 		   @saldo = q.monto_cuota - ISNULL(q.monto_pagado, 0)
-	FROM CUOTAS q
-	INNER JOIN CUENTAS_POR_COBRAR cc ON cc.cuenta_id = q.cuenta_id
-	INNER JOIN FACTURAS f ON f.factura_id = cc.factura_id
+	FROM cuotas q
+	INNER JOIN cuentas_por_cobrar cc ON cc.cuenta_id = q.cuenta_id
+	INNER JOIN facturas f ON f.factura_id = cc.factura_id
 	WHERE q.cuota_id = @cuota_id;
 
 	IF @factura_id IS NULL
@@ -3621,21 +3621,21 @@ BEGIN
 	END
 
 	SELECT @saldo_total = SUM(q.monto_cuota - ISNULL(q.monto_pagado, 0))
-	FROM CUENTAS_POR_COBRAR cc
-	INNER JOIN CUOTAS q ON q.cuenta_id = cc.cuenta_id
+	FROM cuentas_por_cobrar cc
+	INNER JOIN cuotas q ON q.cuenta_id = cc.cuenta_id
 	WHERE cc.factura_id = @factura_id;
 
 	BEGIN TRY
 		BEGIN TRANSACTION;
 
-		UPDATE CUOTAS
+		UPDATE cuotas
 		SET monto_pagado = monto_cuota,
 			estado_cuota = 'Pagada',
 			fecha_pago = @fecha_pago,
 			forma_pago_id = @forma_pago_id
 		WHERE cuota_id = @cuota_id;
 
-		INSERT INTO ABONOS (factura_id, fecha_abono, monto, forma_pago_id, saldo_despues, concepto)
+		INSERT INTO abonos (factura_id, fecha_abono, monto, forma_pago_id, saldo_despues, concepto)
 		VALUES (@factura_id, @fecha_pago, @saldo, @forma_pago_id, @saldo_total - @saldo,
 				'Cuota ' + CAST(@numero AS VARCHAR(5)));
 
@@ -3661,9 +3661,9 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT a.fecha_abono, a.concepto, a.monto, ISNULL(fp.nombreFormaPago, '') AS nombreFormaPago, a.saldo_despues
-	FROM ABONOS a
-	LEFT JOIN FORMAS_PAGOS fp ON fp.forma_pago_id = a.forma_pago_id
+	SELECT a.fecha_abono, a.concepto, a.monto, ISNULL(fp.nombre_forma_pago, '') AS nombre_forma_pago, a.saldo_despues
+	FROM abonos a
+	LEFT JOIN formas_pago fp ON fp.forma_pago_id = a.forma_pago_id
 	WHERE a.factura_id = @factura_id
 	ORDER BY a.abono_id;
 END
@@ -3685,7 +3685,7 @@ BEGIN
 
 	DECLARE @tipo VARCHAR(10), @estado VARCHAR(50);
 
-	SELECT @tipo = tipo_pago, @estado = estado_pago FROM FACTURAS WHERE factura_id = @factura_id;
+	SELECT @tipo = tipo_pago, @estado = estado_pago FROM facturas WHERE factura_id = @factura_id;
 
 	IF @tipo IS NULL
 	BEGIN
@@ -3705,13 +3705,13 @@ BEGIN
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM FORMAS_PAGOS WHERE forma_pago_id = @forma_pago_id)
+	IF NOT EXISTS (SELECT 1 FROM formas_pago WHERE forma_pago_id = @forma_pago_id)
 	BEGIN
 		SET @mensaje = 'La forma de pago no existe.';
 		RETURN;
 	END
 
-	UPDATE FACTURAS
+	UPDATE facturas
 	SET estado_pago = 'Pagada',
 		fecha_pago = @fecha_pago,
 		forma_pago_id = @forma_pago_id
@@ -3737,11 +3737,11 @@ BEGIN
 		   ISNULL(q.monto_pagado, 0) AS monto_pagado,
 		   q.monto_cuota - ISNULL(q.monto_pagado, 0) AS saldo,
 		   q.fecha_pago,
-		   fp.nombreFormaPago,
+		   fp.nombre_forma_pago,
 		   q.estado_cuota
-	FROM CUOTAS q
-	INNER JOIN CUENTAS_POR_COBRAR cc ON cc.cuenta_id = q.cuenta_id
-	LEFT JOIN FORMAS_PAGOS fp ON fp.forma_pago_id = q.forma_pago_id
+	FROM cuotas q
+	INNER JOIN cuentas_por_cobrar cc ON cc.cuenta_id = q.cuenta_id
+	LEFT JOIN formas_pago fp ON fp.forma_pago_id = q.forma_pago_id
 	WHERE cc.factura_id = @factura_id
 	ORDER BY q.numero_cuota;
 END
@@ -3754,15 +3754,15 @@ BEGIN
 
 	DECLARE @hoy DATE = CAST(GETDATE() AS DATE);
 
-	UPDATE CUOTAS
+	UPDATE cuotas
 	SET estado_cuota = 'Vencida'
 	WHERE estado_cuota IN ('Pendiente', 'Parcial')
 	  AND fecha_vencimiento < @hoy;
 
-	UPDATE CUENTAS_POR_COBRAR
+	UPDATE cuentas_por_cobrar
 	SET estado_cuenta = 'Vencida'
 	WHERE estado_cuenta = 'Vigente'
-	  AND EXISTS (SELECT 1 FROM CUOTAS q WHERE q.cuenta_id = CUENTAS_POR_COBRAR.cuenta_id
+	  AND EXISTS (SELECT 1 FROM cuotas q WHERE q.cuenta_id = cuentas_por_cobrar.cuenta_id
 				  AND q.estado_cuota = 'Vencida');
 END
 GO
@@ -3780,23 +3780,23 @@ BEGIN
 	SELECT cc.cuenta_id,
 		   cc.factura_id,
 		   f.orden_id,
-		   ISNULL(c.nombreEmpresa, o.identificacionCliente) AS cliente,
+		   ISNULL(c.nombre_empresa, o.identificacion_cliente) AS cliente,
 		   cc.monto_total,
 		   ISNULL(cc.prima, 0) AS prima,
 		   cc.numero_cuotas,
 		   cc.frecuencia,
 		   cc.estado_cuenta,
-		   ISNULL((SELECT SUM(q.monto_pagado) FROM CUOTAS q WHERE q.cuenta_id = cc.cuenta_id), 0) AS pagado_cuotas,
-		   (SELECT SUM(q.monto_cuota - ISNULL(q.monto_pagado, 0)) FROM CUOTAS q WHERE q.cuenta_id = cc.cuenta_id) AS saldo,
-		   (SELECT MIN(q.fecha_vencimiento) FROM CUOTAS q
+		   ISNULL((SELECT SUM(q.monto_pagado) FROM cuotas q WHERE q.cuenta_id = cc.cuenta_id), 0) AS pagado_cuotas,
+		   (SELECT SUM(q.monto_cuota - ISNULL(q.monto_pagado, 0)) FROM cuotas q WHERE q.cuenta_id = cc.cuenta_id) AS saldo,
+		   (SELECT MIN(q.fecha_vencimiento) FROM cuotas q
 			WHERE q.cuenta_id = cc.cuenta_id AND q.estado_cuota <> 'Pagada') AS proximo_vencimiento
-	FROM CUENTAS_POR_COBRAR cc
-	INNER JOIN FACTURAS f ON f.factura_id = cc.factura_id
-	INNER JOIN ORDENES o ON o.orden_id = f.orden_id
-	LEFT JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
+	FROM cuentas_por_cobrar cc
+	INNER JOIN facturas f ON f.factura_id = cc.factura_id
+	INNER JOIN ordenes o ON o.orden_id = f.orden_id
+	LEFT JOIN clientes c ON c.identificacion_cliente = o.identificacion_cliente
 	WHERE (@texto = '' OR f.orden_id LIKE '%' + @texto + '%'
-		   OR o.identificacionCliente LIKE '%' + @texto + '%'
-		   OR c.nombreEmpresa LIKE '%' + @texto + '%')
+		   OR o.identificacion_cliente LIKE '%' + @texto + '%'
+		   OR c.nombre_empresa LIKE '%' + @texto + '%')
 	  AND (@estado_cuenta = '' OR cc.estado_cuenta = @estado_cuenta)
 	ORDER BY cc.cuenta_id DESC;
 END
@@ -3813,17 +3813,17 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT b.bitacora_id,
-		   b.fechaBitacora,
+		   b.fecha_bitacora,
 		   u.usuario,
 		   b.accion,
 		   b.tabla,
-		   b.equipoSistema
-	FROM BITACORAS b
-	LEFT JOIN USUARIOS u ON u.usuario_id = b.usuario_id
-	WHERE (@desde IS NULL OR b.fechaBitacora >= @desde)
-	  AND (@hasta IS NULL OR b.fechaBitacora < DATEADD(DAY, 1, @hasta))
+		   b.equipo_sistema
+	FROM bitacoras b
+	LEFT JOIN usuarios u ON u.usuario_id = b.usuario_id
+	WHERE (@desde IS NULL OR b.fecha_bitacora >= @desde)
+	  AND (@hasta IS NULL OR b.fecha_bitacora < DATEADD(DAY, 1, @hasta))
 	  AND (@usuario_id IS NULL OR b.usuario_id = @usuario_id)
-	ORDER BY b.fechaBitacora DESC, b.bitacora_id DESC;
+	ORDER BY b.fecha_bitacora DESC, b.bitacora_id DESC;
 END
 GO
 
@@ -3842,27 +3842,27 @@ BEGIN
 	SET @cliente = LTRIM(RTRIM(ISNULL(@cliente, '')));
 
 	SELECT o.orden_id,
-		   ISNULL(c.nombreEmpresa, o.identificacionCliente) AS cliente,
-		   ISNULL(s.nombreServicio, 'Sin servicio') AS nombreServicio,
-		   LTRIM(ISNULL(sup.nombreEmpleado, '') + ' ' + ISNULL(sup.apellidoEmpleado, '')) AS supervisor,
+		   ISNULL(c.nombre_empresa, o.identificacion_cliente) AS cliente,
+		   ISNULL(s.nombre_servicio, 'Sin servicio') AS nombre_servicio,
+		   LTRIM(ISNULL(sup.nombre_empleado, '') + ' ' + ISNULL(sup.apellido_empleado, '')) AS supervisor,
 		   COALESCE(o.fecha_servicio, o.fecha_solicitud) AS fecha,
-		   ISNULL(eo.nombreEstadoOrden, 'Sin estado') AS nombreEstadoOrden,
+		   ISNULL(eo.nombre_estado_orden, 'Sin estado') AS nombre_estado_orden,
 		   o.conformidad_cliente,
 		   CASE WHEN o.conformidad_cliente IS NULL THEN 'Sin evaluar'
 				WHEN o.conformidad_cliente = 1 THEN 'Conforme'
 				ELSE 'No conforme' END AS conformidad
-	FROM ORDENES o
-	LEFT JOIN CLIENTES c ON c.identificacionCliente = o.identificacionCliente
-	LEFT JOIN SERVICIOS s ON s.servicio_id = o.servicio_id
-	LEFT JOIN EMPLEADOS sup ON sup.empleado_id = o.supervisor_id
-	LEFT JOIN ESTADO_ORDENES eo ON eo.estado_orden_id = o.estado_orden_id
+	FROM ordenes o
+	LEFT JOIN clientes c ON c.identificacion_cliente = o.identificacion_cliente
+	LEFT JOIN servicios s ON s.servicio_id = o.servicio_id
+	LEFT JOIN empleados sup ON sup.empleado_id = o.supervisor_id
+	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
 	WHERE COALESCE(o.fecha_servicio, o.fecha_solicitud) BETWEEN @desde AND @hasta
 	  AND (@estado_orden_id IS NULL OR o.estado_orden_id = @estado_orden_id)
 	  AND (@servicio_id IS NULL OR o.servicio_id = @servicio_id)
 	  AND (@cliente = ''
-		   OR c.nombreEmpresa LIKE '%' + @cliente + '%'
-		   OR (c.nombreCliente + ' ' + c.apellidoCliente) LIKE '%' + @cliente + '%'
-		   OR o.identificacionCliente LIKE '%' + @cliente + '%')
+		   OR c.nombre_empresa LIKE '%' + @cliente + '%'
+		   OR (c.nombre_cliente + ' ' + c.apellido_cliente) LIKE '%' + @cliente + '%'
+		   OR o.identificacion_cliente LIKE '%' + @cliente + '%')
 	ORDER BY COALESCE(o.fecha_servicio, o.fecha_solicitud), o.orden_id;
 END
 GO
@@ -3876,20 +3876,20 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT a.empleado_id,
-		   LTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')) AS empleado,
-		   ISNULL(c.nombreCargo, 'Sin cargo') AS nombreCargo,
-		   a.fechaAsistencia,
+		   LTRIM(ISNULL(e.nombre_empleado, '') + ' ' + ISNULL(e.apellido_empleado, '')) AS empleado,
+		   ISNULL(c.nombre_cargo, 'Sin cargo') AS nombre_cargo,
+		   a.fecha_asistencia,
 		   CONVERT(VARCHAR(5), a.hora_entrada, 108) AS hora_entrada,
 		   CONVERT(VARCHAR(5), a.hora_salida, 108) AS hora_salida,
 		   CASE WHEN a.hora_entrada IS NOT NULL AND a.hora_salida IS NOT NULL
 				THEN CAST(DATEDIFF(MINUTE, a.hora_entrada, a.hora_salida) / 60.0 AS DECIMAL(6, 2))
 				ELSE 0 END AS horas
-	FROM ASISTENCIAS a
-	INNER JOIN EMPLEADOS e ON e.empleado_id = a.empleado_id
-	LEFT JOIN CARGOS c ON c.cargo_id = e.cargo_id
-	WHERE a.fechaAsistencia BETWEEN @desde AND @hasta
+	FROM asistencias a
+	INNER JOIN empleados e ON e.empleado_id = a.empleado_id
+	LEFT JOIN cargos c ON c.cargo_id = e.cargo_id
+	WHERE a.fecha_asistencia BETWEEN @desde AND @hasta
 	  AND (@empleado_id IS NULL OR a.empleado_id = @empleado_id)
-	ORDER BY a.fechaAsistencia, e.nombreEmpleado, e.apellidoEmpleado;
+	ORDER BY a.fecha_asistencia, e.nombre_empleado, e.apellido_empleado;
 END
 GO
 
@@ -3903,29 +3903,29 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT e.empleado_id,
-		   LTRIM(ISNULL(e.nombreEmpleado, '') + ' ' + ISNULL(e.apellidoEmpleado, '')) AS nombreCompleto,
-		   ISNULL(c.nombreCargo, 'Sin cargo') AS nombreCargo,
-		   CASE WHEN e.estadoEmpleado = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado,
+		   LTRIM(ISNULL(e.nombre_empleado, '') + ' ' + ISNULL(e.apellido_empleado, '')) AS nombre_completo,
+		   ISNULL(c.nombre_cargo, 'Sin cargo') AS nombre_cargo,
+		   CASE WHEN e.estado_empleado = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado,
 		   (SELECT COUNT(*)
-			FROM ORDEN_EMPLEADOS oe
-			INNER JOIN ORDENES o ON o.orden_id = oe.orden_id
+			FROM orden_empleados oe
+			INNER JOIN ordenes o ON o.orden_id = oe.orden_id
 			WHERE oe.empleado_id = e.empleado_id
 			  AND o.fecha_servicio BETWEEN @desde AND @hasta) AS ordenes,
 		   (SELECT COUNT(*)
-			FROM ASISTENCIAS a
+			FROM asistencias a
 			WHERE a.empleado_id = e.empleado_id
-			  AND a.fechaAsistencia BETWEEN @desde AND @hasta) AS dias,
+			  AND a.fecha_asistencia BETWEEN @desde AND @hasta) AS dias,
 		   (SELECT CAST(ISNULL(SUM(CASE WHEN a.hora_entrada IS NOT NULL AND a.hora_salida IS NOT NULL
 										 THEN DATEDIFF(MINUTE, a.hora_entrada, a.hora_salida)
 										 ELSE 0 END), 0) / 60.0 AS DECIMAL(10, 2))
-			FROM ASISTENCIAS a
+			FROM asistencias a
 			WHERE a.empleado_id = e.empleado_id
-			  AND a.fechaAsistencia BETWEEN @desde AND @hasta) AS horas
-	FROM EMPLEADOS e
-	LEFT JOIN CARGOS c ON c.cargo_id = e.cargo_id
+			  AND a.fecha_asistencia BETWEEN @desde AND @hasta) AS horas
+	FROM empleados e
+	LEFT JOIN cargos c ON c.cargo_id = e.cargo_id
 	WHERE (@cargo_id IS NULL OR e.cargo_id = @cargo_id)
-	  AND (@estado IS NULL OR e.estadoEmpleado = @estado)
-	ORDER BY e.nombreEmpleado, e.apellidoEmpleado;
+	  AND (@estado IS NULL OR e.estado_empleado = @estado)
+	ORDER BY e.nombre_empleado, e.apellido_empleado;
 END
 GO
 
@@ -3940,8 +3940,8 @@ BEGIN
 		   f.estado_pago,
 		   COUNT(1) AS facturas,
 		   ISNULL(SUM(f.precio_facturado), 0) AS total
-	FROM FACTURAS f
-	WHERE f.fechaFactura BETWEEN @desde AND @hasta
+	FROM facturas f
+	WHERE f.fecha_factura BETWEEN @desde AND @hasta
 	GROUP BY f.tipo_pago, f.estado_pago
 	ORDER BY f.tipo_pago, f.estado_pago;
 END
@@ -3953,10 +3953,10 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT producto_id, nombreProducto, tipoProducto, ISNULL(stock, 0) AS stock
-	FROM PRODUCTOS
+	SELECT producto_id, nombre_producto, tipo_producto, ISNULL(stock, 0) AS stock
+	FROM productos
 	WHERE ISNULL(stock, 0) <= @minimo
-	ORDER BY stock, nombreProducto;
+	ORDER BY stock, nombre_producto;
 END
 GO
 
@@ -3967,7 +3967,7 @@ GO
 -- Se guarda una fila por instrucción, no una por fila afectada.
 
 CREATE OR ALTER TRIGGER trg_bitacora_CLIENTES
-ON CLIENTES
+ON clientes
 AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
@@ -3976,19 +3976,19 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
 		RETURN;
 
-	INSERT INTO BITACORAS (usuario_id, accion, tabla, equipoSistema, fechaBitacora)
+	INSERT INTO bitacoras (usuario_id, accion, tabla, equipo_sistema, fecha_bitacora)
 	VALUES (TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT),
 			CASE WHEN EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted) THEN 'UPDATE'
 				 WHEN EXISTS (SELECT 1 FROM inserted) THEN 'INSERT'
 				 ELSE 'DELETE' END,
-			'CLIENTES',
+			'clientes',
 			LEFT(HOST_NAME(), 50),
 			GETDATE());
 END
 GO
 
 CREATE OR ALTER TRIGGER trg_bitacora_LOCACIONES
-ON LOCACIONES
+ON locaciones
 AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
@@ -3997,19 +3997,19 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
 		RETURN;
 
-	INSERT INTO BITACORAS (usuario_id, accion, tabla, equipoSistema, fechaBitacora)
+	INSERT INTO bitacoras (usuario_id, accion, tabla, equipo_sistema, fecha_bitacora)
 	VALUES (TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT),
 			CASE WHEN EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted) THEN 'UPDATE'
 				 WHEN EXISTS (SELECT 1 FROM inserted) THEN 'INSERT'
 				 ELSE 'DELETE' END,
-			'LOCACIONES',
+			'locaciones',
 			LEFT(HOST_NAME(), 50),
 			GETDATE());
 END
 GO
 
 CREATE OR ALTER TRIGGER trg_bitacora_EMPLEADOS
-ON EMPLEADOS
+ON empleados
 AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
@@ -4018,19 +4018,19 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
 		RETURN;
 
-	INSERT INTO BITACORAS (usuario_id, accion, tabla, equipoSistema, fechaBitacora)
+	INSERT INTO bitacoras (usuario_id, accion, tabla, equipo_sistema, fecha_bitacora)
 	VALUES (TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT),
 			CASE WHEN EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted) THEN 'UPDATE'
 				 WHEN EXISTS (SELECT 1 FROM inserted) THEN 'INSERT'
 				 ELSE 'DELETE' END,
-			'EMPLEADOS',
+			'empleados',
 			LEFT(HOST_NAME(), 50),
 			GETDATE());
 END
 GO
 
 CREATE OR ALTER TRIGGER trg_bitacora_USUARIOS
-ON USUARIOS
+ON usuarios
 AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
@@ -4039,19 +4039,19 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
 		RETURN;
 
-	INSERT INTO BITACORAS (usuario_id, accion, tabla, equipoSistema, fechaBitacora)
+	INSERT INTO bitacoras (usuario_id, accion, tabla, equipo_sistema, fecha_bitacora)
 	VALUES (TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT),
 			CASE WHEN EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted) THEN 'UPDATE'
 				 WHEN EXISTS (SELECT 1 FROM inserted) THEN 'INSERT'
 				 ELSE 'DELETE' END,
-			'USUARIOS',
+			'usuarios',
 			LEFT(HOST_NAME(), 50),
 			GETDATE());
 END
 GO
 
 CREATE OR ALTER TRIGGER trg_bitacora_VEHICULOS
-ON VEHICULOS
+ON vehiculos
 AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
@@ -4060,19 +4060,19 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
 		RETURN;
 
-	INSERT INTO BITACORAS (usuario_id, accion, tabla, equipoSistema, fechaBitacora)
+	INSERT INTO bitacoras (usuario_id, accion, tabla, equipo_sistema, fecha_bitacora)
 	VALUES (TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT),
 			CASE WHEN EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted) THEN 'UPDATE'
 				 WHEN EXISTS (SELECT 1 FROM inserted) THEN 'INSERT'
 				 ELSE 'DELETE' END,
-			'VEHICULOS',
+			'vehiculos',
 			LEFT(HOST_NAME(), 50),
 			GETDATE());
 END
 GO
 
 CREATE OR ALTER TRIGGER trg_bitacora_ORDENES
-ON ORDENES
+ON ordenes
 AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
@@ -4081,19 +4081,19 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
 		RETURN;
 
-	INSERT INTO BITACORAS (usuario_id, accion, tabla, equipoSistema, fechaBitacora)
+	INSERT INTO bitacoras (usuario_id, accion, tabla, equipo_sistema, fecha_bitacora)
 	VALUES (TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT),
 			CASE WHEN EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted) THEN 'UPDATE'
 				 WHEN EXISTS (SELECT 1 FROM inserted) THEN 'INSERT'
 				 ELSE 'DELETE' END,
-			'ORDENES',
+			'ordenes',
 			LEFT(HOST_NAME(), 50),
 			GETDATE());
 END
 GO
 
 CREATE OR ALTER TRIGGER trg_bitacora_FACTURAS
-ON FACTURAS
+ON facturas
 AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
@@ -4102,19 +4102,19 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
 		RETURN;
 
-	INSERT INTO BITACORAS (usuario_id, accion, tabla, equipoSistema, fechaBitacora)
+	INSERT INTO bitacoras (usuario_id, accion, tabla, equipo_sistema, fecha_bitacora)
 	VALUES (TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT),
 			CASE WHEN EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted) THEN 'UPDATE'
 				 WHEN EXISTS (SELECT 1 FROM inserted) THEN 'INSERT'
 				 ELSE 'DELETE' END,
-			'FACTURAS',
+			'facturas',
 			LEFT(HOST_NAME(), 50),
 			GETDATE());
 END
 GO
 
 CREATE OR ALTER TRIGGER trg_bitacora_CUENTAS_POR_COBRAR
-ON CUENTAS_POR_COBRAR
+ON cuentas_por_cobrar
 AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
@@ -4123,19 +4123,19 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
 		RETURN;
 
-	INSERT INTO BITACORAS (usuario_id, accion, tabla, equipoSistema, fechaBitacora)
+	INSERT INTO bitacoras (usuario_id, accion, tabla, equipo_sistema, fecha_bitacora)
 	VALUES (TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT),
 			CASE WHEN EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted) THEN 'UPDATE'
 				 WHEN EXISTS (SELECT 1 FROM inserted) THEN 'INSERT'
 				 ELSE 'DELETE' END,
-			'CUENTAS_POR_COBRAR',
+			'cuentas_por_cobrar',
 			LEFT(HOST_NAME(), 50),
 			GETDATE());
 END
 GO
 
 CREATE OR ALTER TRIGGER trg_bitacora_CUOTAS
-ON CUOTAS
+ON cuotas
 AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
@@ -4144,19 +4144,19 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
 		RETURN;
 
-	INSERT INTO BITACORAS (usuario_id, accion, tabla, equipoSistema, fechaBitacora)
+	INSERT INTO bitacoras (usuario_id, accion, tabla, equipo_sistema, fecha_bitacora)
 	VALUES (TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT),
 			CASE WHEN EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted) THEN 'UPDATE'
 				 WHEN EXISTS (SELECT 1 FROM inserted) THEN 'INSERT'
 				 ELSE 'DELETE' END,
-			'CUOTAS',
+			'cuotas',
 			LEFT(HOST_NAME(), 50),
 			GETDATE());
 END
 GO
 
 CREATE OR ALTER TRIGGER trg_bitacora_PRODUCTOS
-ON PRODUCTOS
+ON productos
 AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
@@ -4165,19 +4165,19 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
 		RETURN;
 
-	INSERT INTO BITACORAS (usuario_id, accion, tabla, equipoSistema, fechaBitacora)
+	INSERT INTO bitacoras (usuario_id, accion, tabla, equipo_sistema, fecha_bitacora)
 	VALUES (TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT),
 			CASE WHEN EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted) THEN 'UPDATE'
 				 WHEN EXISTS (SELECT 1 FROM inserted) THEN 'INSERT'
 				 ELSE 'DELETE' END,
-			'PRODUCTOS',
+			'productos',
 			LEFT(HOST_NAME(), 50),
 			GETDATE());
 END
 GO
 
 CREATE OR ALTER TRIGGER trg_bitacora_EQUIPOS
-ON EQUIPOS
+ON equipos
 AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
@@ -4186,19 +4186,19 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
 		RETURN;
 
-	INSERT INTO BITACORAS (usuario_id, accion, tabla, equipoSistema, fechaBitacora)
+	INSERT INTO bitacoras (usuario_id, accion, tabla, equipo_sistema, fecha_bitacora)
 	VALUES (TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT),
 			CASE WHEN EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted) THEN 'UPDATE'
 				 WHEN EXISTS (SELECT 1 FROM inserted) THEN 'INSERT'
 				 ELSE 'DELETE' END,
-			'EQUIPOS',
+			'equipos',
 			LEFT(HOST_NAME(), 50),
 			GETDATE());
 END
 GO
 
 CREATE OR ALTER TRIGGER trg_bitacora_PROVEEDORES
-ON PROVEEDORES
+ON proveedores
 AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
@@ -4207,19 +4207,19 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
 		RETURN;
 
-	INSERT INTO BITACORAS (usuario_id, accion, tabla, equipoSistema, fechaBitacora)
+	INSERT INTO bitacoras (usuario_id, accion, tabla, equipo_sistema, fecha_bitacora)
 	VALUES (TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT),
 			CASE WHEN EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted) THEN 'UPDATE'
 				 WHEN EXISTS (SELECT 1 FROM inserted) THEN 'INSERT'
 				 ELSE 'DELETE' END,
-			'PROVEEDORES',
+			'proveedores',
 			LEFT(HOST_NAME(), 50),
 			GETDATE());
 END
 GO
 
 CREATE OR ALTER TRIGGER trg_bitacora_COMPRAS
-ON COMPRAS
+ON compras
 AFTER INSERT, UPDATE, DELETE
 AS
 BEGIN
@@ -4228,12 +4228,12 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
 		RETURN;
 
-	INSERT INTO BITACORAS (usuario_id, accion, tabla, equipoSistema, fechaBitacora)
+	INSERT INTO bitacoras (usuario_id, accion, tabla, equipo_sistema, fecha_bitacora)
 	VALUES (TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT),
 			CASE WHEN EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted) THEN 'UPDATE'
 				 WHEN EXISTS (SELECT 1 FROM inserted) THEN 'INSERT'
 				 ELSE 'DELETE' END,
-			'COMPRAS',
+			'compras',
 			LEFT(HOST_NAME(), 50),
 			GETDATE());
 END

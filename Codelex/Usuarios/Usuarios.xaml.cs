@@ -114,10 +114,10 @@ namespace Codelex
             usuarioActivo = true;
             empleadoActual = Convert.ToInt32(fila["empleado_id"]);
 
-            txtNombre.Text = "" + fila["nombreEmpleado"];
-            txtApellido.Text = "" + fila["apellidoEmpleado"];
-            txtCorreo.Text = "" + fila["correoEmpleado"];
-            txtTelefono.Text = "" + fila["telefonoEmpleado"];
+            txtNombre.Text = "" + fila["nombre_empleado"];
+            txtApellido.Text = "" + fila["apellido_empleado"];
+            txtCorreo.Text = "" + fila["correo_empleado"];
+            txtTelefono.Text = "" + fila["telefono_empleado"];
 
             string sugerido = GenerarUsuario(txtNombre.Text, txtApellido.Text);
             try
@@ -141,12 +141,12 @@ namespace Codelex
         {
             usuarioActual = Convert.ToInt32(fila["usuario_id"]);
             empleadoActual = Convert.ToInt32(fila["empleado_id"]);
-            usuarioActivo = Convert.ToBoolean(fila["estadoUsuario"]);
+            usuarioActivo = Convert.ToBoolean(fila["estado_usuario"]);
 
-            txtNombre.Text = "" + fila["nombreEmpleado"];
-            txtApellido.Text = "" + fila["apellidoEmpleado"];
-            txtCorreo.Text = "" + fila["correoEmpleado"];
-            txtTelefono.Text = "" + fila["telefonoEmpleado"];
+            txtNombre.Text = "" + fila["nombre_empleado"];
+            txtApellido.Text = "" + fila["apellido_empleado"];
+            txtCorreo.Text = "" + fila["correo_empleado"];
+            txtTelefono.Text = "" + fila["telefono_empleado"];
 
             txtUsuario.Text = "" + fila["usuario"];
 

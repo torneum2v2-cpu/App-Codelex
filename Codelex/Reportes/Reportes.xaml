@@ -624,10 +624,10 @@
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="Orden" Binding="{Binding orden_id}" Width="*"/>
                                         <DataGridTextColumn Header="Cliente" Binding="{Binding cliente}" Width="1.4*"/>
-                                        <DataGridTextColumn Header="Servicio" Binding="{Binding nombreServicio}" Width="1.2*"/>
+                                        <DataGridTextColumn Header="Servicio" Binding="{Binding nombre_servicio}" Width="1.2*"/>
                                         <DataGridTextColumn Header="Supervisor" Binding="{Binding supervisor}" Width="1.2*"/>
                                         <DataGridTextColumn Header="Fecha" Binding="{Binding fecha, StringFormat=dd/MM/yyyy}" Width="*"/>
-                                        <DataGridTextColumn Header="Estado" Binding="{Binding nombreEstadoOrden}" Width="*"/>
+                                        <DataGridTextColumn Header="Estado" Binding="{Binding nombre_estado_orden}" Width="*"/>
                                         <DataGridTextColumn Header="Conformidad" Binding="{Binding conformidad}" Width="*"/>
                                     </DataGrid.Columns>
                                 </DataGrid>
@@ -637,8 +637,8 @@
                                           SelectionMode="Single" Visibility="Collapsed">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="Empleado" Binding="{Binding empleado}" Width="1.5*"/>
-                                        <DataGridTextColumn Header="Cargo" Binding="{Binding nombreCargo}" Width="*"/>
-                                        <DataGridTextColumn Header="Fecha" Binding="{Binding fechaAsistencia, StringFormat=dd/MM/yyyy}" Width="*"/>
+                                        <DataGridTextColumn Header="Cargo" Binding="{Binding nombre_cargo}" Width="*"/>
+                                        <DataGridTextColumn Header="Fecha" Binding="{Binding fecha_asistencia, StringFormat=dd/MM/yyyy}" Width="*"/>
                                         <DataGridTextColumn Header="Entrada" Binding="{Binding hora_entrada}" Width="*"/>
                                         <DataGridTextColumn Header="Salida" Binding="{Binding hora_salida}" Width="*"/>
                                         <DataGridTextColumn Header="Horas" Binding="{Binding horas, StringFormat=N2}" Width="*"/>
@@ -649,8 +649,8 @@
                                           AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
                                           SelectionMode="Single" Visibility="Collapsed">
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Header="Empleado" Binding="{Binding nombreCompleto}" Width="1.5*"/>
-                                        <DataGridTextColumn Header="Cargo" Binding="{Binding nombreCargo}" Width="*"/>
+                                        <DataGridTextColumn Header="Empleado" Binding="{Binding nombre_completo}" Width="1.5*"/>
+                                        <DataGridTextColumn Header="Cargo" Binding="{Binding nombre_cargo}" Width="*"/>
                                         <DataGridTextColumn Header="Estado" Binding="{Binding estado}" Width="*"/>
                                         <DataGridTextColumn Header="Órdenes" Binding="{Binding ordenes}" Width="*"/>
                                         <DataGridTextColumn Header="Días asistidos" Binding="{Binding dias}" Width="*"/>

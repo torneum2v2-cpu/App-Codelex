@@ -70,16 +70,16 @@ namespace Codelex
                 DataRow fila = tabla.Rows[0];
 
                 clienteId = Convert.ToInt32(fila["cliente_id"]);
-                clienteActual = "" + fila["identificacionCliente"];
-                clienteActualActivo = Convert.ToBoolean(fila["estadoCliente"]);
+                clienteActual = "" + fila["identificacion_cliente"];
+                clienteActualActivo = Convert.ToBoolean(fila["estado_cliente"]);
 
-                cmbTipoId.SelectedItem = "" + fila["tipoIdentificacion"];
+                cmbTipoId.SelectedItem = "" + fila["tipo_identificacion"];
                 txtRTN.Text = clienteActual;
-                txtEmpresa.Text = fila["nombreEmpresa"].ToString();
-                txtNombre.Text = fila["nombreCliente"].ToString();
-                txtApellido.Text = fila["apellidoCliente"].ToString();
-                txtTelefono.Text = fila["telefonoCliente"].ToString();
-                txtCorreo.Text = fila["correoCliente"].ToString();
+                txtEmpresa.Text = fila["nombre_empresa"].ToString();
+                txtNombre.Text = fila["nombre_cliente"].ToString();
+                txtApellido.Text = fila["apellido_cliente"].ToString();
+                txtTelefono.Text = fila["telefono_cliente"].ToString();
+                txtCorreo.Text = fila["correo_cliente"].ToString();
 
                 ActualizarBotones();
             }
@@ -254,7 +254,7 @@ namespace Codelex
                 return;
 
             DataRowView fila = (DataRowView)dgClientes.SelectedItem;
-            string rtn = "" + fila["identificacionCliente"];
+            string rtn = "" + fila["identificacion_cliente"];
 
             AbrirDetalle(rtn);
 

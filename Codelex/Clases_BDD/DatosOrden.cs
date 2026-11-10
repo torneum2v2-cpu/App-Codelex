@@ -42,7 +42,7 @@ namespace Codelex.Clases_BDD
         {
             SqlCommand comando = Procedimiento("sp_ListarCotizacionesOrden");
             comando.Parameters.AddWithValue("@texto", texto.Trim());
-            comando.Parameters.AddWithValue("@identificacionCliente", rtn.Trim());
+            comando.Parameters.AddWithValue("@identificacion_cliente", rtn.Trim());
             return Consultar(comando);
         }
 
@@ -92,14 +92,14 @@ namespace Codelex.Clases_BDD
                 return false;
 
             SqlCommand comando = Procedimiento("sp_InsertarOrden");
-            comando.Parameters.AddWithValue("@identificacionCliente", datos.Rtn.Trim());
+            comando.Parameters.AddWithValue("@identificacion_cliente", datos.Rtn.Trim());
             comando.Parameters.AddWithValue("@locacion_id", datos.LocacionId);
             comando.Parameters.AddWithValue("@supervisor_id", datos.SupervisorId);
             comando.Parameters.AddWithValue("@vehiculo_id", datos.VehiculoId);
             comando.Parameters.AddWithValue("@fecha_solicitud", datos.FechaSolicitud.Value);
             comando.Parameters.AddWithValue("@fecha_servicio", datos.FechaServicio.Value);
             comando.Parameters.AddWithValue("@estado_orden_id", datos.EstadoId);
-            comando.Parameters.AddWithValue("@observaciones", datos.Observaciones.Trim());
+            comando.Parameters.AddWithValue("@observacion", datos.Observaciones.Trim());
             comando.Parameters.AddWithValue("@turno", datos.Turno.Trim());
             comando.Parameters.AddWithValue("@piso_area", datos.PisoArea.Trim());
             comando.Parameters.AddWithValue("@cotizacion_id", datos.CotizacionId.Trim());

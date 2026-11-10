@@ -96,7 +96,7 @@ namespace Codelex
                     new CampoDetalle("Supervisor", Texto(f, "supervisor")),
                     new CampoDetalle("Mi turno", Texto(f, "turno")),
                     new CampoDetalle("Mi piso / área", Texto(f, "piso_area")),
-                    new CampoDetalle("Observaciones", Texto(f, "observaciones"))
+                    new CampoDetalle("Observaciones", Texto(f, "observacion"))
                 };
 
                 DataTable listas = trabajoBD.Listas(ordenId, empleadoId);

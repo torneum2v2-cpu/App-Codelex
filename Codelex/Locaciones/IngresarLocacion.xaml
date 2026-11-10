@@ -474,9 +474,9 @@
                                       IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single"
                                       SelectionChanged="dgClientes_SelectionChanged">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="RTN / identidad" Binding="{Binding identificacionCliente}" Width="*"/>
-                                    <DataGridTextColumn Header="Empresa" Binding="{Binding nombreEmpresa}" Width="*"/>
-                                    <DataGridTextColumn Header="Contacto" Binding="{Binding nombreCliente}" Width="*"/>
+                                    <DataGridTextColumn Header="RTN / identidad" Binding="{Binding identificacion_cliente}" Width="*"/>
+                                    <DataGridTextColumn Header="Empresa" Binding="{Binding nombre_empresa}" Width="*"/>
+                                    <DataGridTextColumn Header="Contacto" Binding="{Binding nombre_cliente}" Width="*"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </DockPanel>
@@ -488,8 +488,8 @@
                             <DataGrid x:Name="dgLocaciones" Style="{StaticResource Tabla}" AutoGenerateColumns="False"
                                       IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" Cursor="Arrow">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Nombre" Binding="{Binding nombreLocacion}" Width="*"/>
-                                    <DataGridTextColumn Header="Tipo" Binding="{Binding tipoLocacion}" Width="*"/>
+                                    <DataGridTextColumn Header="Nombre" Binding="{Binding nombre_locacion}" Width="*"/>
+                                    <DataGridTextColumn Header="Tipo" Binding="{Binding tipo_locacion}" Width="*"/>
                                     <DataGridTextColumn Header="Dirección" Binding="{Binding direccion}" Width="1.5*"/>
                                 </DataGrid.Columns>
                             </DataGrid>

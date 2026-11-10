@@ -403,7 +403,7 @@
                                     <ComboBox x:Name="cmbCargo" SelectedValuePath="cargo_id">
                                         <ComboBox.ItemTemplate>
                                             <DataTemplate>
-                                                <TextBlock Text="{Binding nombreCargo}"/>
+                                                <TextBlock Text="{Binding nombre_cargo}"/>
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
@@ -522,11 +522,11 @@
                                           MouseDoubleClick="dgEmpleados_DobleClick">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="ID" Binding="{Binding empleado_id}" Width="46"/>
-                                        <DataGridTextColumn Header="Cargo" Binding="{Binding nombreCargo}" Width="*"/>
-                                        <DataGridTextColumn Header="Nombre" Binding="{Binding nombreEmpleado}" Width="*"/>
-                                        <DataGridTextColumn Header="Apellido" Binding="{Binding apellidoEmpleado}" Width="*"/>
+                                        <DataGridTextColumn Header="Cargo" Binding="{Binding nombre_cargo}" Width="*"/>
+                                        <DataGridTextColumn Header="Nombre" Binding="{Binding nombre_empleado}" Width="*"/>
+                                        <DataGridTextColumn Header="Apellido" Binding="{Binding apellido_empleado}" Width="*"/>
                                         <DataGridTextColumn Header="Identidad" Binding="{Binding identidad}" Width="*"/>
-                                        <DataGridTextColumn Header="Teléfono" Binding="{Binding telefonoEmpleado}" Width="86"/>
+                                        <DataGridTextColumn Header="Teléfono" Binding="{Binding telefono_empleado}" Width="86"/>
                                         <DataGridTextColumn Header="Usuario" Binding="{Binding usuario}" Width="*"/>
                                         <DataGridTextColumn Header="Estado" Binding="{Binding estado}" Width="80"/>
                                     </DataGrid.Columns>

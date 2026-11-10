@@ -47,9 +47,9 @@ namespace Codelex.Clases_BDD
                 return false;
 
             SqlCommand comando = Procedimiento("sp_InsertarProveedor");
-            comando.Parameters.AddWithValue("@nombreProveedor", nombre.Trim());
-            comando.Parameters.AddWithValue("@telefonoProveedor", telefono.Trim());
-            comando.Parameters.AddWithValue("@correoProveedor", correo.Trim());
+            comando.Parameters.AddWithValue("@nombre_proveedor", nombre.Trim());
+            comando.Parameters.AddWithValue("@telefono_proveedor", telefono.Trim());
+            comando.Parameters.AddWithValue("@correo_proveedor", correo.Trim());
 
             SqlParameter id = new SqlParameter("@proveedor_id", SqlDbType.Int);
             id.Direction = ParameterDirection.Output;
@@ -71,8 +71,8 @@ namespace Codelex.Clases_BDD
                 return false;
 
             SqlCommand comando = Procedimiento("sp_InsertarProducto");
-            comando.Parameters.AddWithValue("@nombreProducto", nombre.Trim());
-            comando.Parameters.AddWithValue("@tipoProducto", tipo.Trim());
+            comando.Parameters.AddWithValue("@nombre_producto", nombre.Trim());
+            comando.Parameters.AddWithValue("@tipo_producto", tipo.Trim());
 
             SqlParameter id = new SqlParameter("@producto_id", SqlDbType.Int);
             id.Direction = ParameterDirection.Output;
@@ -154,9 +154,9 @@ namespace Codelex.Clases_BDD
             lista.Columns.Add("cantidad", typeof(int));
             lista.Columns.Add("precio_unitario", typeof(decimal));
             lista.Columns.Add("producto_id", typeof(int));
-            lista.Columns.Add("tipoEquipo", typeof(string));
-            lista.Columns.Add("marcaEquipo", typeof(string));
-            lista.Columns.Add("modeloEquipo", typeof(string));
+            lista.Columns.Add("tipo_equipo", typeof(string));
+            lista.Columns.Add("marca_equipo", typeof(string));
+            lista.Columns.Add("modelo_equipo", typeof(string));
             return lista;
         }
 
@@ -201,8 +201,8 @@ namespace Codelex.Clases_BDD
 
             foreach (DataRow fila in lista.Rows)
             {
-                if ("" + fila["tipo"] == "Equipo" && "" + fila["nombre"] == nombre && "" + fila["tipoEquipo"] == tipo
-                    && "" + fila["marcaEquipo"] == marca && "" + fila["modeloEquipo"] == modelo)
+                if ("" + fila["tipo"] == "Equipo" && "" + fila["nombre"] == nombre && "" + fila["tipo_equipo"] == tipo
+                    && "" + fila["marca_equipo"] == marca && "" + fila["modelo_equipo"] == modelo)
                 {
                     mensaje = "Ese equipo ya está en la lista. Quítelo si quiere cambiar la cantidad.";
                     return false;
@@ -252,10 +252,10 @@ namespace Codelex.Clases_BDD
             productos.Columns.Add("precio_unitario", typeof(decimal));
 
             DataTable equipos = new DataTable();
-            equipos.Columns.Add("nombreEquipo", typeof(string));
-            equipos.Columns.Add("tipoEquipo", typeof(string));
-            equipos.Columns.Add("marcaEquipo", typeof(string));
-            equipos.Columns.Add("modeloEquipo", typeof(string));
+            equipos.Columns.Add("nombre_equipo", typeof(string));
+            equipos.Columns.Add("tipo_equipo", typeof(string));
+            equipos.Columns.Add("marca_equipo", typeof(string));
+            equipos.Columns.Add("modelo_equipo", typeof(string));
             equipos.Columns.Add("cantidad", typeof(int));
             equipos.Columns.Add("precio_unitario", typeof(decimal));
 
@@ -264,7 +264,7 @@ namespace Codelex.Clases_BDD
                 if ("" + fila["tipo"] == "Producto")
                     productos.Rows.Add(fila["producto_id"], fila["cantidad"], fila["precio_unitario"]);
                 else
-                    equipos.Rows.Add(fila["nombre"], fila["tipoEquipo"], fila["marcaEquipo"], fila["modeloEquipo"],
+                    equipos.Rows.Add(fila["nombre"], fila["tipo_equipo"], fila["marca_equipo"], fila["modelo_equipo"],
                                      fila["cantidad"], fila["precio_unitario"]);
             }
 
@@ -276,7 +276,7 @@ namespace Codelex.Clases_BDD
             comando.Parameters.AddWithValue("@proveedor_id", proveedorId);
             comando.Parameters.AddWithValue("@firma_empleado_id", empleadoId);
             comando.Parameters.AddWithValue("@numero_factura", factura.Trim());
-            comando.Parameters.AddWithValue("@fechaCompra", fechaCompra);
+            comando.Parameters.AddWithValue("@fecha_compra", fechaCompra);
             AgregarTabla(comando, "@productos", "dbo.tipo_ingreso_productos", productos);
             AgregarTabla(comando, "@equipos", "dbo.tipo_ingreso_equipos", equipos);
 

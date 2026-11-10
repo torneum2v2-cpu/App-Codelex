@@ -509,11 +509,11 @@
                                           CanUserAddRows="False" SelectionMode="Single"
                                           PreviewMouseLeftButtonUp="dgClientes_Click">
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Header="tipo" Binding="{Binding tipoIdentificacion}" Width="90"/>
-                                        <DataGridTextColumn Header="identificacionCliente" Binding="{Binding identificacionCliente}" Width="*"/>
-                                        <DataGridTextColumn Header="nombreEmpresa" Binding="{Binding nombreEmpresa}" Width="*"/>
-                                        <DataGridTextColumn Header="nombreCliente" Binding="{Binding nombreCliente}" Width="*"/>
-                                        <DataGridTextColumn Header="telefonoCliente" Binding="{Binding telefonoCliente}" Width="*"/>
+                                        <DataGridTextColumn Header="tipo" Binding="{Binding tipo_identificacion}" Width="90"/>
+                                        <DataGridTextColumn Header="identificacion_cliente" Binding="{Binding identificacion_cliente}" Width="*"/>
+                                        <DataGridTextColumn Header="nombre_empresa" Binding="{Binding nombre_empresa}" Width="*"/>
+                                        <DataGridTextColumn Header="nombre_cliente" Binding="{Binding nombre_cliente}" Width="*"/>
+                                        <DataGridTextColumn Header="telefono_cliente" Binding="{Binding telefono_cliente}" Width="*"/>
                                         <DataGridTextColumn Header="estado" Binding="{Binding estado}" Width="90"/>
                                     </DataGrid.Columns>
                                 </DataGrid>

@@ -524,7 +524,7 @@
 
                                         <StackPanel Grid.Row="3" Grid.ColumnSpan="3" Margin="0,0,0,12">
                                             <TextBlock Text="Rol *" Style="{StaticResource Etiqueta}"/>
-                                            <ComboBox x:Name="cmbRol" DisplayMemberPath="nombreRol" SelectedValuePath="rol_id"/>
+                                            <ComboBox x:Name="cmbRol" DisplayMemberPath="nombre_rol" SelectedValuePath="rol_id"/>
                                         </StackPanel>
 
                                         <StackPanel Grid.Row="4" Grid.Column="0">
@@ -583,10 +583,10 @@
                                           AutoGenerateColumns="False" IsReadOnly="True"
                                           CanUserAddRows="False" SelectionMode="Single">
                                     <DataGrid.Columns>
-                                        <DataGridTextColumn Header="Nombre" Binding="{Binding nombreEmpleado}" Width="*"/>
-                                        <DataGridTextColumn Header="Apellido" Binding="{Binding apellidoEmpleado}" Width="*"/>
-                                        <DataGridTextColumn Header="Correo" Binding="{Binding correoEmpleado}" Width="1.6*"/>
-                                        <DataGridTextColumn Header="Teléfono" Binding="{Binding telefonoEmpleado}" Width="*"/>
+                                        <DataGridTextColumn Header="Nombre" Binding="{Binding nombre_empleado}" Width="*"/>
+                                        <DataGridTextColumn Header="Apellido" Binding="{Binding apellido_empleado}" Width="*"/>
+                                        <DataGridTextColumn Header="Correo" Binding="{Binding correo_empleado}" Width="1.6*"/>
+                                        <DataGridTextColumn Header="Teléfono" Binding="{Binding telefono_empleado}" Width="*"/>
                                         <DataGridTextColumn Header="Usuario" Binding="{Binding usuario}" Width="*"/>
                                         <DataGridTextColumn Header="Rol" Binding="{Binding rol}" Width="*"/>
                                         <DataGridTextColumn Header="Estado" Binding="{Binding estado}" Width="80"/>

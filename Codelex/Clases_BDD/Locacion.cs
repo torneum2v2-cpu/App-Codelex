@@ -18,10 +18,10 @@ namespace Codelex.Clases_BDD
             locacionId.Direction = ParameterDirection.Output;
 
             SqlCommand comando = Procedimiento("sp_InsertarLocacion");
-            comando.Parameters.AddWithValue("@identificacionCliente", rtn.Trim());
-            comando.Parameters.AddWithValue("@nombreLocacion", nombre.Trim());
+            comando.Parameters.AddWithValue("@identificacion_cliente", rtn.Trim());
+            comando.Parameters.AddWithValue("@nombre_locacion", nombre.Trim());
             comando.Parameters.AddWithValue("@direccion", direccion.Trim());
-            comando.Parameters.AddWithValue("@tipoLocacion", tipo.Trim());
+            comando.Parameters.AddWithValue("@tipo_locacion", tipo.Trim());
             comando.Parameters.Add(locacionId);
 
             return Ejecutar(comando, out mensaje);
@@ -50,7 +50,7 @@ namespace Codelex.Clases_BDD
 
             foreach (DataRow fila in existentes.Rows)
             {
-                if (("" + fila["nombreLocacion"]).Trim().ToLower() == nombre.Trim().ToLower())
+                if (("" + fila["nombre_locacion"]).Trim().ToLower() == nombre.Trim().ToLower())
                     return "Este cliente ya tiene una locación con ese nombre.";
             }
 

@@ -60,7 +60,7 @@ namespace Codelex.Facturas_y_Cotizaciones
             DataTable formas = facturaBD.ListarFormasPago();
             foreach (DataRow fila in formas.Rows)
             {
-                cmbMetodoPago.Items.Add(new ItemLista(Convert.ToInt32(fila["forma_pago_id"]), "" + fila["nombreFormaPago"], ""));
+                cmbMetodoPago.Items.Add(new ItemLista(Convert.ToInt32(fila["forma_pago_id"]), "" + fila["nombre_forma_pago"], ""));
             }
 
             foreach (int cuotas in facturaBD.OpcionesCuotas())
@@ -88,19 +88,19 @@ namespace Codelex.Facturas_y_Cotizaciones
             dFecha.Text = DateTime.Today.ToString("dd/MM/yyyy");
             dOrden.Text = ordenId;
             dCotizacion.Text = Vacio("" + o["cotizacion_id"]);
-            dServicio.Text = Vacio("" + o["nombreServicio"]);
+            dServicio.Text = Vacio("" + o["nombre_servicio"]);
             dFechaServicio.Text = "—";
             if (o["fecha_servicio"] is DateTime fechaServicio)
                 dFechaServicio.Text = fechaServicio.ToString("dd/MM/yyyy");
 
-            dRtn.Text = Vacio("" + o["identificacionCliente"]);
-            dEmpresa.Text = Vacio("" + o["nombreEmpresa"]);
-            dContacto.Text = Vacio((("" + o["nombreCliente"]) + " " + ("" + o["apellidoCliente"])).Trim());
-            dTelefono.Text = Vacio("" + o["telefonoCliente"]);
-            dCorreo.Text = Vacio("" + o["correoCliente"]);
+            dRtn.Text = Vacio("" + o["identificacion_cliente"]);
+            dEmpresa.Text = Vacio("" + o["nombre_empresa"]);
+            dContacto.Text = Vacio((("" + o["nombre_cliente"]) + " " + ("" + o["apellido_cliente"])).Trim());
+            dTelefono.Text = Vacio("" + o["telefono_cliente"]);
+            dCorreo.Text = Vacio("" + o["correo_cliente"]);
 
-            dLocacion.Text = Vacio("" + o["nombreLocacion"]);
-            dTipoLocacion.Text = Vacio("" + o["tipoLocacion"]);
+            dLocacion.Text = Vacio("" + o["nombre_locacion"]);
+            dTipoLocacion.Text = Vacio("" + o["tipo_locacion"]);
             dDireccion.Text = Vacio("" + o["direccion"]);
 
             DataTable lineas = facturaBD.DetalleOrden(ordenId);

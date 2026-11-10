@@ -387,12 +387,12 @@ namespace Codelex.Clases_BDD
                 return false;
 
             SqlCommand comando = Procedimiento("sp_InsertarCotizacion");
-            comando.Parameters.AddWithValue("@identificacionCliente", Cliente.LimpiarNumero(datos.Rtn));
-            comando.Parameters.AddWithValue("@nombreEmpresa", datos.Empresa.Trim());
-            comando.Parameters.AddWithValue("@nombreCliente", datos.Contacto.Trim());
-            comando.Parameters.AddWithValue("@apellidoCliente", datos.Apellido.Trim());
-            comando.Parameters.AddWithValue("@telefonoCliente", datos.Telefono.Trim());
-            comando.Parameters.AddWithValue("@correoCliente", datos.Correo.Trim());
+            comando.Parameters.AddWithValue("@identificacion_cliente", Cliente.LimpiarNumero(datos.Rtn));
+            comando.Parameters.AddWithValue("@nombre_empresa", datos.Empresa.Trim());
+            comando.Parameters.AddWithValue("@nombre_cliente", datos.Contacto.Trim());
+            comando.Parameters.AddWithValue("@apellido_cliente", datos.Apellido.Trim());
+            comando.Parameters.AddWithValue("@telefono_cliente", datos.Telefono.Trim());
+            comando.Parameters.AddWithValue("@correo_cliente", datos.Correo.Trim());
 
             if (datos.LocacionId > 0)
                 comando.Parameters.AddWithValue("@locacion_id", datos.LocacionId);
@@ -402,7 +402,7 @@ namespace Codelex.Clases_BDD
             comando.Parameters.AddWithValue("@direccion", datos.Direccion.Trim());
             comando.Parameters.AddWithValue("@fecha_cotizacion", datos.Fecha.Value);
             comando.Parameters.AddWithValue("@valida_hasta", datos.ValidaHasta.Value);
-            comando.Parameters.AddWithValue("@observaciones", datos.Observaciones.Trim());
+            comando.Parameters.AddWithValue("@observacion", datos.Observaciones.Trim());
 
             comando.Parameters.AddWithValue("@servicio_id", datos.ServicioId);
             AgregarLista(comando, "@lineas", "dbo.tipo_lista_medidas", TablaDeMedidas(datos));

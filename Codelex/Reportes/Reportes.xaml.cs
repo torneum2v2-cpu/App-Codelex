@@ -51,10 +51,10 @@ namespace Codelex
 
             try
             {
-                cmbEstadoOrden.ItemsSource = ConTodos(reporteBD.ListarEstadosOrden(), "estado_orden_id", "nombreEstadoOrden", "Todos los estados");
-                cmbServicio.ItemsSource = ConTodos(reporteBD.ListarServicios(), "servicio_id", "nombreServicio", "Todos los servicios");
-                cmbEmpleado.ItemsSource = ConTodos(empleadoBD.BuscarEmpleados("", "", "TODOS"), "empleado_id", "nombreCompleto", "Todos los empleados");
-                cmbCargo.ItemsSource = ConTodos(empleadoBD.ListarCargos(), "cargo_id", "nombreCargo", "Todos los cargos");
+                cmbEstadoOrden.ItemsSource = ConTodos(reporteBD.ListarEstadosOrden(), "estado_orden_id", "nombre_estado_orden", "Todos los estados");
+                cmbServicio.ItemsSource = ConTodos(reporteBD.ListarServicios(), "servicio_id", "nombre_servicio", "Todos los servicios");
+                cmbEmpleado.ItemsSource = ConTodos(empleadoBD.BuscarEmpleados("", "", "TODOS"), "empleado_id", "nombre_completo", "Todos los empleados");
+                cmbCargo.ItemsSource = ConTodos(empleadoBD.ListarCargos(), "cargo_id", "nombre_cargo", "Todos los cargos");
             }
             catch (Exception ex)
             {
@@ -233,8 +233,8 @@ namespace Codelex
 
         private void ArmarOrdenes(List<DataRow> filas)
         {
-            List<PuntoGrafico> porEstado = Agrupar(filas, f => Texto(f, "nombreEstadoOrden"), f => 1);
-            List<PuntoGrafico> porServicio = Agrupar(filas, f => Texto(f, "nombreServicio"), f => 1);
+            List<PuntoGrafico> porEstado = Agrupar(filas, f => Texto(f, "nombre_estado_orden"), f => 1);
+            List<PuntoGrafico> porServicio = Agrupar(filas, f => Texto(f, "nombre_servicio"), f => 1);
 
             int evaluadas = filas.Count(f => !f.IsNull("conformidad_cliente"));
             int conformes = filas.Count(f => !f.IsNull("conformidad_cliente") && Convert.ToBoolean(f["conformidad_cliente"]));
@@ -281,8 +281,8 @@ namespace Codelex
             barras = Agrupar(filas, f => Texto(f, "empleado"), f => Convert.ToDouble(f["horas"]));
 
             List<(DateTime Fecha, double Valor)> serie = filas
-                .Where(f => !f.IsNull("fechaAsistencia"))
-                .Select(f => (Convert.ToDateTime(f["fechaAsistencia"]), Convert.ToDouble(f["horas"])))
+                .Where(f => !f.IsNull("fecha_asistencia"))
+                .Select(f => (Convert.ToDateTime(f["fecha_asistencia"]), Convert.ToDouble(f["horas"])))
                 .ToList();
             puntos = SerieTiempo(serie, desdeUsado, hastaUsado);
         }
@@ -304,11 +304,11 @@ namespace Codelex
             tituloGrafico1 = "Órdenes atendidas por empleado";
             tituloGrafico2 = "Empleados por cargo";
             barras = filas
-                .Select(f => new PuntoGrafico(Texto(f, "nombreCompleto"), Convert.ToDouble(f["ordenes"])))
+                .Select(f => new PuntoGrafico(Texto(f, "nombre_completo"), Convert.ToDouble(f["ordenes"])))
                 .OrderByDescending(p => p.Valor)
                 .ToList();
 
-            puntos = Agrupar(filas, f => Texto(f, "nombreCargo"), f => 1);
+            puntos = Agrupar(filas, f => Texto(f, "nombre_cargo"), f => 1);
             graficoColumnas = true;
         }
 
@@ -625,21 +625,21 @@ namespace Codelex
             if (t == TipoReporte.Asistencia)
                 return new List<(string, string)>
                 {
-                    ("Empleado", "empleado"), ("Cargo", "nombreCargo"), ("Fecha", "fechaAsistencia"),
+                    ("Empleado", "empleado"), ("Cargo", "nombre_cargo"), ("Fecha", "fecha_asistencia"),
                     ("Entrada", "hora_entrada"), ("Salida", "hora_salida"), ("Horas", "horas")
                 };
 
             if (t == TipoReporte.Empleados)
                 return new List<(string, string)>
                 {
-                    ("Empleado", "nombreCompleto"), ("Cargo", "nombreCargo"), ("Estado", "estado"),
+                    ("Empleado", "nombre_completo"), ("Cargo", "nombre_cargo"), ("Estado", "estado"),
                     ("Órdenes", "ordenes"), ("Días asistidos", "dias"), ("Horas", "horas")
                 };
 
             return new List<(string, string)>
             {
-                ("Orden", "orden_id"), ("Cliente", "cliente"), ("Servicio", "nombreServicio"),
-                ("Supervisor", "supervisor"), ("Fecha", "fecha"), ("Estado", "nombreEstadoOrden"),
+                ("Orden", "orden_id"), ("Cliente", "cliente"), ("Servicio", "nombre_servicio"),
+                ("Supervisor", "supervisor"), ("Fecha", "fecha"), ("Estado", "nombre_estado_orden"),
                 ("Conformidad", "conformidad")
             };
         }

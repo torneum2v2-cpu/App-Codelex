@@ -1,4 +1,4 @@
-﻿using Codelex.BDD;
+﻿using Codelex.AccesoDatos;
 using System.Windows;
 
 namespace Codelex

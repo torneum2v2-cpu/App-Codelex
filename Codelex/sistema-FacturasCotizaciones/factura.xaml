@@ -1,0 +1,243 @@
+﻿<Window x:Class="Codelex.FacturasCotizaciones.Factura"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Nueva factura" Height="800" Width="1000"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize"
+        FontFamily="Segoe UI">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="estilos-documento.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style x:Key="Valor" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{StaticResource DarkText}"/>
+                <Setter Property="FontSize" Value="13.5"/>
+                <Setter Property="TextWrapping" Value="Wrap"/>
+                <Setter Property="Margin" Value="0,0,0,12"/>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Border CornerRadius="14">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="24" ShadowDepth="0" Opacity="0.35" Color="#000000"/>
+            </Border.Effect>
+
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Encabezado Superior -->
+                <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{StaticResource BgGradient}"
+                        Padding="28,18,14,18" MouseLeftButtonDown="arrastrarVentana">
+                    <Grid>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Volver"
+                                    Width="46" Height="36" Margin="0,0,14,0" VerticalAlignment="Center">
+                                <Path Data="M30,12 H2 M8,18 L2,12 L8,6"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      StrokeThickness="1.9" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                      StrokeLineJoin="Round" Stretch="Uniform" Width="32" Height="14"/>
+                            </Button>
+                            <Border Width="42" Height="42" CornerRadius="12" Background="{StaticResource ButtonGradient}">
+                                <Path Data="M14,2 H6 A2,2 0 0 0 4,4 V20 A2,2 0 0 0 6,22 H18 A2,2 0 0 0 20,20 V8 Z M14,2 V8 H20 M16,13 H8 M16,17 H8 M10,9 H8"
+                                      Stroke="White" StrokeThickness="1.8" StrokeLineJoin="Round"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stretch="Uniform"
+                                      Width="22" Height="22"/>
+                            </Border>
+                            <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+                                <TextBlock x:Name="lblTitulo" Text="Nueva factura" Foreground="White" FontSize="22" FontWeight="Bold"/>
+                                <TextBlock Text="Todo se toma de la orden y su cotización. Solo elija cómo se paga." Foreground="{StaticResource Muted}" FontSize="13"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                            <Button Style="{StaticResource WindowButton}" Click="minimizarClic" ToolTip="Minimizar">
+                                <Path Data="M0,0 L10,0"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      StrokeThickness="1.6" Margin="0,8,0,0"/>
+                            </Button>
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Cerrar">
+                                <Path Data="M0,0 L10,10 M10,0 L0,10"
+                                      Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      StrokeThickness="1.6"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="1" CornerRadius="0,0,14,14" Background="{StaticResource Surface}"/>
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="20">
+
+                        <!-- Datos de la factura -->
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="Datos de la factura" Style="{StaticResource TituloCard}" Margin="0,0,0,12"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="N.° de factura:" Style="{StaticResource Etiqueta}"/>
+                                        <TextBlock Text="Se asigna al guardar" Style="{StaticResource Valor}" FontWeight="Bold"/>
+                                        <TextBlock Text="Fecha:" Style="{StaticResource Etiqueta}"/>
+                                        <TextBlock x:Name="dFecha" Style="{StaticResource Valor}"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Orden a facturar:" Style="{StaticResource Etiqueta}"/>
+                                        <TextBlock x:Name="dOrden" Style="{StaticResource Valor}"/>
+                                        <TextBlock Text="Cotización:" Style="{StaticResource Etiqueta}"/>
+                                        <TextBlock x:Name="dCotizacion" Style="{StaticResource Valor}"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Text="Servicio:" Style="{StaticResource Etiqueta}"/>
+                                        <TextBlock x:Name="dServicio" Style="{StaticResource Valor}"/>
+                                        <TextBlock Text="Fecha del servicio:" Style="{StaticResource Etiqueta}"/>
+                                        <TextBlock x:Name="dFechaServicio" Style="{StaticResource Valor}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Cliente y lugar -->
+                        <Grid Margin="0,0,0,15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,8,0">
+                                <StackPanel>
+                                    <TextBlock Text="Cliente" Style="{StaticResource TituloCard}" Margin="0,0,0,12"/>
+                                    <TextBlock Text="RTN / N.° de identidad:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBlock x:Name="dRtn" Style="{StaticResource Valor}"/>
+                                    <TextBlock Text="Empresa:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBlock x:Name="dEmpresa" Style="{StaticResource Valor}"/>
+                                    <TextBlock Text="Contacto:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBlock x:Name="dContacto" Style="{StaticResource Valor}"/>
+                                    <TextBlock Text="Teléfono:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBlock x:Name="dTelefono" Style="{StaticResource Valor}"/>
+                                    <TextBlock Text="Correo electrónico:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBlock x:Name="dCorreo" Style="{StaticResource Valor}" Margin="0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="1" Style="{StaticResource Card}" Margin="8,0,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="Lugar del servicio" Style="{StaticResource TituloCard}" Margin="0,0,0,12"/>
+                                    <TextBlock Text="Locación:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBlock x:Name="dLocacion" Style="{StaticResource Valor}"/>
+                                    <TextBlock Text="Tipo de locación:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBlock x:Name="dTipoLocacion" Style="{StaticResource Valor}"/>
+                                    <TextBlock Text="Dirección:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBlock x:Name="dDireccion" Style="{StaticResource Valor}" Margin="0"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- Detalle -->
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="Servicios a facturar (de la cotización)" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
+
+                                <DataGrid x:Name="dgLineas" Style="{StaticResource Tabla}" Cursor="Arrow" Height="180"
+                                          AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                                          SelectionMode="Single">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Tipo" Binding="{Binding tipo}" Width="100"/>
+                                        <DataGridTextColumn Header="Concepto" Binding="{Binding concepto}" Width="*"/>
+                                        <DataGridTextColumn Header="Cantidad" Binding="{Binding cantidad}" Width="90"/>
+                                        <DataGridTextColumn Header="Precio (L)" Binding="{Binding precio_unitario, StringFormat=N2}" Width="120"/>
+                                        <DataGridTextColumn Header="Subtotal (L)" Binding="{Binding subtotal, StringFormat=N2}" Width="130"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <Grid Margin="0,12,0,0" HorizontalAlignment="Right" Width="300">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Text="Subtotal:" Style="{StaticResource Etiqueta}"/>
+                                    <TextBlock x:Name="lblSubtotal" Grid.Row="0" Grid.Column="1" Text="L 0.00" Foreground="{StaticResource DarkText}" FontSize="13.5"/>
+
+                                    <TextBlock Grid.Row="1" Text="ISV (15%):" Style="{StaticResource Etiqueta}" Margin="0,4,0,5"/>
+                                    <TextBlock x:Name="lblIsv" Grid.Row="1" Grid.Column="1" Text="L 0.00" Foreground="{StaticResource DarkText}" FontSize="13.5" Margin="0,4,0,0"/>
+
+                                    <TextBlock Grid.Row="2" Text="Total a pagar:" Style="{StaticResource TituloCard}" Margin="0,6,0,0"/>
+                                    <TextBlock x:Name="lblTotal" Grid.Row="2" Grid.Column="1" Text="L 0.00" Style="{StaticResource TituloCard}" Margin="0,6,0,0"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Forma de pago -->
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="Forma de pago" Style="{StaticResource TituloCard}" Margin="0,0,0,12"/>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                                        <TextBlock Text="Tipo de pago:" Style="{StaticResource Etiqueta}"/>
+                                        <ComboBox x:Name="cmbTipoPago"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                                        <TextBlock Text="Método de pago:" Style="{StaticResource Etiqueta}"/>
+                                        <ComboBox x:Name="cmbMetodoPago"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                                        <TextBlock Text="Cantidad de cuotas:" Style="{StaticResource Etiqueta}"/>
+                                        <ComboBox x:Name="cmbCuotas"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="3">
+                                        <TextBlock Text="Valor por cuota:" Style="{StaticResource Etiqueta}"/>
+                                        <TextBlock x:Name="lblValorCuota" Style="{StaticResource TituloCard}" Margin="0,8,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <TextBlock Text="Contado es un solo pago. A crédito se crean cuotas mensuales y después se pueden registrar abonos."
+                                           Style="{StaticResource Nota}" Margin="0,10,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button x:Name="btnCancelar" Content="Cancelar" Style="{StaticResource SecondaryButton}"
+                                    Width="140" Margin="0,0,10,0" Click="salirClic"/>
+                            <Button x:Name="btnGuardar" Content="Guardar factura" Style="{StaticResource PrimaryButton}"
+                                    Width="170" Click="guardarClic"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

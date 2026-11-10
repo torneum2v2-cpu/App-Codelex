@@ -485,12 +485,14 @@
                                         </Grid.RowDefinitions>
 
                                         <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,12">
-                                            <TextBlock Text="Nombre" Style="{StaticResource Etiqueta}"/>
+                                            <Grid Height="36" Margin="0,0,0,4">
+                                                <TextBlock Text="Nombre" Style="{StaticResource Etiqueta}" VerticalAlignment="Center" Margin="0"/>
+                                            </Grid>
                                             <TextBox x:Name="txtNombre" IsReadOnly="True"/>
                                         </StackPanel>
 
                                         <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,12">
-                                            <Grid Margin="0,0,0,8">
+                                            <Grid Height="36" Margin="0,0,0,4">
                                                 <TextBlock Text="Apellido" Style="{StaticResource Etiqueta}" VerticalAlignment="Center" Margin="0"/>
                                                 <Button x:Name="btnBuscarEmpleado" Width="38" Padding="0"
                                                         HorizontalAlignment="Right"

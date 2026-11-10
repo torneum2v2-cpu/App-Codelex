@@ -96,37 +96,6 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
-        /// Inserta producto.
-        /// </summary>
-        /// <param name="nombre">Nombre.</param>
-        /// <param name="tipo">Tipo de dato.</param>
-        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
-        /// <param name="productoId">(salida) Identificador de producto.</param>
-        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
-        public bool insertarProducto(string nombre, string tipo, out string mensaje, out int productoId)
-        {
-            productoId = 0;
-
-            mensaje = validarProducto(nombre, tipo);
-            if (mensaje != "")
-                return false;
-
-            SqlCommand comando = procedimiento("sp_InsertarProducto");
-            comando.Parameters.AddWithValue("@nombre_producto", nombre.Trim());
-            comando.Parameters.AddWithValue("@tipo_producto", tipo.Trim());
-
-            SqlParameter id = new SqlParameter("@producto_id", SqlDbType.Int);
-            id.Direction = ParameterDirection.Output;
-            comando.Parameters.Add(id);
-
-            bool guardado = ejecutar(comando, out mensaje);
-            if (guardado)
-                productoId = Convert.ToInt32(id.Value);
-
-            return guardado;
-        }
-
-        /// <summary>
         /// Valida producto.
         /// </summary>
         /// <param name="nombre">Nombre.</param>

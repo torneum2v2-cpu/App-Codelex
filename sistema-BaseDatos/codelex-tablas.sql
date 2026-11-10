@@ -596,6 +596,54 @@ IF TYPE_ID('dbo.tipo_lista_medidas') IS NULL
 	);
 GO
 
+IF TYPE_ID('dbo.tipo_actividad_rangos') IS NULL
+	CREATE TYPE dbo.tipo_actividad_rangos AS TABLE
+	(
+		desde DECIMAL(12, 2) NOT NULL,
+		hasta DECIMAL(12, 2) NULL,
+		cantidad_personas INT NOT NULL
+	);
+GO
+
+IF TYPE_ID('dbo.tipo_actividad_productos') IS NULL
+	CREATE TYPE dbo.tipo_actividad_productos AS TABLE
+	(
+		producto_id INT NOT NULL PRIMARY KEY,
+		cantidad_por_unidad DECIMAL(10, 4) NOT NULL
+	);
+GO
+
+IF TYPE_ID('dbo.tipo_actividad_productos_nuevos') IS NULL
+	CREATE TYPE dbo.tipo_actividad_productos_nuevos AS TABLE
+	(
+		nombre_producto VARCHAR(50) NOT NULL,
+		tipo_producto VARCHAR(20) NOT NULL,
+		cantidad_por_unidad DECIMAL(10, 4) NOT NULL
+	);
+GO
+
+IF TYPE_ID('dbo.tipo_actividad_equipos') IS NULL
+	CREATE TYPE dbo.tipo_actividad_equipos AS TABLE
+	(
+		nombre_equipo VARCHAR(50) NOT NULL PRIMARY KEY
+	);
+GO
+
+IF TYPE_ID('dbo.tipo_producto_actividades') IS NULL
+	CREATE TYPE dbo.tipo_producto_actividades AS TABLE
+	(
+		actividad_id INT NOT NULL PRIMARY KEY,
+		cantidad_por_unidad DECIMAL(10, 4) NOT NULL
+	);
+GO
+
+IF TYPE_ID('dbo.tipo_equipo_actividades') IS NULL
+	CREATE TYPE dbo.tipo_equipo_actividades AS TABLE
+	(
+		actividad_id INT NOT NULL PRIMARY KEY
+	);
+GO
+
 -- Datos iniciales
 
 INSERT INTO formas_pago (nombre_forma_pago)

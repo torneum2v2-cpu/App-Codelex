@@ -92,7 +92,7 @@ namespace Codelex.AccesoDatos
         /// <returns>Tabla con los datos consultados.</returns>
         public DataTable listarServicios()
         {
-            return consultar(procedimiento("sp_ListarServicios"));
+            return consultar(procedimiento("sp_ListarServiciosConActividades"));
         }
 
         /// <summary>

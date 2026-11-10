@@ -1,4 +1,5 @@
 ﻿using Codelex.AccesoDatos;
+using System.Data;
 using System.Windows;
 using System.Windows.Input;
 
@@ -7,6 +8,11 @@ namespace Codelex
     public partial class NuevoProductoEquipo : Window
     {
         InventarioBD inventarioBD = new InventarioBD();
+        ServicioBD servicioBD = new ServicioBD();
+
+        // "" = producto o equipo con sus actividades; "producto" o "equipo" = se abre desde una actividad.
+        string tipoFijo = "";
+        DataTable actividades = new DataTable();
 
         public bool registrado = false;
         public bool esEquipo = false;
@@ -15,13 +21,16 @@ namespace Codelex
         public string tipo = "";
         public string marca = "";
         public string modelo = "";
+        public string cantidad = "";
 
         /// <summary>
         /// Inicializa la ventana y prepara sus controles.
         /// </summary>
-        public NuevoProductoEquipo()
+        /// <param name="tipoFijo">Vacío para elegir producto o equipo; "producto" o "equipo" cuando se abre desde una actividad.</param>
+        public NuevoProductoEquipo(string tipoFijo = "")
         {
             InitializeComponent();
+            this.tipoFijo = tipoFijo;
         }
 
         /// <summary>
@@ -31,8 +40,45 @@ namespace Codelex
         /// <param name="e">Datos del evento.</param>
         private void ventanaCargada(object sender, RoutedEventArgs e)
         {
+            if (tipoFijo == "producto")
+            {
+                rbProducto.IsChecked = true;
+                spTipoArticulo.Visibility = Visibility.Collapsed;
+                spActividades.Visibility = Visibility.Collapsed;
+                spCantidad.Visibility = Visibility.Visible;
+            }
+            else if (tipoFijo == "equipo")
+            {
+                rbEquipo.IsChecked = true;
+                spTipoArticulo.Visibility = Visibility.Collapsed;
+                spActividades.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                cargarActividades();
+            }
+
             mostrarCampos();
             limpiarFormulario();
+        }
+
+        /// <summary>
+        /// Carga las actividades que se pueden marcar para el producto o equipo nuevo.
+        /// </summary>
+        private void cargarActividades()
+        {
+            try
+            {
+                actividades = servicioBD.crearActividadesParaElegir();
+                dgActividades.ItemsSource = actividades.DefaultView;
+
+                if (actividades.Rows.Count == 0)
+                    txtAyudaActividades.Text = "Todavía no hay actividades. Cree primero un servicio con sus actividades en el módulo Servicios.";
+            }
+            catch (Exception ex)
+            {
+                MensajeCodelex.mostrar(this, "Inventario", ex.Message, false);
+            }
         }
 
         /// <summary>
@@ -49,7 +95,7 @@ namespace Codelex
         }
 
         /// <summary>
-        /// Muestra campos.
+        /// Muestra u oculta los campos según se registre un producto o un equipo.
         /// </summary>
         private void mostrarCampos()
         {
@@ -57,9 +103,22 @@ namespace Codelex
             {
                 lblTipo.Text = "Tipo de equipo *";
                 txtTipo.MaxLength = 50;
-                spMarca.Visibility = Visibility.Visible;
-                spModelo.Visibility = Visibility.Visible;
-                txtNota.Text = "Los equipos se guardan por unidad: el equipo nuevo aparece en la pestaña Equipos y sus unidades se crean al guardar el ingreso.";
+                colCantidad.Visibility = Visibility.Collapsed;
+                txtAyudaActividades.Text = "Marque cada actividad que usa el equipo. Debe elegir al menos una.";
+
+                if (tipoFijo == "equipo")
+                {
+                    spTipo.Visibility = Visibility.Collapsed;
+                    spMarca.Visibility = Visibility.Collapsed;
+                    spModelo.Visibility = Visibility.Collapsed;
+                    txtNota.Text = "Solo el nombre del equipo. Las unidades se compran luego en Inventario > Agregar al inventario.";
+                }
+                else
+                {
+                    spMarca.Visibility = Visibility.Visible;
+                    spModelo.Visibility = Visibility.Visible;
+                    txtNota.Text = "Los equipos se guardan por unidad: el equipo nuevo aparece en la pestaña Equipos y sus unidades se crean al guardar el ingreso.";
+                }
             }
             else
             {
@@ -67,8 +126,13 @@ namespace Codelex
                 txtTipo.MaxLength = 20;
                 spMarca.Visibility = Visibility.Collapsed;
                 spModelo.Visibility = Visibility.Collapsed;
+                colCantidad.Visibility = Visibility.Visible;
+                txtAyudaActividades.Text = "Marque cada actividad que usa el producto y cuánto se gasta por unidad (por ejemplo 0.002 por m²). Debe elegir al menos una.";
                 txtNota.Text = "El producto se registra con existencia 0. Luego agréguelo a la lista para ingresar lo que se compró.";
             }
+
+            if (actividades.Rows.Count == 0 && spActividades.Visibility == Visibility.Visible)
+                txtAyudaActividades.Text = "Todavía no hay actividades. Cree primero un servicio con sus actividades en el módulo Servicios.";
         }
 
         /// <summary>
@@ -80,6 +144,14 @@ namespace Codelex
             txtTipo.Text = "";
             txtMarca.Text = "";
             txtModelo.Text = "";
+            txtCantidad.Text = "";
+
+            foreach (DataRow fila in actividades.Rows)
+            {
+                fila["usar"] = false;
+                fila["cantidad"] = "1";
+            }
+
             txtNombre.Focus();
         }
 
@@ -92,26 +164,37 @@ namespace Codelex
         {
             try
             {
-                string mensaje;
+                if (tipoFijo != "")
+                {
+                    guardarDesdeActividad();
+                    return;
+                }
 
-                if (rbEquipo.IsChecked == true)
+                string mensaje;
+                bool conCantidad = rbEquipo.IsChecked != true;
+                DataTable vinculos = servicioBD.crearVinculos();
+
+                if (!conCantidad)
                 {
                     mensaje = inventarioBD.validarEquipo(txtNombre.Text, txtTipo.Text, txtMarca.Text, txtModelo.Text);
-
                     if (mensaje != "")
                     {
                         MensajeCodelex.mostrar(this, "Inventario", mensaje, false);
                         return;
                     }
-
-                    esEquipo = true;
-                    marca = txtMarca.Text.Trim();
-                    modelo = txtModelo.Text.Trim();
                 }
-                else
+
+                mensaje = servicioBD.tomarVinculos(actividades, conCantidad, vinculos);
+                if (mensaje != "")
+                {
+                    MensajeCodelex.mostrar(this, "Inventario", mensaje, false);
+                    return;
+                }
+
+                if (conCantidad)
                 {
                     int idNuevo;
-                    bool guardado = inventarioBD.insertarProducto(txtNombre.Text, txtTipo.Text, out mensaje, out idNuevo);
+                    bool guardado = servicioBD.insertarProductoConActividades(txtNombre.Text, txtTipo.Text, vinculos, out mensaje, out idNuevo);
 
                     MensajeCodelex.mostrar(this, "Inventario", mensaje, guardado);
 
@@ -119,6 +202,19 @@ namespace Codelex
                         return;
 
                     productoId = idNuevo;
+                }
+                else
+                {
+                    bool ligado = servicioBD.vincularEquipo(txtNombre.Text, vinculos, out mensaje);
+
+                    MensajeCodelex.mostrar(this, "Inventario", mensaje, ligado);
+
+                    if (!ligado)
+                        return;
+
+                    esEquipo = true;
+                    marca = txtMarca.Text.Trim();
+                    modelo = txtModelo.Text.Trim();
                 }
 
                 nombre = txtNombre.Text.Trim();
@@ -133,6 +229,54 @@ namespace Codelex
         }
 
         /// <summary>
+        /// Valida los datos cuando la ventana se abrió desde una actividad; ahí el artículo se guarda junto con la actividad.
+        /// </summary>
+        private void guardarDesdeActividad()
+        {
+            string mensaje;
+
+            if (tipoFijo == "producto")
+            {
+                mensaje = inventarioBD.validarProducto(txtNombre.Text, txtTipo.Text);
+                if (mensaje != "")
+                {
+                    MensajeCodelex.mostrar(this, "Servicios", mensaje, false);
+                    return;
+                }
+
+                decimal valor;
+                if (!servicioBD.leerDecimal(txtCantidad.Text, out valor) || valor <= 0)
+                {
+                    MensajeCodelex.mostrar(this, "Servicios", "Escriba la cantidad por unidad (mayor que cero).", false);
+                    return;
+                }
+
+                tipo = txtTipo.Text.Trim();
+                cantidad = txtCantidad.Text.Trim();
+            }
+            else
+            {
+                if (txtNombre.Text.Trim() == "")
+                {
+                    MensajeCodelex.mostrar(this, "Servicios", "El nombre del equipo es obligatorio.", false);
+                    return;
+                }
+
+                if (txtNombre.Text.Trim().Length > 50)
+                {
+                    MensajeCodelex.mostrar(this, "Servicios", "El nombre no puede tener más de 50 caracteres.", false);
+                    return;
+                }
+
+                esEquipo = true;
+            }
+
+            nombre = txtNombre.Text.Trim();
+            registrado = true;
+            Close();
+        }
+
+        /// <summary>
         /// Limpia los datos del formulario.
         /// </summary>
         /// <param name="sender">Control que originó el evento.</param>
@@ -140,6 +284,16 @@ namespace Codelex
         private void limpiarClic(object sender, RoutedEventArgs e)
         {
             limpiarFormulario();
+        }
+
+        /// <summary>
+        /// Impide escribir caracteres que no sean números o punto decimal.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
+        private void soloDecimales(object sender, TextCompositionEventArgs e)
+        {
+            e.Handled = !inventarioBD.caracteresDePrecio(e.Text);
         }
 
         /// <summary>

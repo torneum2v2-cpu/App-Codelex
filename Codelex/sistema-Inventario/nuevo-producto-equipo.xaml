@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Codelex"
         mc:Ignorable="d"
-        Title="Codelex - Nuevo producto o equipo" Width="600" SizeToContent="Height"
+        Title="Codelex - Nuevo producto o equipo" Width="680" SizeToContent="Height"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize"
@@ -21,6 +21,8 @@
         <SolidColorBrush x:Key="Surface" Color="#F4F8F8"/>
         <SolidColorBrush x:Key="CardLine" Color="#DDEAE8"/>
         <SolidColorBrush x:Key="Hover" Color="#F3FCFA"/>
+        <SolidColorBrush x:Key="Pill" Color="#E3F7F4"/>
+        <SolidColorBrush x:Key="PillText" Color="#14837A"/>
 
         <LinearGradientBrush x:Key="BgGradient" StartPoint="0,0" EndPoint="1,1">
             <GradientStop Color="#0F4A40" Offset="0"/>
@@ -185,6 +187,64 @@
             </Setter>
         </Style>
 
+        <Style x:Key="Tabla" TargetType="DataGrid">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource DarkText}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="RowHeight" Value="38"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource CardLine}"/>
+            <Setter Property="RowBackground" Value="White"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="ColumnHeaderStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background" Value="{StaticResource Surface}"/>
+                        <Setter Property="Foreground" Value="{StaticResource SoftText}"/>
+                        <Setter Property="FontSize" Value="12.5"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="Padding" Value="12,10"/>
+                        <Setter Property="BorderBrush" Value="{StaticResource CardLine}"/>
+                        <Setter Property="BorderThickness" Value="0,0,0,1.5"/>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="CellStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridCell">
+                        <Setter Property="Foreground" Value="{StaticResource DarkText}"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="DataGridCell">
+                                    <Border x:Name="bd" Background="Transparent" Padding="12,0">
+                                        <ContentPresenter VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="{StaticResource Pill}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="RowStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridRow">
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{StaticResource Hover}"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="Pestana" TargetType="RadioButton">
             <Setter Property="Foreground" Value="{StaticResource DarkText}"/>
             <Setter Property="FontSize" Value="13"/>
@@ -270,7 +330,7 @@
                             <TextBlock Text="  * obligatorio" Style="{StaticResource Nota}" VerticalAlignment="Bottom"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <StackPanel x:Name="spTipoArticulo" Orientation="Horizontal" Margin="0,0,0,16">
                             <RadioButton x:Name="rbProducto" Content="Producto" GroupName="TipoArticulo"
                                          Style="{StaticResource Pestana}" IsChecked="True" Checked="tipoMarcado"/>
                             <RadioButton x:Name="rbEquipo" Content="Equipo" GroupName="TipoArticulo"
@@ -293,7 +353,7 @@
                                 <TextBox x:Name="txtNombre" MaxLength="50"/>
                             </StackPanel>
 
-                            <StackPanel Grid.Row="0" Grid.Column="2">
+                            <StackPanel x:Name="spTipo" Grid.Row="0" Grid.Column="2">
                                 <TextBlock x:Name="lblTipo" Text="Tipo de producto *" Style="{StaticResource Etiqueta}"/>
                                 <TextBox x:Name="txtTipo" MaxLength="20"/>
                             </StackPanel>
@@ -308,6 +368,44 @@
                                 <TextBox x:Name="txtModelo" MaxLength="50"/>
                             </StackPanel>
                         </Grid>
+
+                        <StackPanel x:Name="spCantidad" Margin="0,12,0,0" Visibility="Collapsed">
+                            <TextBlock Text="Cantidad por cada unidad de la actividad *" Style="{StaticResource Etiqueta}"/>
+                            <TextBox x:Name="txtCantidad" MaxLength="10" PreviewTextInput="soloDecimales"
+                                     ToolTip="Por ejemplo 0.002 paños por cada m²"/>
+                        </StackPanel>
+
+                        <StackPanel x:Name="spActividades" Margin="0,16,0,0">
+                            <TextBlock Text="Actividades donde se usa *" Style="{StaticResource Etiqueta}"/>
+                            <TextBlock x:Name="txtAyudaActividades" Style="{StaticResource Nota}" Margin="0,0,0,8"/>
+                            <Border BorderBrush="{StaticResource CardLine}" BorderThickness="1.5" CornerRadius="10" Height="210">
+                                <DataGrid x:Name="dgActividades" Style="{StaticResource Tabla}" RowHeight="34"
+                                          AutoGenerateColumns="False" CanUserAddRows="False" SelectionMode="Single"
+                                          CanUserSortColumns="False">
+                                    <DataGrid.Columns>
+                                        <DataGridTemplateColumn Header="Usar" Width="60">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <CheckBox IsChecked="{Binding usar, UpdateSourceTrigger=PropertyChanged}"
+                                                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTextColumn Header="Servicio" Binding="{Binding servicio}" IsReadOnly="True" Width="*"/>
+                                        <DataGridTextColumn Header="Actividad" Binding="{Binding actividad}" IsReadOnly="True" Width="1.6*"/>
+                                        <DataGridTemplateColumn x:Name="colCantidad" Header="Cantidad por unidad" Width="150">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBox Text="{Binding cantidad, UpdateSourceTrigger=PropertyChanged}"
+                                                             Height="28" FontSize="12.5" MaxLength="10"
+                                                             PreviewTextInput="soloDecimales"/>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </Border>
+                        </StackPanel>
 
                         <TextBlock x:Name="txtNota" Style="{StaticResource Nota}" Margin="0,14,0,0"/>
 

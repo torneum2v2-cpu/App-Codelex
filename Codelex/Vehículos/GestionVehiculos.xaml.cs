@@ -21,34 +21,34 @@ namespace Codelex
             InitializeComponent();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ventanaCargada(object sender, RoutedEventArgs e)
         {
-            LimpiarFormulario();
-            CargarVehiculos();
+            limpiarFormulario();
+            cargarVehiculos();
         }
 
-        private void CargarVehiculos()
+        private void cargarVehiculos()
         {
             try
             {
-                DataTable tabla = vehiculoBD.BuscarVehiculos(textoBusqueda, filtroEstado);
+                DataTable tabla = vehiculoBD.buscarVehiculos(textoBusqueda, filtroEstado);
                 dgVehiculos.ItemsSource = tabla.DefaultView;
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void CargarEnFormulario(int vehiculoId)
+        private void cargarEnFormulario(int vehiculoId)
         {
             try
             {
-                DataTable tabla = vehiculoBD.ObtenerVehiculo(vehiculoId);
+                DataTable tabla = vehiculoBD.obtenerVehiculo(vehiculoId);
 
                 if (tabla.Rows.Count == 0)
                 {
-                    MensajeCodelex.Mostrar(this, "Vehículos", "No se encontró el vehículo.", false);
+                    MensajeCodelex.mostrar(this, "Vehículos", "No se encontró el vehículo.", false);
                     return;
                 }
 
@@ -62,15 +62,15 @@ namespace Codelex
                 txtMarca.Text = fila["marca_vehiculo"].ToString();
                 txtModelo.Text = fila["modelo_vehiculo"].ToString();
 
-                ActualizarBotones();
+                actualizarBotones();
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void LimpiarFormulario()
+        private void limpiarFormulario()
         {
             vehiculoActual = 0;
             placaActual = "";
@@ -81,11 +81,11 @@ namespace Codelex
             txtModelo.Text = "";
             dgVehiculos.SelectedItem = null;
 
-            ActualizarBotones();
+            actualizarBotones();
             txtBuscar.Focus();
         }
 
-        private void ActualizarBotones()
+        private void actualizarBotones()
         {
             bool haySeleccion = vehiculoActual > 0;
 
@@ -118,27 +118,27 @@ namespace Codelex
             }
         }
 
-        private void SoloPlaca(object sender, TextCompositionEventArgs e)
+        private void soloPlaca(object sender, TextCompositionEventArgs e)
         {
-            if (!vehiculoBD.CaracteresDePlaca(e.Text))
+            if (!vehiculoBD.caracteresDePlaca(e.Text))
                 e.Handled = true;
         }
 
-        private void Registrar_Click(object sender, RoutedEventArgs e)
+        private void registrarClic(object sender, RoutedEventArgs e)
         {
             RegistrarVehiculo ventana = new RegistrarVehiculo();
             ventana.Owner = this;
             ventana.ShowDialog();
 
-            CargarVehiculos();
+            cargarVehiculos();
         }
 
-        private void Limpiar_Click(object sender, RoutedEventArgs e)
+        private void limpiarClic(object sender, RoutedEventArgs e)
         {
-            LimpiarFormulario();
+            limpiarFormulario();
         }
 
-        private void Actualizar_Click(object sender, RoutedEventArgs e)
+        private void actualizarClic(object sender, RoutedEventArgs e)
         {
             if (vehiculoActual == 0)
                 return;
@@ -147,25 +147,25 @@ namespace Codelex
             {
                 string mensaje;
 
-                bool guardado = vehiculoBD.ActualizarVehiculo(
+                bool guardado = vehiculoBD.actualizarVehiculo(
                     vehiculoActual, txtPlaca.Text, txtMarca.Text, txtModelo.Text, out mensaje);
 
-                MensajeCodelex.Mostrar(this, "Vehículos", mensaje, guardado);
+                MensajeCodelex.mostrar(this, "Vehículos", mensaje, guardado);
 
                 if (guardado)
                 {
                     placaActual = txtPlaca.Text.Trim().ToUpper();
-                    ActualizarBotones();
-                    CargarVehiculos();
+                    actualizarBotones();
+                    cargarVehiculos();
                 }
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void CambiarEstado_Click(object sender, RoutedEventArgs e)
+        private void cambiarEstadoClic(object sender, RoutedEventArgs e)
         {
             if (vehiculoActual == 0)
                 return;
@@ -185,24 +185,24 @@ namespace Codelex
             try
             {
                 string mensaje;
-                bool guardado = vehiculoBD.CambiarEstadoVehiculo(vehiculoActual, nuevoEstado, out mensaje);
+                bool guardado = vehiculoBD.cambiarEstadoVehiculo(vehiculoActual, nuevoEstado, out mensaje);
 
-                MensajeCodelex.Mostrar(this, "Vehículos", mensaje, guardado);
+                MensajeCodelex.mostrar(this, "Vehículos", mensaje, guardado);
 
                 if (guardado)
                 {
                     vehiculoActualActivo = nuevoEstado;
-                    ActualizarBotones();
-                    CargarVehiculos();
+                    actualizarBotones();
+                    cargarVehiculos();
                 }
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void dgVehiculos_Click(object sender, MouseButtonEventArgs e)
+        private void vehiculosClic(object sender, MouseButtonEventArgs e)
         {
             if (dgVehiculos.SelectedItem == null)
                 return;
@@ -210,65 +210,65 @@ namespace Codelex
             DataRowView fila = (DataRowView)dgVehiculos.SelectedItem;
             int vehiculoId = Convert.ToInt32(fila["vehiculo_id"]);
 
-            CargarEnFormulario(vehiculoId);
+            cargarEnFormulario(vehiculoId);
         }
 
-        private void BuscarTexto()
+        private void buscarTexto()
         {
             textoBusqueda = txtBuscar.Text.Trim();
-            CargarVehiculos();
+            cargarVehiculos();
         }
 
-        private void Buscar_Click(object sender, RoutedEventArgs e)
+        private void buscarClic(object sender, RoutedEventArgs e)
         {
-            BuscarTexto();
+            buscarTexto();
         }
 
-        private void Buscar_KeyDown(object sender, KeyEventArgs e)
+        private void buscarTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
-                BuscarTexto();
+                buscarTexto();
         }
 
-        private void MostrarTodos_Click(object sender, RoutedEventArgs e)
+        private void mostrarTodosClic(object sender, RoutedEventArgs e)
         {
             txtBuscar.Text = "";
             textoBusqueda = "";
             filtroEstado = "TODOS";
-            CargarVehiculos();
+            cargarVehiculos();
         }
 
-        private void Activos_Click(object sender, RoutedEventArgs e)
+        private void activosClic(object sender, RoutedEventArgs e)
         {
             filtroEstado = "ACTIVOS";
-            CargarVehiculos();
+            cargarVehiculos();
         }
 
-        private void Inactivos_Click(object sender, RoutedEventArgs e)
+        private void inactivosClic(object sender, RoutedEventArgs e)
         {
             filtroEstado = "INACTIVOS";
-            CargarVehiculos();
+            cargarVehiculos();
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimizar_Click(object sender, RoutedEventArgs e)
+        private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
-        private void Salir_Click(object sender, RoutedEventArgs e)
+        private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
-        private void MostrarError(Exception ex)
+        private void mostrarError(Exception ex)
         {
-            MensajeCodelex.Mostrar(this, "Vehículos", ex.Message, false);
+            MensajeCodelex.mostrar(this, "Vehículos", ex.Message, false);
         }
     }
 }

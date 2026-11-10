@@ -17,84 +17,84 @@ namespace Codelex
             InitializeComponent();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ventanaCargada(object sender, RoutedEventArgs e)
         {
-            CargarInventario();
+            cargarInventario();
             txtBuscar.Focus();
         }
 
-        private void CargarInventario()
+        private void cargarInventario()
         {
             try
             {
-                DataTable tabla = inventarioBD.BuscarInventario(textoBusqueda, filtroTipo);
+                DataTable tabla = inventarioBD.buscarInventario(textoBusqueda, filtroTipo);
                 dgInventario.ItemsSource = tabla.DefaultView;
-                txtValorTotal.Text = "Valor del inventario: L " + inventarioBD.ValorTotal(tabla).ToString("N2");
+                txtValorTotal.Text = "Valor del inventario: L " + inventarioBD.valorTotal(tabla).ToString("N2");
             }
             catch (Exception ex)
             {
-                MensajeCodelex.Mostrar(this, "Inventario", ex.Message, false);
+                MensajeCodelex.mostrar(this, "Inventario", ex.Message, false);
             }
         }
 
-        private void BuscarTexto()
+        private void buscarTexto()
         {
             textoBusqueda = txtBuscar.Text.Trim();
-            CargarInventario();
+            cargarInventario();
         }
 
-        private void Buscar_Click(object sender, RoutedEventArgs e)
+        private void buscarClic(object sender, RoutedEventArgs e)
         {
-            BuscarTexto();
+            buscarTexto();
         }
 
-        private void Buscar_KeyDown(object sender, KeyEventArgs e)
+        private void buscarTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
-                BuscarTexto();
+                buscarTexto();
         }
 
-        private void MostrarTodos_Click(object sender, RoutedEventArgs e)
+        private void mostrarTodosClic(object sender, RoutedEventArgs e)
         {
             txtBuscar.Text = "";
             textoBusqueda = "";
             filtroTipo = "";
-            CargarInventario();
+            cargarInventario();
         }
 
-        private void Productos_Click(object sender, RoutedEventArgs e)
+        private void productosClic(object sender, RoutedEventArgs e)
         {
             filtroTipo = "PRODUCTO";
-            CargarInventario();
+            cargarInventario();
         }
 
-        private void Equipos_Click(object sender, RoutedEventArgs e)
+        private void equiposClic(object sender, RoutedEventArgs e)
         {
             filtroTipo = "EQUIPO";
-            CargarInventario();
+            cargarInventario();
         }
 
-        private void Agregar_Click(object sender, RoutedEventArgs e)
+        private void agregarClic(object sender, RoutedEventArgs e)
         {
             AgregarInventario ventana = new AgregarInventario();
             ventana.Owner = this;
             ventana.ShowDialog();
 
-            CargarInventario();
+            cargarInventario();
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimizar_Click(object sender, RoutedEventArgs e)
+        private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
-        private void Salir_Click(object sender, RoutedEventArgs e)
+        private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }

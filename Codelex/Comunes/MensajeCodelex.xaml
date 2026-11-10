@@ -65,7 +65,7 @@
     </Window.Resources>
 
     <Border Margin="20" CornerRadius="18" Background="{StaticResource BgGradient}"
-            MouseLeftButtonDown="DragWindow">
+            MouseLeftButtonDown="arrastrarVentana">
         <Border.Effect>
             <DropShadowEffect Color="#000000" BlurRadius="24" ShadowDepth="0" Opacity="0.45"/>
         </Border.Effect>
@@ -101,7 +101,7 @@
             <Button Content="Aceptar" Margin="0,28,0,0"
                     Style="{StaticResource PrimaryButton}"
                     IsDefault="True" IsCancel="True"
-                    Click="Aceptar_Click"/>
+                    Click="aceptarClic"/>
         </StackPanel>
     </Border>
 </Window>

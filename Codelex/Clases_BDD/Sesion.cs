@@ -32,17 +32,17 @@
             }
         }
 
-        public static void Iniciar(Usuario usuario)
+        public static void iniciar(Usuario usuario)
         {
             UsuarioId = usuario.UsuarioId;
             EmpleadoId = usuario.EmpleadoId;
             NombreUsuario = usuario.NombreUsuario;
             NombreCompleto = usuario.NombreCompleto;
             Rol = usuario.Rol;
-            Nivel = NivelDe(usuario.Rol);
+            Nivel = nivelDe(usuario.Rol);
         }
 
-        public static void Cerrar()
+        public static void cerrar()
         {
             UsuarioId = 0;
             EmpleadoId = 0;
@@ -53,12 +53,12 @@
         }
 
         // Verdadero si el usuario tiene al menos el nivel pedido.
-        public static bool Permite(NivelAcceso minimo)
+        public static bool permite(NivelAcceso minimo)
         {
             return Nivel != NivelAcceso.SinRol && Nivel >= minimo;
         }
 
-        private static NivelAcceso NivelDe(string rol)
+        private static NivelAcceso nivelDe(string rol)
         {
             string texto = rol.Trim().ToLowerInvariant();
 

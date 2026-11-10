@@ -8,15 +8,15 @@ namespace Codelex
     public partial class VerificarTelefono : Window
     {
         private Usuario usuario;
-        private readonly bool _recordar;
-        private readonly string _password;
+        private readonly bool recordar;
+        private readonly string contrasena;
 
         public VerificarTelefono(Usuario usuarioLogin, bool recordar = false, string password = "")
         {
             InitializeComponent();
             usuario = usuarioLogin;
-            _recordar = recordar;
-            _password = password;
+            recordar = recordar;
+            contrasena = password;
 
             if (usuario.TieneLlave)
             {
@@ -32,7 +32,7 @@ namespace Codelex
             }
         }
 
-        private async void Verificar_Click(object sender, RoutedEventArgs e)
+        private async void verificarClic(object sender, RoutedEventArgs e)
         {
             txtError.Visibility = Visibility.Collapsed;
             txtEspera.Visibility = Visibility.Visible;
@@ -45,9 +45,9 @@ namespace Codelex
             try
             {
                 if (primeraVez)
-                    mensaje = await usuario.RegistrarLlave(ventana);
+                    mensaje = await usuario.registrarLlave(ventana);
                 else
-                    mensaje = await usuario.VerificarLlave(ventana);
+                    mensaje = await usuario.verificarLlave(ventana);
             }
             catch (Exception ex)
             {
@@ -65,37 +65,37 @@ namespace Codelex
             }
 
             
-            if (_recordar)
-                CuentasRecordadas.Guardar(usuario.NombreUsuario, usuario.NombreCompleto, _password);
+            if (recordar)
+                CuentasRecordadas.guardar(usuario.NombreUsuario, usuario.NombreCompleto, contrasena);
 
             if (primeraVez)
-                MensajeCodelex.Mostrar(this, "Teléfono registrado", "Tu teléfono quedó registrado. La próxima vez solo tendrás que confirmar con él.", true);
+                MensajeCodelex.mostrar(this, "Teléfono registrado", "Tu teléfono quedó registrado. La próxima vez solo tendrás que confirmar con él.", true);
 
-            Sesion.Iniciar(usuario);
+            Sesion.iniciar(usuario);
             Menu menu = new Menu();
             menu.Show();
             Close();
         }
 
-        private void Volver_Click(object sender, RoutedEventArgs e)
+        private void volverClic(object sender, RoutedEventArgs e)
         {
-            MainWindow login = new MainWindow();
+            VentanaPrincipal login = new VentanaPrincipal();
             login.Show();
             Close();
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimize_Click(object sender, RoutedEventArgs e)
+        private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
-        private void Close_Click(object sender, RoutedEventArgs e)
+        private void cerrarClic(object sender, RoutedEventArgs e)
         {
             Close();
         }

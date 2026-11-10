@@ -5,27 +5,27 @@ namespace Codelex.Clases_BDD
 {
     class GestionOrdenesBD : BaseDatos
     {
-        public DataTable ListarOrdenes()
+        public DataTable listarOrdenes()
         {
-            return Consultar(Procedimiento("sp_ListarOrdenesGestion"));
+            return consultar(procedimiento("sp_ListarOrdenesGestion"));
         }
 
-        public DataTable ObtenerDetalle(string ordenId)
+        public DataTable obtenerDetalle(string ordenId)
         {
-            SqlCommand comando = Procedimiento("sp_DetalleOrdenGestion");
+            SqlCommand comando = procedimiento("sp_DetalleOrdenGestion");
             comando.Parameters.AddWithValue("@orden_id", ordenId);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
         // Columnas: seccion (1 actividades, 2 empleados, 3 productos, 4 equipos) y texto.
-        public DataTable ListarDetalle(string ordenId)
+        public DataTable listarDetalle(string ordenId)
         {
-            SqlCommand comando = Procedimiento("sp_ListasOrdenGestion");
+            SqlCommand comando = procedimiento("sp_ListasOrdenGestion");
             comando.Parameters.AddWithValue("@orden_id", ordenId);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public bool CambiarEstado(string ordenId, int estadoId, out string mensaje)
+        public bool cambiarEstado(string ordenId, int estadoId, out string mensaje)
         {
             if (ordenId.Trim() == "")
             {
@@ -38,11 +38,11 @@ namespace Codelex.Clases_BDD
                 return false;
             }
 
-            SqlCommand comando = Procedimiento("sp_CambiarEstadoOrden");
+            SqlCommand comando = procedimiento("sp_CambiarEstadoOrden");
             comando.Parameters.AddWithValue("@orden_id", ordenId);
             comando.Parameters.AddWithValue("@estado_orden_id", estadoId);
 
-            return Ejecutar(comando, out mensaje);
+            return ejecutar(comando, out mensaje);
         }
     }
 }

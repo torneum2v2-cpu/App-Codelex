@@ -6,7 +6,7 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize"
         FontFamily="Segoe UI"
-        Loaded="Window_Loaded">
+        Loaded="ventanaCargada">
     <Window.Resources>
         <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
         <SolidColorBrush x:Key="PrimaryLight" Color="#5FE0D2"/>
@@ -355,10 +355,10 @@
 
                 <!-- Encabezado -->
                 <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{StaticResource BgGradient}"
-                        Padding="28,18,14,18" MouseLeftButtonDown="DragWindow">
+                        Padding="28,18,14,18" MouseLeftButtonDown="arrastrarVentana">
                     <Grid>
                         <StackPanel Orientation="Horizontal">
-                            <Button Style="{StaticResource WindowButton}" Click="Cerrar_Click" ToolTip="Volver"
+                            <Button Style="{StaticResource WindowButton}" Click="cerrarClic" ToolTip="Volver"
                                     Width="44" Height="38" Margin="0,0,14,0" VerticalAlignment="Center">
                                 <Path Data="M30,12 H2 M10,20 L2,12 L10,4"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
@@ -378,12 +378,12 @@
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                            <Button Style="{StaticResource WindowButton}" Click="Minimizar_Click" ToolTip="Minimizar">
+                            <Button Style="{StaticResource WindowButton}" Click="minimizarClic" ToolTip="Minimizar">
                                 <Path Data="M0,0 L10,0"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6" Margin="0,8,0,0"/>
                             </Button>
-                            <Button Style="{StaticResource WindowButton}" Click="Cerrar_Click" ToolTip="Cerrar">
+                            <Button Style="{StaticResource WindowButton}" Click="cerrarClic" ToolTip="Cerrar">
                                 <Path Data="M0,10 L10,0 M0,0 L10,10"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6"/>
@@ -400,11 +400,11 @@
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                                     <RadioButton x:Name="rbOrdenes" Content="Órdenes" IsChecked="True"
-                                                 Style="{StaticResource TabReporte}" Checked="Tipo_Checked"/>
+                                                 Style="{StaticResource TabReporte}" Checked="tipoMarcado"/>
                                     <RadioButton x:Name="rbAsistencia" Content="Asistencia"
-                                                 Style="{StaticResource TabReporte}" Checked="Tipo_Checked"/>
+                                                 Style="{StaticResource TabReporte}" Checked="tipoMarcado"/>
                                     <RadioButton x:Name="rbEmpleados" Content="Empleados"
-                                                 Style="{StaticResource TabReporte}" Checked="Tipo_Checked"/>
+                                                 Style="{StaticResource TabReporte}" Checked="tipoMarcado"/>
                                 </StackPanel>
 
                                 <Grid>
@@ -454,7 +454,7 @@
                                         </StackPanel>
                                         <StackPanel Grid.Column="2" Margin="0,0,14,0">
                                             <TextBlock Text="Cliente" Style="{StaticResource Etiqueta}"/>
-                                            <TextBox x:Name="txtCliente" KeyDown="Filtro_KeyDown"/>
+                                            <TextBox x:Name="txtCliente" KeyDown="filtroTeclaPresionada"/>
                                         </StackPanel>
                                     </Grid>
 
@@ -502,10 +502,10 @@
 
                                     <Button Grid.Column="3" Content="Generar reporte" Width="150" Margin="0,0,10,0"
                                             VerticalAlignment="Bottom" Style="{StaticResource PrimaryButton}"
-                                            Click="Generar_Click"/>
+                                            Click="generarClic"/>
                                     <Button Grid.Column="4" Content="Exportar CSV" Width="130"
                                             VerticalAlignment="Bottom" Style="{StaticResource SecondaryButton}"
-                                            Click="Exportar_Click"/>
+                                            Click="exportarClic"/>
                                 </Grid>
                             </StackPanel>
                         </Border>
@@ -594,7 +594,7 @@
                                     <TextBlock x:Name="txtTituloGrafico2" Style="{StaticResource TituloCard}"
                                                Margin="0,0,0,8"/>
                                     <Canvas x:Name="canvasGrafico" Grid.Row="1" ClipToBounds="True"
-                                            SizeChanged="CanvasGrafico_SizeChanged"/>
+                                            SizeChanged="canvasGraficoTamanoCambiado"/>
                                     <TextBlock x:Name="txtSinDatos2" Grid.Row="1" Text="Sin datos en el rango seleccionado."
                                                Foreground="{StaticResource SoftText}" FontSize="13"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"

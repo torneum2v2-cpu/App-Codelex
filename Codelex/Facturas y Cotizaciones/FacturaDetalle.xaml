@@ -36,10 +36,10 @@
 
                 <!-- Encabezado Superior -->
                 <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{StaticResource BgGradient}"
-                        Padding="28,18,14,18" MouseLeftButtonDown="DragWindow">
+                        Padding="28,18,14,18" MouseLeftButtonDown="arrastrarVentana">
                     <Grid>
                         <StackPanel Orientation="Horizontal">
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Volver"
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Volver"
                                     Width="46" Height="36" Margin="0,0,14,0" VerticalAlignment="Center">
                                 <Path Data="M30,12 H2 M8,18 L2,12 L8,6"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
@@ -59,12 +59,12 @@
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                            <Button Style="{StaticResource WindowButton}" Click="Minimizar_Click" ToolTip="Minimizar">
+                            <Button Style="{StaticResource WindowButton}" Click="minimizarClic" ToolTip="Minimizar">
                                 <Path Data="M0,0 L10,0"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6" Margin="0,8,0,0"/>
                             </Button>
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Cerrar">
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Cerrar">
                                 <Path Data="M0,0 L10,10 M10,0 L0,10"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6"/>
@@ -223,10 +223,10 @@
 
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                                         <Button x:Name="btnSaldar" Content="Saldar cuota" Style="{StaticResource PrimaryButton}"
-                                                Width="150" Margin="0,0,10,0" Click="btnSaldar_Click"
+                                                Width="150" Margin="0,0,10,0" Click="saldarClic"
                                                 ToolTip="Paga completa la cuota seleccionada (o la primera pendiente)"/>
                                         <Button x:Name="btnAbono" Content="Registrar abono" Style="{StaticResource SecondaryButton}"
-                                                Width="170" Click="btnAbono_Click"
+                                                Width="170" Click="abonoClic"
                                                 ToolTip="Abona un monto: se aplica a las cuotas más antiguas"/>
                                     </StackPanel>
                                 </Grid>
@@ -247,7 +247,7 @@
                         </Border>
 
                         <Button Content="Cerrar" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Right"
-                                Width="140" Click="Salir_Click"/>
+                                Width="140" Click="salirClic"/>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>

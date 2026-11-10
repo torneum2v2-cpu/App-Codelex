@@ -8,34 +8,34 @@ namespace Codelex
     {
         InventarioBD inventarioBD = new InventarioBD();
 
-        public bool Registrado = false;
-        public bool EsEquipo = false;
-        public int ProductoId = 0;
-        public string Nombre = "";
-        public string Tipo = "";
-        public string Marca = "";
-        public string Modelo = "";
+        public bool registrado = false;
+        public bool esEquipo = false;
+        public int productoId = 0;
+        public string nombre = "";
+        public string tipo = "";
+        public string marca = "";
+        public string modelo = "";
 
         public NuevoProductoEquipo()
         {
             InitializeComponent();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ventanaCargada(object sender, RoutedEventArgs e)
         {
-            MostrarCampos();
-            LimpiarFormulario();
+            mostrarCampos();
+            limpiarFormulario();
         }
 
-        private void Tipo_Checked(object sender, RoutedEventArgs e)
+        private void tipoMarcado(object sender, RoutedEventArgs e)
         {
             if (spMarca == null || spModelo == null)
                 return;
 
-            MostrarCampos();
+            mostrarCampos();
         }
 
-        private void MostrarCampos()
+        private void mostrarCampos()
         {
             if (rbEquipo.IsChecked == true)
             {
@@ -55,7 +55,7 @@ namespace Codelex
             }
         }
 
-        private void LimpiarFormulario()
+        private void limpiarFormulario()
         {
             txtNombre.Text = "";
             txtTipo.Text = "";
@@ -64,7 +64,7 @@ namespace Codelex
             txtNombre.Focus();
         }
 
-        private void Guardar_Click(object sender, RoutedEventArgs e)
+        private void guardarClic(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -72,54 +72,54 @@ namespace Codelex
 
                 if (rbEquipo.IsChecked == true)
                 {
-                    mensaje = inventarioBD.ValidarEquipo(txtNombre.Text, txtTipo.Text, txtMarca.Text, txtModelo.Text);
+                    mensaje = inventarioBD.validarEquipo(txtNombre.Text, txtTipo.Text, txtMarca.Text, txtModelo.Text);
 
                     if (mensaje != "")
                     {
-                        MensajeCodelex.Mostrar(this, "Inventario", mensaje, false);
+                        MensajeCodelex.mostrar(this, "Inventario", mensaje, false);
                         return;
                     }
 
-                    EsEquipo = true;
-                    Marca = txtMarca.Text.Trim();
-                    Modelo = txtModelo.Text.Trim();
+                    esEquipo = true;
+                    marca = txtMarca.Text.Trim();
+                    modelo = txtModelo.Text.Trim();
                 }
                 else
                 {
                     int productoId;
-                    bool guardado = inventarioBD.InsertarProducto(txtNombre.Text, txtTipo.Text, out mensaje, out productoId);
+                    bool guardado = inventarioBD.insertarProducto(txtNombre.Text, txtTipo.Text, out mensaje, out productoId);
 
-                    MensajeCodelex.Mostrar(this, "Inventario", mensaje, guardado);
+                    MensajeCodelex.mostrar(this, "Inventario", mensaje, guardado);
 
                     if (!guardado)
                         return;
 
-                    ProductoId = productoId;
+                    productoId = productoId;
                 }
 
-                Nombre = txtNombre.Text.Trim();
-                Tipo = txtTipo.Text.Trim();
-                Registrado = true;
+                nombre = txtNombre.Text.Trim();
+                tipo = txtTipo.Text.Trim();
+                registrado = true;
                 Close();
             }
             catch (Exception ex)
             {
-                MensajeCodelex.Mostrar(this, "Inventario", ex.Message, false);
+                MensajeCodelex.mostrar(this, "Inventario", ex.Message, false);
             }
         }
 
-        private void Limpiar_Click(object sender, RoutedEventArgs e)
+        private void limpiarClic(object sender, RoutedEventArgs e)
         {
-            LimpiarFormulario();
+            limpiarFormulario();
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Salir_Click(object sender, RoutedEventArgs e)
+        private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }

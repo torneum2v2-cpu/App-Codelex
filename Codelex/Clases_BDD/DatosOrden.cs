@@ -5,63 +5,63 @@ namespace Codelex.Clases_BDD
 {
     class DatosOrden
     {
-        public string CotizacionId = "";
-        public string Rtn = "";
-        public int LocacionId = 0;
-        public int SupervisorId = 0;
-        public int VehiculoId = 0;
-        public DateTime? FechaSolicitud = null;
-        public DateTime? FechaServicio = null;
-        public int EstadoId = 0;
-        public string Observaciones = "";
-        public string Turno = "";
-        public string PisoArea = "";
-        public int PersonasNecesarias = 0;
+        public string cotizacionId = "";
+        public string rtn = "";
+        public int locacionId = 0;
+        public int supervisorId = 0;
+        public int vehiculoId = 0;
+        public DateTime? fechaSolicitud = null;
+        public DateTime? fechaServicio = null;
+        public int estadoId = 0;
+        public string observaciones = "";
+        public string turno = "";
+        public string pisoArea = "";
+        public int personasNecesarias = 0;
 
-        public List<int> Empleados = new List<int>();
+        public List<int> empleados = new List<int>();
     }
 
     class Orden : BaseDatos
     {
-        public DataTable ListarEstadosOrden()
+        public DataTable listarEstadosOrden()
         {
-            return Consultar(Procedimiento("sp_ListarEstadosOrden"));
+            return consultar(procedimiento("sp_ListarEstadosOrden"));
         }
 
-        public DataTable ListarServicios()
+        public DataTable listarServicios()
         {
-            return Consultar(Procedimiento("sp_ListarServicios"));
+            return consultar(procedimiento("sp_ListarServicios"));
         }
 
-        public DataTable ListarEmpleados()
+        public DataTable listarEmpleados()
         {
-            return Consultar(Procedimiento("sp_ListarEmpleadosOrden"));
+            return consultar(procedimiento("sp_ListarEmpleadosOrden"));
         }
 
-        public DataTable ListarCotizaciones(string texto, string rtn)
+        public DataTable listarCotizaciones(string texto, string rtn)
         {
-            SqlCommand comando = Procedimiento("sp_ListarCotizacionesOrden");
+            SqlCommand comando = procedimiento("sp_ListarCotizacionesOrden");
             comando.Parameters.AddWithValue("@texto", texto.Trim());
             comando.Parameters.AddWithValue("@identificacion_cliente", rtn.Trim());
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public DataTable DetalleCotizacion(string cotizacionId)
+        public DataTable detalleCotizacion(string cotizacionId)
         {
-            SqlCommand comando = Procedimiento("sp_DetalleCotizacion");
+            SqlCommand comando = procedimiento("sp_DetalleCotizacion");
             comando.Parameters.AddWithValue("@cotizacion_id", cotizacionId);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public DataTable ResumenCotizacion(string cotizacionId)
+        public DataTable resumenCotizacion(string cotizacionId)
         {
-            SqlCommand comando = Procedimiento("sp_ResumenCotizacion");
+            SqlCommand comando = procedimiento("sp_ResumenCotizacion");
             comando.Parameters.AddWithValue("@cotizacion_id", cotizacionId);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
         // Una línea del resumen: lo que necesita la orden y lo que hay disponible.
-        public string TextoNecesidad(DataRow fila)
+        public string textoNecesidad(DataRow fila)
         {
             string tipo = "" + fila["tipo"];
             string nombre = "" + fila["nombre"];
@@ -83,35 +83,35 @@ namespace Codelex.Clases_BDD
             return texto;
         }
 
-        public bool GuardarOrden(DatosOrden datos, out string mensaje, out string ordenId)
+        public bool guardarOrden(DatosOrden datos, out string mensaje, out string ordenId)
         {
             ordenId = "";
 
-            mensaje = ValidarOrden(datos);
+            mensaje = validarOrden(datos);
             if (mensaje != "")
                 return false;
 
-            SqlCommand comando = Procedimiento("sp_InsertarOrden");
-            comando.Parameters.AddWithValue("@identificacion_cliente", datos.Rtn.Trim());
-            comando.Parameters.AddWithValue("@locacion_id", datos.LocacionId);
-            comando.Parameters.AddWithValue("@supervisor_id", datos.SupervisorId);
-            comando.Parameters.AddWithValue("@vehiculo_id", datos.VehiculoId);
-            comando.Parameters.AddWithValue("@fecha_solicitud", datos.FechaSolicitud.Value);
-            comando.Parameters.AddWithValue("@fecha_servicio", datos.FechaServicio.Value);
-            comando.Parameters.AddWithValue("@estado_orden_id", datos.EstadoId);
-            comando.Parameters.AddWithValue("@observacion", datos.Observaciones.Trim());
-            comando.Parameters.AddWithValue("@turno", datos.Turno.Trim());
-            comando.Parameters.AddWithValue("@piso_area", datos.PisoArea.Trim());
-            comando.Parameters.AddWithValue("@cotizacion_id", datos.CotizacionId.Trim());
+            SqlCommand comando = procedimiento("sp_InsertarOrden");
+            comando.Parameters.AddWithValue("@identificacion_cliente", datos.rtn.Trim());
+            comando.Parameters.AddWithValue("@locacion_id", datos.locacionId);
+            comando.Parameters.AddWithValue("@supervisor_id", datos.supervisorId);
+            comando.Parameters.AddWithValue("@vehiculo_id", datos.vehiculoId);
+            comando.Parameters.AddWithValue("@fecha_solicitud", datos.fechaSolicitud.Value);
+            comando.Parameters.AddWithValue("@fecha_servicio", datos.fechaServicio.Value);
+            comando.Parameters.AddWithValue("@estado_orden_id", datos.estadoId);
+            comando.Parameters.AddWithValue("@observacion", datos.observaciones.Trim());
+            comando.Parameters.AddWithValue("@turno", datos.turno.Trim());
+            comando.Parameters.AddWithValue("@piso_area", datos.pisoArea.Trim());
+            comando.Parameters.AddWithValue("@cotizacion_id", datos.cotizacionId.Trim());
 
-            AgregarLista(comando, "@empleados", "dbo.tipo_lista_empleados",
-                         TablaDeEnteros("empleado_id", datos.Empleados));
+            agregarLista(comando, "@empleados", "dbo.tipo_lista_empleados",
+                         tablaDeEnteros("empleado_id", datos.empleados));
 
             SqlParameter ordenParametro = new SqlParameter("@orden_id", SqlDbType.VarChar, 50);
             ordenParametro.Direction = ParameterDirection.Output;
             comando.Parameters.Add(ordenParametro);
 
-            bool guardada = Ejecutar(comando, out mensaje);
+            bool guardada = ejecutar(comando, out mensaje);
 
             if (guardada)
             {
@@ -122,54 +122,54 @@ namespace Codelex.Clases_BDD
             return guardada;
         }
 
-        private string ValidarOrden(DatosOrden datos)
+        private string validarOrden(DatosOrden datos)
         {
-            if (datos.CotizacionId.Trim() == "")
+            if (datos.cotizacionId.Trim() == "")
                 return "Seleccione una cotización.";
-            if (datos.Rtn.Trim() == "")
+            if (datos.rtn.Trim() == "")
                 return "La cotización no tiene un cliente registrado.";
-            if (datos.LocacionId <= 0)
+            if (datos.locacionId <= 0)
                 return "Seleccione la locación.";
-            if (!datos.FechaSolicitud.HasValue)
+            if (!datos.fechaSolicitud.HasValue)
                 return "Seleccione la fecha de solicitud.";
-            if (!datos.FechaServicio.HasValue)
+            if (!datos.fechaServicio.HasValue)
                 return "Seleccione la fecha de limpieza.";
-            if (datos.FechaServicio.Value < datos.FechaSolicitud.Value)
+            if (datos.fechaServicio.Value < datos.fechaSolicitud.Value)
                 return "La fecha de limpieza no puede ser anterior a la fecha de solicitud.";
 
-            if (datos.EstadoId <= 0)
+            if (datos.estadoId <= 0)
                 return "Seleccione el estado de la orden.";
-            if (datos.SupervisorId <= 0)
+            if (datos.supervisorId <= 0)
                 return "Seleccione el supervisor.";
 
-            if (datos.Empleados.Count == 0)
+            if (datos.empleados.Count == 0)
                 return "Asigne al menos un empleado.";
-            if (datos.Empleados.Count < datos.PersonasNecesarias)
-                return "La cotización necesita " + datos.PersonasNecesarias + " empleados. Asigne más.";
-            if (datos.Turno.Trim() == "")
+            if (datos.empleados.Count < datos.personasNecesarias)
+                return "La cotización necesita " + datos.personasNecesarias + " empleados. Asigne más.";
+            if (datos.turno.Trim() == "")
                 return "Seleccione el turno.";
-            if (datos.PisoArea.Trim() == "")
+            if (datos.pisoArea.Trim() == "")
                 return "Escriba el piso o área.";
-            if (datos.PisoArea.Trim().Length > 20)
+            if (datos.pisoArea.Trim().Length > 20)
                 return "El piso o área no puede tener más de 20 caracteres.";
 
-            if (datos.VehiculoId <= 0)
+            if (datos.vehiculoId <= 0)
                 return "Seleccione el vehículo.";
 
-            if (datos.Observaciones.Trim().Length > 200)
+            if (datos.observaciones.Trim().Length > 200)
                 return "La descripción no puede tener más de 200 caracteres.";
 
             return "";
         }
 
-        private void AgregarLista(SqlCommand comando, string nombre, string tipo, DataTable tabla)
+        private void agregarLista(SqlCommand comando, string nombre, string tipo, DataTable tabla)
         {
             SqlParameter parametro = comando.Parameters.AddWithValue(nombre, tabla);
             parametro.SqlDbType = SqlDbType.Structured;
             parametro.TypeName = tipo;
         }
 
-        private DataTable TablaDeEnteros(string columna, List<int> valores)
+        private DataTable tablaDeEnteros(string columna, List<int> valores)
         {
             DataTable tabla = new DataTable();
             tabla.Columns.Add(columna, typeof(int));

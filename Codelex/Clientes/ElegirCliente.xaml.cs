@@ -9,72 +9,72 @@ namespace Codelex
     {
         Cliente clienteBD = new Cliente();
 
-        public DataRowView? ClienteElegido = null;
+        public DataRowView? clienteElegido = null;
 
         public ElegirCliente()
         {
             InitializeComponent();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ventanaCargada(object sender, RoutedEventArgs e)
         {
-            CargarClientes();
+            cargarClientes();
             txtBuscar.Focus();
         }
 
-        private void CargarClientes()
+        private void cargarClientes()
         {
             try
             {
-                DataTable tabla = clienteBD.BuscarClientes(txtBuscar.Text.Trim(), "", "ACTIVOS");
+                DataTable tabla = clienteBD.buscarClientes(txtBuscar.Text.Trim(), "", "ACTIVOS");
                 dgClientes.ItemsSource = tabla.DefaultView;
                 txtResultado.Text = "Clientes activos (" + tabla.Rows.Count + ")";
             }
             catch (Exception ex)
             {
-                MensajeCodelex.Mostrar(this, "Buscar cliente", ex.Message, false);
+                MensajeCodelex.mostrar(this, "Buscar cliente", ex.Message, false);
             }
         }
 
-        private void Elegir()
+        private void elegir()
         {
             if (dgClientes.SelectedItem == null)
             {
-                MensajeCodelex.Mostrar(this, "Buscar cliente", "Seleccione un cliente de la tabla.", false);
+                MensajeCodelex.mostrar(this, "Buscar cliente", "Seleccione un cliente de la tabla.", false);
                 return;
             }
 
-            ClienteElegido = (DataRowView)dgClientes.SelectedItem;
+            clienteElegido = (DataRowView)dgClientes.SelectedItem;
             DialogResult = true;
         }
 
-        private void Buscar_Click(object sender, RoutedEventArgs e)
+        private void buscarClic(object sender, RoutedEventArgs e)
         {
-            CargarClientes();
+            cargarClientes();
         }
 
-        private void Buscar_KeyDown(object sender, KeyEventArgs e)
+        private void buscarTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
-                CargarClientes();
+                cargarClientes();
         }
 
-        private void Seleccionar_Click(object sender, RoutedEventArgs e)
+        private void seleccionarClic(object sender, RoutedEventArgs e)
         {
-            Elegir();
+            elegir();
         }
 
-        private void dgClientes_DoubleClick(object sender, MouseButtonEventArgs e)
+        private void clientesDobleClic(object sender, MouseButtonEventArgs e)
         {
-            Elegir();
+            elegir();
         }
 
-        private void Cancelar_Click(object sender, RoutedEventArgs e)
+        private void cancelarClic(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();

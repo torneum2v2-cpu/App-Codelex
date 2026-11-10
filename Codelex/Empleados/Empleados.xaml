@@ -10,7 +10,7 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize"
         FontFamily="Segoe UI"
-        Loaded="Window_Loaded">
+        Loaded="ventanaCargada">
     <Window.Resources>
         <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
         <SolidColorBrush x:Key="PrimaryLight" Color="#5FE0D2"/>
@@ -334,10 +334,10 @@
                 </Grid.RowDefinitions>
 
                 <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{StaticResource BgGradient}"
-                        Padding="28,18,14,18" MouseLeftButtonDown="DragWindow">
+                        Padding="28,18,14,18" MouseLeftButtonDown="arrastrarVentana">
                     <Grid>
                         <StackPanel Orientation="Horizontal">
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Volver"
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Volver"
                                     Width="44" Height="38" Margin="0,0,14,0" VerticalAlignment="Center">
                                 <Path Data="M30,12 H2 M10,20 L2,12 L10,4"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
@@ -356,12 +356,12 @@
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                            <Button Style="{StaticResource WindowButton}" Click="Minimizar_Click" ToolTip="Minimizar">
+                            <Button Style="{StaticResource WindowButton}" Click="minimizarClic" ToolTip="Minimizar">
                                 <Path Data="M0,0 L10,0"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6" Margin="0,8,0,0"/>
                             </Button>
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Cerrar">
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Cerrar">
                                 <Path Data="M0,10 L10,0 M0,0 L10,10"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6"/>
@@ -418,11 +418,11 @@
                                 </StackPanel>
                                 <StackPanel Grid.Row="2" Grid.ColumnSpan="3" Margin="0,0,0,12">
                                     <TextBlock Text="Identidad *" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtIdentidad" MaxLength="13" PreviewTextInput="SoloNumeros"/>
+                                    <TextBox x:Name="txtIdentidad" MaxLength="13" PreviewTextInput="soloNumeros"/>
                                 </StackPanel>
                                 <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,12">
                                     <TextBlock Text="Teléfono" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtTelefono" MaxLength="8" PreviewTextInput="SoloNumeros"/>
+                                    <TextBox x:Name="txtTelefono" MaxLength="8" PreviewTextInput="soloNumeros"/>
                                 </StackPanel>
                                 <StackPanel Grid.Row="4" Grid.ColumnSpan="3" Margin="0">
                                     <TextBlock Text="Correo" Style="{StaticResource Etiqueta}"/>
@@ -451,20 +451,20 @@
                                        TextWrapping="Wrap" Margin="0,8,0,0"/>
 
                             <Button x:Name="btnVerReporte" Content="Ver reporte del empleado" Style="{StaticResource SecondaryButton}"
-                                    Margin="0,18,0,0" Click="VerReporte_Click"/>
+                                    Margin="0,18,0,0" Click="verReporteClic"/>
 
                             <UniformGrid Columns="4" Margin="0,10,0,0">
                                 <Button x:Name="btnNuevo" Content="Nuevo" Style="{StaticResource SecondaryButton}"
-                                        Margin="0,0,5,0" Click="Nuevo_Click"
+                                        Margin="0,0,5,0" Click="nuevoClic"
                                         ToolTip="Limpia el formulario para registrar un empleado nuevo"/>
                                 <Button x:Name="btnCrear" Content="Crear" Style="{StaticResource PrimaryButton}"
-                                        Margin="5,0,5,0" Click="Crear_Click"
+                                        Margin="5,0,5,0" Click="crearClic"
                                         ToolTip="Guarda los datos del formulario como un empleado nuevo"/>
                                 <Button x:Name="btnActualizar" Content="Actualizar" Style="{StaticResource PrimaryButton}"
-                                        Margin="5,0,5,0" Click="Actualizar_Click"
+                                        Margin="5,0,5,0" Click="actualizarClic"
                                         ToolTip="Guarda los cambios del empleado que se está editando"/>
                                 <Button x:Name="btnCambiarEstado" Content="Desactivar" Style="{StaticResource SecondaryButton}"
-                                        Margin="5,0,0,0" Click="CambiarEstado_Click"
+                                        Margin="5,0,0,0" Click="cambiarEstadoClic"
                                         ToolTip="Activa o desactiva al empleado (no se borra: tiene órdenes y asistencias ligadas)"/>
                             </UniformGrid>
                         </StackPanel>
@@ -491,21 +491,21 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBox x:Name="txtBuscar" Grid.Column="0" Margin="0,0,10,0" KeyDown="Buscar_KeyDown"
+                                    <TextBox x:Name="txtBuscar" Grid.Column="0" Margin="0,0,10,0" KeyDown="buscarTeclaPresionada"
                                              ToolTip="Escriba y presione Enter para buscar en todos los campos"/>
                                     <Button Grid.Column="1" Content="Por nombre"
-                                            Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" Click="PorNombre_Click"/>
+                                            Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" Click="porNombreClic"/>
                                     <Button Grid.Column="2" Content="Por identidad"
-                                            Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" Click="PorIdentidad_Click"/>
+                                            Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" Click="porIdentidadClic"/>
                                     <Button Grid.Column="3" Content="Por cargo"
-                                            Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" Click="PorCargo_Click"/>
+                                            Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" Click="porCargoClic"/>
                                     <Button Grid.Column="4" Content="Mostrar todos"
-                                            Style="{StaticResource SecondaryButton}" Margin="0,0,16,0" Click="MostrarTodos_Click"/>
+                                            Style="{StaticResource SecondaryButton}" Margin="0,0,16,0" Click="mostrarTodosClic"/>
                                     <Button Grid.Column="5" Content="Activos"
-                                            Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" Click="Activos_Click"
+                                            Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" Click="activosClic"
                                             ToolTip="Mostrar solo los empleados activos"/>
                                     <Button Grid.Column="6" Content="Inactivos"
-                                            Style="{StaticResource SecondaryButton}" Click="Inactivos_Click"
+                                            Style="{StaticResource SecondaryButton}" Click="inactivosClic"
                                             ToolTip="Mostrar solo los empleados inactivos"/>
                                 </Grid>
                             </StackPanel>
@@ -518,8 +518,8 @@
                                 <DataGrid x:Name="dgEmpleados" Style="{StaticResource Tabla}"
                                           AutoGenerateColumns="False" IsReadOnly="True"
                                           CanUserAddRows="False" SelectionMode="Single"
-                                          PreviewMouseLeftButtonUp="dgEmpleados_Click"
-                                          MouseDoubleClick="dgEmpleados_DobleClick">
+                                          PreviewMouseLeftButtonUp="empleadosClic"
+                                          MouseDoubleClick="empleadosDobleClic">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="ID" Binding="{Binding empleado_id}" Width="46"/>
                                         <DataGridTextColumn Header="Cargo" Binding="{Binding nombre_cargo}" Width="*"/>
@@ -538,7 +538,7 @@
                             <TextBlock Text="Haga clic en un empleado para editarlo. Doble clic o &quot;Ver reporte&quot; abre su reporte."
                                        Style="{StaticResource Nota}" VerticalAlignment="Center"/>
                             <Button x:Name="btnSalir" Content="Salir" Width="110" HorizontalAlignment="Right"
-                                    Style="{StaticResource SecondaryButton}" Click="Salir_Click"/>
+                                    Style="{StaticResource SecondaryButton}" Click="salirClic"/>
                         </Grid>
                     </Grid>
                 </Grid>

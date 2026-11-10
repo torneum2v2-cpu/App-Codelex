@@ -24,46 +24,46 @@ namespace Codelex.Facturas_y_Cotizaciones
 
             this.ordenId = ordenId;
 
-            cmbTipoPago.SelectionChanged += cmbPago_SelectionChanged;
-            cmbCuotas.SelectionChanged += cmbPago_SelectionChanged;
-            Loaded += Window_Loaded;
+            cmbTipoPago.SelectionChanged += pagoSeleccionCambiada;
+            cmbCuotas.SelectionChanged += pagoSeleccionCambiada;
+            Loaded += ventanaCargada;
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             try
             {
-                CargarListas();
+                cargarListas();
 
-                if (!CargarOrden())
+                if (!cargarOrden())
                 {
                     Close();
                     return;
                 }
 
-                ActualizarValorCuota();
+                actualizarValorCuota();
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
                 Close();
             }
         }
 
-        private void CargarListas()
+        private void cargarListas()
         {
-            foreach (string tipo in facturaBD.TiposPago())
+            foreach (string tipo in facturaBD.tiposPago())
             {
                 cmbTipoPago.Items.Add(tipo);
             }
 
-            DataTable formas = facturaBD.ListarFormasPago();
+            DataTable formas = facturaBD.listarFormasPago();
             foreach (DataRow fila in formas.Rows)
             {
                 cmbMetodoPago.Items.Add(new ItemLista(Convert.ToInt32(fila["forma_pago_id"]), "" + fila["nombre_forma_pago"], ""));
             }
 
-            foreach (int cuotas in facturaBD.OpcionesCuotas())
+            foreach (int cuotas in facturaBD.opcionesCuotas())
             {
                 cmbCuotas.Items.Add(cuotas);
             }
@@ -72,14 +72,14 @@ namespace Codelex.Facturas_y_Cotizaciones
             cmbCuotas.SelectedIndex = 4;
         }
 
-        private bool CargarOrden()
+        private bool cargarOrden()
         {
-            DataTable orden = facturaBD.ObtenerOrdenFactura(ordenId);
+            DataTable orden = facturaBD.obtenerOrdenFactura(ordenId);
 
-            string problema = facturaBD.ValidarOrdenFacturable(orden);
+            string problema = facturaBD.validarOrdenFacturable(orden);
             if (problema != "")
             {
-                Aviso(problema);
+                aviso(problema);
                 return false;
             }
 
@@ -87,23 +87,23 @@ namespace Codelex.Facturas_y_Cotizaciones
 
             dFecha.Text = DateTime.Today.ToString("dd/MM/yyyy");
             dOrden.Text = ordenId;
-            dCotizacion.Text = Vacio("" + o["cotizacion_id"]);
-            dServicio.Text = Vacio("" + o["nombre_servicio"]);
+            dCotizacion.Text = vacio("" + o["cotizacion_id"]);
+            dServicio.Text = vacio("" + o["nombre_servicio"]);
             dFechaServicio.Text = "—";
             if (o["fecha_servicio"] is DateTime fechaServicio)
                 dFechaServicio.Text = fechaServicio.ToString("dd/MM/yyyy");
 
-            dRtn.Text = Vacio("" + o["identificacion_cliente"]);
-            dEmpresa.Text = Vacio("" + o["nombre_empresa"]);
-            dContacto.Text = Vacio((("" + o["nombre_cliente"]) + " " + ("" + o["apellido_cliente"])).Trim());
-            dTelefono.Text = Vacio("" + o["telefono_cliente"]);
-            dCorreo.Text = Vacio("" + o["correo_cliente"]);
+            dRtn.Text = vacio("" + o["identificacion_cliente"]);
+            dEmpresa.Text = vacio("" + o["nombre_empresa"]);
+            dContacto.Text = vacio((("" + o["nombre_cliente"]) + " " + ("" + o["apellido_cliente"])).Trim());
+            dTelefono.Text = vacio("" + o["telefono_cliente"]);
+            dCorreo.Text = vacio("" + o["correo_cliente"]);
 
-            dLocacion.Text = Vacio("" + o["nombre_locacion"]);
-            dTipoLocacion.Text = Vacio("" + o["tipo_locacion"]);
-            dDireccion.Text = Vacio("" + o["direccion"]);
+            dLocacion.Text = vacio("" + o["nombre_locacion"]);
+            dTipoLocacion.Text = vacio("" + o["tipo_locacion"]);
+            dDireccion.Text = vacio("" + o["direccion"]);
 
-            DataTable lineas = facturaBD.DetalleOrden(ordenId);
+            DataTable lineas = facturaBD.detalleOrden(ordenId);
             dgLineas.ItemsSource = lineas.DefaultView;
 
             decimal subtotal = 0;
@@ -112,17 +112,17 @@ namespace Codelex.Facturas_y_Cotizaciones
                 subtotal += Convert.ToDecimal(linea["subtotal"]);
             }
 
-            decimal isv = facturaBD.CalcularIsv(subtotal);
+            decimal isv = facturaBD.calcularIsv(subtotal);
             total = subtotal + isv;
 
-            lblSubtotal.Text = facturaBD.Dinero(subtotal);
-            lblIsv.Text = facturaBD.Dinero(isv);
-            lblTotal.Text = facturaBD.Dinero(total);
+            lblSubtotal.Text = facturaBD.dinero(subtotal);
+            lblIsv.Text = facturaBD.dinero(isv);
+            lblTotal.Text = facturaBD.dinero(total);
 
             return true;
         }
 
-        private static string Vacio(string texto)
+        private static string vacio(string texto)
         {
             if (texto.Trim() == "")
                 return "—";
@@ -132,87 +132,87 @@ namespace Codelex.Facturas_y_Cotizaciones
 
         // ---------- Forma de pago ----------
 
-        private void cmbPago_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void pagoSeleccionCambiada(object sender, SelectionChangedEventArgs e)
         {
-            ActualizarValorCuota();
+            actualizarValorCuota();
         }
 
-        private void ActualizarValorCuota()
+        private void actualizarValorCuota()
         {
             if (cmbTipoPago.SelectedItem == null || cmbCuotas.SelectedItem == null)
                 return;
 
-            bool credito = ("" + cmbTipoPago.SelectedItem) == Facturacion.Credito;
+            bool credito = ("" + cmbTipoPago.SelectedItem) == Facturacion.CREDITO;
             cmbCuotas.IsEnabled = credito;
 
             if (!credito)
             {
-                lblValorCuota.Text = "1 pago de " + facturaBD.Dinero(total);
+                lblValorCuota.Text = "1 pago de " + facturaBD.dinero(total);
                 return;
             }
 
             int cuotas = Convert.ToInt32(cmbCuotas.SelectedItem);
-            lblValorCuota.Text = cuotas + " x " + facturaBD.Dinero(facturaBD.CalcularCuota(total, cuotas));
+            lblValorCuota.Text = cuotas + " x " + facturaBD.dinero(facturaBD.calcularCuota(total, cuotas));
         }
 
-        private void btnGuardar_Click(object sender, RoutedEventArgs e)
+        private void guardarClic(object sender, RoutedEventArgs e)
         {
             ItemLista metodo = cmbMetodoPago.SelectedItem as ItemLista;
 
             DatosFactura datos = new DatosFactura();
-            datos.OrdenId = ordenId;
-            datos.TipoPago = "" + cmbTipoPago.SelectedItem;
+            datos.ordenId = ordenId;
+            datos.tipoPago = "" + cmbTipoPago.SelectedItem;
 
             if (metodo != null)
-                datos.FormaPagoId = metodo.Id;
+                datos.formaPagoId = metodo.id;
 
             if (cmbCuotas.SelectedItem != null)
-                datos.Cuotas = Convert.ToInt32(cmbCuotas.SelectedItem);
+                datos.cuotas = Convert.ToInt32(cmbCuotas.SelectedItem);
 
             try
             {
                 string mensaje;
                 int facturaId;
 
-                bool guardada = facturaBD.GuardarFactura(datos, out mensaje, out facturaId);
+                bool guardada = facturaBD.guardarFactura(datos, out mensaje, out facturaId);
 
-                MensajeCodelex.Mostrar(this, "Facturas", mensaje, guardada);
+                MensajeCodelex.mostrar(this, "Facturas", mensaje, guardada);
 
                 if (guardada)
                     Close();
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
         // ---------- Ventana ----------
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimizar_Click(object sender, RoutedEventArgs e)
+        private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
-        private void Salir_Click(object sender, RoutedEventArgs e)
+        private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
-        private void Aviso(string mensaje)
+        private void aviso(string mensaje)
         {
-            MensajeCodelex.Mostrar(this, "Facturas", mensaje, false);
+            MensajeCodelex.mostrar(this, "Facturas", mensaje, false);
         }
 
-        private void MostrarError(Exception ex)
+        private void mostrarError(Exception ex)
         {
-            MensajeCodelex.Mostrar(this, "Facturas", ex.Message, false);
+            MensajeCodelex.mostrar(this, "Facturas", ex.Message, false);
         }
     }
 }

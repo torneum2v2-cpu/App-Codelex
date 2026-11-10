@@ -10,7 +10,7 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize"
         FontFamily="Segoe UI"
-        Loaded="Window_Loaded">
+        Loaded="ventanaCargada">
     <Window.Resources>
         <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
         <SolidColorBrush x:Key="PrimaryLight" Color="#5FE0D2"/>
@@ -251,7 +251,7 @@
                 </Grid.RowDefinitions>
 
                 <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{StaticResource BgGradient}"
-                        Padding="28,18,14,18" MouseLeftButtonDown="DragWindow">
+                        Padding="28,18,14,18" MouseLeftButtonDown="arrastrarVentana">
                     <Grid>
                         <StackPanel Orientation="Horizontal">
                             <Border Width="42" Height="42" CornerRadius="12" Background="{StaticResource ButtonGradient}">
@@ -266,7 +266,7 @@
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                            <Button Style="{StaticResource WindowButton}" Click="Cancelar_Click" ToolTip="Cerrar">
+                            <Button Style="{StaticResource WindowButton}" Click="cancelarClic" ToolTip="Cerrar">
                                 <Path Data="M0,0 L10,10 M10,0 L0,10"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6"/>
@@ -288,10 +288,10 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <TextBox x:Name="txtBuscar" Grid.Column="0" Margin="0,0,10,0" KeyDown="Buscar_KeyDown"
+                            <TextBox x:Name="txtBuscar" Grid.Column="0" Margin="0,0,10,0" KeyDown="buscarTeclaPresionada"
                                      ToolTip="Escriba un RTN, empresa o nombre y presione Enter"/>
                             <Button x:Name="btnBuscar" Grid.Column="1" Content="Buscar" Width="110"
-                                    Style="{StaticResource PrimaryButton}" Click="Buscar_Click"/>
+                                    Style="{StaticResource PrimaryButton}" Click="buscarClic"/>
                         </Grid>
                     </Border>
 
@@ -302,7 +302,7 @@
                             <DataGrid x:Name="dgClientes" Style="{StaticResource Tabla}"
                                       AutoGenerateColumns="False" IsReadOnly="True"
                                       CanUserAddRows="False" SelectionMode="Single"
-                                      MouseDoubleClick="dgClientes_DoubleClick">
+                                      MouseDoubleClick="clientesDobleClic">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="RTN / Identidad" Binding="{Binding identificacion_cliente}" Width="1.2*"/>
                                     <DataGridTextColumn Header="Empresa" Binding="{Binding nombre_empresa}" Width="1.3*"/>
@@ -321,9 +321,9 @@
                                    HorizontalAlignment="Left"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button x:Name="btnCancelar" Content="Cancelar" Width="110" Margin="0,0,10,0"
-                                    Style="{StaticResource SecondaryButton}" Click="Cancelar_Click"/>
+                                    Style="{StaticResource SecondaryButton}" Click="cancelarClic"/>
                             <Button x:Name="btnSeleccionar" Content="Seleccionar" Width="130"
-                                    Style="{StaticResource PrimaryButton}" Click="Seleccionar_Click"/>
+                                    Style="{StaticResource PrimaryButton}" Click="seleccionarClic"/>
                         </StackPanel>
                     </Grid>
                 </Grid>

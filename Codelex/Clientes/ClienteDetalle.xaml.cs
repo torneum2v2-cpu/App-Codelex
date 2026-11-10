@@ -10,7 +10,7 @@ namespace Codelex
         Cliente clienteBD = new Cliente();
         string rtn;
 
-        public bool EditarCliente = false;
+        public bool editarCliente = false;
 
         public ClienteDetalle(string rtn)
         {
@@ -18,14 +18,14 @@ namespace Codelex
             this.rtn = rtn;
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             try
             {
-                CargarDatosCliente();
-                CargarLocaciones();
-                CargarOrdenes();
-                CargarFacturas();
+                cargarDatosCliente();
+                cargarLocaciones();
+                cargarOrdenes();
+                cargarFacturas();
             }
             catch (Exception ex)
             {
@@ -33,9 +33,9 @@ namespace Codelex
             }
         }
 
-        private void CargarDatosCliente()
+        private void cargarDatosCliente()
         {
-            DataTable tabla = clienteBD.ObtenerCliente(rtn);
+            DataTable tabla = clienteBD.obtenerCliente(rtn);
 
             if (tabla.Rows.Count == 0)
             {
@@ -55,9 +55,9 @@ namespace Codelex
             txtEstado.Text = fila["estado"].ToString();
         }
 
-        private void CargarLocaciones()
+        private void cargarLocaciones()
         {
-            DataTable tabla = clienteBD.LocacionesPorCliente(rtn);
+            DataTable tabla = clienteBD.locacionesPorCliente(rtn);
             lstLocaciones.Items.Clear();
 
             foreach (DataRow fila in tabla.Rows)
@@ -67,21 +67,21 @@ namespace Codelex
             }
         }
 
-        private void CargarOrdenes()
+        private void cargarOrdenes()
         {
-            DataTable tabla = clienteBD.OrdenesPorCliente(rtn);
+            DataTable tabla = clienteBD.ordenesPorCliente(rtn);
             lstOrdenes.Items.Clear();
 
             foreach (DataRow fila in tabla.Rows)
             {
-                string linea = fila["orden_id"] + " · " + fila["servicio"] + " · " + Fecha(fila["fecha"]) + " · " + fila["estado"];
+                string linea = fila["orden_id"] + " · " + fila["servicio"] + " · " + fecha(fila["fecha"]) + " · " + fila["estado"];
                 lstOrdenes.Items.Add(linea);
             }
         }
 
-        private void CargarFacturas()
+        private void cargarFacturas()
         {
-            DataTable tabla = clienteBD.FacturasPorCliente(rtn);
+            DataTable tabla = clienteBD.facturasPorCliente(rtn);
             lstFacturas.Items.Clear();
 
             foreach (DataRow fila in tabla.Rows)
@@ -90,12 +90,12 @@ namespace Codelex
                 if (fila["monto"] != DBNull.Value)
                     monto = "L " + Convert.ToDecimal(fila["monto"]).ToString("N2");
 
-                string linea = fila["factura_id"] + " · " + Fecha(fila["fecha"]) + " · " + fila["estado_pago"] + " · " + monto;
+                string linea = fila["factura_id"] + " · " + fecha(fila["fecha"]) + " · " + fila["estado_pago"] + " · " + monto;
                 lstFacturas.Items.Add(linea);
             }
         }
 
-        private string Fecha(object valor)
+        private string fecha(object valor)
         {
             if (valor == DBNull.Value)
                 return "";
@@ -103,19 +103,19 @@ namespace Codelex
             return Convert.ToDateTime(valor).ToString("dd/MM/yyyy");
         }
 
-        private void NuevaOrden_Click(object sender, RoutedEventArgs e)
+        private void nuevaOrdenClic(object sender, RoutedEventArgs e)
         {
-            AbrirOrden();
+            abrirOrden();
         }
 
-        private void AgregarOrden_Click(object sender, RoutedEventArgs e)
+        private void agregarOrdenClic(object sender, RoutedEventArgs e)
         {
-            AbrirOrden();
+            abrirOrden();
         }
 
-        private void AbrirOrden()
+        private void abrirOrden()
         {
-            DataRow? cotizacion = SeleccionarCotizacion.Elegir(this, rtn);
+            DataRow? cotizacion = SeleccionarCotizacion.elegir(this, rtn);
             if (cotizacion == null)
                 return;
 
@@ -125,15 +125,15 @@ namespace Codelex
 
             try
             {
-                CargarOrdenes();
+                cargarOrdenes();
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void AgregarLocacion_Click(object sender, RoutedEventArgs e)
+        private void agregarLocacionClic(object sender, RoutedEventArgs e)
         {
             IngresarLocacion ventana = new IngresarLocacion(rtn);
             ventana.Owner = this;
@@ -141,36 +141,36 @@ namespace Codelex
 
             try
             {
-                CargarLocaciones();
+                cargarLocaciones();
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void AgregarFactura_Click(object sender, RoutedEventArgs e)
+        private void agregarFacturaClic(object sender, RoutedEventArgs e)
         {
-            MensajeCodelex.Mostrar(this, "Facturas", "Próximamente", true);
+            MensajeCodelex.mostrar(this, "Facturas", "Próximamente", true);
         }
 
-        private void MostrarError(Exception ex)
+        private void mostrarError(Exception ex)
         {
-            MensajeCodelex.Mostrar(this, "Detalle del cliente", ex.Message, false);
+            MensajeCodelex.mostrar(this, "Detalle del cliente", ex.Message, false);
         }
 
-        private void Editar_Click(object sender, RoutedEventArgs e)
+        private void editarClic(object sender, RoutedEventArgs e)
         {
-            EditarCliente = true;
+            editarCliente = true;
             Close();
         }
 
-        private void Cerrar_Click(object sender, RoutedEventArgs e)
+        private void cerrarClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();

@@ -10,7 +10,7 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize"
         FontFamily="Segoe UI"
-        Loaded="Window_Loaded">
+        Loaded="ventanaCargada">
     <Window.Resources>
         <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
         <SolidColorBrush x:Key="PrimaryLight" Color="#5FE0D2"/>
@@ -265,7 +265,7 @@
                 </Grid.RowDefinitions>
 
                 <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{StaticResource BgGradient}"
-                        Padding="28,18,14,18" MouseLeftButtonDown="DragWindow">
+                        Padding="28,18,14,18" MouseLeftButtonDown="arrastrarVentana">
                     <Grid>
                         <StackPanel Orientation="Horizontal">
                             <Border Width="42" Height="42" CornerRadius="12" Background="{StaticResource ButtonGradient}">
@@ -280,7 +280,7 @@
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                            <Button Style="{StaticResource WindowButton}" Click="Cerrar_Click" ToolTip="Cerrar">
+                            <Button Style="{StaticResource WindowButton}" Click="cerrarClic" ToolTip="Cerrar">
                                 <Path Data="M0,0 L10,10 M10,0 L0,10"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6"/>
@@ -362,7 +362,7 @@
                                         <ListBox x:Name="lstLocaciones" Style="{StaticResource Lista}"/>
                                     </Border>
                                 </DockPanel>
-                                <Button Style="{StaticResource BotonMas}" ToolTip="Agregar locación" Click="AgregarLocacion_Click"/>
+                                <Button Style="{StaticResource BotonMas}" ToolTip="Agregar locación" Click="agregarLocacionClic"/>
                             </Grid>
                         </Border>
 
@@ -376,7 +376,7 @@
                                         <ListBox x:Name="lstOrdenes" Style="{StaticResource Lista}"/>
                                     </Border>
                                 </DockPanel>
-                                <Button Style="{StaticResource BotonMas}" ToolTip="Agregar orden" Click="AgregarOrden_Click"/>
+                                <Button Style="{StaticResource BotonMas}" ToolTip="Agregar orden" Click="agregarOrdenClic"/>
                             </Grid>
                         </Border>
 
@@ -390,7 +390,7 @@
                                         <ListBox x:Name="lstFacturas" Style="{StaticResource Lista}"/>
                                     </Border>
                                 </DockPanel>
-                                <Button Style="{StaticResource BotonMas}" ToolTip="Agregar factura" Click="AgregarFactura_Click"/>
+                                <Button Style="{StaticResource BotonMas}" ToolTip="Agregar factura" Click="agregarFacturaClic"/>
                             </Grid>
                         </Border>
                     </Grid>
@@ -398,12 +398,12 @@
                     <Grid Grid.Row="2" Margin="0,16,0,0">
                         <StackPanel Orientation="Horizontal">
                             <Button x:Name="btnNuevaOrden" Content="Nueva orden para este cliente" Width="230"
-                                    Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Click="NuevaOrden_Click"/>
+                                    Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Click="nuevaOrdenClic"/>
                             <Button x:Name="btnEditar" Content="Editar cliente" Width="140"
-                                    Style="{StaticResource SecondaryButton}" Click="Editar_Click"/>
+                                    Style="{StaticResource SecondaryButton}" Click="editarClic"/>
                         </StackPanel>
                         <Button x:Name="btnCerrar" Content="Cerrar" Width="110" HorizontalAlignment="Right"
-                                Style="{StaticResource SecondaryButton}" Click="Cerrar_Click"/>
+                                Style="{StaticResource SecondaryButton}" Click="cerrarClic"/>
                     </Grid>
                 </Grid>
             </Grid>

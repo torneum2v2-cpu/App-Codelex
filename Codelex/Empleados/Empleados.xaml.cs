@@ -22,43 +22,43 @@ namespace Codelex
             Height = Math.Min(Height, SystemParameters.WorkArea.Height - 10);
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             try
             {
-                cmbCargo.ItemsSource = empleadoBD.ListarCargos().DefaultView;
+                cmbCargo.ItemsSource = empleadoBD.listarCargos().DefaultView;
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
 
-            LimpiarFormulario();
-            CargarEmpleados();
+            limpiarFormulario();
+            cargarEmpleados();
         }
 
-        private void CargarEmpleados()
+        private void cargarEmpleados()
         {
             try
             {
-                DataTable tabla = empleadoBD.BuscarEmpleados(textoBusqueda, buscarPor, filtroEstado);
+                DataTable tabla = empleadoBD.buscarEmpleados(textoBusqueda, buscarPor, filtroEstado);
                 dgEmpleados.ItemsSource = tabla.DefaultView;
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void CargarEnFormulario(int id)
+        private void cargarEnFormulario(int id)
         {
             try
             {
-                DataTable tabla = empleadoBD.ObtenerEmpleado(id);
+                DataTable tabla = empleadoBD.obtenerEmpleado(id);
 
                 if (tabla.Rows.Count == 0)
                 {
-                    MensajeCodelex.Mostrar(this, "Empleados", "No se encontró el empleado.", false);
+                    MensajeCodelex.mostrar(this, "Empleados", "No se encontró el empleado.", false);
                     return;
                 }
 
@@ -81,15 +81,15 @@ namespace Codelex
                 else
                     txtUsuario.Text = fila["usuario"].ToString();
 
-                ActualizarBotones();
+                actualizarBotones();
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void LimpiarFormulario()
+        private void limpiarFormulario()
         {
             empleadoActual = 0;
             empleadoActualActivo = true;
@@ -102,11 +102,11 @@ namespace Codelex
             txtCorreo.Text = "";
             txtUsuario.Text = "—";
 
-            ActualizarBotones();
+            actualizarBotones();
             cmbCargo.Focus();
         }
 
-        private void ActualizarBotones()
+        private void actualizarBotones()
         {
             if (empleadoActual == 0)
             {
@@ -139,7 +139,7 @@ namespace Codelex
             }
         }
 
-        private int CargoSeleccionado()
+        private int cargoSeleccionado()
         {
             if (cmbCargo.SelectedValue == null)
                 return 0;
@@ -147,44 +147,44 @@ namespace Codelex
             return Convert.ToInt32(cmbCargo.SelectedValue);
         }
 
-        private void SoloNumeros(object sender, TextCompositionEventArgs e)
+        private void soloNumeros(object sender, TextCompositionEventArgs e)
         {
-            if (!empleadoBD.SoloNumeros(e.Text))
+            if (!empleadoBD.soloNumeros(e.Text))
                 e.Handled = true;
         }
 
-        private void Nuevo_Click(object sender, RoutedEventArgs e)
+        private void nuevoClic(object sender, RoutedEventArgs e)
         {
             dgEmpleados.SelectedItem = null;
-            LimpiarFormulario();
+            limpiarFormulario();
         }
 
-        private void Crear_Click(object sender, RoutedEventArgs e)
+        private void crearClic(object sender, RoutedEventArgs e)
         {
             try
             {
                 string mensaje;
                 int nuevoId;
 
-                bool guardado = empleadoBD.InsertarEmpleado(
-                    CargoSeleccionado(), txtNombre.Text, txtApellido.Text, txtIdentidad.Text,
+                bool guardado = empleadoBD.insertarEmpleado(
+                    cargoSeleccionado(), txtNombre.Text, txtApellido.Text, txtIdentidad.Text,
                     txtTelefono.Text, txtCorreo.Text, out nuevoId, out mensaje);
 
-                MostrarMensaje(guardado, mensaje);
+                mostrarMensaje(guardado, mensaje);
 
                 if (guardado)
                 {
-                    CargarEmpleados();
-                    CargarEnFormulario(nuevoId);
+                    cargarEmpleados();
+                    cargarEnFormulario(nuevoId);
                 }
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void Actualizar_Click(object sender, RoutedEventArgs e)
+        private void actualizarClic(object sender, RoutedEventArgs e)
         {
             if (empleadoActual == 0)
                 return;
@@ -193,22 +193,22 @@ namespace Codelex
             {
                 string mensaje;
 
-                bool guardado = empleadoBD.ActualizarEmpleado(
-                    empleadoActual, CargoSeleccionado(), txtNombre.Text, txtApellido.Text, txtIdentidad.Text,
+                bool guardado = empleadoBD.actualizarEmpleado(
+                    empleadoActual, cargoSeleccionado(), txtNombre.Text, txtApellido.Text, txtIdentidad.Text,
                     txtTelefono.Text, txtCorreo.Text, out mensaje);
 
-                MostrarMensaje(guardado, mensaje);
+                mostrarMensaje(guardado, mensaje);
 
                 if (guardado)
-                    CargarEmpleados();
+                    cargarEmpleados();
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void CambiarEstado_Click(object sender, RoutedEventArgs e)
+        private void cambiarEstadoClic(object sender, RoutedEventArgs e)
         {
             if (empleadoActual == 0)
                 return;
@@ -229,132 +229,132 @@ namespace Codelex
             try
             {
                 string mensaje;
-                bool guardado = empleadoBD.CambiarEstadoEmpleado(empleadoActual, nuevoEstado, out mensaje);
+                bool guardado = empleadoBD.cambiarEstadoEmpleado(empleadoActual, nuevoEstado, out mensaje);
 
-                MostrarMensaje(guardado, mensaje);
+                mostrarMensaje(guardado, mensaje);
 
                 if (guardado)
                 {
                     empleadoActualActivo = nuevoEstado;
-                    ActualizarBotones();
-                    CargarEmpleados();
+                    actualizarBotones();
+                    cargarEmpleados();
                 }
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void VerReporte_Click(object sender, RoutedEventArgs e)
+        private void verReporteClic(object sender, RoutedEventArgs e)
         {
             if (empleadoActual == 0)
             {
-                MensajeCodelex.Mostrar(this, "Empleados", "Seleccione un empleado de la tabla.", false);
+                MensajeCodelex.mostrar(this, "Empleados", "Seleccione un empleado de la tabla.", false);
                 return;
             }
 
-            AbrirReporte(empleadoActual);
+            abrirReporte(empleadoActual);
         }
 
-        private void dgEmpleados_Click(object sender, MouseButtonEventArgs e)
+        private void empleadosClic(object sender, MouseButtonEventArgs e)
         {
             if (dgEmpleados.SelectedItem == null)
                 return;
 
             DataRowView fila = (DataRowView)dgEmpleados.SelectedItem;
-            CargarEnFormulario(Convert.ToInt32(fila["empleado_id"]));
+            cargarEnFormulario(Convert.ToInt32(fila["empleado_id"]));
         }
 
-        private void dgEmpleados_DobleClick(object sender, MouseButtonEventArgs e)
+        private void empleadosDobleClic(object sender, MouseButtonEventArgs e)
         {
             if (dgEmpleados.SelectedItem == null)
                 return;
 
             DataRowView fila = (DataRowView)dgEmpleados.SelectedItem;
-            AbrirReporte(Convert.ToInt32(fila["empleado_id"]));
+            abrirReporte(Convert.ToInt32(fila["empleado_id"]));
         }
 
-        private void AbrirReporte(int id)
+        private void abrirReporte(int id)
         {
             EmpleadoReporte reporte = new EmpleadoReporte(id);
             reporte.Owner = this;
             reporte.ShowDialog();
         }
 
-        private void PorNombre_Click(object sender, RoutedEventArgs e)
+        private void porNombreClic(object sender, RoutedEventArgs e)
         {
-            Buscar("NOMBRE");
+            buscar("NOMBRE");
         }
 
-        private void PorIdentidad_Click(object sender, RoutedEventArgs e)
+        private void porIdentidadClic(object sender, RoutedEventArgs e)
         {
-            Buscar("IDENTIDAD");
+            buscar("IDENTIDAD");
         }
 
-        private void PorCargo_Click(object sender, RoutedEventArgs e)
+        private void porCargoClic(object sender, RoutedEventArgs e)
         {
-            Buscar("CARGO");
+            buscar("CARGO");
         }
 
-        private void Buscar(string criterio)
+        private void buscar(string criterio)
         {
             textoBusqueda = txtBuscar.Text.Trim();
             buscarPor = criterio;
-            CargarEmpleados();
+            cargarEmpleados();
         }
 
-        private void MostrarTodos_Click(object sender, RoutedEventArgs e)
+        private void mostrarTodosClic(object sender, RoutedEventArgs e)
         {
             txtBuscar.Text = "";
             textoBusqueda = "";
             buscarPor = "";
             filtroEstado = "TODOS";
-            CargarEmpleados();
+            cargarEmpleados();
         }
 
-        private void Activos_Click(object sender, RoutedEventArgs e)
+        private void activosClic(object sender, RoutedEventArgs e)
         {
             filtroEstado = "ACTIVOS";
-            CargarEmpleados();
+            cargarEmpleados();
         }
 
-        private void Inactivos_Click(object sender, RoutedEventArgs e)
+        private void inactivosClic(object sender, RoutedEventArgs e)
         {
             filtroEstado = "INACTIVOS";
-            CargarEmpleados();
+            cargarEmpleados();
         }
 
-        private void Buscar_KeyDown(object sender, KeyEventArgs e)
+        private void buscarTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
-                Buscar("");
+                buscar("");
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimizar_Click(object sender, RoutedEventArgs e)
+        private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
-        private void Salir_Click(object sender, RoutedEventArgs e)
+        private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
-        private void MostrarMensaje(bool correcto, string mensaje)
+        private void mostrarMensaje(bool correcto, string mensaje)
         {
-            MensajeCodelex.Mostrar(this, "Empleados", mensaje, correcto);
+            MensajeCodelex.mostrar(this, "Empleados", mensaje, correcto);
         }
 
-        private void MostrarError(Exception ex)
+        private void mostrarError(Exception ex)
         {
-            MensajeCodelex.Mostrar(this, "Empleados", ex.Message, false);
+            MensajeCodelex.mostrar(this, "Empleados", ex.Message, false);
         }
     }
 }

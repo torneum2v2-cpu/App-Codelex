@@ -10,115 +10,115 @@ namespace Codelex
 {
     public partial class IngresarCodigo : Window
     {
-        private const int CodeLength = 5;
-        private const int ResendSeconds = 30;
-        private readonly TextBox[] _boxes;
-        private readonly DispatcherTimer _timer = new() { Interval = TimeSpan.FromSeconds(1) };
+        private const int LONGITUD_CODIGO = 5;
+        private const int SEGUNDOS_REENVIO = 30;
+        private readonly TextBox[] casillas;
+        private readonly DispatcherTimer temporizador = new() { Interval = TimeSpan.FromSeconds(1) };
 
-        private string _email = "";
-        private string _codigo = "";
-        private int _seconds;
+        private string correo = "";
+        private string codigo = "";
+        private int segundos;
 
         public IngresarCodigo(string email)
         {
             InitializeComponent();
 
-            _email = email;
+            correo = email;
 
-            _boxes = new[] { txtC1, txtC2, txtC3, txtC4, txtC5 };
-            foreach (var box in _boxes)
-                DataObject.AddPastingHandler(box, Code_Paste);
+            casillas = new[] { txtC1, txtC2, txtC3, txtC4, txtC5 };
+            foreach (var box in casillas)
+                DataObject.AddPastingHandler(box, codigoPegado);
 
-            _timer.Tick += Timer_Tick;
-            ContentRendered += VentanaLista;
+            temporizador.Tick += temporizadorTic;
+            ContentRendered += ventanaLista;
         }
-        private void VentanaLista(object sender, EventArgs e)
+        private void ventanaLista(object sender, EventArgs e)
         {
-            ContentRendered -= VentanaLista;
-            EnviarYContar();
+            ContentRendered -= ventanaLista;
+            enviarYContar();
         }
 
-        private async void EnviarYContar()
+        private async void enviarYContar()
         {
             IsEnabled = false;
-            Cargando cargando = Cargando.Iniciar(this, "Enviando código...");
+            Cargando cargando = Cargando.iniciar(this, "Enviando código...");
 
-            await GenerarYEnviarCodigo();
+            await generarYEnviarCodigo();
 
-            cargando.Terminar();
+            cargando.terminar();
             IsEnabled = true;
 
-            if (_codigo != "")
+            if (codigo != "")
             {
-                StartCooldown(ResendSeconds);
+                iniciarEspera(SEGUNDOS_REENVIO);
             }
             else
             {
-                _seconds = 0;
-                UpdateCooldownUi();
+                segundos = 0;
+                actualizarEspera();
             }
 
             txtC1.Focus();
         }
 
-        private void ShowCodeError(string message)
+        private void mostrarErrorCodigo(string message)
         {
             txtError2.Text = message;
             txtError2.Visibility = Visibility.Visible;
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
-        private void Minimize_Click(object sender, RoutedEventArgs e) =>
+        private void minimizarClic(object sender, RoutedEventArgs e) =>
          WindowState = WindowState.Minimized;
 
-        private void Close_Click(object sender, RoutedEventArgs e) => Close();
+        private void cerrarClic(object sender, RoutedEventArgs e) => Close();
 
-        private void ChangeEmail_Click(object sender, RoutedEventArgs e)
+        private void cambiarCorreoClic(object sender, RoutedEventArgs e)
         {
-            _timer.Stop();
+            temporizador.Stop();
             new IngresarCorreo().Show();
             Close();
         }
 
-        private void Verify_Click(object sender, RoutedEventArgs e)
+        private void verificarClic(object sender, RoutedEventArgs e)
         {
             txtError2.Visibility = Visibility.Collapsed;
 
-            if (_codigo == "")
+            if (codigo == "")
             {
-                ShowCodeError("Aún no se ha enviado un código. Usa la opción de reenviar.");
+                mostrarErrorCodigo("Aún no se ha enviado un código. Usa la opción de reenviar.");
                 return;
             }
 
-            string ingresado = string.Concat(Array.ConvertAll(_boxes, b => b.Text));
-            if (ingresado.Length < CodeLength)
+            string ingresado = string.Concat(Array.ConvertAll(casillas, b => b.Text));
+            if (ingresado.Length < LONGITUD_CODIGO)
             {
-                ShowCodeError($"Escribe los {CodeLength} dígitos del código.");
+                mostrarErrorCodigo($"Escribe los {LONGITUD_CODIGO} dígitos del código.");
                 return;
             }
 
-            if (ingresado != _codigo)
+            if (ingresado != codigo)
             {
-                ShowCodeError("El código no es correcto. Inténtalo de nuevo.");
-                ClearCode();
+                mostrarErrorCodigo("El código no es correcto. Inténtalo de nuevo.");
+                limpiarCodigo();
                 txtC1.Focus();
                 return;
             }
 
-            _timer.Stop();
+            temporizador.Stop();
 
-            new NuevaContra(_email).Show();
+            new NuevaContra(correo).Show();
             Close();
         }
-        private async Task GenerarYEnviarCodigo()
+        private async Task generarYEnviarCodigo()
         {
             try
             {
-                _codigo = RandomNumberGenerator.GetInt32(0, 100000).ToString("D5");
+                codigo = RandomNumberGenerator.GetInt32(0, 100000).ToString("D5");
 
                 const string p = "vkds dwtb vmtk dldo";
 
@@ -126,9 +126,9 @@ namespace Codelex
                 using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
                 {
                     message.From = new MailAddress("codelex1hn@gmail.com");
-                    message.To.Add(new MailAddress(_email.Trim()));
+                    message.To.Add(new MailAddress(correo.Trim()));
                     message.Subject = "Código para cambiar tu contraseña";
-                    message.Body = "Escribe este código en la aplicación:\n\n" + _codigo +
+                    message.Body = "Escribe este código en la aplicación:\n\n" + codigo +
                                    "\n\nSi no lo solicitaste, ignora este mensaje.";
 
                     smtp.EnableSsl = true;
@@ -140,50 +140,50 @@ namespace Codelex
             }
             catch (Exception ex)
             {
-                _codigo = "";
-                ShowCodeError("No se pudo enviar el correo: " + ex.Message);
+                codigo = "";
+                mostrarErrorCodigo("No se pudo enviar el correo: " + ex.Message);
             }
         }
-        private void Timer_Tick(object? sender, EventArgs e)
+        private void temporizadorTic(object? sender, EventArgs e)
         {
-            _seconds--;
-            if (_seconds <= 0) _timer.Stop();
-            UpdateCooldownUi();
+            segundos--;
+            if (segundos <= 0) temporizador.Stop();
+            actualizarEspera();
         }
 
-        private void UpdateCooldownUi()
+        private void actualizarEspera()
         {
-            bool waiting = _seconds > 0;
-            txtCountdown.Text = $"Podrás reenviar el código en {_seconds} s";
+            bool waiting = segundos > 0;
+            txtCountdown.Text = $"Podrás reenviar el código en {segundos} s";
             txtCountdown.Visibility = waiting ? Visibility.Visible : Visibility.Collapsed;
             tbResend.Visibility = waiting ? Visibility.Collapsed : Visibility.Visible;
         }
-        private void StartCooldown(int seconds)
+        private void iniciarEspera(int seconds)
         {
-            _seconds = seconds;
-            UpdateCooldownUi();
-            _timer.Start();
+            segundos = seconds;
+            actualizarEspera();
+            temporizador.Start();
         }
-        private void Resend_Click(object sender, RoutedEventArgs e)
+        private void reenviarClic(object sender, RoutedEventArgs e)
         {
-            ClearCode();
+            limpiarCodigo();
             txtError2.Visibility = Visibility.Collapsed;
-            EnviarYContar();
+            enviarYContar();
         }
 
-        private int IndexOf(TextBox box) => Array.IndexOf(_boxes, box);
+        private int indiceDe(TextBox box) => Array.IndexOf(casillas, box);
 
-        private void ClearCode()
+        private void limpiarCodigo()
         {
-            foreach (var b in _boxes) b.Clear();
+            foreach (var b in casillas) b.Clear();
         }
 
-        private void Code_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        private void codigoFocoRecibido(object sender, KeyboardFocusChangedEventArgs e)
         {
             if (sender is TextBox box) box.SelectAll();
         }
 
-        private void Code_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        private void codigoPreviaTextoIngresado(object sender, TextCompositionEventArgs e)
         {
             e.Handled = true;
 
@@ -192,14 +192,14 @@ namespace Codelex
             if (c < '0' || c > '9') return;
 
             box.Text = e.Text;
-            int i = IndexOf(box);
-            if (i < CodeLength - 1) _boxes[i + 1].Focus();
+            int i = indiceDe(box);
+            if (i < LONGITUD_CODIGO - 1) casillas[i + 1].Focus();
         }
 
-        private void Code_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void codigoPreviaTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (sender is not TextBox box) return;
-            int i = IndexOf(box);
+            int i = indiceDe(box);
 
             switch (e.Key)
             {
@@ -208,8 +208,8 @@ namespace Codelex
                     if (box.Text.Length > 0) box.Clear();
                     else if (i > 0)
                     {
-                        _boxes[i - 1].Clear();
-                        _boxes[i - 1].Focus();
+                        casillas[i - 1].Clear();
+                        casillas[i - 1].Focus();
                     }
                     break;
 
@@ -220,12 +220,12 @@ namespace Codelex
 
                 case Key.Left:
                     e.Handled = true;
-                    if (i > 0) _boxes[i - 1].Focus();
+                    if (i > 0) casillas[i - 1].Focus();
                     break;
 
                 case Key.Right:
                     e.Handled = true;
-                    if (i < CodeLength - 1) _boxes[i + 1].Focus();
+                    if (i < LONGITUD_CODIGO - 1) casillas[i + 1].Focus();
                     break;
 
                 case Key.Space:
@@ -234,7 +234,7 @@ namespace Codelex
             }
         }
 
-        private void Code_Paste(object sender, DataObjectPastingEventArgs e)
+        private void codigoPegado(object sender, DataObjectPastingEventArgs e)
         {
             e.CancelCommand();
 
@@ -243,17 +243,17 @@ namespace Codelex
 
             string digits = string.Concat(text.Where(char.IsAsciiDigit)).Trim();
             if (digits.Length == 0) return;
-            if (digits.Length > CodeLength) digits = digits[..CodeLength];
+            if (digits.Length > LONGITUD_CODIGO) digits = digits[..LONGITUD_CODIGO];
 
-            int start = digits.Length == CodeLength ? 0 : IndexOf(box);
+            int start = digits.Length == LONGITUD_CODIGO ? 0 : indiceDe(box);
             int last = start;
-            for (int k = 0; k < digits.Length && start + k < CodeLength; k++)
+            for (int k = 0; k < digits.Length && start + k < LONGITUD_CODIGO; k++)
             {
-                _boxes[start + k].Text = digits[k].ToString();
+                casillas[start + k].Text = digits[k].ToString();
                 last = start + k;
             }
 
-            _boxes[Math.Min(last + 1, CodeLength - 1)].Focus();
+            casillas[Math.Min(last + 1, LONGITUD_CODIGO - 1)].Focus();
         }
     }
 }

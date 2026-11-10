@@ -4,26 +4,26 @@ using System.Windows.Input;
 
 namespace Codelex
 {
-    public partial class MainWindow : Window
+    public partial class VentanaPrincipal : Window
     {
-        public MainWindow()
+        public VentanaPrincipal()
         {
             InitializeComponent();
             Loaded += (_, _) => txtUser.Focus();
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimize_Click(object sender, RoutedEventArgs e) =>
+        private void minimizarClic(object sender, RoutedEventArgs e) =>
             WindowState = WindowState.Minimized;
 
-        private void Close_Click(object sender, RoutedEventArgs e) => Close();
+        private void cerrarClic(object sender, RoutedEventArgs e) => Close();
 
-        private void ShowPassword_Changed(object sender, RoutedEventArgs e)
+        private void mostrarContrasenaCambiado(object sender, RoutedEventArgs e)
         {
             if (btnShowPassword.IsChecked == true)
             {
@@ -45,7 +45,7 @@ namespace Codelex
         private string CurrentPassword =>
             btnShowPassword.IsChecked == true ? txtPasswordVisible.Text : txtPassword.Password;
 
-        private void Login_Click(object sender, RoutedEventArgs e)
+        private void iniciarSesionClic(object sender, RoutedEventArgs e)
         {
             txtError.Visibility = Visibility.Collapsed;
 
@@ -54,7 +54,7 @@ namespace Codelex
 
             if (string.IsNullOrWhiteSpace(usuario) || string.IsNullOrEmpty(password))
             {
-                ShowError("Escribe tu usuario y tu contraseña para continuar.");
+                mostrarError("Escribe tu usuario y tu contraseña para continuar.");
                 return;
             }
 
@@ -62,19 +62,19 @@ namespace Codelex
             {
                 Usuario usuarioDAL = new Usuario();
 
-                bool esValido = usuarioDAL.ValidarLogin(usuario, password);
+                bool esValido = usuarioDAL.validarLogin(usuario, password);
 
                 if (esValido)
                 {
                     bool recordar = chkRemember.IsChecked == true;
 
                     // Cuenta ya recordada en este equipo: entra directo, sin verificar con el teléfono.
-                    if (CuentasRecordadas.Existe(usuarioDAL.NombreUsuario))
+                    if (CuentasRecordadas.existe(usuarioDAL.NombreUsuario))
                     {
                         if (recordar)
-                            CuentasRecordadas.Guardar(usuarioDAL.NombreUsuario, usuarioDAL.NombreCompleto, password);
+                            CuentasRecordadas.guardar(usuarioDAL.NombreUsuario, usuarioDAL.NombreCompleto, password);
 
-                        Sesion.Iniciar(usuarioDAL);
+                        Sesion.iniciar(usuarioDAL);
                         new Menu().Show();
                         Close();
                         return;
@@ -86,29 +86,29 @@ namespace Codelex
                 }
                 else
                 {
-                    ShowError("Usuario o contraseña incorrectos. Revisa los datos e inténtalo de nuevo.");
+                    mostrarError("Usuario o contraseña incorrectos. Revisa los datos e inténtalo de nuevo.");
                 }
             }
             catch (Exception ex)
             {
-                ShowError("Error al conectar con la base de datos: " + ex.Message);
+                mostrarError("Error al conectar con la base de datos: " + ex.Message);
             }
         }
 
-        private void ShowError(string message)
+        private void mostrarError(string message)
         {
             txtError.Text = message;
             txtError.Visibility = Visibility.Visible;
         }
 
-        private void ForgotPassword_Click(object sender, RoutedEventArgs e)
+        private void olvidoContrasenaClic(object sender, RoutedEventArgs e)
         {
             IngresarCorreo con = new IngresarCorreo();
             con.Show();
             Close();
         }
 
-        private void RequestAccess_Click(object sender, RoutedEventArgs e)
+        private void solicitarAccesoClic(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Aquí puedes abrir tu formulario o contacto de soporte.",
                             "Codelex", MessageBoxButton.OK, MessageBoxImage.Information);

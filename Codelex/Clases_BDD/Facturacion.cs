@@ -7,55 +7,55 @@ namespace Codelex.Clases_BDD
     class DatosDocumento
     {
         // Cliente
-        public string Rtn = "";
-        public string Empresa = "";
-        public string Contacto = "";
-        public string Apellido = "";
-        public string Telefono = "";
-        public string Correo = "";
+        public string rtn = "";
+        public string empresa = "";
+        public string contacto = "";
+        public string apellido = "";
+        public string telefono = "";
+        public string correo = "";
 
         // Lugar
-        public int LocacionId = 0;
-        public string Direccion = "";
+        public int locacionId = 0;
+        public string direccion = "";
 
         // Documento
-        public DateTime? Fecha = null;
-        public DateTime? ValidaHasta = null;
-        public string Observaciones = "";
+        public DateTime? fecha = null;
+        public DateTime? validaHasta = null;
+        public string observaciones = "";
 
         // Cotización: servicio y actividades (listas paralelas; la medida llega como la escribió el usuario)
-        public int ServicioId = 0;
-        public List<int> ActividadesId = new List<int>();
-        public List<string> ActividadesNombre = new List<string>();
-        public List<string> ActividadesMedida = new List<string>();
+        public int servicioId = 0;
+        public List<int> actividadesId = new List<int>();
+        public List<string> actividadesNombre = new List<string>();
+        public List<string> actividadesMedida = new List<string>();
 
     }
 
     // Lo único que el usuario decide al facturar: cómo se paga.
     class DatosFactura
     {
-        public string OrdenId = "";
-        public string TipoPago = "";
-        public int FormaPagoId = 0;
-        public int Cuotas = 0;
-        public DateTime Fecha = DateTime.Today;
+        public string ordenId = "";
+        public string tipoPago = "";
+        public int formaPagoId = 0;
+        public int cuotas = 0;
+        public DateTime fecha = DateTime.Today;
     }
 
     class Facturacion : BaseDatos
     {
-        public const decimal TasaIsv = 0.15m;
-        public const string Contado = "Contado";
-        public const string Credito = "Crédito";
+        public const decimal TASA_ISV = 0.15m;
+        public const string CONTADO = "Contado";
+        public const string CREDITO = "Crédito";
 
-        public List<string> TiposPago()
+        public List<string> tiposPago()
         {
             List<string> tipos = new List<string>();
-            tipos.Add(Contado);
-            tipos.Add(Credito);
+            tipos.Add(CONTADO);
+            tipos.Add(CREDITO);
             return tipos;
         }
 
-        public List<int> OpcionesCuotas()
+        public List<int> opcionesCuotas()
         {
             List<int> cuotas = new List<int>();
 
@@ -68,45 +68,45 @@ namespace Codelex.Clases_BDD
         }
 
         // Número de factura con formato profesional: 000-001-01-00000001
-        public static string NumeroFactura(int facturaId)
+        public static string numeroFactura(int facturaId)
         {
             return "000-001-01-" + facturaId.ToString().PadLeft(8, '0');
         }
 
-        public DataTable ListarServicios()
+        public DataTable listarServicios()
         {
-            return Consultar(Procedimiento("sp_ListarServicios"));
+            return consultar(procedimiento("sp_ListarServicios"));
         }
 
-        public DataTable ListarActividades()
+        public DataTable listarActividades()
         {
-            return Consultar(Procedimiento("sp_ListarActividades"));
+            return consultar(procedimiento("sp_ListarActividades"));
         }
 
-        public DataTable ListarFormasPago()
+        public DataTable listarFormasPago()
         {
-            return Consultar(Procedimiento("sp_ListarFormasPago"));
+            return consultar(procedimiento("sp_ListarFormasPago"));
         }
 
-        public DataTable ObtenerOrdenFactura(string ordenId)
+        public DataTable obtenerOrdenFactura(string ordenId)
         {
-            SqlCommand comando = Procedimiento("sp_ObtenerOrdenFactura");
+            SqlCommand comando = procedimiento("sp_ObtenerOrdenFactura");
             comando.Parameters.AddWithValue("@orden_id", ordenId);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public DataTable DetalleOrden(string ordenId)
+        public DataTable detalleOrden(string ordenId)
         {
-            SqlCommand comando = Procedimiento("sp_DetalleOrdenFactura");
+            SqlCommand comando = procedimiento("sp_DetalleOrdenFactura");
             comando.Parameters.AddWithValue("@orden_id", ordenId);
 
-            DataTable tabla = Consultar(comando);
+            DataTable tabla = consultar(comando);
             tabla.Columns.Add("tipo", typeof(string), "'Servicio'");
             tabla.Columns.Add("subtotal", typeof(decimal), "cantidad * precio_unitario");
             return tabla;
         }
 
-        public string ValidarOrdenFacturable(DataTable orden)
+        public string validarOrdenFacturable(DataTable orden)
         {
             if (orden.Rows.Count == 0)
                 return "No se encontró la orden.";
@@ -116,72 +116,72 @@ namespace Codelex.Clases_BDD
             return "";
         }
 
-        public DataTable ObtenerFactura(int facturaId)
+        public DataTable obtenerFactura(int facturaId)
         {
-            SqlCommand comando = Procedimiento("sp_ObtenerFactura");
+            SqlCommand comando = procedimiento("sp_ObtenerFactura");
             comando.Parameters.AddWithValue("@factura_id", facturaId);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public DataTable DetalleFactura(int facturaId)
+        public DataTable detalleFactura(int facturaId)
         {
-            SqlCommand comando = Procedimiento("sp_DetalleFactura");
+            SqlCommand comando = procedimiento("sp_DetalleFactura");
             comando.Parameters.AddWithValue("@factura_id", facturaId);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public DataTable CuotasFactura(int facturaId)
+        public DataTable cuotasFactura(int facturaId)
         {
-            SqlCommand comando = Procedimiento("sp_CuotasFactura");
+            SqlCommand comando = procedimiento("sp_CuotasFactura");
             comando.Parameters.AddWithValue("@factura_id", facturaId);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public void ActualizarCuotasVencidas()
+        public void actualizarCuotasVencidas()
         {
-            Consultar(Procedimiento("sp_ActualizarCuotasVencidas"));
+            consultar(procedimiento("sp_ActualizarCuotasVencidas"));
         }
 
-        public DataTable ListarAbonos(int facturaId)
+        public DataTable listarAbonos(int facturaId)
         {
-            SqlCommand comando = Procedimiento("sp_ListarAbonosFactura");
+            SqlCommand comando = procedimiento("sp_ListarAbonosFactura");
             comando.Parameters.AddWithValue("@factura_id", facturaId);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
         // Cómo quedarían las cuotas si se abona ese monto.
-        public DataTable SimularAbono(int facturaId, string montoTexto, decimal saldo, out string mensaje)
+        public DataTable simularAbono(int facturaId, string montoTexto, decimal saldo, out string mensaje)
         {
             decimal monto;
-            mensaje = ValidarAbono(montoTexto, saldo, out monto);
+            mensaje = validarAbono(montoTexto, saldo, out monto);
 
             if (mensaje != "")
                 return new DataTable();
 
-            SqlCommand comando = Procedimiento("sp_SimularAbono");
+            SqlCommand comando = procedimiento("sp_SimularAbono");
             comando.Parameters.AddWithValue("@factura_id", facturaId);
             comando.Parameters.AddWithValue("@monto", monto);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
         // El abono usa el método de pago que se eligió al crear la factura.
-        public bool RegistrarAbono(int facturaId, string montoTexto, decimal saldo, out string mensaje)
+        public bool registrarAbono(int facturaId, string montoTexto, decimal saldo, out string mensaje)
         {
             decimal monto;
-            mensaje = ValidarAbono(montoTexto, saldo, out monto);
+            mensaje = validarAbono(montoTexto, saldo, out monto);
 
             if (mensaje != "")
                 return false;
 
-            SqlCommand comando = Procedimiento("sp_RegistrarAbono");
+            SqlCommand comando = procedimiento("sp_RegistrarAbono");
             comando.Parameters.AddWithValue("@factura_id", facturaId);
             comando.Parameters.AddWithValue("@monto", monto);
             comando.Parameters.AddWithValue("@fecha_abono", DateTime.Today);
-            return Ejecutar(comando, out mensaje);
+            return ejecutar(comando, out mensaje);
         }
 
         // La cuota elegida; si no se eligió ninguna, la primera que todavía tiene saldo.
-        public DataRow? ElegirCuota(DataTable cuotas, DataRowView? seleccion, out string mensaje)
+        public DataRow? elegirCuota(DataTable cuotas, DataRowView? seleccion, out string mensaje)
         {
             mensaje = "";
 
@@ -206,17 +206,17 @@ namespace Codelex.Clases_BDD
             return null;
         }
 
-        public bool SaldarCuota(int cuotaId, out string mensaje)
+        public bool saldarCuota(int cuotaId, out string mensaje)
         {
-            SqlCommand comando = Procedimiento("sp_SaldarCuota");
+            SqlCommand comando = procedimiento("sp_SaldarCuota");
             comando.Parameters.AddWithValue("@cuota_id", cuotaId);
             comando.Parameters.AddWithValue("@fecha_pago", DateTime.Today);
-            return Ejecutar(comando, out mensaje);
+            return ejecutar(comando, out mensaje);
         }
 
         // Calcula el precio de cada actividad con la fórmula de costeo (la fórmula vive en la base de datos).
         // Las medidas vacías se ignoran; si alguna no es válida, mensaje dice cuál.
-        public DataTable CotizarActividades(List<int> ids, List<string> medidas, out string mensaje)
+        public DataTable cotizarActividades(List<int> ids, List<string> medidas, out string mensaje)
         {
             mensaje = "";
 
@@ -230,7 +230,7 @@ namespace Codelex.Clases_BDD
                     continue;
 
                 decimal medida;
-                string error = ValidarMedida(medidas[i], out medida);
+                string error = validarMedida(medidas[i], out medida);
 
                 if (error != "")
                 {
@@ -244,19 +244,19 @@ namespace Codelex.Clases_BDD
             if (tabla.Rows.Count == 0)
                 return new DataTable();
 
-            SqlCommand comando = Procedimiento("sp_CotizarLineas");
-            AgregarLista(comando, "@lineas", "dbo.tipo_lista_medidas", tabla);
-            return Consultar(comando);
+            SqlCommand comando = procedimiento("sp_CotizarLineas");
+            agregarLista(comando, "@lineas", "dbo.tipo_lista_medidas", tabla);
+            return consultar(comando);
         }
 
         // ---------- Cálculos ----------
 
-        public decimal CalcularIsv(decimal subtotal)
+        public decimal calcularIsv(decimal subtotal)
         {
-            return Math.Round(subtotal * TasaIsv, 2, MidpointRounding.AwayFromZero);
+            return Math.Round(subtotal * TASA_ISV, 2, MidpointRounding.AwayFromZero);
         }
 
-        public decimal CalcularCuota(decimal total, int cuotas)
+        public decimal calcularCuota(decimal total, int cuotas)
         {
             if (cuotas <= 0)
                 cuotas = 1;
@@ -264,14 +264,14 @@ namespace Codelex.Clases_BDD
             return Math.Round(total / cuotas, 2, MidpointRounding.AwayFromZero);
         }
 
-        public string Dinero(decimal valor)
+        public string dinero(decimal valor)
         {
             return "L " + valor.ToString("N2", CultureInfo.InvariantCulture);
         }
 
         // ---------- Validaciones ----------
 
-        public string ValidarMedida(string texto, out decimal medida)
+        public string validarMedida(string texto, out decimal medida)
         {
             medida = 0;
             texto = texto.Trim().Replace(',', '.');
@@ -288,64 +288,64 @@ namespace Codelex.Clases_BDD
             return "";
         }
 
-        private string ValidarActividades(DatosDocumento datos)
+        private string validarActividades(DatosDocumento datos)
         {
-            if (datos.ServicioId <= 0)
+            if (datos.servicioId <= 0)
                 return "Seleccione el servicio.";
-            if (datos.ActividadesId.Count == 0)
+            if (datos.actividadesId.Count == 0)
                 return "Agregue al menos una actividad.";
 
-            for (int i = 0; i < datos.ActividadesId.Count; i++)
+            for (int i = 0; i < datos.actividadesId.Count; i++)
             {
                 decimal medida;
-                string error = ValidarMedida(datos.ActividadesMedida[i], out medida);
+                string error = validarMedida(datos.actividadesMedida[i], out medida);
 
                 if (error != "")
-                    return datos.ActividadesNombre[i] + ": " + error;
+                    return datos.actividadesNombre[i] + ": " + error;
             }
 
             return "";
         }
 
-        private string ValidarCotizacion(DatosDocumento datos)
+        private string validarCotizacion(DatosDocumento datos)
         {
-            if (datos.Contacto.Trim() == "")
+            if (datos.contacto.Trim() == "")
                 return "Escriba el nombre del contacto.";
-            if (Cliente.LimpiarNumero(datos.Rtn) != "")
+            if (Cliente.limpiarNumero(datos.rtn) != "")
             {
                 Cliente clienteBD = new Cliente();
-                string rtn = Cliente.LimpiarNumero(datos.Rtn);
-                string problema = clienteBD.ValidarIdentificacion(clienteBD.TipoPorLongitud(rtn), rtn);
+                string rtn = Cliente.limpiarNumero(datos.rtn);
+                string problema = clienteBD.validarIdentificacion(clienteBD.tipoPorLongitud(rtn), rtn);
 
                 if (problema != "")
                     return problema;
             }
-            if (datos.Empresa.Trim().Length > 50 || datos.Contacto.Trim().Length > 50
-                || datos.Apellido.Trim().Length > 50)
+            if (datos.empresa.Trim().Length > 50 || datos.contacto.Trim().Length > 50
+                || datos.apellido.Trim().Length > 50)
                 return "La empresa y el nombre no pueden tener más de 50 caracteres.";
-            if (datos.Telefono.Trim() == "" && datos.Correo.Trim() == "")
+            if (datos.telefono.Trim() == "" && datos.correo.Trim() == "")
                 return "Escriba un teléfono o un correo del cliente.";
-            if (datos.Telefono.Trim().Length > 50 || datos.Correo.Trim().Length > 50)
+            if (datos.telefono.Trim().Length > 50 || datos.correo.Trim().Length > 50)
                 return "El teléfono y el correo no pueden tener más de 50 caracteres.";
-            if (datos.Direccion.Trim() == "")
+            if (datos.direccion.Trim() == "")
                 return "Escriba la dirección del servicio.";
-            if (datos.Direccion.Trim().Length > 80)
+            if (datos.direccion.Trim().Length > 80)
                 return "La dirección no puede tener más de 80 caracteres.";
 
-            if (!datos.Fecha.HasValue)
+            if (!datos.fecha.HasValue)
                 return "Seleccione la fecha.";
-            if (!datos.ValidaHasta.HasValue)
+            if (!datos.validaHasta.HasValue)
                 return "Seleccione hasta cuándo es válida la cotización.";
-            if (datos.ValidaHasta.Value < datos.Fecha.Value)
+            if (datos.validaHasta.Value < datos.fecha.Value)
                 return "La fecha de validez no puede ser anterior a la fecha de la cotización.";
 
-            if (datos.Observaciones.Trim().Length > 200)
+            if (datos.observaciones.Trim().Length > 200)
                 return "Las observaciones no pueden tener más de 200 caracteres.";
 
-            return ValidarActividades(datos);
+            return validarActividades(datos);
         }
 
-        public string ValidarAbono(string texto, decimal saldo, out decimal monto)
+        public string validarAbono(string texto, decimal saldo, out decimal monto)
         {
             monto = 0;
             texto = texto.Trim().Replace(",", "");
@@ -357,20 +357,20 @@ namespace Codelex.Clases_BDD
             if (monto <= 0)
                 return "El abono debe ser mayor que 0.";
             if (monto > saldo)
-                return "El abono no puede ser mayor que el saldo pendiente (" + Dinero(saldo) + ").";
+                return "El abono no puede ser mayor que el saldo pendiente (" + dinero(saldo) + ").";
 
             return "";
         }
 
-        private string ValidarFactura(DatosFactura datos)
+        private string validarFactura(DatosFactura datos)
         {
-            if (datos.OrdenId.Trim() == "")
+            if (datos.ordenId.Trim() == "")
                 return "No se indicó la orden a facturar.";
-            if (datos.TipoPago != Contado && datos.TipoPago != Credito)
+            if (datos.tipoPago != CONTADO && datos.tipoPago != CREDITO)
                 return "Seleccione si es al contado o a crédito.";
-            if (datos.FormaPagoId <= 0)
+            if (datos.formaPagoId <= 0)
                 return "Seleccione el método de pago.";
-            if (datos.TipoPago == Credito && (datos.Cuotas < 2 || datos.Cuotas > 24))
+            if (datos.tipoPago == CREDITO && (datos.cuotas < 2 || datos.cuotas > 24))
                 return "Seleccione el número de cuotas.";
 
             return "";
@@ -378,40 +378,40 @@ namespace Codelex.Clases_BDD
 
         // ---------- Guardado ----------
 
-        public bool GuardarCotizacion(DatosDocumento datos, out string mensaje, out string cotizacionId)
+        public bool guardarCotizacion(DatosDocumento datos, out string mensaje, out string cotizacionId)
         {
             cotizacionId = "";
 
-            mensaje = ValidarCotizacion(datos);
+            mensaje = validarCotizacion(datos);
             if (mensaje != "")
                 return false;
 
-            SqlCommand comando = Procedimiento("sp_InsertarCotizacion");
-            comando.Parameters.AddWithValue("@identificacion_cliente", Cliente.LimpiarNumero(datos.Rtn));
-            comando.Parameters.AddWithValue("@nombre_empresa", datos.Empresa.Trim());
-            comando.Parameters.AddWithValue("@nombre_cliente", datos.Contacto.Trim());
-            comando.Parameters.AddWithValue("@apellido_cliente", datos.Apellido.Trim());
-            comando.Parameters.AddWithValue("@telefono_cliente", datos.Telefono.Trim());
-            comando.Parameters.AddWithValue("@correo_cliente", datos.Correo.Trim());
+            SqlCommand comando = procedimiento("sp_InsertarCotizacion");
+            comando.Parameters.AddWithValue("@identificacion_cliente", Cliente.limpiarNumero(datos.rtn));
+            comando.Parameters.AddWithValue("@nombre_empresa", datos.empresa.Trim());
+            comando.Parameters.AddWithValue("@nombre_cliente", datos.contacto.Trim());
+            comando.Parameters.AddWithValue("@apellido_cliente", datos.apellido.Trim());
+            comando.Parameters.AddWithValue("@telefono_cliente", datos.telefono.Trim());
+            comando.Parameters.AddWithValue("@correo_cliente", datos.correo.Trim());
 
-            if (datos.LocacionId > 0)
-                comando.Parameters.AddWithValue("@locacion_id", datos.LocacionId);
+            if (datos.locacionId > 0)
+                comando.Parameters.AddWithValue("@locacion_id", datos.locacionId);
             else
                 comando.Parameters.AddWithValue("@locacion_id", DBNull.Value);
 
-            comando.Parameters.AddWithValue("@direccion", datos.Direccion.Trim());
-            comando.Parameters.AddWithValue("@fecha_cotizacion", datos.Fecha.Value);
-            comando.Parameters.AddWithValue("@valida_hasta", datos.ValidaHasta.Value);
-            comando.Parameters.AddWithValue("@observacion", datos.Observaciones.Trim());
+            comando.Parameters.AddWithValue("@direccion", datos.direccion.Trim());
+            comando.Parameters.AddWithValue("@fecha_cotizacion", datos.fecha.Value);
+            comando.Parameters.AddWithValue("@valida_hasta", datos.validaHasta.Value);
+            comando.Parameters.AddWithValue("@observacion", datos.observaciones.Trim());
 
-            comando.Parameters.AddWithValue("@servicio_id", datos.ServicioId);
-            AgregarLista(comando, "@lineas", "dbo.tipo_lista_medidas", TablaDeMedidas(datos));
+            comando.Parameters.AddWithValue("@servicio_id", datos.servicioId);
+            agregarLista(comando, "@lineas", "dbo.tipo_lista_medidas", tablaDeMedidas(datos));
 
             SqlParameter idParametro = new SqlParameter("@cotizacion_id", SqlDbType.VarChar, 50);
             idParametro.Direction = ParameterDirection.Output;
             comando.Parameters.Add(idParametro);
 
-            bool guardada = Ejecutar(comando, out mensaje);
+            bool guardada = ejecutar(comando, out mensaje);
 
             if (guardada)
             {
@@ -422,34 +422,34 @@ namespace Codelex.Clases_BDD
             return guardada;
         }
 
-        public bool GuardarFactura(DatosFactura datos, out string mensaje, out int facturaId)
+        public bool guardarFactura(DatosFactura datos, out string mensaje, out int facturaId)
         {
             facturaId = 0;
 
-            mensaje = ValidarFactura(datos);
+            mensaje = validarFactura(datos);
             if (mensaje != "")
                 return false;
 
             int cuotas = 1;
-            if (datos.TipoPago == Credito)
-                cuotas = datos.Cuotas;
+            if (datos.tipoPago == CREDITO)
+                cuotas = datos.cuotas;
 
-            SqlCommand comando = Procedimiento("sp_InsertarFactura");
-            comando.Parameters.AddWithValue("@orden_id", datos.OrdenId.Trim());
-            comando.Parameters.AddWithValue("@fecha_factura", datos.Fecha);
-            comando.Parameters.AddWithValue("@forma_pago_id", datos.FormaPagoId);
+            SqlCommand comando = procedimiento("sp_InsertarFactura");
+            comando.Parameters.AddWithValue("@orden_id", datos.ordenId.Trim());
+            comando.Parameters.AddWithValue("@fecha_factura", datos.fecha);
+            comando.Parameters.AddWithValue("@forma_pago_id", datos.formaPagoId);
             comando.Parameters.AddWithValue("@numero_cuotas", cuotas);
 
             SqlParameter idParametro = new SqlParameter("@factura_id", SqlDbType.Int);
             idParametro.Direction = ParameterDirection.Output;
             comando.Parameters.Add(idParametro);
 
-            bool guardada = Ejecutar(comando, out mensaje);
+            bool guardada = ejecutar(comando, out mensaje);
 
             if (guardada)
             {
                 facturaId = Convert.ToInt32(idParametro.Value);
-                mensaje = "Factura " + NumeroFactura(facturaId) + " registrada correctamente.";
+                mensaje = "Factura " + numeroFactura(facturaId) + " registrada correctamente.";
             }
 
             return guardada;
@@ -457,24 +457,24 @@ namespace Codelex.Clases_BDD
 
         // ---------- Auxiliares ----------
 
-        private void AgregarLista(SqlCommand comando, string nombre, string tipo, DataTable tabla)
+        private void agregarLista(SqlCommand comando, string nombre, string tipo, DataTable tabla)
         {
             SqlParameter parametro = comando.Parameters.AddWithValue(nombre, tabla);
             parametro.SqlDbType = SqlDbType.Structured;
             parametro.TypeName = tipo;
         }
 
-        private DataTable TablaDeMedidas(DatosDocumento datos)
+        private DataTable tablaDeMedidas(DatosDocumento datos)
         {
             DataTable tabla = new DataTable();
             tabla.Columns.Add("actividad_id", typeof(int));
             tabla.Columns.Add("medida", typeof(decimal));
 
-            for (int i = 0; i < datos.ActividadesId.Count; i++)
+            for (int i = 0; i < datos.actividadesId.Count; i++)
             {
                 decimal medida;
-                ValidarMedida(datos.ActividadesMedida[i], out medida);
-                tabla.Rows.Add(datos.ActividadesId[i], medida);
+                validarMedida(datos.actividadesMedida[i], out medida);
+                tabla.Rows.Add(datos.actividadesId[i], medida);
             }
 
             return tabla;

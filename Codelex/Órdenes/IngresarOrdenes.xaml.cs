@@ -9,20 +9,20 @@ namespace Codelex
 {
     class ItemLista
     {
-        public int Id;
-        public string Texto;
-        public string Tipo;
+        public int id;
+        public string texto;
+        public string tipo;
 
         public ItemLista(int id, string texto, string tipo)
         {
-            Id = id;
-            Texto = texto;
-            Tipo = tipo;
+            id = id;
+            texto = texto;
+            tipo = tipo;
         }
 
         public override string ToString()
         {
-            return Texto;
+            return texto;
         }
     }
 
@@ -46,52 +46,52 @@ namespace Codelex
             InitializeComponent();
 
             txtDescripcionLimpieza.MaxLength = 200;
-            txtPiso_area.MaxLength = 20;
-            txtDireccion_limpieza.IsReadOnly = true;
+            txtPisoArea.MaxLength = 20;
+            txtDireccionLimpieza.IsReadOnly = true;
             cmbTipoLocacion.IsEnabled = false;
 
-            cmbLocacion.SelectionChanged += cmbLocacion_SelectionChanged;
-            Loaded += Window_Loaded;
+            cmbLocacion.SelectionChanged += locacionSeleccionCambiada;
+            Loaded += ventanaCargada;
         }
         public IngresarOrden(DataRow cotizacion) : this()
         {
             cotizacionInicial = cotizacion;
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             try
             {
-                CargarListas();
+                cargarListas();
 
                 if (cotizacionInicial != null)
-                    CargarCotizacion(cotizacionInicial);
+                    cargarCotizacion(cotizacionInicial);
                 else
-                    NuevaOrden();
+                    nuevaOrden();
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void CargarListas()
+        private void cargarListas()
         {
-            LlenarCombo(cmbEstado, ordenBD.ListarEstadosOrden(), "estado_orden_id", "nombre_estado_orden");
-            servicios = ordenBD.ListarServicios();
+            llenarCombo(cmbEstado, ordenBD.listarEstadosOrden(), "estado_orden_id", "nombre_estado_orden");
+            servicios = ordenBD.listarServicios();
 
-            empleados = ordenBD.ListarEmpleados();
-            LlenarCombo(cmbSupervisor, empleados, "empleado_id", "nombre_completo");
+            empleados = ordenBD.listarEmpleados();
+            llenarCombo(cmbSupervisor, empleados, "empleado_id", "nombre_completo");
 
             cmbTurno.Items.Clear();
             cmbTurno.Items.Add("Mañana");
             cmbTurno.Items.Add("Tarde");
             cmbTurno.Items.Add("Noche");
 
-            CargarVehiculos();
+            cargarVehiculos();
         }
 
-        private void LlenarCombo(ComboBox combo, DataTable tabla, string columnaId, string columnaTexto)
+        private void llenarCombo(ComboBox combo, DataTable tabla, string columnaId, string columnaTexto)
         {
             combo.Items.Clear();
 
@@ -101,11 +101,11 @@ namespace Codelex
             }
         }
 
-        private void CargarVehiculos()
+        private void cargarVehiculos()
         {
             cmbVehiculo.Items.Clear();
 
-            DataTable tabla = vehiculoBD.BuscarVehiculos("", "ACTIVOS");
+            DataTable tabla = vehiculoBD.buscarVehiculos("", "ACTIVOS");
 
             foreach (DataRow fila in tabla.Rows)
             {
@@ -114,7 +114,7 @@ namespace Codelex
             }
         }
 
-        private void CargarEmpleadosDisponibles()
+        private void cargarEmpleadosDisponibles()
         {
             lstEmpleadosDisponibles.Items.Clear();
             lstEmpleadosAsignados.Items.Clear();
@@ -125,11 +125,11 @@ namespace Codelex
             }
         }
 
-        private void CargarLocaciones(string rtn)
+        private void cargarLocaciones(string rtn)
         {
             cmbLocacion.Items.Clear();
 
-            locacionesCliente = clienteBD.LocacionesPorCliente(rtn);
+            locacionesCliente = clienteBD.locacionesPorCliente(rtn);
 
             foreach (DataRow fila in locacionesCliente.Rows)
             {
@@ -137,24 +137,24 @@ namespace Codelex
             }
 
             if (locacionesCliente.Rows.Count == 0)
-                Aviso("Este cliente no tiene locaciones registradas. Regístrelas desde Clientes.");
+                aviso("Este cliente no tiene locaciones registradas. Regístrelas desde Clientes.");
         }
 
-        private int IdSeleccionado(ComboBox combo)
+        private int idSeleccionado(ComboBox combo)
         {
             ItemLista item = combo.SelectedItem as ItemLista;
 
             if (item == null)
                 return 0;
 
-            return item.Id;
+            return item.id;
         }
 
-        private void SeleccionarPorTexto(ComboBox combo, string texto)
+        private void seleccionarPorTexto(ComboBox combo, string texto)
         {
             foreach (ItemLista item in combo.Items)
             {
-                if (item.Texto == texto)
+                if (item.texto == texto)
                 {
                     combo.SelectedItem = item;
                     return;
@@ -165,7 +165,7 @@ namespace Codelex
                 combo.SelectedIndex = 0;
         }
 
-        private void MoverSeleccionado(ListBox origen, ListBox destino)
+        private void moverSeleccionado(ListBox origen, ListBox destino)
         {
             ItemLista item = origen.SelectedItem as ItemLista;
 
@@ -176,13 +176,13 @@ namespace Codelex
             destino.Items.Add(item);
         }
 
-        private void NuevaOrden()
+        private void nuevaOrden()
         {
-            txtN_orden.Text = "(automático)";
+            txtNOrden.Text = "(automático)";
             dpFechaSolicitud.SelectedDate = DateTime.Today;
             dpFechaLimpieza.SelectedDate = null;
 
-            SeleccionarPorTexto(cmbEstado, "Pendiente");
+            seleccionarPorTexto(cmbEstado, "Pendiente");
             cmbSupervisor.SelectedIndex = -1;
             cmbVehiculo.SelectedIndex = -1;
             cmbTurno.SelectedIndex = -1;
@@ -193,7 +193,7 @@ namespace Codelex
             lblPersonasNecesarias.Text = "";
             personasNecesarias = 0;
 
-            txtPiso_area.Text = "";
+            txtPisoArea.Text = "";
             txtDescripcionLimpieza.Text = "";
 
             cotizacionId = "";
@@ -201,26 +201,26 @@ namespace Codelex
             txtTotalCotizacion.Text = "";
             lstCotizacion.Items.Clear();
 
-            CargarEmpleadosDisponibles();
-            LimpiarCliente();
-            IrAPaso(1);
+            cargarEmpleadosDisponibles();
+            limpiarCliente();
+            irAPaso(1);
         }
 
-        private void CargarCotizacion(DataRow cotizacion)
+        private void cargarCotizacion(DataRow cotizacion)
         {
-            NuevaOrden();
+            nuevaOrden();
 
             cotizacionId = "" + cotizacion["cotizacion_id"];
             txtCotizacion.Text = cotizacionId;
             txtDescripcionLimpieza.Text = "" + cotizacion["observacion"];
             txtTotalCotizacion.Text = "Total cotizado: L " + Convert.ToDecimal(cotizacion["precio_cotizado"]).ToString("N2");
 
-            DataTable cliente = clienteBD.ObtenerCliente("" + cotizacion["identificacion_cliente"]);
+            DataTable cliente = clienteBD.obtenerCliente("" + cotizacion["identificacion_cliente"]);
             if (cliente.Rows.Count > 0)
-                LlenarCliente(cliente.Rows[0]);
+                llenarCliente(cliente.Rows[0]);
 
             if (cotizacion["locacion_id"] != DBNull.Value)
-                SeleccionarPorId(cmbLocacion, Convert.ToInt32(cotizacion["locacion_id"]));
+                seleccionarPorId(cmbLocacion, Convert.ToInt32(cotizacion["locacion_id"]));
 
             foreach (DataRow servicio in servicios.Rows)
             {
@@ -228,7 +228,7 @@ namespace Codelex
                     txtServicio.Text = "" + servicio["nombre_servicio"];
             }
 
-            DataTable detalle = ordenBD.DetalleCotizacion(cotizacionId);
+            DataTable detalle = ordenBD.detalleCotizacion(cotizacionId);
             foreach (DataRow linea in detalle.Rows)
             {
                 string texto = linea["concepto"] + "   L " + Convert.ToDecimal(linea["subtotal"]).ToString("N2");
@@ -236,10 +236,10 @@ namespace Codelex
                 lstActividadesOrden.Items.Add(linea["concepto"]);
             }
 
-            DataTable necesidades = ordenBD.ResumenCotizacion(cotizacionId);
+            DataTable necesidades = ordenBD.resumenCotizacion(cotizacionId);
             foreach (DataRow fila in necesidades.Rows)
             {
-                lstNecesidades.Items.Add(ordenBD.TextoNecesidad(fila));
+                lstNecesidades.Items.Add(ordenBD.textoNecesidad(fila));
 
                 if (("" + fila["tipo"]) == "Personas")
                     personasNecesarias = Convert.ToInt32(fila["cantidad"]);
@@ -248,11 +248,11 @@ namespace Codelex
             lblPersonasNecesarias.Text = "La cotización necesita " + personasNecesarias + " empleados.";
         }
 
-        private void SeleccionarPorId(ComboBox combo, int id)
+        private void seleccionarPorId(ComboBox combo, int id)
         {
             foreach (ItemLista item in combo.Items)
             {
-                if (item.Id == id)
+                if (item.id == id)
                 {
                     combo.SelectedItem = item;
                     return;
@@ -260,64 +260,64 @@ namespace Codelex
             }
         }
 
-        private void LimpiarCliente()
+        private void limpiarCliente()
         {
             clienteRtn = "";
 
-            TxtIdentidad.Text = "";
-            TxtEmpresa.Text = "";
-            TxtContacto.Text = "";
-            TxtApellido.Text = "";
-            TxtTelefono.Text = "";
-            TxtCorreo.Text = "";
+            txtIdentidad.Text = "";
+            txtEmpresa.Text = "";
+            txtContacto.Text = "";
+            txtApellido.Text = "";
+            txtTelefono.Text = "";
+            txtCorreo.Text = "";
 
             cmbLocacion.Items.Clear();
         }
 
-        private void CambiarCotizacion_Click(object sender, RoutedEventArgs e)
+        private void cambiarCotizacionClic(object sender, RoutedEventArgs e)
         {
-            DataRow? cotizacion = SeleccionarCotizacion.Elegir(this, "");
+            DataRow? cotizacion = SeleccionarCotizacion.elegir(this, "");
 
             if (cotizacion == null)
                 return;
 
             try
             {
-                CargarCotizacion(cotizacion);
+                cargarCotizacion(cotizacion);
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void LlenarCliente(DataRow fila)
+        private void llenarCliente(DataRow fila)
         {
             clienteRtn = "" + fila["identificacion_cliente"];
 
-            TxtIdentidad.Text = clienteRtn;
-            TxtEmpresa.Text = "" + fila["nombre_empresa"];
-            TxtContacto.Text = "" + fila["nombre_cliente"];
-            TxtApellido.Text = "" + fila["apellido_cliente"];
-            TxtTelefono.Text = "" + fila["telefono_cliente"];
-            TxtCorreo.Text = "" + fila["correo_cliente"];
+            txtIdentidad.Text = clienteRtn;
+            txtEmpresa.Text = "" + fila["nombre_empresa"];
+            txtContacto.Text = "" + fila["nombre_cliente"];
+            txtApellido.Text = "" + fila["apellido_cliente"];
+            txtTelefono.Text = "" + fila["telefono_cliente"];
+            txtCorreo.Text = "" + fila["correo_cliente"];
 
             try
             {
-                CargarLocaciones(clienteRtn);
+                cargarLocaciones(clienteRtn);
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void cmbLocacion_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void locacionSeleccionCambiada(object sender, SelectionChangedEventArgs e)
         {
             cmbTipoLocacion.Items.Clear();
-            txtDireccion_limpieza.Text = "";
+            txtDireccionLimpieza.Text = "";
 
-            int locacionId = IdSeleccionado(cmbLocacion);
+            int locacionId = idSeleccionado(cmbLocacion);
             if (locacionId == 0)
                 return;
 
@@ -327,53 +327,53 @@ namespace Codelex
                 {
                     cmbTipoLocacion.Items.Add("" + fila["tipo_locacion"]);
                     cmbTipoLocacion.SelectedIndex = 0;
-                    txtDireccion_limpieza.Text = "" + fila["direccion"];
+                    txtDireccionLimpieza.Text = "" + fila["direccion"];
                 }
             }
         }
 
-        private void btnAgregarEmpleado_Click(object sender, RoutedEventArgs e)
+        private void agregarEmpleadoClic(object sender, RoutedEventArgs e)
         {
-            MoverSeleccionado(lstEmpleadosDisponibles, lstEmpleadosAsignados);
+            moverSeleccionado(lstEmpleadosDisponibles, lstEmpleadosAsignados);
         }
 
-        private void btnQuitarEmpleado_Click(object sender, RoutedEventArgs e)
+        private void quitarEmpleadoClic(object sender, RoutedEventArgs e)
         {
-            MoverSeleccionado(lstEmpleadosAsignados, lstEmpleadosDisponibles);
+            moverSeleccionado(lstEmpleadosAsignados, lstEmpleadosDisponibles);
         }
 
-        private void btnGuardarOrden_Click(object sender, RoutedEventArgs e)
+        private void guardarOrdenClic(object sender, RoutedEventArgs e)
         {
             for (int paso = 1; paso <= 3; paso++)
             {
-                string problema = ValidarPaso(paso);
+                string problema = validarPaso(paso);
 
                 if (problema != "")
                 {
-                    IrAPaso(paso);
-                    MostrarErrorPaso(problema);
+                    irAPaso(paso);
+                    mostrarErrorPaso(problema);
                     return;
                 }
             }
 
             DatosOrden datos = new DatosOrden();
 
-            datos.CotizacionId = cotizacionId;
-            datos.Rtn = clienteRtn;
-            datos.LocacionId = IdSeleccionado(cmbLocacion);
-            datos.SupervisorId = IdSeleccionado(cmbSupervisor);
-            datos.VehiculoId = IdSeleccionado(cmbVehiculo);
-            datos.FechaSolicitud = dpFechaSolicitud.SelectedDate;
-            datos.FechaServicio = dpFechaLimpieza.SelectedDate;
-            datos.EstadoId = IdSeleccionado(cmbEstado);
-            datos.Observaciones = txtDescripcionLimpieza.Text;
-            datos.Turno = "" + cmbTurno.SelectedItem;
-            datos.PisoArea = txtPiso_area.Text;
-            datos.PersonasNecesarias = personasNecesarias;
+            datos.cotizacionId = cotizacionId;
+            datos.rtn = clienteRtn;
+            datos.locacionId = idSeleccionado(cmbLocacion);
+            datos.supervisorId = idSeleccionado(cmbSupervisor);
+            datos.vehiculoId = idSeleccionado(cmbVehiculo);
+            datos.fechaSolicitud = dpFechaSolicitud.SelectedDate;
+            datos.fechaServicio = dpFechaLimpieza.SelectedDate;
+            datos.estadoId = idSeleccionado(cmbEstado);
+            datos.observaciones = txtDescripcionLimpieza.Text;
+            datos.turno = "" + cmbTurno.SelectedItem;
+            datos.pisoArea = txtPisoArea.Text;
+            datos.personasNecesarias = personasNecesarias;
 
             foreach (ItemLista item in lstEmpleadosAsignados.Items)
             {
-                datos.Empleados.Add(item.Id);
+                datos.empleados.Add(item.id);
             }
 
             try
@@ -381,20 +381,20 @@ namespace Codelex
                 string mensaje;
                 string ordenId;
 
-                bool guardada = ordenBD.GuardarOrden(datos, out mensaje, out ordenId);
+                bool guardada = ordenBD.guardarOrden(datos, out mensaje, out ordenId);
 
-                MensajeCodelex.Mostrar(this, "Órdenes", mensaje, guardada);
+                MensajeCodelex.mostrar(this, "Órdenes", mensaje, guardada);
 
                 if (guardada)
                     Close();
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void btnCancelar_Click(object sender, RoutedEventArgs e)
+        private void cancelarClic(object sender, RoutedEventArgs e)
         {
             if (clienteRtn != "")
             {
@@ -413,7 +413,7 @@ namespace Codelex
 
         int pasoActual = 1;
 
-        private void IrAPaso(int paso)
+        private void irAPaso(int paso)
         {
             pasoActual = paso;
 
@@ -427,17 +427,17 @@ namespace Codelex
 
             txtErrorPaso.Visibility = Visibility.Collapsed;
 
-            PintarIndicador(1, circulo1, numero1, titulo1);
-            PintarIndicador(2, circulo2, numero2, titulo2);
-            PintarIndicador(3, circulo3, numero3, titulo3);
+            pintarIndicador(1, circulo1, numero1, titulo1);
+            pintarIndicador(2, circulo2, numero2, titulo2);
+            pintarIndicador(3, circulo3, numero3, titulo3);
 
             if (paso == 3)
-                ArmarResumen();
+                armarResumen();
 
             scrollPasos.ScrollToTop();
         }
 
-        private void PintarIndicador(int numero, Border circulo, TextBlock texto, TextBlock titulo)
+        private void pintarIndicador(int numero, Border circulo, TextBlock texto, TextBlock titulo)
         {
             if (numero < pasoActual)
             {
@@ -466,24 +466,24 @@ namespace Codelex
         }
 
         // Avanza hasta el paso pedido validando cada paso intermedio. Si uno falla, se queda en él.
-        private void AvanzarHasta(int destino)
+        private void avanzarHasta(int destino)
         {
             for (int paso = pasoActual; paso < destino; paso++)
             {
-                string problema = ValidarPaso(paso);
+                string problema = validarPaso(paso);
 
                 if (problema != "")
                 {
-                    IrAPaso(paso);
-                    MostrarErrorPaso(problema);
+                    irAPaso(paso);
+                    mostrarErrorPaso(problema);
                     return;
                 }
             }
 
-            IrAPaso(destino);
+            irAPaso(destino);
         }
 
-        private string ValidarPaso(int paso)
+        private string validarPaso(int paso)
         {
             if (paso == 1)
             {
@@ -502,11 +502,11 @@ namespace Codelex
                     return "Seleccione la fecha de limpieza.";
                 if (dpFechaLimpieza.SelectedDate < dpFechaSolicitud.SelectedDate)
                     return "La fecha de limpieza no puede ser anterior a la fecha de solicitud.";
-                if (IdSeleccionado(cmbEstado) == 0)
+                if (idSeleccionado(cmbEstado) == 0)
                     return "Seleccione el estado de la orden.";
-                if (IdSeleccionado(cmbSupervisor) == 0)
+                if (idSeleccionado(cmbSupervisor) == 0)
                     return "Seleccione el supervisor.";
-                if (IdSeleccionado(cmbLocacion) == 0)
+                if (idSeleccionado(cmbLocacion) == 0)
                     return "Seleccione la locación.";
             }
             else if (paso == 3)
@@ -517,22 +517,22 @@ namespace Codelex
                     return "La cotización necesita " + personasNecesarias + " empleados. Asigne más.";
                 if (cmbTurno.SelectedItem == null)
                     return "Seleccione el turno.";
-                if (txtPiso_area.Text.Trim() == "")
+                if (txtPisoArea.Text.Trim() == "")
                     return "Escriba el piso o área.";
-                if (IdSeleccionado(cmbVehiculo) == 0)
+                if (idSeleccionado(cmbVehiculo) == 0)
                     return "Seleccione el vehículo.";
             }
 
             return "";
         }
 
-        private void MostrarErrorPaso(string mensaje)
+        private void mostrarErrorPaso(string mensaje)
         {
             txtErrorPaso.Text = mensaje;
             txtErrorPaso.Visibility = Visibility.Visible;
         }
 
-        private void ArmarResumen()
+        private void armarResumen()
         {
             string fecha = dpFechaLimpieza.SelectedDate == null
                 ? ""
@@ -540,58 +540,58 @@ namespace Codelex
 
             txtResumen.Text =
                 "Cotización: " + txtCotizacion.Text + "  |  " + txtTotalCotizacion.Text + "\n" +
-                "Cliente: " + TxtEmpresa.Text + " (" + TxtContacto.Text + " " + TxtApellido.Text + ")\n" +
+                "Cliente: " + txtEmpresa.Text + " (" + txtContacto.Text + " " + txtApellido.Text + ")\n" +
                 "Servicio: " + txtServicio.Text + " (" + lstActividadesOrden.Items.Count + " actividades)\n" +
-                "Lugar: " + cmbLocacion.SelectedItem + " - " + txtDireccion_limpieza.Text + "\n" +
+                "Lugar: " + cmbLocacion.SelectedItem + " - " + txtDireccionLimpieza.Text + "\n" +
                 "Fecha de limpieza: " + fecha + "\n" +
                 "Supervisor: " + cmbSupervisor.SelectedItem;
         }
 
-        private void Paso_Click(object sender, MouseButtonEventArgs e)
+        private void pasoClic(object sender, MouseButtonEventArgs e)
         {
             int destino = int.Parse("" + ((FrameworkElement)sender).Tag);
 
             if (destino < pasoActual)
-                IrAPaso(destino);
+                irAPaso(destino);
             else if (destino > pasoActual)
-                AvanzarHasta(destino);
+                avanzarHasta(destino);
         }
 
-        private void btnSiguiente_Click(object sender, RoutedEventArgs e)
+        private void siguienteClic(object sender, RoutedEventArgs e)
         {
-            AvanzarHasta(pasoActual + 1);
+            avanzarHasta(pasoActual + 1);
         }
 
-        private void btnAtras_Click(object sender, RoutedEventArgs e)
+        private void atrasClic(object sender, RoutedEventArgs e)
         {
             if (pasoActual > 1)
-                IrAPaso(pasoActual - 1);
+                irAPaso(pasoActual - 1);
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimizar_Click(object sender, RoutedEventArgs e)
+        private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
-        private void Salir_Click(object sender, RoutedEventArgs e)
+        private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
-        private void Aviso(string mensaje)
+        private void aviso(string mensaje)
         {
-            MensajeCodelex.Mostrar(this, "Órdenes", mensaje, false);
+            MensajeCodelex.mostrar(this, "Órdenes", mensaje, false);
         }
 
-        private void MostrarError(Exception ex)
+        private void mostrarError(Exception ex)
         {
-            MensajeCodelex.Mostrar(this, "Órdenes", ex.Message, false);
+            MensajeCodelex.mostrar(this, "Órdenes", ex.Message, false);
         }
     }
 }

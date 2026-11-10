@@ -26,18 +26,18 @@ namespace Codelex
             InitializeComponent();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ventanaCargada(object sender, RoutedEventArgs e)
         {
-            CargarRoles();
-            LimpiarFormulario();
-            CargarUsuarios();
+            cargarRoles();
+            limpiarFormulario();
+            cargarUsuarios();
         }
 
-        private void CargarRoles()
+        private void cargarRoles()
         {
             try
             {
-                DataTable roles = usuarioBD.ListarRoles();
+                DataTable roles = usuarioBD.listarRoles();
 
                 if (Sesion.Nivel != NivelAcceso.Avanzado)
                     roles.DefaultView.RowFilter = "nombreRol NOT LIKE '%Avanzado%'";
@@ -46,32 +46,32 @@ namespace Codelex
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void CargarUsuarios()
+        private void cargarUsuarios()
         {
             try
             {
-                DataTable tabla = usuarioBD.BuscarUsuarios(textoBusqueda, buscarPor, filtroEstado);
+                DataTable tabla = usuarioBD.buscarUsuarios(textoBusqueda, buscarPor, filtroEstado);
                 dgUsuarios.ItemsSource = tabla.DefaultView;
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void dgUsuarios_Click(object sender, MouseButtonEventArgs e)
+        private void usuariosClic(object sender, MouseButtonEventArgs e)
         {
             if (dgUsuarios.SelectedItem == null)
                 return;
 
-            CargarUsuario((DataRowView)dgUsuarios.SelectedItem);
+            cargarUsuario((DataRowView)dgUsuarios.SelectedItem);
         }
 
-        private void LimpiarFormulario()
+        private void limpiarFormulario()
         {
             usuarioActual = 0;
             empleadoActual = 0;
@@ -86,10 +86,10 @@ namespace Codelex
             pbContrasena.Clear();
             pbConfirmar.Clear();
 
-            ActualizarBotones();
+            actualizarBotones();
         }
 
-        private void ActualizarBotones()
+        private void actualizarBotones()
         {
             bool editando = usuarioActual > 0;
 
@@ -108,7 +108,7 @@ namespace Codelex
                 txtEstado.Text = "—";
         }
 
-        private void CargarEmpleado(DataRowView fila)
+        private void cargarEmpleado(DataRowView fila)
         {
             usuarioActual = 0;
             usuarioActivo = true;
@@ -119,14 +119,14 @@ namespace Codelex
             txtCorreo.Text = "" + fila["correo_empleado"];
             txtTelefono.Text = "" + fila["telefono_empleado"];
 
-            string sugerido = GenerarUsuario(txtNombre.Text, txtApellido.Text);
+            string sugerido = generarUsuario(txtNombre.Text, txtApellido.Text);
             try
             {
-                sugerido = usuarioBD.UsuarioDisponible(sugerido);
+                sugerido = usuarioBD.usuarioDisponible(sugerido);
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
             txtUsuario.Text = sugerido;
 
@@ -134,10 +134,10 @@ namespace Codelex
             pbContrasena.Clear();
             pbConfirmar.Clear();
 
-            ActualizarBotones();
+            actualizarBotones();
         }
 
-        private void CargarUsuario(DataRowView fila)
+        private void cargarUsuario(DataRowView fila)
         {
             usuarioActual = Convert.ToInt32(fila["usuario_id"]);
             empleadoActual = Convert.ToInt32(fila["empleado_id"]);
@@ -158,24 +158,24 @@ namespace Codelex
             pbContrasena.Clear();
             pbConfirmar.Clear();
 
-            ActualizarBotones();
+            actualizarBotones();
         }
 
-        private string GenerarUsuario(string nombre, string apellido)
+        private string generarUsuario(string nombre, string apellido)
         {
             string primerApellido = apellido.Trim();
             int espacio = primerApellido.IndexOf(' ');
             if (espacio > 0)
                 primerApellido = primerApellido.Substring(0, espacio);
 
-            string inicio = SoloLetras(nombre);
+            string inicio = soloLetras(nombre);
             if (inicio.Length > 2)
                 inicio = inicio.Substring(0, 2);
 
-            return inicio + SoloLetras(primerApellido);
+            return inicio + soloLetras(primerApellido);
         }
 
-        private string SoloLetras(string texto)
+        private string soloLetras(string texto)
         {
             string descompuesto = texto.Normalize(NormalizationForm.FormD);
             StringBuilder resultado = new StringBuilder();
@@ -192,12 +192,12 @@ namespace Codelex
             return resultado.ToString();
         }
 
-        private string ValidarFormulario(bool esNuevo)
+        private string validarFormulario(bool esNuevo)
         {
             if (empleadoActual == 0)
                 return "Elija un empleado con el botón Buscar empleado.";
 
-            if (esNuevo && !CorreoValido(txtCorreo.Text))
+            if (esNuevo && !correoValido(txtCorreo.Text))
                 return "El correo del empleado está vacío o no tiene un formato válido. " +
                        "Corríjalo en el módulo de Empleados antes de continuar.";
 
@@ -219,7 +219,7 @@ namespace Codelex
             return "";
         }
 
-        private bool CorreoValido(string correo)
+        private bool correoValido(string correo)
         {
             correo = correo.Trim();
 
@@ -232,24 +232,24 @@ namespace Codelex
             return direccion.Address == correo && direccion.Host.Contains('.');
         }
 
-        private void Nuevo_Click(object sender, RoutedEventArgs e)
+        private void nuevoClic(object sender, RoutedEventArgs e)
         {
-            LimpiarFormulario();
+            limpiarFormulario();
             dgUsuarios.SelectedItem = null;
         }
 
-        private void BuscarEmpleado_Click(object sender, RoutedEventArgs e)
+        private void buscarEmpleadoClic(object sender, RoutedEventArgs e)
         {
             ElegirEmpleado ventana = new ElegirEmpleado();
             ventana.Owner = this;
 
-            if (ventana.ShowDialog() == true && ventana.EmpleadoElegido != null)
-                CargarEmpleado(ventana.EmpleadoElegido);
+            if (ventana.ShowDialog() == true && ventana.empleadoElegido != null)
+                cargarEmpleado(ventana.empleadoElegido);
         }
 
-        private void Crear_Click(object sender, RoutedEventArgs e)
+        private void crearClic(object sender, RoutedEventArgs e)
         {
-            string error = ValidarFormulario(true);
+            string error = validarFormulario(true);
             if (error != "")
             {
                 MessageBox.Show(error, "Usuarios", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -260,30 +260,30 @@ namespace Codelex
             {
                 string mensaje;
 
-                bool guardado = usuarioBD.CrearUsuario(
+                bool guardado = usuarioBD.crearUsuario(
                     empleadoActual, txtUsuario.Text, pbContrasena.Password,
                     Convert.ToInt32(cmbRol.SelectedValue), out mensaje);
 
-                MostrarMensaje(guardado, mensaje);
+                mostrarMensaje(guardado, mensaje);
 
                 if (guardado)
                 {
-                    CargarUsuarios();
-                    LimpiarFormulario();
+                    cargarUsuarios();
+                    limpiarFormulario();
                 }
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void Actualizar_Click(object sender, RoutedEventArgs e)
+        private void actualizarClic(object sender, RoutedEventArgs e)
         {
             if (usuarioActual == 0)
                 return;
 
-            string error = ValidarFormulario(false);
+            string error = validarFormulario(false);
             if (error != "")
             {
                 MessageBox.Show(error, "Usuarios", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -294,26 +294,26 @@ namespace Codelex
             {
                 string mensaje;
 
-                bool guardado = usuarioBD.ActualizarUsuario(
+                bool guardado = usuarioBD.actualizarUsuario(
                     usuarioActual, txtUsuario.Text, pbContrasena.Password,
                     Convert.ToInt32(cmbRol.SelectedValue), out mensaje);
 
-                MostrarMensaje(guardado, mensaje);
+                mostrarMensaje(guardado, mensaje);
 
                 if (guardado)
                 {
                     pbContrasena.Clear();
                     pbConfirmar.Clear();
-                    CargarUsuarios();
+                    cargarUsuarios();
                 }
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void CambiarEstado_Click(object sender, RoutedEventArgs e)
+        private void cambiarEstadoClic(object sender, RoutedEventArgs e)
         {
             if (usuarioActual == 0)
                 return;
@@ -333,99 +333,99 @@ namespace Codelex
             try
             {
                 string mensaje;
-                bool guardado = usuarioBD.CambiarEstadoUsuario(usuarioActual, nuevoEstado, out mensaje);
+                bool guardado = usuarioBD.cambiarEstadoUsuario(usuarioActual, nuevoEstado, out mensaje);
 
-                MostrarMensaje(guardado, mensaje);
+                mostrarMensaje(guardado, mensaje);
 
                 if (guardado)
                 {
                     usuarioActivo = nuevoEstado;
-                    ActualizarBotones();
-                    CargarUsuarios();
+                    actualizarBotones();
+                    cargarUsuarios();
                 }
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void PorNombre_Click(object sender, RoutedEventArgs e)
+        private void porNombreClic(object sender, RoutedEventArgs e)
         {
             textoBusqueda = txtBuscar.Text.Trim();
             buscarPor = "NOMBRE";
-            CargarUsuarios();
+            cargarUsuarios();
         }
 
-        private void PorUsuario_Click(object sender, RoutedEventArgs e)
+        private void porUsuarioClic(object sender, RoutedEventArgs e)
         {
             textoBusqueda = txtBuscar.Text.Trim();
             buscarPor = "USUARIO";
-            CargarUsuarios();
+            cargarUsuarios();
         }
 
-        private void PorCorreo_Click(object sender, RoutedEventArgs e)
+        private void porCorreoClic(object sender, RoutedEventArgs e)
         {
             textoBusqueda = txtBuscar.Text.Trim();
             buscarPor = "CORREO";
-            CargarUsuarios();
+            cargarUsuarios();
         }
 
-        private void PorRol_Click(object sender, RoutedEventArgs e)
+        private void porRolClic(object sender, RoutedEventArgs e)
         {
             textoBusqueda = txtBuscar.Text.Trim();
             buscarPor = "ROL";
-            CargarUsuarios();
+            cargarUsuarios();
         }
 
-        private void Activos_Click(object sender, RoutedEventArgs e)
+        private void activosClic(object sender, RoutedEventArgs e)
         {
             filtroEstado = "ACTIVOS";
-            CargarUsuarios();
+            cargarUsuarios();
         }
 
-        private void Inactivos_Click(object sender, RoutedEventArgs e)
+        private void inactivosClic(object sender, RoutedEventArgs e)
         {
             filtroEstado = "INACTIVOS";
-            CargarUsuarios();
+            cargarUsuarios();
         }
 
-        private void MostrarTodos_Click(object sender, RoutedEventArgs e)
+        private void mostrarTodosClic(object sender, RoutedEventArgs e)
         {
             txtBuscar.Text = "";
             textoBusqueda = "";
             buscarPor = "";
             filtroEstado = "TODOS";
-            CargarUsuarios();
+            cargarUsuarios();
         }
 
-        private void Buscar_KeyDown(object sender, KeyEventArgs e)
+        private void buscarTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
                 textoBusqueda = txtBuscar.Text.Trim();
                 buscarPor = "";
-                CargarUsuarios();
+                cargarUsuarios();
             }
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimizar_Click(object sender, RoutedEventArgs e)
+        private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
-        private void Salir_Click(object sender, RoutedEventArgs e)
+        private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
-        private void MostrarMensaje(bool correcto, string mensaje)
+        private void mostrarMensaje(bool correcto, string mensaje)
         {
             if (correcto)
                 MessageBox.Show(mensaje, "Usuarios", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -433,7 +433,7 @@ namespace Codelex
                 MessageBox.Show(mensaje, "Usuarios", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
-        private void MostrarError(Exception ex)
+        private void mostrarError(Exception ex)
         {
             MessageBox.Show(ex.Message, "Usuarios", MessageBoxButton.OK, MessageBoxImage.Error);
         }

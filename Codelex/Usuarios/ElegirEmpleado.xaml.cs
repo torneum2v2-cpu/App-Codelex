@@ -9,24 +9,24 @@ namespace Codelex
     {
         UsuarioBD usuarioBD = new UsuarioBD();
 
-        public DataRowView? EmpleadoElegido = null;
+        public DataRowView? empleadoElegido = null;
 
         public ElegirEmpleado()
         {
             InitializeComponent();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ventanaCargada(object sender, RoutedEventArgs e)
         {
-            CargarEmpleados();
+            cargarEmpleados();
             txtBuscar.Focus();
         }
 
-        private void CargarEmpleados()
+        private void cargarEmpleados()
         {
             try
             {
-                DataTable tabla = usuarioBD.BuscarEmpleadosSinUsuario(txtBuscar.Text);
+                DataTable tabla = usuarioBD.buscarEmpleadosSinUsuario(txtBuscar.Text);
                 dgEmpleados.ItemsSource = tabla.DefaultView;
                 txtResultado.Text = "Empleados disponibles (" + tabla.Rows.Count + ")";
             }
@@ -36,7 +36,7 @@ namespace Codelex
             }
         }
 
-        private void Elegir()
+        private void elegir()
         {
             if (dgEmpleados.SelectedItem == null)
             {
@@ -45,37 +45,37 @@ namespace Codelex
                 return;
             }
 
-            EmpleadoElegido = (DataRowView)dgEmpleados.SelectedItem;
+            empleadoElegido = (DataRowView)dgEmpleados.SelectedItem;
             DialogResult = true;
         }
 
-        private void Buscar_Click(object sender, RoutedEventArgs e)
+        private void buscarClic(object sender, RoutedEventArgs e)
         {
-            CargarEmpleados();
+            cargarEmpleados();
         }
 
-        private void Buscar_KeyDown(object sender, KeyEventArgs e)
+        private void buscarTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
-                CargarEmpleados();
+                cargarEmpleados();
         }
 
-        private void Seleccionar_Click(object sender, RoutedEventArgs e)
+        private void seleccionarClic(object sender, RoutedEventArgs e)
         {
-            Elegir();
+            elegir();
         }
 
-        private void dgEmpleados_DoubleClick(object sender, MouseButtonEventArgs e)
+        private void empleadosDobleClic(object sender, MouseButtonEventArgs e)
         {
-            Elegir();
+            elegir();
         }
 
-        private void Cancelar_Click(object sender, RoutedEventArgs e)
+        private void cancelarClic(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();

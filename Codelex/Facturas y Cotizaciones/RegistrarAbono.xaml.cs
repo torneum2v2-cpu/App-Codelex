@@ -25,11 +25,11 @@ namespace Codelex.Facturas_y_Cotizaciones
             this.saldo = saldo;
 
             txtMonto.MaxLength = 12;
-            lblSaldo.Text = facturaBD.Dinero(saldo);
-            Loaded += Window_Loaded;
+            lblSaldo.Text = facturaBD.dinero(saldo);
+            Loaded += ventanaCargada;
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -37,42 +37,42 @@ namespace Codelex.Facturas_y_Cotizaciones
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void btnSimular_Click(object sender, RoutedEventArgs e)
+        private void simularClic(object sender, RoutedEventArgs e)
         {
             try
             {
                 string mensaje;
-                DataTable cuotas = facturaBD.SimularAbono(facturaId, txtMonto.Text, saldo, out mensaje);
+                DataTable cuotas = facturaBD.simularAbono(facturaId, txtMonto.Text, saldo, out mensaje);
 
                 dgSimulacion.ItemsSource = cuotas.DefaultView;
 
                 if (mensaje != "")
-                    Aviso(mensaje);
+                    aviso(mensaje);
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void txtMonto_KeyDown(object sender, KeyEventArgs e)
+        private void montoTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
-                btnSimular_Click(sender, e);
+                simularClic(sender, e);
         }
 
-        private void btnRegistrar_Click(object sender, RoutedEventArgs e)
+        private void registrarClic(object sender, RoutedEventArgs e)
         {
             try
             {
                 string mensaje;
-                bool registrado = facturaBD.RegistrarAbono(facturaId, txtMonto.Text, saldo, out mensaje);
+                bool registrado = facturaBD.registrarAbono(facturaId, txtMonto.Text, saldo, out mensaje);
 
-                MensajeCodelex.Mostrar(this, "Abonos", mensaje, registrado);
+                MensajeCodelex.mostrar(this, "Abonos", mensaje, registrado);
 
                 if (registrado)
                 {
@@ -82,37 +82,37 @@ namespace Codelex.Facturas_y_Cotizaciones
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
         // ---------- Ventana ----------
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimizar_Click(object sender, RoutedEventArgs e)
+        private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
-        private void Salir_Click(object sender, RoutedEventArgs e)
+        private void salirClic(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
             Close();
         }
 
-        private void Aviso(string mensaje)
+        private void aviso(string mensaje)
         {
-            MensajeCodelex.Mostrar(this, "Abonos", mensaje, false);
+            MensajeCodelex.mostrar(this, "Abonos", mensaje, false);
         }
 
-        private void MostrarError(Exception ex)
+        private void mostrarError(Exception ex)
         {
-            MensajeCodelex.Mostrar(this, "Abonos", ex.Message, false);
+            MensajeCodelex.mostrar(this, "Abonos", ex.Message, false);
         }
     }
 }

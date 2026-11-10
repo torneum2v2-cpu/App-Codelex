@@ -12,7 +12,7 @@ namespace Codelex
 
         string rtnCliente = "";
 
-        public DataRowView? CotizacionElegida = null;
+        public DataRowView? cotizacionElegida = null;
 
         public SeleccionarCotizacion(string rtn)
         {
@@ -20,42 +20,42 @@ namespace Codelex
             rtnCliente = rtn;
         }
 
-        public static DataRow? Elegir(Window dueno, string rtn)
+        public static DataRow? elegir(Window dueno, string rtn)
         {
             SeleccionarCotizacion ventana = new SeleccionarCotizacion(rtn);
             ventana.Owner = dueno;
 
-            if (ventana.ShowDialog() == true && ventana.CotizacionElegida != null)
-                return ventana.CotizacionElegida.Row;
+            if (ventana.ShowDialog() == true && ventana.cotizacionElegida != null)
+                return ventana.cotizacionElegida.Row;
 
             return null;
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ventanaCargada(object sender, RoutedEventArgs e)
         {
-            CargarCotizaciones();
+            cargarCotizaciones();
             txtBuscar.Focus();
         }
 
-        private void CargarCotizaciones()
+        private void cargarCotizaciones()
         {
             try
             {
-                DataTable tabla = ordenBD.ListarCotizaciones(txtBuscar.Text, rtnCliente);
+                DataTable tabla = ordenBD.listarCotizaciones(txtBuscar.Text, rtnCliente);
                 dgCotizaciones.ItemsSource = tabla.DefaultView;
                 txtResultado.Text = "Cotizaciones pendientes (" + tabla.Rows.Count + ")";
             }
             catch (Exception ex)
             {
-                MensajeCodelex.Mostrar(this, "Seleccionar cotización", ex.Message, false);
+                MensajeCodelex.mostrar(this, "Seleccionar cotización", ex.Message, false);
             }
         }
 
-        private void Elegir()
+        private void elegir()
         {
             if (dgCotizaciones.SelectedItem == null)
             {
-                MensajeCodelex.Mostrar(this, "Seleccionar cotización", "Seleccione una cotización de la tabla.", false);
+                MensajeCodelex.mostrar(this, "Seleccionar cotización", "Seleccione una cotización de la tabla.", false);
                 return;
             }
 
@@ -64,50 +64,50 @@ namespace Codelex
 
             if (motivo != "")
             {
-                MensajeCodelex.Mostrar(this, "Seleccionar cotización", motivo, false);
+                MensajeCodelex.mostrar(this, "Seleccionar cotización", motivo, false);
                 return;
             }
 
-            CotizacionElegida = fila;
+            cotizacionElegida = fila;
             DialogResult = true;
         }
 
-        private void AgregarCotizacion_Click(object sender, RoutedEventArgs e)
+        private void agregarCotizacionClic(object sender, RoutedEventArgs e)
         {
             Cotizacion ventana = new Cotizacion();
             ventana.Owner = this;
             ventana.ShowDialog();
 
-            CargarCotizaciones();
+            cargarCotizaciones();
         }
 
-        private void Buscar_Click(object sender, RoutedEventArgs e)
+        private void buscarClic(object sender, RoutedEventArgs e)
         {
-            CargarCotizaciones();
+            cargarCotizaciones();
         }
 
-        private void Buscar_KeyDown(object sender, KeyEventArgs e)
+        private void buscarTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
-                CargarCotizaciones();
+                cargarCotizaciones();
         }
 
-        private void Seleccionar_Click(object sender, RoutedEventArgs e)
+        private void seleccionarClic(object sender, RoutedEventArgs e)
         {
-            Elegir();
+            elegir();
         }
 
-        private void dgCotizaciones_DoubleClick(object sender, MouseButtonEventArgs e)
+        private void cotizacionesDobleClic(object sender, MouseButtonEventArgs e)
         {
-            Elegir();
+            elegir();
         }
 
-        private void Cancelar_Click(object sender, RoutedEventArgs e)
+        private void cancelarClic(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();

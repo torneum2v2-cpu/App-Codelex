@@ -11,7 +11,7 @@ namespace Codelex.BDD
 {
     public class Usuario
     {
-        private const string SitioCodelex = "codelex.hn";
+        private const string SITIO_CODELEX = "codelex.hn";
         public int EmpleadoId { get; set; }
         public string Rol { get; set; } = "";
 
@@ -22,11 +22,11 @@ namespace Codelex.BDD
         public byte[] LlaveId { get; set; } = new byte[0];
         public byte[] LlavePublica { get; set; } = new byte[0];
 
-        public bool ValidarLogin(string usuario, string password)
+        public bool validarLogin(string usuario, string password)
         {
             DataTable tabla = new DataTable();
 
-            using (SqlConnection conexion = Conexion.ObtenerConexion())
+            using (SqlConnection conexion = Conexion.obtenerConexion())
             {
                 using (SqlCommand comando = new SqlCommand("sp_ObtenerUsuarioLogin", conexion))
                 {
@@ -62,11 +62,11 @@ namespace Codelex.BDD
             return true;
         }
 
-        public async Task<string> RegistrarLlave(IntPtr ventana)
+        public async Task<string> registrarLlave(IntPtr ventana)
         {
             RelyingPartyInformation sitio = new RelyingPartyInformation()
             {
-                Id = SitioCodelex,
+                Id = SITIO_CODELEX,
                 Name = "Codelex"
             };
 
@@ -87,7 +87,7 @@ namespace Codelex.BDD
                     UserVerificationRequirement.Required,
                     AuthenticatorAttachment.CrossPlatform,
                     pubKeyCredParams: new Algorithm[] { Algorithm.ES256 },
-                    credentialHints: PedirTelefono(),
+                    credentialHints: pedirTelefono(),
                     windowHandle: new WindowHandle(ventana));
             }
             catch (Exception ex)
@@ -95,19 +95,19 @@ namespace Codelex.BDD
                 return "No se pudo registrar el teléfono. " + ex.Message;
             }
 
-            string error = ComprobarRegistro(respuesta, reto);
+            string error = comprobarRegistro(respuesta, reto);
             if (error != "")
                 return error;
 
-            AttestedCredentialData llave = LeerDatosRegistro(respuesta)!.AttestedCredentialData!;
+            AttestedCredentialData llave = leerDatosRegistro(respuesta)!.AttestedCredentialData!;
             string mensaje;
-            if (!GuardarLlave(llave.CredentialId.ToArray(), llave.CredentialPublicKey.ToArray(), out mensaje))
+            if (!guardarLlave(llave.CredentialId.ToArray(), llave.CredentialPublicKey.ToArray(), out mensaje))
                 return mensaje;
 
             return "";
         }
 
-        public async Task<string> VerificarLlave(IntPtr ventana)
+        public async Task<string> verificarLlave(IntPtr ventana)
         {
             List<PublicKeyCredentialDescriptor> permitidas = new List<PublicKeyCredentialDescriptor>();
             permitidas.Add(new PublicKeyCredentialDescriptor(LlaveId));
@@ -118,11 +118,11 @@ namespace Codelex.BDD
 
             try
             {
-                respuesta = await api.AuthenticatorGetAssertionAsync(SitioCodelex, reto,
+                respuesta = await api.AuthenticatorGetAssertionAsync(SITIO_CODELEX, reto,
                     UserVerificationRequirement.Required,
                     AuthenticatorAttachment.CrossPlatform,
                     allowCredentials: permitidas,
-                    credentialHints: PedirTelefono(),
+                    credentialHints: pedirTelefono(),
                     windowHandle: new WindowHandle(ventana));
             }
             catch (Exception ex)
@@ -130,16 +130,16 @@ namespace Codelex.BDD
                 return "No se pudo verificar con el teléfono. " + ex.Message;
             }
 
-            return ComprobarInicio(respuesta, reto);
+            return comprobarInicio(respuesta, reto);
         }
 
-        private string ComprobarRegistro(AttestationPublicKeyCredential respuesta, byte[] reto)
+        private string comprobarRegistro(AttestationPublicKeyCredential respuesta, byte[] reto)
         {
-            AuthenticatorData? datos = LeerDatosRegistro(respuesta);
+            AuthenticatorData? datos = leerDatosRegistro(respuesta);
             if (respuesta.Response == null || datos == null)
                 return "La respuesta del teléfono no es válida.";
 
-            string error = ComprobarDatos(datos, respuesta.Response.ClientDataJson, "webauthn.create", reto);
+            string error = comprobarDatos(datos, respuesta.Response.ClientDataJson, "webauthn.create", reto);
             if (error != "")
                 return error;
 
@@ -153,7 +153,7 @@ namespace Codelex.BDD
             return "";
         }
 
-        private AuthenticatorData? LeerDatosRegistro(AttestationPublicKeyCredential respuesta)
+        private AuthenticatorData? leerDatosRegistro(AttestationPublicKeyCredential respuesta)
         {
             if (respuesta.Response == null)
                 return null;
@@ -179,14 +179,14 @@ namespace Codelex.BDD
             return null;
         }
 
-        private string ComprobarInicio(AssertionPublicKeyCredential respuesta, byte[] reto)
+        private string comprobarInicio(AssertionPublicKeyCredential respuesta, byte[] reto)
         {
             AuthenticatorAssertionResponse? datos = respuesta.Response;
             if (datos == null || datos.AuthenticatorDataParsed == null || datos.AuthenticatorData == null
                 || datos.ClientData == null || datos.Signature == null || respuesta.RawId == null)
                 return "La respuesta del teléfono no es válida.";
 
-            string error = ComprobarDatos(datos.AuthenticatorDataParsed, datos.ClientDataJson, "webauthn.get", reto);
+            string error = comprobarDatos(datos.AuthenticatorDataParsed, datos.ClientDataJson, "webauthn.get", reto);
             if (error != "")
                 return error;
 
@@ -205,7 +205,7 @@ namespace Codelex.BDD
             return "";
         }
 
-        private string ComprobarDatos(AuthenticatorData datos, string? json, string tipo, byte[] reto)
+        private string comprobarDatos(AuthenticatorData datos, string? json, string tipo, byte[] reto)
         {
             if (json == null || datos.RelyingPartyIdHash == null)
                 return "La respuesta del teléfono no es válida.";
@@ -213,7 +213,7 @@ namespace Codelex.BDD
             if (!datos.UserVerified)
                 return "El teléfono no confirmó tu identidad con Face ID, huella o reconocimiento facial.";
 
-            byte[] resumenSitio = SHA256.HashData(Encoding.UTF8.GetBytes(SitioCodelex));
+            byte[] resumenSitio = SHA256.HashData(Encoding.UTF8.GetBytes(SITIO_CODELEX));
             if (!CryptographicOperations.FixedTimeEquals(datos.RelyingPartyIdHash, resumenSitio))
                 return "La respuesta del teléfono no es para Codelex.";
 
@@ -224,7 +224,7 @@ namespace Codelex.BDD
             return "";
         }
 
-        private string[]? PedirTelefono()
+        private string[]? pedirTelefono()
         {
             if (WebAuthnApi.IsPublicKeyCredentialHintSupported)
                 return new string[] { "hybrid" };
@@ -232,7 +232,7 @@ namespace Codelex.BDD
             return null;
         }
 
-        private bool GuardarLlave(byte[] llaveId, byte[] llavePublica, out string mensaje)
+        private bool guardarLlave(byte[] llaveId, byte[] llavePublica, out string mensaje)
         {
             SqlParameter resultado = new SqlParameter("@resultado", SqlDbType.Int);
             resultado.Direction = ParameterDirection.Output;
@@ -240,7 +240,7 @@ namespace Codelex.BDD
             SqlParameter textoMensaje = new SqlParameter("@mensaje", SqlDbType.VarChar, 100);
             textoMensaje.Direction = ParameterDirection.Output;
 
-            using (SqlConnection conexion = Conexion.ObtenerConexion())
+            using (SqlConnection conexion = Conexion.obtenerConexion())
             {
                 using (SqlCommand comando = new SqlCommand("sp_GuardarPasskey", conexion))
                 {
@@ -264,23 +264,23 @@ namespace Codelex.BDD
             return true;
         }
 
-        public string ValidarContras(string contra, string contra2)
+        public string validarContras(string contra, string contra2)
         {
             if (contra != contra2)
                 return "Las contraseñas ingresadas deben de coincidir entre sí";
             if (contra.Length < 8)
                 return "Tu contraseña debe tener al menos 8 caracteres";
-            if (!TieneMayuscula(contra))
+            if (!tieneMayuscula(contra))
                 return "Por favor utiliza al menos una mayúscula.";
-            if (!TieneNumero(contra))
+            if (!tieneNumero(contra))
                 return "Tu contraseña debe utilizar por lo menos un dígito";
 
             return "";
         }
 
-        public bool CambiarContrasena(string correo, string contra, string contra2, out string mensaje)
+        public bool cambiarContrasena(string correo, string contra, string contra2, out string mensaje)
         {
-            mensaje = ValidarContras(contra, contra2);
+            mensaje = validarContras(contra, contra2);
             if (mensaje != "")
                 return false;
 
@@ -296,7 +296,7 @@ namespace Codelex.BDD
             SqlParameter textoMensaje = new SqlParameter("@mensaje", SqlDbType.VarChar, 100);
             textoMensaje.Direction = ParameterDirection.Output;
 
-            using (SqlConnection conexion = Conexion.ObtenerConexion())
+            using (SqlConnection conexion = Conexion.obtenerConexion())
             {
                 using (SqlCommand comando = new SqlCommand("sp_CambiarContrasenaPorCorreo", conexion))
                 {
@@ -313,7 +313,7 @@ namespace Codelex.BDD
             return Convert.ToInt32(resultado.Value) == 1;
         }
 
-        private bool TieneMayuscula(string texto)
+        private bool tieneMayuscula(string texto)
         {
             foreach (char c in texto)
             {
@@ -323,7 +323,7 @@ namespace Codelex.BDD
             return false;
         }
 
-        private bool TieneNumero(string texto)
+        private bool tieneNumero(string texto)
         {
             foreach (char c in texto)
             {

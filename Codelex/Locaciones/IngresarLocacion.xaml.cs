@@ -24,11 +24,11 @@ namespace Codelex
             rtnInicial = rtn;
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             try
             {
-                foreach (string tipo in locacionBD.Tipos)
+                foreach (string tipo in locacionBD.tipos)
                 {
                     cmbTipo.Items.Add(tipo);
                 }
@@ -40,34 +40,34 @@ namespace Codelex
                     Grid.SetColumnSpan(cardLocaciones, 2);
                     txtNotaCliente.Visibility = Visibility.Collapsed;
 
-                    MostrarCliente(rtnInicial);
+                    mostrarCliente(rtnInicial);
                     txtNombre.Focus();
                 }
                 else
                 {
-                    CargarClientes();
+                    cargarClientes();
                     txtBuscarCliente.Focus();
                 }
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void CargarClientes()
+        private void cargarClientes()
         {
-            DataTable tabla = clienteBD.BuscarClientes(txtBuscarCliente.Text.Trim(), "", "ACTIVOS");
+            DataTable tabla = clienteBD.buscarClientes(txtBuscarCliente.Text.Trim(), "", "ACTIVOS");
             dgClientes.ItemsSource = tabla.DefaultView;
         }
 
-        private void MostrarCliente(string rtn)
+        private void mostrarCliente(string rtn)
         {
-            DataTable tabla = clienteBD.ObtenerCliente(rtn);
+            DataTable tabla = clienteBD.obtenerCliente(rtn);
 
             if (tabla.Rows.Count == 0)
             {
-                Aviso("No se encontró el cliente.");
+                aviso("No se encontró el cliente.");
                 return;
             }
 
@@ -80,10 +80,10 @@ namespace Codelex
             txtContacto.Text = fila["nombre_cliente"] + " " + fila["apellido_cliente"];
             txtTelefono.Text = "" + fila["telefono_cliente"];
 
-            CargarLocaciones();
+            cargarLocaciones();
         }
 
-        private void CargarLocaciones()
+        private void cargarLocaciones()
         {
             if (clienteRtn == "")
             {
@@ -91,11 +91,11 @@ namespace Codelex
                 return;
             }
 
-            DataTable tabla = clienteBD.LocacionesPorCliente(clienteRtn);
+            DataTable tabla = clienteBD.locacionesPorCliente(clienteRtn);
             dgLocaciones.ItemsSource = tabla.DefaultView;
         }
 
-        private void LimpiarFormulario()
+        private void limpiarFormulario()
         {
             txtNombre.Text = "";
             txtDireccion.Text = "";
@@ -103,19 +103,19 @@ namespace Codelex
             txtNombre.Focus();
         }
 
-        private void txtBuscar_TextChanged(object sender, TextChangedEventArgs e)
+        private void buscarTextoCambiado(object sender, TextChangedEventArgs e)
         {
             try
             {
-                CargarClientes();
+                cargarClientes();
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void dgClientes_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void clientesSeleccionCambiada(object sender, SelectionChangedEventArgs e)
         {
             if (dgClientes.SelectedItem == null)
                 return;
@@ -124,66 +124,66 @@ namespace Codelex
 
             try
             {
-                MostrarCliente("" + fila["identificacion_cliente"]);
+                mostrarCliente("" + fila["identificacion_cliente"]);
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void Limpiar_Click(object sender, RoutedEventArgs e)
+        private void limpiarClic(object sender, RoutedEventArgs e)
         {
-            LimpiarFormulario();
+            limpiarFormulario();
         }
 
-        private void Guardar_Click(object sender, RoutedEventArgs e)
+        private void guardarClic(object sender, RoutedEventArgs e)
         {
             try
             {
                 string mensaje;
 
-                bool guardada = locacionBD.InsertarLocacion(
+                bool guardada = locacionBD.insertarLocacion(
                     clienteRtn, txtNombre.Text, "" + cmbTipo.SelectedItem, txtDireccion.Text, out mensaje);
 
-                MensajeCodelex.Mostrar(this, "Locaciones", mensaje, guardada);
+                MensajeCodelex.mostrar(this, "Locaciones", mensaje, guardada);
 
                 if (guardada)
                 {
-                    LimpiarFormulario();
-                    CargarLocaciones();
+                    limpiarFormulario();
+                    cargarLocaciones();
                 }
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimizar_Click(object sender, RoutedEventArgs e)
+        private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
-        private void Salir_Click(object sender, RoutedEventArgs e)
+        private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
-        private void Aviso(string mensaje)
+        private void aviso(string mensaje)
         {
-            MensajeCodelex.Mostrar(this, "Locaciones", mensaje, false);
+            MensajeCodelex.mostrar(this, "Locaciones", mensaje, false);
         }
 
-        private void MostrarError(Exception ex)
+        private void mostrarError(Exception ex)
         {
-            MensajeCodelex.Mostrar(this, "Locaciones", ex.Message, false);
+            MensajeCodelex.mostrar(this, "Locaciones", ex.Message, false);
         }
     }
 }

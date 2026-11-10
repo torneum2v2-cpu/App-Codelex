@@ -9,124 +9,124 @@ namespace Codelex
         public SeleccionarCuenta(bool entrarAutomatico = false)
         {
             InitializeComponent();
-            CargarCuentas();
+            cargarCuentas();
 
             if (entrarAutomatico)
-                ContentRendered += EntrarAutomatico;
+                ContentRendered += entrarAutomaticamente;
         }
 
-        private async void EntrarAutomatico(object? sender, EventArgs e)
+        private async void entrarAutomaticamente(object? sender, EventArgs e)
         {
-            ContentRendered -= EntrarAutomatico;
+            ContentRendered -= entrarAutomaticamente;
 
             try
             {
-                List<CuentaRecordada> cuentas = CuentasRecordadas.Listar();
+                List<CuentaRecordada> cuentas = CuentasRecordadas.listar();
                 if (cuentas.Count == 1)
-                    await Entrar(cuentas[0]);
+                    await entrar(cuentas[0]);
             }
             catch (Exception ex)
             {
                 IsEnabled = true;
-                MostrarError("No se pudo entrar: " + ex.Message);
+                mostrarError("No se pudo entrar: " + ex.Message);
             }
         }
 
-        private void CargarCuentas()
+        private void cargarCuentas()
         {
-            lista.ItemsSource = CuentasRecordadas.Listar();
+            lista.ItemsSource = CuentasRecordadas.listar();
         }
 
-        private void MostrarError(string mensaje)
+        private void mostrarError(string mensaje)
         {
             txtError.Text = mensaje;
             txtError.Visibility = Visibility.Visible;
         }
 
-        private async void Cuenta_Click(object sender, RoutedEventArgs e)
+        private async void cuentaClic(object sender, RoutedEventArgs e)
         {
             if (((FrameworkElement)sender).DataContext is not CuentaRecordada cuenta)
                 return;
 
-            await Entrar(cuenta);
+            await entrar(cuenta);
         }
 
-        private async Task Entrar(CuentaRecordada cuenta)
+        private async Task entrar(CuentaRecordada cuenta)
         {
             txtError.Visibility = Visibility.Collapsed;
             IsEnabled = false;
             Cargando? cargando = null;
-            try { cargando = Cargando.Iniciar(this, "Entrando..."); } catch { }
+            try { cargando = Cargando.iniciar(this, "Entrando..."); } catch { }
 
             Usuario usuario = new Usuario();
-            string clave = CuentasRecordadas.ObtenerContrasena(cuenta);
+            string clave = CuentasRecordadas.obtenerContrasena(cuenta);
             bool valido = false;
             string errorBD = "";
 
             try
             {
                 if (clave != "")
-                    valido = await Task.Run(() => usuario.ValidarLogin(cuenta.Usuario, clave));
+                    valido = await Task.Run(() => usuario.validarLogin(cuenta.Usuario, clave));
             }
             catch (Exception ex)
             {
                 errorBD = ex.Message;
             }
 
-            try { cargando?.Terminar(); } catch { }
+            try { cargando?.terminar(); } catch { }
             IsEnabled = true;
 
             if (errorBD != "")
             {
-                MostrarError(errorBD);
+                mostrarError(errorBD);
                 return;
             }
 
             if (!valido)
             {
-                CuentasRecordadas.Quitar(cuenta.Usuario);
-                CargarCuentas();
-                MostrarError("La contraseña de esta cuenta cambió o ya no es válida. Agrégala de nuevo para continuar.");
+                CuentasRecordadas.quitar(cuenta.Usuario);
+                cargarCuentas();
+                mostrarError("La contraseña de esta cuenta cambió o ya no es válida. Agrégala de nuevo para continuar.");
                 return;
             }
 
-            Sesion.Iniciar(usuario);
+            Sesion.iniciar(usuario);
             new Menu().Show();
             Close();
         }
 
-        private void Quitar_Click(object sender, RoutedEventArgs e)
+        private void quitarClic(object sender, RoutedEventArgs e)
         {
             if (((FrameworkElement)sender).DataContext is not CuentaRecordada cuenta)
                 return;
 
-            CuentasRecordadas.Quitar(cuenta.Usuario);
+            CuentasRecordadas.quitar(cuenta.Usuario);
 
-            if (CuentasRecordadas.Listar().Count == 0)
+            if (CuentasRecordadas.listar().Count == 0)
             {
-                new MainWindow().Show();
+                new VentanaPrincipal().Show();
                 Close();
                 return;
             }
 
-            CargarCuentas();
+            cargarCuentas();
         }
 
-        private void Agregar_Click(object sender, RoutedEventArgs e)
+        private void agregarClic(object sender, RoutedEventArgs e)
         {
-            new MainWindow().Show();
+            new VentanaPrincipal().Show();
             Close();
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimize_Click(object sender, RoutedEventArgs e) =>
+        private void minimizarClic(object sender, RoutedEventArgs e) =>
             WindowState = WindowState.Minimized;
 
-        private void Close_Click(object sender, RoutedEventArgs e) => Close();
+        private void cerrarClic(object sender, RoutedEventArgs e) => Close();
     }
 }

@@ -5,29 +5,29 @@ namespace Codelex.Clases_BDD
 {
     class Locacion : BaseDatos
     {
-        public string[] Tipos = { "Oficina", "Edificio", "Casa", "Local comercial", "Bodega",
+        public string[] tipos = { "Oficina", "Edificio", "Casa", "Local comercial", "Bodega",
                                   "Clínica / Hospital", "Centro educativo", "Industria", "Otro" };
 
-        public bool InsertarLocacion(string rtn, string nombre, string tipo, string direccion, out string mensaje)
+        public bool insertarLocacion(string rtn, string nombre, string tipo, string direccion, out string mensaje)
         {
-            mensaje = ValidarLocacion(rtn, nombre, tipo, direccion);
+            mensaje = validarLocacion(rtn, nombre, tipo, direccion);
             if (mensaje != "")
                 return false;
 
             SqlParameter locacionId = new SqlParameter("@locacion_id", SqlDbType.Int);
             locacionId.Direction = ParameterDirection.Output;
 
-            SqlCommand comando = Procedimiento("sp_InsertarLocacion");
+            SqlCommand comando = procedimiento("sp_InsertarLocacion");
             comando.Parameters.AddWithValue("@identificacion_cliente", rtn.Trim());
             comando.Parameters.AddWithValue("@nombre_locacion", nombre.Trim());
             comando.Parameters.AddWithValue("@direccion", direccion.Trim());
             comando.Parameters.AddWithValue("@tipo_locacion", tipo.Trim());
             comando.Parameters.Add(locacionId);
 
-            return Ejecutar(comando, out mensaje);
+            return ejecutar(comando, out mensaje);
         }
 
-        private string ValidarLocacion(string rtn, string nombre, string tipo, string direccion)
+        private string validarLocacion(string rtn, string nombre, string tipo, string direccion)
         {
             if (rtn.Trim() == "")
                 return "Seleccione un cliente.";
@@ -46,7 +46,7 @@ namespace Codelex.Clases_BDD
                 return "La dirección no puede tener más de 80 caracteres.";
 
             Cliente clienteBD = new Cliente();
-            DataTable existentes = clienteBD.LocacionesPorCliente(rtn);
+            DataTable existentes = clienteBD.locacionesPorCliente(rtn);
 
             foreach (DataRow fila in existentes.Rows)
             {

@@ -32,7 +32,7 @@ namespace Codelex
             empleadoInicial = empleadoId;
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             DateTime hoy = DateTime.Today;
             dpDesde.SelectedDate = new DateTime(hoy.Year, hoy.Month, 1);
@@ -40,7 +40,7 @@ namespace Codelex
 
             try
             {
-                DataTable empleados = empleadoBD.BuscarEmpleados("", "", "TODOS");
+                DataTable empleados = empleadoBD.buscarEmpleados("", "", "TODOS");
 
                 if (Sesion.Nivel == NivelAcceso.Basico)
                 {
@@ -53,15 +53,15 @@ namespace Codelex
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
 
             cargando = false;
-            CargarDatosEmpleado();
-            GenerarReporte();
+            cargarDatosEmpleado();
+            generarReporte();
         }
 
-        private int EmpleadoSeleccionado()
+        private int empleadoSeleccionado()
         {
             if (cmbEmpleado.SelectedValue == null)
                 return 0;
@@ -69,24 +69,24 @@ namespace Codelex
             return Convert.ToInt32(cmbEmpleado.SelectedValue);
         }
 
-        private void cmbEmpleado_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void empleadoSeleccionCambiada(object sender, SelectionChangedEventArgs e)
         {
             if (cargando)
                 return;
 
-            CargarDatosEmpleado();
-            GenerarReporte();
+            cargarDatosEmpleado();
+            generarReporte();
         }
 
-        private void CargarDatosEmpleado()
+        private void cargarDatosEmpleado()
         {
-            int id = EmpleadoSeleccionado();
+            int id = empleadoSeleccionado();
             if (id == 0)
                 return;
 
             try
             {
-                DataTable tabla = empleadoBD.ObtenerEmpleado(id);
+                DataTable tabla = empleadoBD.obtenerEmpleado(id);
                 if (tabla.Rows.Count == 0)
                     return;
 
@@ -102,24 +102,24 @@ namespace Codelex
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void Generar_Click(object sender, RoutedEventArgs e)
+        private void generarClic(object sender, RoutedEventArgs e)
         {
-            GenerarReporte();
+            generarReporte();
         }
 
-        private void GenerarReporte()
+        private void generarReporte()
         {
-            int id = EmpleadoSeleccionado();
+            int id = empleadoSeleccionado();
             if (id == 0)
                 return;
 
             if (dpDesde.SelectedDate == null || dpHasta.SelectedDate == null)
             {
-                MensajeCodelex.Mostrar(this, "Reporte del empleado", "Seleccione las fechas Desde y Hasta.", false);
+                MensajeCodelex.mostrar(this, "Reporte del empleado", "Seleccione las fechas Desde y Hasta.", false);
                 return;
             }
 
@@ -128,14 +128,14 @@ namespace Codelex
 
             if (desde > hasta)
             {
-                MensajeCodelex.Mostrar(this, "Reporte del empleado", "La fecha Desde no puede ser mayor que la fecha Hasta.", false);
+                MensajeCodelex.mostrar(this, "Reporte del empleado", "La fecha Desde no puede ser mayor que la fecha Hasta.", false);
                 return;
             }
 
             try
             {
-                asistencias = empleadoBD.AsistenciasPorEmpleado(id, desde, hasta);
-                ordenes = empleadoBD.OrdenesPorEmpleado(id, desde, hasta);
+                asistencias = empleadoBD.asistenciasPorEmpleado(id, desde, hasta);
+                ordenes = empleadoBD.ordenesPorEmpleado(id, desde, hasta);
 
                 dgAsistencia.ItemsSource = asistencias.DefaultView;
                 dgOrdenes.ItemsSource = ordenes.DefaultView;
@@ -149,13 +149,13 @@ namespace Codelex
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void Exportar_Click(object sender, RoutedEventArgs e)
+        private void exportarClic(object sender, RoutedEventArgs e)
         {
-            if (EmpleadoSeleccionado() == 0)
+            if (empleadoSeleccionado() == 0)
                 return;
 
             SaveFileDialog dialogo = new SaveFileDialog();
@@ -169,16 +169,16 @@ namespace Codelex
             {
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine("REPORTE DEL EMPLEADO");
-                sb.AppendLine("Empleado;" + Csv(txtNombre.Text + " " + txtApellido.Text));
-                sb.AppendLine("Cargo;" + Csv(txtCargo.Text));
-                sb.AppendLine("Identidad;" + Csv(txtIdentidad.Text));
+                sb.AppendLine("Empleado;" + csv(txtNombre.Text + " " + txtApellido.Text));
+                sb.AppendLine("Cargo;" + csv(txtCargo.Text));
+                sb.AppendLine("Identidad;" + csv(txtIdentidad.Text));
                 sb.AppendLine("Periodo;" + dpDesde.SelectedDate?.ToString("dd/MM/yyyy") + " al " + dpHasta.SelectedDate?.ToString("dd/MM/yyyy"));
                 sb.AppendLine();
 
                 sb.AppendLine("ASISTENCIA");
                 sb.AppendLine("Fecha;Entrada;Salida;Horas");
                 foreach (DataRow f in asistencias.Rows)
-                    sb.AppendLine(Csv(f["fecha_asistencia"]) + ";" + Csv(f["hora_entrada"]) + ";" + Csv(f["hora_salida"]) + ";" +
+                    sb.AppendLine(csv(f["fecha_asistencia"]) + ";" + csv(f["hora_entrada"]) + ";" + csv(f["hora_salida"]) + ";" +
                                   Convert.ToDecimal(f["horas"]).ToString("N2", CultureInfo.InvariantCulture));
                 sb.AppendLine(txtTotalHoras.Text.Replace(":", ";"));
                 sb.AppendLine();
@@ -186,20 +186,20 @@ namespace Codelex
                 sb.AppendLine("ORDENES ASIGNADAS");
                 sb.AppendLine("Orden;Cliente;Servicio;Fecha;Turno;Piso / area");
                 foreach (DataRow f in ordenes.Rows)
-                    sb.AppendLine(Csv(f["orden_id"]) + ";" + Csv(f["cliente"]) + ";" + Csv(f["nombre_servicio"]) + ";" +
-                                  Csv(f["fecha_servicio"]) + ";" + Csv(f["turno"]) + ";" + Csv(f["piso_area"]));
+                    sb.AppendLine(csv(f["orden_id"]) + ";" + csv(f["cliente"]) + ";" + csv(f["nombre_servicio"]) + ";" +
+                                  csv(f["fecha_servicio"]) + ";" + csv(f["turno"]) + ";" + csv(f["piso_area"]));
                 sb.AppendLine(txtTotalOrdenes.Text.Replace(":", ";"));
 
                 System.IO.File.WriteAllText(dialogo.FileName, sb.ToString(), new UTF8Encoding(true));
-                MensajeCodelex.Mostrar(this, "Reporte del empleado", "Reporte exportado correctamente.", true);
+                MensajeCodelex.mostrar(this, "Reporte del empleado", "Reporte exportado correctamente.", true);
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private string Csv(object valor)
+        private string csv(object valor)
         {
             string texto = "" + valor;
             if (texto.Contains(";") || texto.Contains("\""))
@@ -207,32 +207,32 @@ namespace Codelex
             return texto;
         }
 
-        private void Imprimir_Click(object sender, RoutedEventArgs e)
+        private void imprimirClic(object sender, RoutedEventArgs e)
         {
             PrintDialog dialogo = new PrintDialog();
             if (dialogo.ShowDialog() == true)
                 dialogo.PrintVisual(areaReporte, "Reporte del empleado");
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimizar_Click(object sender, RoutedEventArgs e)
+        private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
-        private void Cerrar_Click(object sender, RoutedEventArgs e)
+        private void cerrarClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
-        private void MostrarError(Exception ex)
+        private void mostrarError(Exception ex)
         {
-            MensajeCodelex.Mostrar(this, "Reporte del empleado", ex.Message, false);
+            MensajeCodelex.mostrar(this, "Reporte del empleado", ex.Message, false);
         }
     }
 }

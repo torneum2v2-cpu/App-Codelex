@@ -7,7 +7,7 @@ namespace Codelex.BDD
     {
         private static string cadenaConexion = "Data Source=BERTARTX\\SQLEXPRESS;Initial Catalog=Codelex;Integrated Security=True;Encrypt=False;Connect Timeout=5";
 
-        public static SqlConnection ObtenerConexion()
+        public static SqlConnection obtenerConexion()
         {
             SqlConnection conexion = new SqlConnection(cadenaConexion);
             try

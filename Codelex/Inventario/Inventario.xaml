@@ -10,7 +10,7 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize"
         FontFamily="Segoe UI"
-        Loaded="Window_Loaded">
+        Loaded="ventanaCargada">
     <Window.Resources>
 
         <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
@@ -252,10 +252,10 @@
                 </Grid.RowDefinitions>
 
                 <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{StaticResource BgGradient}"
-                        Padding="28,18,14,18" MouseLeftButtonDown="DragWindow">
+                        Padding="28,18,14,18" MouseLeftButtonDown="arrastrarVentana">
                     <Grid>
                         <StackPanel Orientation="Horizontal">
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Volver"
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Volver"
                                     Width="44" Height="38" Margin="0,0,14,0" VerticalAlignment="Center">
                                 <Path Data="M30,12 H2 M10,20 L2,12 L10,4"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
@@ -275,12 +275,12 @@
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                            <Button Style="{StaticResource WindowButton}" Click="Minimizar_Click" ToolTip="Minimizar">
+                            <Button Style="{StaticResource WindowButton}" Click="minimizarClic" ToolTip="Minimizar">
                                 <Path Data="M0,0 L10,0"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6" Margin="0,8,0,0"/>
                             </Button>
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Cerrar">
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Cerrar">
                                 <Path Data="M0,0 L10,10 M10,0 L0,10"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6"/>
@@ -307,17 +307,17 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox x:Name="txtBuscar" Grid.Column="0" Margin="0,0,10,0" KeyDown="Buscar_KeyDown"
+                                <TextBox x:Name="txtBuscar" Grid.Column="0" Margin="0,0,10,0" KeyDown="buscarTeclaPresionada"
                                          ToolTip="Escriba y presione Enter para buscar por nombre, tipo, marca o modelo"/>
                                 <Button x:Name="btnBuscar" Grid.Column="1" Content="Buscar"
-                                        Style="{StaticResource PrimaryButton}" Margin="0,0,6,0" Click="Buscar_Click"/>
+                                        Style="{StaticResource PrimaryButton}" Margin="0,0,6,0" Click="buscarClic"/>
                                 <Button x:Name="btnMostrarTodos" Grid.Column="2" Content="Mostrar todos"
-                                        Style="{StaticResource SecondaryButton}" Margin="0,0,16,0" Click="MostrarTodos_Click"/>
+                                        Style="{StaticResource SecondaryButton}" Margin="0,0,16,0" Click="mostrarTodosClic"/>
                                 <Button x:Name="btnProductos" Grid.Column="3" Content="Productos"
-                                        Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" Click="Productos_Click"
+                                        Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" Click="productosClic"
                                         ToolTip="Mostrar solo los productos"/>
                                 <Button x:Name="btnEquipos" Grid.Column="4" Content="Equipos"
-                                        Style="{StaticResource SecondaryButton}" Click="Equipos_Click"
+                                        Style="{StaticResource SecondaryButton}" Click="equiposClic"
                                         ToolTip="Mostrar solo los equipos"/>
                             </Grid>
                         </StackPanel>
@@ -352,10 +352,10 @@
                                    Style="{StaticResource Nota}" VerticalAlignment="Center" Margin="0,0,330,0"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button x:Name="btnAgregar" Content="Agregar al inventario" Width="200"
-                                    Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Click="Agregar_Click"
+                                    Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Click="agregarClic"
                                     ToolTip="Registra la compra de productos y equipos"/>
                             <Button x:Name="btnCerrar" Content="Cerrar" Width="110"
-                                    Style="{StaticResource SecondaryButton}" Click="Salir_Click"/>
+                                    Style="{StaticResource SecondaryButton}" Click="salirClic"/>
                         </StackPanel>
                     </Grid>
                 </Grid>

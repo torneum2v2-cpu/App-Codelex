@@ -27,54 +27,54 @@ namespace Codelex.Facturas_y_Cotizaciones
 
             cmbTipoLocacion.IsEnabled = false;
 
-            TxtIdentidad.MaxLength = 14;
-            TxtEmpresa.MaxLength = 50;
-            TxtContacto.MaxLength = 50;
-            TxtApellido.MaxLength = 50;
-            TxtTelefono.MaxLength = 50;
-            TxtCorreo.MaxLength = 50;
+            txtIdentidad.MaxLength = 14;
+            txtEmpresa.MaxLength = 50;
+            txtContacto.MaxLength = 50;
+            txtApellido.MaxLength = 50;
+            txtTelefono.MaxLength = 50;
+            txtCorreo.MaxLength = 50;
             txtDireccion.MaxLength = 80;
             txtObservaciones.MaxLength = 200;
 
             dgLineas.ItemsSource = lineas;
 
-            cmbLocacion.SelectionChanged += cmbLocacion_SelectionChanged;
-            cmbServicio.SelectionChanged += cmbServicio_SelectionChanged;
-            Loaded += Window_Loaded;
+            cmbLocacion.SelectionChanged += locacionSeleccionCambiada;
+            cmbServicio.SelectionChanged += servicioSeleccionCambiada;
+            Loaded += ventanaCargada;
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ventanaCargada(object sender, RoutedEventArgs e)
         {
             try
             {
-                CargarServicios();
-                actividades = facturaBD.ListarActividades();
-                NuevaCotizacion();
+                cargarServicios();
+                actividades = facturaBD.listarActividades();
+                nuevaCotizacion();
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
         // ---------- Carga de datos ----------
 
-        private void CargarServicios()
+        private void cargarServicios()
         {
             cmbServicio.Items.Clear();
 
-            DataTable servicios = facturaBD.ListarServicios();
+            DataTable servicios = facturaBD.listarServicios();
             foreach (DataRow fila in servicios.Rows)
             {
                 cmbServicio.Items.Add(new ItemLista(Convert.ToInt32(fila["servicio_id"]), "" + fila["nombre_servicio"], ""));
             }
         }
 
-        private void CargarLocaciones(string rtn)
+        private void cargarLocaciones(string rtn)
         {
             cmbLocacion.Items.Clear();
 
-            locacionesCliente = clienteBD.LocacionesPorCliente(rtn);
+            locacionesCliente = clienteBD.locacionesPorCliente(rtn);
 
             foreach (DataRow fila in locacionesCliente.Rows)
             {
@@ -82,44 +82,44 @@ namespace Codelex.Facturas_y_Cotizaciones
             }
 
             if (locacionesCliente.Rows.Count == 0)
-                Aviso("Este cliente no tiene locaciones registradas. Escriba la dirección del servicio.");
+                aviso("Este cliente no tiene locaciones registradas. Escriba la dirección del servicio.");
         }
 
-        private int IdSeleccionado(ComboBox combo)
+        private int idSeleccionado(ComboBox combo)
         {
             ItemLista item = combo.SelectedItem as ItemLista;
 
             if (item == null)
                 return 0;
 
-            return item.Id;
+            return item.id;
         }
 
         // ---------- Cotización nueva ----------
 
-        private void NuevaCotizacion()
+        private void nuevaCotizacion()
         {
-            txtN_documento.Text = "(automático)";
+            txtNDocumento.Text = "(automático)";
             dpFecha.SelectedDate = DateTime.Today;
             dpValidaHasta.SelectedDate = DateTime.Today.AddDays(15);
 
             cmbServicio.SelectedIndex = -1;
             lineas.Clear();
-            ActualizarOtrasActividades();
+            actualizarOtrasActividades();
             txtObservaciones.Text = "";
 
-            LimpiarCliente();
-            RecalcularTotales();
+            limpiarCliente();
+            recalcularTotales();
         }
 
-        private void LimpiarCliente()
+        private void limpiarCliente()
         {
-            TxtIdentidad.Text = "";
-            TxtEmpresa.Text = "";
-            TxtContacto.Text = "";
-            TxtApellido.Text = "";
-            TxtTelefono.Text = "";
-            TxtCorreo.Text = "";
+            txtIdentidad.Text = "";
+            txtEmpresa.Text = "";
+            txtContacto.Text = "";
+            txtApellido.Text = "";
+            txtTelefono.Text = "";
+            txtCorreo.Text = "";
             txtDireccion.Text = "";
 
             cmbLocacion.Items.Clear();
@@ -127,46 +127,46 @@ namespace Codelex.Facturas_y_Cotizaciones
 
         // ---------- Eventos de cliente ----------
 
-        private void BuscarCliente_Click(object sender, RoutedEventArgs e)
+        private void buscarClienteClic(object sender, RoutedEventArgs e)
         {
             ElegirCliente ventana = new ElegirCliente();
             ventana.Owner = this;
 
-            if (ventana.ShowDialog() == true && ventana.ClienteElegido != null)
-                LlenarCliente(ventana.ClienteElegido.Row);
+            if (ventana.ShowDialog() == true && ventana.clienteElegido != null)
+                llenarCliente(ventana.clienteElegido.Row);
         }
 
-        private void LlenarCliente(DataRow fila)
+        private void llenarCliente(DataRow fila)
         {
             string rtn = "" + fila["identificacion_cliente"];
 
-            TxtIdentidad.Text = rtn;
-            TxtEmpresa.Text = "" + fila["nombre_empresa"];
-            TxtContacto.Text = "" + fila["nombre_cliente"];
-            TxtApellido.Text = "" + fila["apellido_cliente"];
-            TxtTelefono.Text = "" + fila["telefono_cliente"];
-            TxtCorreo.Text = "" + fila["correo_cliente"];
+            txtIdentidad.Text = rtn;
+            txtEmpresa.Text = "" + fila["nombre_empresa"];
+            txtContacto.Text = "" + fila["nombre_cliente"];
+            txtApellido.Text = "" + fila["apellido_cliente"];
+            txtTelefono.Text = "" + fila["telefono_cliente"];
+            txtCorreo.Text = "" + fila["correo_cliente"];
 
             try
             {
-                CargarLocaciones(rtn);
+                cargarLocaciones(rtn);
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void btnLimpiarClientes(object sender, RoutedEventArgs e)
+        private void limpiarClientes(object sender, RoutedEventArgs e)
         {
-            LimpiarCliente();
+            limpiarCliente();
         }
 
-        private void cmbLocacion_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void locacionSeleccionCambiada(object sender, SelectionChangedEventArgs e)
         {
             cmbTipoLocacion.Items.Clear();
 
-            int locacionId = IdSeleccionado(cmbLocacion);
+            int locacionId = idSeleccionado(cmbLocacion);
             if (locacionId == 0)
                 return;
 
@@ -183,9 +183,9 @@ namespace Codelex.Facturas_y_Cotizaciones
 
         // ---------- Actividades ----------
 
-        private void cmbServicio_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void servicioSeleccionCambiada(object sender, SelectionChangedEventArgs e)
         {
-            int servicioId = IdSeleccionado(cmbServicio);
+            int servicioId = idSeleccionado(cmbServicio);
 
             if (servicioId == 0)
                 return;
@@ -195,14 +195,14 @@ namespace Codelex.Facturas_y_Cotizaciones
             foreach (DataRow fila in actividades.Rows)
             {
                 if (Convert.ToInt32(fila["servicio_id"]) == servicioId)
-                    lineas.Add(NuevaLinea(fila));
+                    lineas.Add(nuevaLinea(fila));
             }
 
-            ActualizarOtrasActividades();
-            RecalcularTotales();
+            actualizarOtrasActividades();
+            recalcularTotales();
         }
 
-        private LineaActividad NuevaLinea(DataRow fila)
+        private LineaActividad nuevaLinea(DataRow fila)
         {
             LineaActividad linea = new LineaActividad();
             linea.ActividadId = Convert.ToInt32(fila["actividad_id"]);
@@ -211,7 +211,7 @@ namespace Codelex.Facturas_y_Cotizaciones
             return linea;
         }
 
-        private bool YaEstaEnLaLista(int actividadId)
+        private bool yaEstaEnLaLista(int actividadId)
         {
             foreach (LineaActividad linea in lineas)
             {
@@ -222,7 +222,7 @@ namespace Codelex.Facturas_y_Cotizaciones
             return false;
         }
 
-        private void ActualizarOtrasActividades()
+        private void actualizarOtrasActividades()
         {
             cmbOtraActividad.Items.Clear();
 
@@ -230,52 +230,52 @@ namespace Codelex.Facturas_y_Cotizaciones
             {
                 int id = Convert.ToInt32(fila["actividad_id"]);
 
-                if (!YaEstaEnLaLista(id))
+                if (!yaEstaEnLaLista(id))
                     cmbOtraActividad.Items.Add(new ItemLista(id, "" + fila["nombre"] + " (" + fila["unidad"] + ")", ""));
             }
         }
 
-        private void btnAgregarLinea_Click(object sender, RoutedEventArgs e)
+        private void agregarLineaClic(object sender, RoutedEventArgs e)
         {
-            int actividadId = IdSeleccionado(cmbOtraActividad);
+            int actividadId = idSeleccionado(cmbOtraActividad);
 
             if (actividadId == 0)
             {
-                Aviso("Seleccione la actividad que desea agregar.");
+                aviso("Seleccione la actividad que desea agregar.");
                 return;
             }
 
             foreach (DataRow fila in actividades.Rows)
             {
                 if (Convert.ToInt32(fila["actividad_id"]) == actividadId)
-                    lineas.Add(NuevaLinea(fila));
+                    lineas.Add(nuevaLinea(fila));
             }
 
-            ActualizarOtrasActividades();
-            RecalcularTotales();
+            actualizarOtrasActividades();
+            recalcularTotales();
         }
 
-        private void btnQuitarLinea_Click(object sender, RoutedEventArgs e)
+        private void quitarLineaClic(object sender, RoutedEventArgs e)
         {
             LineaActividad linea = dgLineas.SelectedItem as LineaActividad;
 
             if (linea == null)
             {
-                Aviso("Seleccione la actividad que desea quitar.");
+                aviso("Seleccione la actividad que desea quitar.");
                 return;
             }
 
             lineas.Remove(linea);
-            ActualizarOtrasActividades();
-            RecalcularTotales();
+            actualizarOtrasActividades();
+            recalcularTotales();
         }
 
-        private void Medida_LostFocus(object sender, RoutedEventArgs e)
+        private void medidaFocoPerdido(object sender, RoutedEventArgs e)
         {
-            Dispatcher.BeginInvoke(new Action(RecalcularTotales), DispatcherPriority.Background);
+            Dispatcher.BeginInvoke(new Action(recalcularTotales), DispatcherPriority.Background);
         }
 
-        private void RecalcularTotales()
+        private void recalcularTotales()
         {
             List<int> ids = new List<int>();
             List<string> medidas = new List<string>();
@@ -294,7 +294,7 @@ namespace Codelex.Facturas_y_Cotizaciones
             try
             {
                 string mensaje;
-                DataTable precios = facturaBD.CotizarActividades(ids, medidas, out mensaje);
+                DataTable precios = facturaBD.cotizarActividades(ids, medidas, out mensaje);
 
                 foreach (DataRow fila in precios.Rows)
                 {
@@ -314,52 +314,52 @@ namespace Codelex.Facturas_y_Cotizaciones
                 }
 
                 if (mensaje != "")
-                    Aviso(mensaje);
+                    aviso(mensaje);
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
 
-            decimal isv = facturaBD.CalcularIsv(subtotal);
+            decimal isv = facturaBD.calcularIsv(subtotal);
             decimal total = subtotal + isv;
 
-            lblSubtotal.Text = facturaBD.Dinero(subtotal);
-            lblIsv.Text = facturaBD.Dinero(isv);
-            lblTotal.Text = facturaBD.Dinero(total);
+            lblSubtotal.Text = facturaBD.dinero(subtotal);
+            lblIsv.Text = facturaBD.dinero(isv);
+            lblTotal.Text = facturaBD.dinero(total);
             lblPersonas.Text = "" + personas;
         }
 
         // ---------- Botones ----------
 
-        private void btnNuevoDocumento_Click(object sender, RoutedEventArgs e)
+        private void nuevoDocumentoClic(object sender, RoutedEventArgs e)
         {
-            NuevaCotizacion();
+            nuevaCotizacion();
         }
 
-        private void btnGuardar_Click(object sender, RoutedEventArgs e)
+        private void guardarClic(object sender, RoutedEventArgs e)
         {
             DatosDocumento datos = new DatosDocumento();
 
-            datos.Rtn = TxtIdentidad.Text;
-            datos.Empresa = TxtEmpresa.Text;
-            datos.Contacto = TxtContacto.Text;
-            datos.Apellido = TxtApellido.Text;
-            datos.Telefono = TxtTelefono.Text;
-            datos.Correo = TxtCorreo.Text;
-            datos.LocacionId = IdSeleccionado(cmbLocacion);
-            datos.Direccion = txtDireccion.Text;
-            datos.Fecha = dpFecha.SelectedDate;
-            datos.ValidaHasta = dpValidaHasta.SelectedDate;
-            datos.Observaciones = txtObservaciones.Text;
+            datos.rtn = txtIdentidad.Text;
+            datos.empresa = txtEmpresa.Text;
+            datos.contacto = txtContacto.Text;
+            datos.apellido = txtApellido.Text;
+            datos.telefono = txtTelefono.Text;
+            datos.correo = txtCorreo.Text;
+            datos.locacionId = idSeleccionado(cmbLocacion);
+            datos.direccion = txtDireccion.Text;
+            datos.fecha = dpFecha.SelectedDate;
+            datos.validaHasta = dpValidaHasta.SelectedDate;
+            datos.observaciones = txtObservaciones.Text;
 
-            datos.ServicioId = IdSeleccionado(cmbServicio);
+            datos.servicioId = idSeleccionado(cmbServicio);
 
             foreach (LineaActividad linea in lineas)
             {
-                datos.ActividadesId.Add(linea.ActividadId);
-                datos.ActividadesNombre.Add(linea.Nombre);
-                datos.ActividadesMedida.Add(linea.Medida);
+                datos.actividadesId.Add(linea.ActividadId);
+                datos.actividadesNombre.Add(linea.Nombre);
+                datos.actividadesMedida.Add(linea.Medida);
             }
 
             try
@@ -367,22 +367,22 @@ namespace Codelex.Facturas_y_Cotizaciones
                 string mensaje;
                 string id;
 
-                bool guardado = facturaBD.GuardarCotizacion(datos, out mensaje, out id);
+                bool guardado = facturaBD.guardarCotizacion(datos, out mensaje, out id);
 
-                MensajeCodelex.Mostrar(this, "Cotizaciones", mensaje, guardado);
+                MensajeCodelex.mostrar(this, "Cotizaciones", mensaje, guardado);
 
                 if (guardado)
-                    NuevaCotizacion();
+                    nuevaCotizacion();
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void btnCancelar_Click(object sender, RoutedEventArgs e)
+        private void cancelarClic(object sender, RoutedEventArgs e)
         {
-            bool hayDatos = TxtContacto.Text.Trim() != "" || TxtEmpresa.Text.Trim() != "" || lineas.Count > 0;
+            bool hayDatos = txtContacto.Text.Trim() != "" || txtEmpresa.Text.Trim() != "" || lineas.Count > 0;
 
             if (hayDatos)
             {
@@ -399,30 +399,30 @@ namespace Codelex.Facturas_y_Cotizaciones
 
         // ---------- Ventana ----------
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimizar_Click(object sender, RoutedEventArgs e)
+        private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
-        private void Salir_Click(object sender, RoutedEventArgs e)
+        private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
-        private void Aviso(string mensaje)
+        private void aviso(string mensaje)
         {
-            MensajeCodelex.Mostrar(this, "Cotizaciones", mensaje, false);
+            MensajeCodelex.mostrar(this, "Cotizaciones", mensaje, false);
         }
 
-        private void MostrarError(Exception ex)
+        private void mostrarError(Exception ex)
         {
-            MensajeCodelex.Mostrar(this, "Cotizaciones", ex.Message, false);
+            MensajeCodelex.mostrar(this, "Cotizaciones", ex.Message, false);
         }
     }
 }

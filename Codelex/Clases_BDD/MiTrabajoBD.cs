@@ -5,27 +5,27 @@ namespace Codelex.Clases_BDD
 {
     class MiTrabajoBD : BaseDatos
     {
-        public DataTable Ordenes(int empleadoId)
+        public DataTable ordenes(int empleadoId)
         {
-            SqlCommand comando = Procedimiento("sp_MisOrdenes");
+            SqlCommand comando = procedimiento("sp_MisOrdenes");
             comando.Parameters.AddWithValue("@empleado_id", empleadoId);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public DataTable Detalle(string ordenId, int empleadoId)
+        public DataTable detalle(string ordenId, int empleadoId)
         {
-            SqlCommand comando = Procedimiento("sp_DetalleMiOrden");
+            SqlCommand comando = procedimiento("sp_DetalleMiOrden");
             comando.Parameters.AddWithValue("@orden_id", ordenId);
             comando.Parameters.AddWithValue("@empleado_id", empleadoId);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public DataTable Listas(string ordenId, int empleadoId)
+        public DataTable listas(string ordenId, int empleadoId)
         {
-            SqlCommand comando = Procedimiento("sp_ListasMiOrden");
+            SqlCommand comando = procedimiento("sp_ListasMiOrden");
             comando.Parameters.AddWithValue("@orden_id", ordenId);
             comando.Parameters.AddWithValue("@empleado_id", empleadoId);
-            return Consultar(comando);
+            return consultar(comando);
         }
     }
 }

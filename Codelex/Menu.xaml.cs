@@ -13,21 +13,21 @@ namespace Codelex
 {
     public partial class Menu : Window
     {
-        private const string IconoLocaciones = "M21,10 C21,17 12,23 12,23 C12,23 3,17 3,10 A9,9 0 0 1 21,10 Z M9,10 A3,3 0 1 0 15,10 A3,3 0 1 0 9,10";
-        private const string IconoIngresarOrden = "M14,2 H6 A2,2 0 0 0 4,4 V20 A2,2 0 0 0 6,22 H18 A2,2 0 0 0 20,20 V8 Z M14,2 V8 H20 M12,18 V12 M9,15 H15";
-        private const string IconoVehiculos = "M1,3 H16 V16 H1 Z M16,8 H20 L23,11 V16 H16 Z M3,18.5 A2.5,2.5 0 1 0 8,18.5 A2.5,2.5 0 1 0 3,18.5 M16,18.5 A2.5,2.5 0 1 0 21,18.5 A2.5,2.5 0 1 0 16,18.5";
-        private const string IconoGestionOrdenes = "M9,4 H7 A2,2 0 0 0 5,6 V20 A2,2 0 0 0 7,22 H17 A2,2 0 0 0 19,20 V6 A2,2 0 0 0 17,4 H15 M9,2 H15 V6 H9 Z M9,14 L11,16 L15,12";
-        private const string IconoReportes = "M18,20 V10 M12,20 V4 M6,20 V14";
-        private const string IconoOrdenes = "M9,4 H7 A2,2 0 0 0 5,6 V20 A2,2 0 0 0 7,22 H17 A2,2 0 0 0 19,20 V6 A2,2 0 0 0 17,4 H15 M9,2 H15 V6 H9 Z M9,12 H15 M9,16 H13";
-        private const string IconoClientes = "M5,7 A4,4 0 1 0 13,7 A4,4 0 1 0 5,7 M2,21 V19 A4,4 0 0 1 6,15 H12 A4,4 0 0 1 16,19 V21 M16,3.1 A4,4 0 0 1 16,10.9 M22,21 V19 A4,4 0 0 0 19,15.1";
-        private const string IconoEmpleados = "M4,4 H20 A2,2 0 0 1 22,6 V18 A2,2 0 0 1 20,20 H4 A2,2 0 0 1 2,18 V6 A2,2 0 0 1 4,4 Z M7,9 A2,2 0 1 0 11,9 A2,2 0 1 0 7,9 M5,16 A4,4 0 0 1 13,16 M15,9 H19 M15,13 H19";
-        private const string IconoInventario = "M3,7 L12,3 L21,7 L21,17 L12,21 L3,17 Z M3,7 L12,11 L21,7 M12,11 L12,21";
-        private const string IconoUsuarios = "M20,21 V19 A4,4 0 0 0 16,15 H8 A4,4 0 0 0 4,19 V21 M8,7 A4,4 0 1 0 16,7 A4,4 0 1 0 8,7";
+        private const string ICONO_LOCACIONES = "M21,10 C21,17 12,23 12,23 C12,23 3,17 3,10 A9,9 0 0 1 21,10 Z M9,10 A3,3 0 1 0 15,10 A3,3 0 1 0 9,10";
+        private const string ICONO_INGRESAR_ORDEN = "M14,2 H6 A2,2 0 0 0 4,4 V20 A2,2 0 0 0 6,22 H18 A2,2 0 0 0 20,20 V8 Z M14,2 V8 H20 M12,18 V12 M9,15 H15";
+        private const string ICONO_VEHICULOS = "M1,3 H16 V16 H1 Z M16,8 H20 L23,11 V16 H16 Z M3,18.5 A2.5,2.5 0 1 0 8,18.5 A2.5,2.5 0 1 0 3,18.5 M16,18.5 A2.5,2.5 0 1 0 21,18.5 A2.5,2.5 0 1 0 16,18.5";
+        private const string ICONO_GESTION_ORDENES = "M9,4 H7 A2,2 0 0 0 5,6 V20 A2,2 0 0 0 7,22 H17 A2,2 0 0 0 19,20 V6 A2,2 0 0 0 17,4 H15 M9,2 H15 V6 H9 Z M9,14 L11,16 L15,12";
+        private const string ICONO_REPORTES = "M18,20 V10 M12,20 V4 M6,20 V14";
+        private const string ICONO_ORDENES = "M9,4 H7 A2,2 0 0 0 5,6 V20 A2,2 0 0 0 7,22 H17 A2,2 0 0 0 19,20 V6 A2,2 0 0 0 17,4 H15 M9,2 H15 V6 H9 Z M9,12 H15 M9,16 H13";
+        private const string ICONO_CLIENTES = "M5,7 A4,4 0 1 0 13,7 A4,4 0 1 0 5,7 M2,21 V19 A4,4 0 0 1 6,15 H12 A4,4 0 0 1 16,19 V21 M16,3.1 A4,4 0 0 1 16,10.9 M22,21 V19 A4,4 0 0 0 19,15.1";
+        private const string ICONO_EMPLEADOS = "M4,4 H20 A2,2 0 0 1 22,6 V18 A2,2 0 0 1 20,20 H4 A2,2 0 0 1 2,18 V6 A2,2 0 0 1 4,4 Z M7,9 A2,2 0 1 0 11,9 A2,2 0 1 0 7,9 M5,16 A4,4 0 0 1 13,16 M15,9 H19 M15,13 H19";
+        private const string ICONO_INVENTARIO = "M3,7 L12,3 L21,7 L21,17 L12,21 L3,17 Z M3,7 L12,11 L21,7 M12,11 L12,21";
+        private const string ICONO_USUARIOS = "M20,21 V19 A4,4 0 0 0 16,15 H8 A4,4 0 0 0 4,19 V21 M8,7 A4,4 0 1 0 16,7 A4,4 0 1 0 8,7";
 
-        private const string IconoGestionVehiculos = "M8,6 H21 M8,12 H21 M8,18 H21 M3,6 H3.01 M3,12 H3.01 M3,18 H3.01";
+        private const string ICONO_GESTION_VEHICULOS = "M8,6 H21 M8,12 H21 M8,18 H21 M3,6 H3.01 M3,12 H3.01 M3,18 H3.01";
 
         // Nivel mínimo de rol para ver cada sección.
-        private static readonly Dictionary<string, NivelAcceso> NivelPorSeccion = new Dictionary<string, NivelAcceso>
+        private static readonly Dictionary<string, NivelAcceso> NIVEL_POR_SECCION = new Dictionary<string, NivelAcceso>
         {
             { "miperfil", NivelAcceso.Basico },
 
@@ -43,7 +43,7 @@ namespace Codelex
         };
 
         // Nivel mínimo de rol para abrir cada módulo.
-        private static readonly Dictionary<string, NivelAcceso> NivelPorDestino = new Dictionary<string, NivelAcceso>
+        private static readonly Dictionary<string, NivelAcceso> NIVEL_POR_DESTINO = new Dictionary<string, NivelAcceso>
         {
             { "MisDatos", NivelAcceso.Basico },
             { "MisOrdenes", NivelAcceso.Basico },
@@ -63,7 +63,7 @@ namespace Codelex
 
         private readonly FotoPerfilBD fotoBD = new FotoPerfilBD();
         private DateTime ultimoCierrePerfil = DateTime.MinValue;
-        private string _seccionActual = "inicio";
+        private string seccionActual = "inicio";
 
         public Menu()
         {
@@ -80,62 +80,62 @@ namespace Codelex
             // Sirve para que un clic en el avatar con el panel abierto lo cierre en vez de reabrirlo.
             popupPerfil.Closed += (s, e) => ultimoCierrePerfil = DateTime.Now;
 
-            AplicarRol();
-            MostrarSeccion(InicioDelRol());
+            aplicarRol();
+            mostrarSeccion(inicioDelRol());
 
-            Loaded += async (s, e) => await CargarFoto();
+            Loaded += async (s, e) => await cargarFoto();
         }
 
         // ---------- Roles ----------
 
-        private static string InicioDelRol()
+        private static string inicioDelRol()
         {
             return Sesion.Nivel == NivelAcceso.Basico ? "miperfil" : "inicio";
         }
 
-        private static bool PuedeSeccion(string clave)
+        private static bool puedeSeccion(string clave)
         {
-            return NivelPorSeccion.TryGetValue(clave, out NivelAcceso minimo) && Sesion.Permite(minimo);
+            return NIVEL_POR_SECCION.TryGetValue(clave, out NivelAcceso minimo) && Sesion.permite(minimo);
         }
 
-        private static bool PuedeDestino(string destino)
+        private static bool puedeDestino(string destino)
         {
-            return NivelPorDestino.TryGetValue(destino, out NivelAcceso minimo) && Sesion.Permite(minimo);
+            return NIVEL_POR_DESTINO.TryGetValue(destino, out NivelAcceso minimo) && Sesion.permite(minimo);
         }
 
-        private static bool PuedeAbrir(string seccionActual, string destino)
+        private static bool puedeAbrir(string seccionActual, string destino)
         {
-            return seccionActual == "inicio" ? PuedeSeccion(destino) : PuedeDestino(destino);
+            return seccionActual == "inicio" ? puedeSeccion(destino) : puedeDestino(destino);
         }
 
         // Oculta del menú lateral las secciones que el rol no puede usar.
-        private void AplicarRol()
+        private void aplicarRol()
         {
             foreach (RadioButton boton in panelNav.Children)
-                boton.Visibility = PuedeSeccion("" + boton.Tag) ? Visibility.Visible : Visibility.Collapsed;
+                boton.Visibility = puedeSeccion("" + boton.Tag) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         // ---------- Ventana ----------
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimize_Click(object sender, RoutedEventArgs e)
+        private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
-        private void Close_Click(object sender, RoutedEventArgs e)
+        private void cerrarClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
         // ---------- Perfil y foto ----------
 
-        private void Perfil_Click(object sender, RoutedEventArgs e)
+        private void perfilClic(object sender, RoutedEventArgs e)
         {
             if ((DateTime.Now - ultimoCierrePerfil).TotalMilliseconds < 250)
                 return;
@@ -143,26 +143,26 @@ namespace Codelex
             popupPerfil.IsOpen = true;
         }
 
-        private void MiPerfil_Click(object sender, RoutedEventArgs e)
+        private void miPerfilClic(object sender, RoutedEventArgs e)
         {
             popupPerfil.IsOpen = false;
-            MostrarSeccion("miperfil");
+            mostrarSeccion("miperfil");
         }
 
-        private void Logout_Click(object sender, RoutedEventArgs e)
+        private void cerrarSesionClic(object sender, RoutedEventArgs e)
         {
             popupPerfil.IsOpen = false;
-            Sesion.Cerrar();
+            Sesion.cerrar();
 
-            if (CuentasRecordadas.Listar().Count > 0)
+            if (CuentasRecordadas.listar().Count > 0)
                 new SeleccionarCuenta().Show();
             else
-                new MainWindow().Show();
+                new VentanaPrincipal().Show();
 
             Close();
         }
 
-        private async Task CargarFoto()
+        private async Task cargarFoto()
         {
             if (Sesion.UsuarioId == 0)
                 return;
@@ -170,8 +170,8 @@ namespace Codelex
             try
             {
                 int usuarioId = Sesion.UsuarioId;
-                byte[]? datos = await Task.Run(() => fotoBD.Obtener(usuarioId));
-                PintarAvatar(datos == null ? null : FotoPerfil.Cargar(datos));
+                byte[]? datos = await Task.Run(() => fotoBD.obtener(usuarioId));
+                pintarAvatar(datos == null ? null : FotoPerfil.cargar(datos));
             }
             catch
             {
@@ -179,7 +179,7 @@ namespace Codelex
             }
         }
 
-        private async void CambiarFoto_Click(object sender, RoutedEventArgs e)
+        private async void cambiarFotoClic(object sender, RoutedEventArgs e)
         {
             popupPerfil.IsOpen = false;
 
@@ -192,36 +192,36 @@ namespace Codelex
 
             try
             {
-                byte[] foto = FotoPerfil.Preparar(dialogo.FileName);
+                byte[] foto = FotoPerfil.preparar(dialogo.FileName);
                 int usuarioId = Sesion.UsuarioId;
 
-                await Task.Run(() => fotoBD.Guardar(usuarioId, foto));
-                PintarAvatar(FotoPerfil.Cargar(foto));
+                await Task.Run(() => fotoBD.guardar(usuarioId, foto));
+                pintarAvatar(FotoPerfil.cargar(foto));
             }
             catch (Exception ex)
             {
-                MensajeCodelex.Mostrar(this, "Foto de perfil", "No se pudo cambiar la foto. " + ex.Message, false);
+                MensajeCodelex.mostrar(this, "Foto de perfil", "No se pudo cambiar la foto. " + ex.Message, false);
             }
         }
 
-        private async void QuitarFoto_Click(object sender, RoutedEventArgs e)
+        private async void quitarFotoClic(object sender, RoutedEventArgs e)
         {
             popupPerfil.IsOpen = false;
 
             try
             {
                 int usuarioId = Sesion.UsuarioId;
-                await Task.Run(() => fotoBD.Guardar(usuarioId, null));
-                PintarAvatar(null);
+                await Task.Run(() => fotoBD.guardar(usuarioId, null));
+                pintarAvatar(null);
             }
             catch (Exception ex)
             {
-                MensajeCodelex.Mostrar(this, "Foto de perfil", "No se pudo quitar la foto. " + ex.Message, false);
+                MensajeCodelex.mostrar(this, "Foto de perfil", "No se pudo quitar la foto. " + ex.Message, false);
             }
         }
 
         // foto = null deja las iniciales con el degradado.
-        private void PintarAvatar(ImageSource? foto)
+        private void pintarAvatar(ImageSource? foto)
         {
             if (foto == null)
             {
@@ -243,170 +243,170 @@ namespace Codelex
 
         // ---------- Navegación ----------
 
-        private void Nav_Click(object sender, RoutedEventArgs e)
+        private void navClic(object sender, RoutedEventArgs e)
         {
             RadioButton boton = (RadioButton)sender;
-            MostrarSeccion("" + boton.Tag);
+            mostrarSeccion("" + boton.Tag);
         }
 
-        private void Opcion_Click(object sender, RoutedEventArgs e)
+        private void opcionClic(object sender, RoutedEventArgs e)
         {
             Button boton = (Button)sender;
             string destino = "" + boton.Tag;
 
-            if (_seccionActual == "inicio")
-                MostrarSeccion(destino);
+            if (seccionActual == "inicio")
+                mostrarSeccion(destino);
             else
-                AbrirDestino(destino);
+                abrirDestino(destino);
         }
 
         // Marca el botón de la barra lateral; si la sección no está en la barra (Mi perfil), no marca ninguno.
-        private void MarcarBoton(string clave)
+        private void marcarBoton(string clave)
         {
             foreach (RadioButton boton in panelNav.Children)
                 boton.IsChecked = "" + boton.Tag == clave;
         }
 
-        private void Encabezado(string titulo, string subtitulo)
+        private void encabezado(string titulo, string subtitulo)
         {
             txtTitulo.Text = titulo;
             txtSubtitulo.Text = subtitulo;
         }
 
-        private void MostrarSeccion(string clave)
+        private void mostrarSeccion(string clave)
         {
             if (Sesion.Nivel == NivelAcceso.SinRol)
             {
-                Encabezado("Sin acceso", "Tu usuario no tiene un rol asignado. Contacta al administrador.");
+                encabezado("Sin acceso", "Tu usuario no tiene un rol asignado. Contacta al administrador.");
                 listaOpciones.ItemsSource = new List<OpcionMenu>();
                 return;
             }
 
-            if (!PuedeSeccion(clave))
-                clave = InicioDelRol();
+            if (!puedeSeccion(clave))
+                clave = inicioDelRol();
 
-            _seccionActual = clave;
-            MarcarBoton(clave);
+            seccionActual = clave;
+            marcarBoton(clave);
 
             List<OpcionMenu> opciones = new List<OpcionMenu>();
 
             if (clave == "inicio")
             {
-                Encabezado("Panel principal", "Selecciona un módulo para comenzar.");
-                opciones.Add(new OpcionMenu("Reportes", "Consulta reportes de órdenes, asistencia y empleados.", IconoReportes, "reportes"));
-                opciones.Add(new OpcionMenu("Órdenes", "Ingresa y gestiona las órdenes de tus clientes.", IconoOrdenes, "ordenes"));
-                opciones.Add(new OpcionMenu("Vehículos", "Registra y gestiona los vehículos de la empresa.", IconoVehiculos, "vehiculos"));
-                opciones.Add(new OpcionMenu("Clientes", "Administra tus clientes y sus locaciones.", IconoClientes, "clientes"));
-                opciones.Add(new OpcionMenu("Empleados", "Gestiona el personal y sus accesos al sistema.", IconoEmpleados, "empleados"));
-                opciones.Add(new OpcionMenu("Inventario", "Controla productos, existencias y movimientos.", IconoInventario, "inventario"));
-                opciones.Add(new OpcionMenu("Usuarios", "Administra las cuentas de acceso al sistema.", IconoUsuarios, "usuarios"));
+                encabezado("Panel principal", "Selecciona un módulo para comenzar.");
+                opciones.Add(new OpcionMenu("Reportes", "Consulta reportes de órdenes, asistencia y empleados.", ICONO_REPORTES, "reportes"));
+                opciones.Add(new OpcionMenu("Órdenes", "Ingresa y gestiona las órdenes de tus clientes.", ICONO_ORDENES, "ordenes"));
+                opciones.Add(new OpcionMenu("Vehículos", "Registra y gestiona los vehículos de la empresa.", ICONO_VEHICULOS, "vehiculos"));
+                opciones.Add(new OpcionMenu("Clientes", "Administra tus clientes y sus locaciones.", ICONO_CLIENTES, "clientes"));
+                opciones.Add(new OpcionMenu("Empleados", "Gestiona el personal y sus accesos al sistema.", ICONO_EMPLEADOS, "empleados"));
+                opciones.Add(new OpcionMenu("Inventario", "Controla productos, existencias y movimientos.", ICONO_INVENTARIO, "inventario"));
+                opciones.Add(new OpcionMenu("Usuarios", "Administra las cuentas de acceso al sistema.", ICONO_USUARIOS, "usuarios"));
             }
             else if (clave == "miperfil")
             {
-                Encabezado("Mi perfil", "Consulta tu información y tus órdenes asignadas.");
-                opciones.Add(new OpcionMenu("Mis datos", "Consulta tu perfil de empleado, tu asistencia y tus órdenes.", IconoEmpleados, "MisDatos"));
-                opciones.Add(new OpcionMenu("Mis órdenes", "Revisa el detalle de las órdenes en las que estás asignado.", IconoOrdenes, "MisOrdenes"));
+                encabezado("Mi perfil", "Consulta tu información y tus órdenes asignadas.");
+                opciones.Add(new OpcionMenu("Mis datos", "Consulta tu perfil de empleado, tu asistencia y tus órdenes.", ICONO_EMPLEADOS, "MisDatos"));
+                opciones.Add(new OpcionMenu("Mis órdenes", "Revisa el detalle de las órdenes en las que estás asignado.", ICONO_ORDENES, "MisOrdenes"));
             }
             else if (clave == "reportes")
             {
-                Encabezado("Reportes", "Consulta la información del negocio.");
-                opciones.Add(new OpcionMenu("Consulta de reportes", "Reportes de órdenes, asistencia y empleados.", IconoReportes, "Reportes"));
+                encabezado("Reportes", "Consulta la información del negocio.");
+                opciones.Add(new OpcionMenu("Consulta de reportes", "Reportes de órdenes, asistencia y empleados.", ICONO_REPORTES, "Reportes"));
             }
             else if (clave == "ordenes")
             {
-                Encabezado("Órdenes", "Elige qué deseas gestionar.");
-                opciones.Add(new OpcionMenu("Ingresar orden", "Registra una nueva orden de servicio para un cliente.", IconoIngresarOrden, "IngresarOrden"));
-                opciones.Add(new OpcionMenu("Gestionar órdenes", "Consulta, edita y da seguimiento al estado de las órdenes.", IconoGestionOrdenes, "GestionOrdenes"));
+                encabezado("Órdenes", "Elige qué deseas gestionar.");
+                opciones.Add(new OpcionMenu("Ingresar orden", "Registra una nueva orden de servicio para un cliente.", ICONO_INGRESAR_ORDEN, "IngresarOrden"));
+                opciones.Add(new OpcionMenu("Gestionar órdenes", "Consulta, edita y da seguimiento al estado de las órdenes.", ICONO_GESTION_ORDENES, "GestionOrdenes"));
             }
             else if (clave == "vehiculos")
             {
-                Encabezado("Vehículos", "Elige qué deseas gestionar.");
-                opciones.Add(new OpcionMenu("Registrar vehículos", "Agrega nuevos vehículos a la flota de la empresa.", IconoVehiculos, "Vehiculos"));
-                opciones.Add(new OpcionMenu("Gestionar vehículos", "Consulta, edita y controla los vehículos registrados.", IconoGestionVehiculos, "GestionVehiculos"));
+                encabezado("Vehículos", "Elige qué deseas gestionar.");
+                opciones.Add(new OpcionMenu("Registrar vehículos", "Agrega nuevos vehículos a la flota de la empresa.", ICONO_VEHICULOS, "Vehiculos"));
+                opciones.Add(new OpcionMenu("Gestionar vehículos", "Consulta, edita y controla los vehículos registrados.", ICONO_GESTION_VEHICULOS, "GestionVehiculos"));
             }
             else if (clave == "clientes")
             {
-                Encabezado("Clientes", "Elige qué deseas gestionar.");
-                opciones.Add(new OpcionMenu("Clientes", "Consulta y administra los clientes y su detalle.", IconoClientes, "Clientes"));
-                opciones.Add(new OpcionMenu("Locaciones", "Registra las locaciones donde se presta el servicio.", IconoLocaciones, "Locaciones"));
+                encabezado("Clientes", "Elige qué deseas gestionar.");
+                opciones.Add(new OpcionMenu("Clientes", "Consulta y administra los clientes y su detalle.", ICONO_CLIENTES, "Clientes"));
+                opciones.Add(new OpcionMenu("Locaciones", "Registra las locaciones donde se presta el servicio.", ICONO_LOCACIONES, "Locaciones"));
             }
             else if (clave == "empleados")
             {
-                Encabezado("Empleados", "Elige qué deseas gestionar.");
-                opciones.Add(new OpcionMenu("Registro de empleados", "Registra empleados y consulta su asistencia.", IconoEmpleados, "Empleados"));
+                encabezado("Empleados", "Elige qué deseas gestionar.");
+                opciones.Add(new OpcionMenu("Registro de empleados", "Registra empleados y consulta su asistencia.", ICONO_EMPLEADOS, "Empleados"));
             }
             else if (clave == "inventario")
             {
-                Encabezado("Inventario", "Elige qué deseas gestionar.");
-                opciones.Add(new OpcionMenu("Consulta de inventario", "Consulta existencias y agrega productos y equipos.", IconoInventario, "Inventario"));
+                encabezado("Inventario", "Elige qué deseas gestionar.");
+                opciones.Add(new OpcionMenu("Consulta de inventario", "Consulta existencias y agrega productos y equipos.", ICONO_INVENTARIO, "Inventario"));
             }
             else if (clave == "usuarios")
             {
-                Encabezado("Usuarios", "Elige qué deseas gestionar.");
-                opciones.Add(new OpcionMenu("Gestión de usuarios", "Administra las cuentas de acceso al sistema.", IconoUsuarios, "Usuarios"));
+                encabezado("Usuarios", "Elige qué deseas gestionar.");
+                opciones.Add(new OpcionMenu("Gestión de usuarios", "Administra las cuentas de acceso al sistema.", ICONO_USUARIOS, "Usuarios"));
             }
 
             // Solo se muestran las opciones que el rol puede usar.
-            opciones.RemoveAll(o => !PuedeAbrir(clave, o.Destino));
+            opciones.RemoveAll(o => !puedeAbrir(clave, o.Destino));
 
             listaOpciones.ItemsSource = opciones;
         }
 
-        private void ModuloCerrado(object sender, EventArgs e)
+        private void moduloCerrado(object sender, EventArgs e)
         {
             Show();
         }
 
-        private void AbrirModulo(Window ventana)
+        private void abrirModulo(Window ventana)
         {
-            ventana.Closed += ModuloCerrado;
+            ventana.Closed += moduloCerrado;
             Hide();
             ventana.Show();
         }
 
-        private void AbrirOrden()
+        private void abrirOrden()
         {
-            DataRow? cotizacion = SeleccionarCotizacion.Elegir(this, "");
+            DataRow? cotizacion = SeleccionarCotizacion.elegir(this, "");
 
             if (cotizacion != null)
-                AbrirModulo(new IngresarOrden(cotizacion));
+                abrirModulo(new IngresarOrden(cotizacion));
         }
 
-        private void AbrirDestino(string destino)
+        private void abrirDestino(string destino)
         {
             // Segunda barrera: aunque alguien llegue aquí, se vuelve a comprobar el rol.
-            if (!PuedeDestino(destino))
+            if (!puedeDestino(destino))
             {
-                MensajeCodelex.Mostrar(this, "Acceso denegado", "Tu rol no tiene permiso para abrir este módulo.", false);
+                MensajeCodelex.mostrar(this, "Acceso denegado", "Tu rol no tiene permiso para abrir este módulo.", false);
                 return;
             }
 
             if (destino == "MisDatos")
-                AbrirModulo(new EmpleadoReporte(Sesion.EmpleadoId));
+                abrirModulo(new EmpleadoReporte(Sesion.EmpleadoId));
             else if (destino == "MisOrdenes")
-                AbrirModulo(new MisOrdenes());
+                abrirModulo(new MisOrdenes());
             else if (destino == "Clientes")
-                AbrirModulo(new Clientes());
+                abrirModulo(new Clientes());
             else if (destino == "Vehiculos")
-                AbrirModulo(new RegistrarVehiculo());
+                abrirModulo(new RegistrarVehiculo());
             else if (destino == "GestionVehiculos")
-                AbrirModulo(new GestionVehiculos());
+                abrirModulo(new GestionVehiculos());
             else if (destino == "IngresarOrden")
-                AbrirOrden();
+                abrirOrden();
             else if (destino == "Usuarios")
-                AbrirModulo(new Usuarios());
+                abrirModulo(new Usuarios());
             else if (destino == "Inventario")
-                AbrirModulo(new Inventario());
+                abrirModulo(new Inventario());
             else if (destino == "Empleados")
-                AbrirModulo(new Empleados());
+                abrirModulo(new Empleados());
             else if (destino == "Locaciones")
-                AbrirModulo(new IngresarLocacion());
+                abrirModulo(new IngresarLocacion());
             else if (destino == "Reportes")
-                AbrirModulo(new Reportes());
+                abrirModulo(new Reportes());
             else if (destino == "GestionOrdenes")
-            AbrirModulo(new GestionOrdenes());
+            abrirModulo(new GestionOrdenes());
             else
-                MensajeCodelex.Mostrar(this, "Próximamente", "Destino recibido: [" + destino + "]", true);
+                MensajeCodelex.mostrar(this, "Próximamente", "Destino recibido: [" + destino + "]", true);
         }
     }
 

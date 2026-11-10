@@ -6,7 +6,7 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize"
         FontFamily="Segoe UI"
-        Loaded="Window_Loaded">
+        Loaded="ventanaCargada">
     <Window.Resources>
         <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
         <SolidColorBrush x:Key="PrimaryLight" Color="#5FE0D2"/>
@@ -151,10 +151,10 @@
 
                 <!-- Encabezado -->
                 <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{StaticResource BgGradient}"
-                        Padding="28,18,14,18" MouseLeftButtonDown="DragWindow">
+                        Padding="28,18,14,18" MouseLeftButtonDown="arrastrarVentana">
                     <Grid>
                         <StackPanel Orientation="Horizontal">
-                            <Button Style="{StaticResource WindowButton}" Click="Cerrar_Click" ToolTip="Volver"
+                            <Button Style="{StaticResource WindowButton}" Click="cerrarClic" ToolTip="Volver"
                                     Width="44" Height="38" Margin="0,0,14,0" VerticalAlignment="Center">
                                 <Path Data="M30,12 H2 M10,20 L2,12 L10,4"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
@@ -175,12 +175,12 @@
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                            <Button Style="{StaticResource WindowButton}" Click="Minimizar_Click" ToolTip="Minimizar">
+                            <Button Style="{StaticResource WindowButton}" Click="minimizarClic" ToolTip="Minimizar">
                                 <Path Data="M0,0 L10,0"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6" Margin="0,8,0,0"/>
                             </Button>
-                            <Button Style="{StaticResource WindowButton}" Click="Cerrar_Click" ToolTip="Cerrar">
+                            <Button Style="{StaticResource WindowButton}" Click="cerrarClic" ToolTip="Cerrar">
                                 <Path Data="M0,10 L10,0 M0,0 L10,10"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6"/>
@@ -213,7 +213,7 @@
 
                             <DataGrid x:Name="dgOrdenes" Grid.Row="1" Style="{StaticResource Tabla}"
                                       AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False"
-                                      SelectionMode="Single" SelectionChanged="Ordenes_SelectionChanged">
+                                      SelectionMode="Single" SelectionChanged="ordenesSeleccionCambiada">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Orden" Binding="{Binding orden_id}" Width="*"/>
                                     <DataGridTextColumn Header="Cliente" Binding="{Binding cliente}" Width="1.4*"/>

@@ -13,8 +13,8 @@ namespace Codelex
 {
     public partial class Reportes : Window
     {
-        private const double AnchoMaximoBarra = 330;
-        private const int MaximoBarras = 6;
+        private const double ANCHO_MAXIMO_BARRA = 330;
+        private const int MAXIMO_BARRAS = 6;
 
         private enum TipoReporte { Ordenes, Asistencia, Empleados }
 
@@ -43,7 +43,7 @@ namespace Codelex
             Height = Math.Min(Height, SystemParameters.WorkArea.Height - 10);
         }
 
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void ventanaCargada(object sender, RoutedEventArgs e)
         {
             DateTime hoy = DateTime.Today;
             dpDesde.SelectedDate = new DateTime(hoy.Year, hoy.Month, 1);
@@ -51,14 +51,14 @@ namespace Codelex
 
             try
             {
-                cmbEstadoOrden.ItemsSource = ConTodos(reporteBD.ListarEstadosOrden(), "estado_orden_id", "nombre_estado_orden", "Todos los estados");
-                cmbServicio.ItemsSource = ConTodos(reporteBD.ListarServicios(), "servicio_id", "nombre_servicio", "Todos los servicios");
-                cmbEmpleado.ItemsSource = ConTodos(empleadoBD.BuscarEmpleados("", "", "TODOS"), "empleado_id", "nombre_completo", "Todos los empleados");
-                cmbCargo.ItemsSource = ConTodos(empleadoBD.ListarCargos(), "cargo_id", "nombre_cargo", "Todos los cargos");
+                cmbEstadoOrden.ItemsSource = conTodos(reporteBD.listarEstadosOrden(), "estado_orden_id", "nombre_estado_orden", "Todos los estados");
+                cmbServicio.ItemsSource = conTodos(reporteBD.listarServicios(), "servicio_id", "nombre_servicio", "Todos los servicios");
+                cmbEmpleado.ItemsSource = conTodos(empleadoBD.buscarEmpleados("", "", "TODOS"), "empleado_id", "nombre_completo", "Todos los empleados");
+                cmbCargo.ItemsSource = conTodos(empleadoBD.listarCargos(), "cargo_id", "nombre_cargo", "Todos los cargos");
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
 
             cmbEstadoEmpleado.ItemsSource = new List<OpcionFiltro>
@@ -75,10 +75,10 @@ namespace Codelex
             cmbEstadoEmpleado.SelectedIndex = 0;
 
             cargando = false;
-            await GenerarReporte();
+            await generarReporte();
         }
 
-        private static List<OpcionFiltro> ConTodos(DataTable tabla, string columnaId, string columnaNombre, string textoTodos)
+        private static List<OpcionFiltro> conTodos(DataTable tabla, string columnaId, string columnaNombre, string textoTodos)
         {
             List<OpcionFiltro> lista = new List<OpcionFiltro> { new OpcionFiltro(0, textoTodos) };
 
@@ -88,7 +88,7 @@ namespace Codelex
             return lista;
         }
 
-        private static int Seleccionado(ComboBox combo)
+        private static int seleccionado(ComboBox combo)
         {
             if (combo.SelectedValue == null)
                 return 0;
@@ -96,7 +96,7 @@ namespace Codelex
             return Convert.ToInt32(combo.SelectedValue);
         }
 
-        private async void Tipo_Checked(object sender, RoutedEventArgs e)
+        private async void tipoMarcado(object sender, RoutedEventArgs e)
         {
             if (cargando)
                 return;
@@ -112,28 +112,28 @@ namespace Codelex
             panelAsistencia.Visibility = tipo == TipoReporte.Asistencia ? Visibility.Visible : Visibility.Collapsed;
             panelEmpleados.Visibility = tipo == TipoReporte.Empleados ? Visibility.Visible : Visibility.Collapsed;
 
-            await GenerarReporte();
+            await generarReporte();
         }
 
-        private async void Generar_Click(object sender, RoutedEventArgs e)
+        private async void generarClic(object sender, RoutedEventArgs e)
         {
-            await GenerarReporte();
+            await generarReporte();
         }
 
-        private async void Filtro_KeyDown(object sender, KeyEventArgs e)
+        private async void filtroTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
-                await GenerarReporte();
+                await generarReporte();
         }
 
-        private async Task GenerarReporte()
+        private async Task generarReporte()
         {
             if (generando)
                 return;
 
             if (dpDesde.SelectedDate == null || dpHasta.SelectedDate == null)
             {
-                MensajeCodelex.Mostrar(this, "Reportes", "Seleccione las fechas Desde y Hasta.", false);
+                MensajeCodelex.mostrar(this, "Reportes", "Seleccione las fechas Desde y Hasta.", false);
                 return;
             }
 
@@ -142,21 +142,21 @@ namespace Codelex
 
             if (desde > hasta)
             {
-                MensajeCodelex.Mostrar(this, "Reportes", "La fecha Desde no puede ser mayor que la fecha Hasta.", false);
+                MensajeCodelex.mostrar(this, "Reportes", "La fecha Desde no puede ser mayor que la fecha Hasta.", false);
                 return;
             }
 
             TipoReporte tipoConsulta = tipo;
-            int estadoOrdenId = Seleccionado(cmbEstadoOrden);
-            int servicioId = Seleccionado(cmbServicio);
+            int estadoOrdenId = seleccionado(cmbEstadoOrden);
+            int servicioId = seleccionado(cmbServicio);
             string cliente = txtCliente.Text.Trim();
-            int empleadoId = Seleccionado(cmbEmpleado);
-            int cargoId = Seleccionado(cmbCargo);
-            int estadoEmpleado = Seleccionado(cmbEstadoEmpleado);
+            int empleadoId = seleccionado(cmbEmpleado);
+            int cargoId = seleccionado(cmbCargo);
+            int estadoEmpleado = seleccionado(cmbEstadoEmpleado);
 
             generando = true;
             IsEnabled = false;
-            Cargando espera = Cargando.Iniciar(this, "Generando reporte...");
+            Cargando espera = Cargando.iniciar(this, "Generando reporte...");
 
             DataTable? tabla = null;
             string errorBD = "";
@@ -166,10 +166,10 @@ namespace Codelex
                 tabla = await Task.Run(() =>
                 {
                     if (tipoConsulta == TipoReporte.Ordenes)
-                        return reporteBD.Ordenes(desde, hasta, estadoOrdenId, servicioId, cliente);
+                        return reporteBD.ordenes(desde, hasta, estadoOrdenId, servicioId, cliente);
                     if (tipoConsulta == TipoReporte.Asistencia)
-                        return reporteBD.Asistencia(desde, hasta, empleadoId);
-                    return reporteBD.Empleados(desde, hasta, cargoId, estadoEmpleado);
+                        return reporteBD.asistencia(desde, hasta, empleadoId);
+                    return reporteBD.empleados(desde, hasta, cargoId, estadoEmpleado);
                 });
             }
             catch (Exception ex)
@@ -177,25 +177,25 @@ namespace Codelex
                 errorBD = ex.Message;
             }
 
-            espera.Terminar();
+            espera.terminar();
             IsEnabled = true;
             generando = false;
 
             if (tabla == null)
             {
-                MensajeCodelex.Mostrar(this, "Reportes", errorBD, false);
+                MensajeCodelex.mostrar(this, "Reportes", errorBD, false);
                 return;
             }
 
             datos = tabla;
             desdeUsado = desde;
             hastaUsado = hasta;
-            MostrarResultado(tipoConsulta);
+            mostrarResultado(tipoConsulta);
         }
 
         // ---------- Armado de resultados ----------
 
-        private void MostrarResultado(TipoReporte t)
+        private void mostrarResultado(TipoReporte t)
         {
             tipoMostrado = t;
             List<DataRow> filas = datos.AsEnumerable().ToList();
@@ -209,17 +209,17 @@ namespace Codelex
             if (t == TipoReporte.Ordenes)
             {
                 dgOrdenes.ItemsSource = datos.DefaultView;
-                ArmarOrdenes(filas);
+                armarOrdenes(filas);
             }
             else if (t == TipoReporte.Asistencia)
             {
                 dgAsistencia.ItemsSource = datos.DefaultView;
-                ArmarAsistencia(filas);
+                armarAsistencia(filas);
             }
             else
             {
                 dgEmpleados.ItemsSource = datos.DefaultView;
-                ArmarEmpleados(filas);
+                armarEmpleados(filas);
             }
 
             lstIndicadores.ItemsSource = indicadores;
@@ -227,14 +227,14 @@ namespace Codelex
             txtTituloGrafico2.Text = tituloGrafico2;
             txtResumen.Text = filas.Count + (filas.Count == 1 ? " registro" : " registros");
 
-            MostrarBarras();
-            DibujarGrafico();
+            mostrarBarras();
+            dibujarGrafico();
         }
 
-        private void ArmarOrdenes(List<DataRow> filas)
+        private void armarOrdenes(List<DataRow> filas)
         {
-            List<PuntoGrafico> porEstado = Agrupar(filas, f => Texto(f, "nombre_estado_orden"), f => 1);
-            List<PuntoGrafico> porServicio = Agrupar(filas, f => Texto(f, "nombre_servicio"), f => 1);
+            List<PuntoGrafico> porEstado = agrupar(filas, f => texto(f, "nombre_estado_orden"), f => 1);
+            List<PuntoGrafico> porServicio = agrupar(filas, f => texto(f, "nombre_servicio"), f => 1);
 
             int evaluadas = filas.Count(f => !f.IsNull("conformidad_cliente"));
             int conformes = filas.Count(f => !f.IsNull("conformidad_cliente") && Convert.ToBoolean(f["conformidad_cliente"]));
@@ -242,8 +242,8 @@ namespace Codelex
             indicadores = new List<Indicador>
             {
                 new Indicador("Total de órdenes", filas.Count.ToString(), "En el período seleccionado"),
-                new Indicador("Estado más frecuente", Primero(porEstado), Detalle(porEstado, "órdenes")),
-                new Indicador("Servicio más solicitado", Primero(porServicio), Detalle(porServicio, "órdenes")),
+                new Indicador("Estado más frecuente", primero(porEstado), detalle(porEstado, "órdenes")),
+                new Indicador("Servicio más solicitado", primero(porServicio), detalle(porServicio, "órdenes")),
                 new Indicador("Conformidad del cliente",
                               evaluadas == 0 ? "—" : (conformes * 100.0 / evaluadas).ToString("0") + "%",
                               conformes + " de " + evaluadas + " órdenes evaluadas")
@@ -257,10 +257,10 @@ namespace Codelex
                 .Where(f => !f.IsNull("fecha"))
                 .Select(f => (Convert.ToDateTime(f["fecha"]), 1.0))
                 .ToList();
-            puntos = SerieTiempo(serie, desdeUsado, hastaUsado);
+            puntos = serieTiempo(serie, desdeUsado, hastaUsado);
         }
 
-        private void ArmarAsistencia(List<DataRow> filas)
+        private void armarAsistencia(List<DataRow> filas)
         {
             double horas = filas.Sum(f => Convert.ToDouble(f["horas"]));
             int jornadas = filas.Count(f => Convert.ToDouble(f["horas"]) > 0);
@@ -278,18 +278,18 @@ namespace Codelex
 
             tituloGrafico1 = "Horas trabajadas por empleado";
             tituloGrafico2 = "Horas trabajadas por fecha";
-            barras = Agrupar(filas, f => Texto(f, "empleado"), f => Convert.ToDouble(f["horas"]));
+            barras = agrupar(filas, f => texto(f, "empleado"), f => Convert.ToDouble(f["horas"]));
 
             List<(DateTime Fecha, double Valor)> serie = filas
                 .Where(f => !f.IsNull("fecha_asistencia"))
                 .Select(f => (Convert.ToDateTime(f["fecha_asistencia"]), Convert.ToDouble(f["horas"])))
                 .ToList();
-            puntos = SerieTiempo(serie, desdeUsado, hastaUsado);
+            puntos = serieTiempo(serie, desdeUsado, hastaUsado);
         }
 
-        private void ArmarEmpleados(List<DataRow> filas)
+        private void armarEmpleados(List<DataRow> filas)
         {
-            int activos = filas.Count(f => Texto(f, "estado") == "Activo");
+            int activos = filas.Count(f => texto(f, "estado") == "Activo");
             int inactivos = filas.Count - activos;
             double ordenes = filas.Sum(f => Convert.ToDouble(f["ordenes"]));
 
@@ -304,30 +304,30 @@ namespace Codelex
             tituloGrafico1 = "Órdenes atendidas por empleado";
             tituloGrafico2 = "Empleados por cargo";
             barras = filas
-                .Select(f => new PuntoGrafico(Texto(f, "nombre_completo"), Convert.ToDouble(f["ordenes"])))
+                .Select(f => new PuntoGrafico(texto(f, "nombre_completo"), Convert.ToDouble(f["ordenes"])))
                 .OrderByDescending(p => p.Valor)
                 .ToList();
 
-            puntos = Agrupar(filas, f => Texto(f, "nombre_cargo"), f => 1);
+            puntos = agrupar(filas, f => texto(f, "nombre_cargo"), f => 1);
             graficoColumnas = true;
         }
 
-        private static string Texto(DataRow fila, string columna)
+        private static string texto(DataRow fila, string columna)
         {
             return "" + fila[columna];
         }
 
-        private static string Primero(List<PuntoGrafico> lista)
+        private static string primero(List<PuntoGrafico> lista)
         {
             return lista.Count > 0 ? lista[0].Etiqueta : "—";
         }
 
-        private static string Detalle(List<PuntoGrafico> lista, string unidad)
+        private static string detalle(List<PuntoGrafico> lista, string unidad)
         {
             return lista.Count > 0 ? lista[0].Valor.ToString("0.##") + " " + unidad : "Sin datos";
         }
 
-        private static List<PuntoGrafico> Agrupar(List<DataRow> filas, Func<DataRow, string> clave, Func<DataRow, double> valor)
+        private static List<PuntoGrafico> agrupar(List<DataRow> filas, Func<DataRow, string> clave, Func<DataRow, double> valor)
         {
             return filas.GroupBy(clave)
                         .Select(g => new PuntoGrafico(g.Key, g.Sum(valor)))
@@ -335,7 +335,7 @@ namespace Codelex
                         .ToList();
         }
 
-        private static List<PuntoGrafico> SerieTiempo(List<(DateTime Fecha, double Valor)> valores, DateTime desde, DateTime hasta)
+        private static List<PuntoGrafico> serieTiempo(List<(DateTime Fecha, double Valor)> valores, DateTime desde, DateTime hasta)
         {
             List<PuntoGrafico> resultado = new List<PuntoGrafico>();
             CultureInfo es = new CultureInfo("es");
@@ -366,16 +366,16 @@ namespace Codelex
 
         // ---------- Gráfico de barras ----------
 
-        private void MostrarBarras()
+        private void mostrarBarras()
         {
-            List<PuntoGrafico> mejores = barras.Take(MaximoBarras).ToList();
+            List<PuntoGrafico> mejores = barras.Take(MAXIMO_BARRAS).ToList();
             double maximo = mejores.Count == 0 ? 0 : mejores.Max(p => p.Valor);
 
             lstBarras.ItemsSource = mejores
                 .Select(p => new BarraGrafico(
                     p.Etiqueta,
                     p.Valor.ToString("0.##"),
-                    maximo <= 0 || p.Valor <= 0 ? 0 : Math.Max(6, p.Valor / maximo * AnchoMaximoBarra)))
+                    maximo <= 0 || p.Valor <= 0 ? 0 : Math.Max(6, p.Valor / maximo * ANCHO_MAXIMO_BARRA)))
                 .ToList();
 
             txtSinDatos1.Visibility = mejores.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -383,12 +383,12 @@ namespace Codelex
 
         // ---------- Gráfico de líneas / columnas ----------
 
-        private void CanvasGrafico_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void canvasGraficoTamanoCambiado(object sender, SizeChangedEventArgs e)
         {
-            DibujarGrafico();
+            dibujarGrafico();
         }
 
-        private void DibujarGrafico()
+        private void dibujarGrafico()
         {
             canvasGrafico.Children.Clear();
             txtSinDatos2.Visibility = puntos.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -398,17 +398,17 @@ namespace Codelex
             if (puntos.Count == 0 || ancho < 120 || alto < 80)
                 return;
 
-            const double izquierda = 42;
-            const double derecha = 12;
-            const double arriba = 16;
-            const double abajo = 28;
+            const double IZQUIERDA = 42;
+            const double DERECHA = 12;
+            const double ARRIBA = 16;
+            const double ABAJO = 28;
 
-            double areaAncho = ancho - izquierda - derecha;
-            double areaAlto = alto - arriba - abajo;
-            double baseY = arriba + areaAlto;
+            double areaAncho = ancho - IZQUIERDA - DERECHA;
+            double areaAlto = alto - ARRIBA - ABAJO;
+            double baseY = ARRIBA + areaAlto;
 
             bool enteros = puntos.All(p => p.Valor == Math.Floor(p.Valor));
-            double maximo = EscalaMaxima(puntos.Max(p => p.Valor), enteros);
+            double maximo = escalaMaxima(puntos.Max(p => p.Valor), enteros);
 
             Brush colorLinea = (Brush)FindResource("CardLine");
             Brush colorTexto = (Brush)FindResource("SoftText");
@@ -419,14 +419,14 @@ namespace Codelex
                 double y = baseY - areaAlto * i / 4.0;
                 canvasGrafico.Children.Add(new Line
                 {
-                    X1 = izquierda,
-                    X2 = izquierda + areaAncho,
+                    X1 = IZQUIERDA,
+                    X2 = IZQUIERDA + areaAncho,
                     Y1 = y,
                     Y2 = y,
                     Stroke = colorLinea,
                     StrokeThickness = 1
                 });
-                AgregarTexto((maximo * i / 4.0).ToString("0.##"), 0, y - 8, izquierda - 6, TextAlignment.Right, colorTexto);
+                agregarTexto((maximo * i / 4.0).ToString("0.##"), 0, y - 8, IZQUIERDA - 6, TextAlignment.Right, colorTexto);
             }
 
             int n = puntos.Count;
@@ -439,7 +439,7 @@ namespace Codelex
                 for (int i = 0; i < n; i++)
                 {
                     double altoBarra = areaAlto * puntos[i].Valor / maximo;
-                    double x = izquierda + ranura * i + (ranura - anchoBarra) / 2;
+                    double x = IZQUIERDA + ranura * i + (ranura - anchoBarra) / 2;
                     double y = baseY - altoBarra;
 
                     Rectangle barra = new Rectangle
@@ -455,7 +455,7 @@ namespace Codelex
                     Canvas.SetTop(barra, y);
                     canvasGrafico.Children.Add(barra);
 
-                    AgregarTexto(puntos[i].Valor.ToString("0.##"), izquierda + ranura * i, y - 17, ranura,
+                    agregarTexto(puntos[i].Valor.ToString("0.##"), IZQUIERDA + ranura * i, y - 17, ranura,
                                  TextAlignment.Center, (Brush)FindResource("DarkText"));
                 }
             }
@@ -464,7 +464,7 @@ namespace Codelex
                 PointCollection linea = new PointCollection();
                 for (int i = 0; i < n; i++)
                 {
-                    double x = izquierda + ranura * (i + 0.5);
+                    double x = IZQUIERDA + ranura * (i + 0.5);
                     double y = baseY - areaAlto * puntos[i].Valor / maximo;
                     linea.Add(new Point(x, y));
                 }
@@ -512,13 +512,13 @@ namespace Codelex
             double anchoEtiqueta = ranura * paso;
             for (int i = 0; i < n; i += paso)
             {
-                double centro = izquierda + ranura * (i + 0.5);
-                AgregarTexto(puntos[i].Etiqueta, centro - anchoEtiqueta / 2, baseY + 7, anchoEtiqueta,
+                double centro = IZQUIERDA + ranura * (i + 0.5);
+                agregarTexto(puntos[i].Etiqueta, centro - anchoEtiqueta / 2, baseY + 7, anchoEtiqueta,
                              TextAlignment.Center, colorTexto);
             }
         }
 
-        private static double EscalaMaxima(double maximo, bool enteros)
+        private static double escalaMaxima(double maximo, bool enteros)
         {
             if (maximo <= 0)
                 return 4;
@@ -544,7 +544,7 @@ namespace Codelex
             return paso * 4;
         }
 
-        private void AgregarTexto(string texto, double x, double y, double ancho, TextAlignment alineacion, Brush color)
+        private void agregarTexto(string texto, double x, double y, double ancho, TextAlignment alineacion, Brush color)
         {
             if (ancho <= 0)
                 return;
@@ -566,15 +566,15 @@ namespace Codelex
 
         // ---------- Exportar ----------
 
-        private void Exportar_Click(object sender, RoutedEventArgs e)
+        private void exportarClic(object sender, RoutedEventArgs e)
         {
             if (datos.Rows.Count == 0)
             {
-                MensajeCodelex.Mostrar(this, "Reportes", "No hay datos para exportar. Genera un reporte con resultados primero.", false);
+                MensajeCodelex.mostrar(this, "Reportes", "No hay datos para exportar. Genera un reporte con resultados primero.", false);
                 return;
             }
 
-            string nombre = NombreReporte(tipoMostrado);
+            string nombre = nombreReporte(tipoMostrado);
 
             SaveFileDialog dialogo = new SaveFileDialog();
             dialogo.Filter = "Archivo CSV (*.csv)|*.csv";
@@ -585,7 +585,7 @@ namespace Codelex
 
             try
             {
-                List<(string Encabezado, string Columna)> columnasCsv = ColumnasCsv(tipoMostrado);
+                List<(string Encabezado, string Columna)> columnasCsv = obtenerColumnasCsv(tipoMostrado);
                 StringBuilder sb = new StringBuilder();
 
                 sb.AppendLine("REPORTE DE " + nombre.ToUpper());
@@ -594,24 +594,24 @@ namespace Codelex
 
                 sb.AppendLine("RESUMEN");
                 foreach (Indicador indicador in indicadores)
-                    sb.AppendLine(Csv(indicador.Titulo) + ";" + Csv(indicador.Valor) + ";" + Csv(indicador.Detalle));
+                    sb.AppendLine(csv(indicador.Titulo) + ";" + csv(indicador.Valor) + ";" + csv(indicador.Detalle));
                 sb.AppendLine();
 
                 sb.AppendLine("DETALLE");
                 sb.AppendLine(string.Join(";", columnasCsv.Select(c => c.Encabezado)));
                 foreach (DataRow fila in datos.Rows)
-                    sb.AppendLine(string.Join(";", columnasCsv.Select(c => Celda(fila[c.Columna]))));
+                    sb.AppendLine(string.Join(";", columnasCsv.Select(c => celda(fila[c.Columna]))));
 
                 System.IO.File.WriteAllText(dialogo.FileName, sb.ToString(), new UTF8Encoding(true));
-                MensajeCodelex.Mostrar(this, "Reportes", "Reporte exportado correctamente.", true);
+                MensajeCodelex.mostrar(this, "Reportes", "Reporte exportado correctamente.", true);
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private static string NombreReporte(TipoReporte t)
+        private static string nombreReporte(TipoReporte t)
         {
             if (t == TipoReporte.Asistencia)
                 return "Asistencia";
@@ -620,7 +620,7 @@ namespace Codelex
             return "Órdenes";
         }
 
-        private static List<(string Encabezado, string Columna)> ColumnasCsv(TipoReporte t)
+        private static List<(string Encabezado, string Columna)> obtenerColumnasCsv(TipoReporte t)
         {
             if (t == TipoReporte.Asistencia)
                 return new List<(string, string)>
@@ -644,17 +644,17 @@ namespace Codelex
             };
         }
 
-        private static string Celda(object valor)
+        private static string celda(object valor)
         {
             if (valor is DateTime fecha)
                 return fecha.ToString("dd/MM/yyyy");
             if (valor is decimal numero)
                 return numero.ToString("0.00", CultureInfo.InvariantCulture);
 
-            return Csv(valor);
+            return csv(valor);
         }
 
-        private static string Csv(object valor)
+        private static string csv(object valor)
         {
             string texto = "" + valor;
             if (texto.Contains(";") || texto.Contains("\""))
@@ -664,23 +664,23 @@ namespace Codelex
 
         // ---------- Ventana ----------
 
-        private void MostrarError(Exception ex)
+        private void mostrarError(Exception ex)
         {
-            MensajeCodelex.Mostrar(this, "Reportes", ex.Message, false);
+            MensajeCodelex.mostrar(this, "Reportes", ex.Message, false);
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimizar_Click(object sender, RoutedEventArgs e)
+        private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
-        private void Cerrar_Click(object sender, RoutedEventArgs e)
+        private void cerrarClic(object sender, RoutedEventArgs e)
         {
             Close();
         }

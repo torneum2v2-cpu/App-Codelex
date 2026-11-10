@@ -8,46 +8,46 @@ namespace Codelex
 {
     public partial class NuevaContra : Window
     {
-        private string _email = "";
+        private string correo = "";
 
         public NuevaContra(string email)
         {
             InitializeComponent();
-            _email = email;
+            correo = email;
         }
 
-        private void ShowError(string message)
+        private void mostrarError(string message)
         {
             txtError.Text = message;
             txtError.Visibility = Visibility.Visible;
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimize_Click(object sender, RoutedEventArgs e) =>
+        private void minimizarClic(object sender, RoutedEventArgs e) =>
             WindowState = WindowState.Minimized;
 
-        private void Close_Click(object sender, RoutedEventArgs e) => Close();
+        private void cerrarClic(object sender, RoutedEventArgs e) => Close();
 
-        private string ObtenerContra1()
+        private string obtenerContra1()
         {
             if (btnShowPassword.IsChecked == true)
                 return txtPasswordVisible.Text;
             return txtPassword.Password;
         }
 
-        private string ObtenerContra2()
+        private string obtenerContra2()
         {
             if (btnShowPassword2.IsChecked == true)
                 return txtPasswordVisible2.Text;
             return txtPassword2.Password;
         }
 
-        private void MostrarOcultar(ToggleButton boton, PasswordBox oculta, TextBox visible)
+        private void mostrarOcultar(ToggleButton boton, PasswordBox oculta, TextBox visible)
         {
             if (boton.IsChecked == true)
             {
@@ -66,15 +66,15 @@ namespace Codelex
             }
         }
 
-        private void ShowPassword_Changed(object sender, RoutedEventArgs e)
+        private void mostrarContrasenaCambiado(object sender, RoutedEventArgs e)
         {
             if (sender == btnShowPassword)
-                MostrarOcultar(btnShowPassword, txtPassword, txtPasswordVisible);
+                mostrarOcultar(btnShowPassword, txtPassword, txtPasswordVisible);
             else
-                MostrarOcultar(btnShowPassword2, txtPassword2, txtPasswordVisible2);
+                mostrarOcultar(btnShowPassword2, txtPassword2, txtPasswordVisible2);
         }
 
-        private void Rest_Click(Object sender, RoutedEventArgs e)
+        private void restablecerClic(Object sender, RoutedEventArgs e)
         {
             txtError.Visibility = Visibility.Collapsed;
 
@@ -83,29 +83,29 @@ namespace Codelex
 
             try
             {
-                bool cambiada = user.CambiarContrasena(_email, ObtenerContra1(), ObtenerContra2(), out mensaje);
+                bool cambiada = user.cambiarContrasena(correo, obtenerContra1(), obtenerContra2(), out mensaje);
 
                 if (!cambiada)
                 {
-                    ShowError(mensaje);
+                    mostrarError(mensaje);
                     return;
                 }
             }
             catch (Exception ex)
             {
-                ShowError("Error al conectar con la base de datos: " + ex.Message);
+                mostrarError("Error al conectar con la base de datos: " + ex.Message);
                 return;
             }
 
-            MensajeCodelex.Mostrar(this, "Contraseña actualizada",
+            MensajeCodelex.mostrar(this, "Contraseña actualizada",
                     "Tu contraseña se cambió correctamente. Ya puedes iniciar sesión con la nueva.", true);
-            new MainWindow().Show();
+            new VentanaPrincipal().Show();
             Close();
         }
 
-        private void BackToLogin_Click(Object sender, RoutedEventArgs e)
+        private void volverInicioClic(Object sender, RoutedEventArgs e)
         {
-            new MainWindow().Show();
+            new VentanaPrincipal().Show();
             Close();
         }
     }

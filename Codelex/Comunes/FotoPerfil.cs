@@ -7,10 +7,10 @@ namespace Codelex
 {
     public static class FotoPerfil
     {
-        private const int Lado = 256;
+        private const int LADO = 256;
 
         // Lee una imagen del disco, la recorta cuadrada al centro, la reduce a 256x256 y devuelve un PNG.
-        public static byte[] Preparar(string ruta)
+        public static byte[] preparar(string ruta)
         {
             BitmapImage origen = new BitmapImage();
             origen.BeginInit();
@@ -25,9 +25,9 @@ namespace Codelex
 
             BitmapSource resultado = new CroppedBitmap(origen, new Int32Rect(x, y, lado, lado));
 
-            if (lado > Lado)
+            if (lado > LADO)
             {
-                double escala = (double)Lado / lado;
+                double escala = (double)LADO / lado;
                 resultado = new TransformedBitmap(resultado, new ScaleTransform(escala, escala));
             }
 
@@ -42,7 +42,7 @@ namespace Codelex
         }
 
         // Convierte los bytes guardados en una imagen que WPF puede mostrar.
-        public static ImageSource? Cargar(byte[] datos)
+        public static ImageSource? cargar(byte[] datos)
         {
             try
             {

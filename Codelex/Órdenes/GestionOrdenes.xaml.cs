@@ -14,18 +14,18 @@ namespace Codelex.Órdenes
         // Elemento de los combos de filtro y de cambio de estado.
         class OpcionFiltro
         {
-            public int Id;
-            public string Texto;
+            public int id;
+            public string texto;
 
             public OpcionFiltro(int id, string texto)
             {
-                Id = id;
-                Texto = texto;
+                id = id;
+                texto = texto;
             }
 
             public override string ToString()
             {
-                return Texto;
+                return texto;
             }
         }
 
@@ -63,8 +63,8 @@ namespace Codelex.Órdenes
                 SupervisorId = Convert.ToInt32(fila["supervisor_id"]);
                 Estado = "" + fila["estado"];
                 EstadoId = Convert.ToInt32(fila["estado_orden_id"]);
-                FechaSolicitud = Fecha(fila["fecha_solicitud"]);
-                FechaServicio = Fecha(fila["fecha_servicio"]);
+                FechaSolicitud = fecha(fila["fecha_solicitud"]);
+                FechaServicio = fecha(fila["fecha_servicio"]);
 
                 string supervisor = ("" + fila["supervisor"]).Trim();
                 Supervisor = supervisor == "" ? "—" : supervisor;
@@ -79,29 +79,29 @@ namespace Codelex.Órdenes
                 switch (Estado)
                 {
                     case "Pendiente":
-                        EstadoFondo = Pincel("#FFF3D6");
-                        EstadoTexto = Pincel("#9A6B00");
+                        EstadoFondo = pincel("#FFF3D6");
+                        EstadoTexto = pincel("#9A6B00");
                         break;
                     case "En proceso":
-                        EstadoFondo = Pincel("#E3F0FA");
-                        EstadoTexto = Pincel("#1F6FB2");
+                        EstadoFondo = pincel("#E3F0FA");
+                        EstadoTexto = pincel("#1F6FB2");
                         break;
                     case "Completada":
-                        EstadoFondo = Pincel("#E3F7F4");
-                        EstadoTexto = Pincel("#14837A");
+                        EstadoFondo = pincel("#E3F7F4");
+                        EstadoTexto = pincel("#14837A");
                         break;
                     case "Cancelada":
-                        EstadoFondo = Pincel("#FBE6E6");
-                        EstadoTexto = Pincel("#B03A3A");
+                        EstadoFondo = pincel("#FBE6E6");
+                        EstadoTexto = pincel("#B03A3A");
                         break;
                     default:
-                        EstadoFondo = Pincel("#EEF2F2");
-                        EstadoTexto = Pincel("#5B7C78");
+                        EstadoFondo = pincel("#EEF2F2");
+                        EstadoTexto = pincel("#5B7C78");
                         break;
                 }
             }
 
-            private static DateTime? Fecha(object valor)
+            private static DateTime? fecha(object valor)
             {
                 if (valor is DateTime fecha)
                     return fecha;
@@ -109,7 +109,7 @@ namespace Codelex.Órdenes
                 return null;
             }
 
-            private static Brush Pincel(string color)
+            private static Brush pincel(string color)
             {
                 SolidColorBrush pincel = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
                 pincel.Freeze();
@@ -135,30 +135,30 @@ namespace Codelex.Órdenes
         public GestionOrdenes()
             {
                 InitializeComponent();
-                cmbCambiarEstado.SelectionChanged += cmbCambiarEstado_SelectionChanged;
+                cmbCambiarEstado.SelectionChanged += cambiarEstadoSeleccionCambiada;
             }
 
             // ---------- Carga ----------
 
-            private void Window_Loaded(object sender, RoutedEventArgs e)
+            private void ventanaCargada(object sender, RoutedEventArgs e)
             {
                 try
                 {
-                    CargarEstados();
-                    LimpiarDetalle();
+                    cargarEstados();
+                    limpiarDetalle();
 
                     listo = true;
-                    CargarOrdenes("", true);
+                    cargarOrdenes("", true);
                 }
                 catch (Exception ex)
                 {
-                    MostrarError(ex);
+                    mostrarError(ex);
                 }
             }
 
-            private void CargarEstados()
+            private void cargarEstados()
             {
-                DataTable estados = ordenBD.ListarEstadosOrden();
+                DataTable estados = ordenBD.listarEstadosOrden();
 
                 cmbFiltroEstado.Items.Clear();
                 cmbFiltroEstado.Items.Add(new OpcionFiltro(0, "Todos"));
@@ -178,11 +178,11 @@ namespace Codelex.Órdenes
 
             // Lee las órdenes de la base y vuelve a aplicar los filtros.
             // forzarDetalle = true vuelve a leer el detalle de la orden seleccionada.
-            private void CargarOrdenes(string idSeleccionar, bool forzarDetalle)
+            private void cargarOrdenes(string idSeleccionar, bool forzarDetalle)
             {
                 try
                 {
-                    DataTable tabla = gestionBD.ListarOrdenes();
+                    DataTable tabla = gestionBD.listarOrdenes();
 
                     todas = new List<FilaOrden>();
                     foreach (DataRow fila in tabla.Rows)
@@ -190,17 +190,17 @@ namespace Codelex.Órdenes
                         todas.Add(new FilaOrden(fila));
                     }
 
-                    ActualizarResumen();
-                    ReconstruirFiltroSupervisor();
-                    AplicarFiltros(idSeleccionar, forzarDetalle);
+                    actualizarResumen();
+                    reconstruirFiltroSupervisor();
+                    aplicarFiltros(idSeleccionar, forzarDetalle);
                 }
                 catch (Exception ex)
                 {
-                    MostrarError(ex);
+                    mostrarError(ex);
                 }
             }
 
-            private void ActualizarResumen()
+            private void actualizarResumen()
             {
                 txtTotal.Text = todas.Count.ToString();
                 txtPendientes.Text = todas.Count(f => f.Estado == "Pendiente").ToString();
@@ -210,11 +210,11 @@ namespace Codelex.Órdenes
             }
 
             // El filtro de supervisor solo ofrece los supervisores que tienen órdenes.
-            private void ReconstruirFiltroSupervisor()
+            private void reconstruirFiltroSupervisor()
             {
                 int previo = 0;
                 if (cmbFiltroSupervisor.SelectedItem is OpcionFiltro actual)
-                    previo = actual.Id;
+                    previo = actual.id;
 
                 bool estabaListo = listo;
                 listo = false;
@@ -237,7 +237,7 @@ namespace Codelex.Órdenes
                 cmbFiltroSupervisor.SelectedIndex = 0;
                 foreach (OpcionFiltro item in cmbFiltroSupervisor.Items)
                 {
-                    if (item.Id == previo)
+                    if (item.id == previo)
                     {
                         cmbFiltroSupervisor.SelectedItem = item;
                         break;
@@ -249,21 +249,21 @@ namespace Codelex.Órdenes
 
             // ---------- Filtros ----------
 
-            private static bool Contiene(string origen, string texto)
+            private static bool contiene(string origen, string texto)
             {
                 // Sin importar mayúsculas ni tildes.
                 return CultureInfo.InvariantCulture.CompareInfo.IndexOf(
                     origen, texto, CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace) >= 0;
             }
 
-            private void AplicarFiltros(string idSeleccionar, bool forzarDetalle)
+            private void aplicarFiltros(string idSeleccionar, bool forzarDetalle)
             {
                 if (!listo)
                     return;
 
                 string texto = txtBuscar.Text.Trim();
-                int estadoId = cmbFiltroEstado.SelectedItem is OpcionFiltro estado ? estado.Id : 0;
-                int supervisorId = cmbFiltroSupervisor.SelectedItem is OpcionFiltro supervisor ? supervisor.Id : 0;
+                int estadoId = cmbFiltroEstado.SelectedItem is OpcionFiltro estado ? estado.id : 0;
+                int supervisorId = cmbFiltroSupervisor.SelectedItem is OpcionFiltro supervisor ? supervisor.id : 0;
                 DateTime? desde = dpDesde.SelectedDate;
                 DateTime? hasta = dpHasta.SelectedDate;
 
@@ -294,8 +294,8 @@ namespace Codelex.Órdenes
                         }
 
                         if (texto != "" &&
-                            !Contiene(f.OrdenId, texto) && !Contiene(f.Rtn, texto) &&
-                            !Contiene(f.Empresa, texto) && !Contiene(f.Contacto, texto))
+                            !contiene(f.OrdenId, texto) && !contiene(f.Rtn, texto) &&
+                            !contiene(f.Empresa, texto) && !contiene(f.Contacto, texto))
                             continue;
 
                         lista.Add(f);
@@ -318,30 +318,30 @@ namespace Codelex.Órdenes
 
                 if (seleccionada == null)
                 {
-                    LimpiarDetalle();
+                    limpiarDetalle();
                 }
                 else
                 {
                     dgOrdenes.ScrollIntoView(seleccionada);
 
                     if (forzarDetalle || seleccionada.OrdenId != detalleMostrado)
-                        MostrarDetalle(seleccionada);
+                        mostrarDetalle(seleccionada);
                     else
-                        ActualizarAcciones(seleccionada);
+                        actualizarAcciones(seleccionada);
                 }
             }
 
-            private void txtBuscar_TextChanged(object sender, TextChangedEventArgs e)
+            private void buscarTextoCambiado(object sender, TextChangedEventArgs e)
             {
-                AplicarFiltros("", false);
+                aplicarFiltros("", false);
             }
 
-            private void Filtro_Changed(object sender, SelectionChangedEventArgs e)
+            private void filtroCambiado(object sender, SelectionChangedEventArgs e)
             {
-                AplicarFiltros("", false);
+                aplicarFiltros("", false);
             }
 
-            private void btnLimpiarFiltros_Click(object sender, RoutedEventArgs e)
+            private void limpiarFiltrosClic(object sender, RoutedEventArgs e)
             {
                 listo = false;
                 txtBuscar.Text = "";
@@ -351,24 +351,24 @@ namespace Codelex.Órdenes
                 dpHasta.SelectedDate = null;
                 listo = true;
 
-                AplicarFiltros("", false);
+                aplicarFiltros("", false);
                 txtBuscar.Focus();
             }
 
             // ---------- Detalle ----------
 
-            private void dgOrdenes_SelectionChanged(object sender, SelectionChangedEventArgs e)
+            private void ordenesSeleccionCambiada(object sender, SelectionChangedEventArgs e)
             {
                 if (reconstruyendo)
                     return;
 
                 if (dgOrdenes.SelectedItem is FilaOrden fila)
-                    MostrarDetalle(fila);
+                    mostrarDetalle(fila);
                 else
-                    LimpiarDetalle();
+                    limpiarDetalle();
             }
 
-            private void LimpiarDetalle()
+            private void limpiarDetalle()
             {
                 detalleMostrado = "";
                 facturaIdActual = 0;
@@ -376,27 +376,27 @@ namespace Codelex.Órdenes
                 pillEstado.Visibility = Visibility.Collapsed;
                 txtSinSeleccion.Visibility = Visibility.Visible;
 
-                ActualizarAcciones(null);
+                actualizarAcciones(null);
             }
 
-            private void MostrarDetalle(FilaOrden fila)
+            private void mostrarDetalle(FilaOrden fila)
             {
                 try
                 {
-                    DataTable cabecera = gestionBD.ObtenerDetalle(fila.OrdenId);
+                    DataTable cabecera = gestionBD.obtenerDetalle(fila.OrdenId);
 
                     if (cabecera.Rows.Count == 0)
                     {
-                        MensajeCodelex.Mostrar(this, "Gestión de órdenes", "La orden ya no existe. Se actualizará la lista.", false);
-                        CargarOrdenes("", true);
+                        MensajeCodelex.mostrar(this, "Gestión de órdenes", "La orden ya no existe. Se actualizará la lista.", false);
+                        cargarOrdenes("", true);
                         return;
                     }
 
                     DataRow d = cabecera.Rows[0];
 
                     dOrden.Text = fila.OrdenId;
-                    dCliente.Text = TextoCliente(d);
-                    dLugar.Text = TextoLugar(d);
+                    dCliente.Text = textoCliente(d);
+                    dLugar.Text = textoLugar(d);
 
                     string vehiculo = ("" + d["vehiculo"]).Trim();
                     dVehiculo.Text = vehiculo == "" ? "Sin vehículo asignado" : vehiculo;
@@ -404,10 +404,10 @@ namespace Codelex.Órdenes
                     string observaciones = ("" + d["observacion"]).Trim();
                     dObservaciones.Text = observaciones == "" ? "Sin observaciones" : observaciones;
 
-                    dConformidad.Text = TextoConformidad(d);
-                    dFactura.Text = TextoFactura(d);
+                    dConformidad.Text = textoConformidad(d);
+                    dFactura.Text = textoFactura(d);
 
-                    LlenarListas(fila.OrdenId);
+                    llenarListas(fila.OrdenId);
 
                     txtPillEstado.Text = fila.Estado;
                     txtPillEstado.Foreground = fila.EstadoTexto;
@@ -419,17 +419,17 @@ namespace Codelex.Órdenes
 
                     detalleMostrado = fila.OrdenId;
                     facturaIdActual = d["factura_id"] is DBNull ? 0 : Convert.ToInt32(d["factura_id"]);
-                    ActualizarAcciones(fila);
+                    actualizarAcciones(fila);
             }
                 catch (Exception ex)
                 {
-                    MostrarError(ex);
+                    mostrarError(ex);
                 }
             }
 
-            private void LlenarListas(string ordenId)
+            private void llenarListas(string ordenId)
             {
-                DataTable tabla = gestionBD.ListarDetalle(ordenId);
+                DataTable tabla = gestionBD.listarDetalle(ordenId);
 
                 List<string> actividades = new List<string>();
                 List<string> empleados = new List<string>();
@@ -460,12 +460,12 @@ namespace Codelex.Órdenes
                 lstProductos.ItemsSource = productos;
             }
 
-            private static string UnirLineas(List<string> lineas)
+            private static string unirLineas(List<string> lineas)
             {
                 return string.Join(Environment.NewLine, lineas.Where(l => l.Trim() != ""));
             }
 
-            private static string TextoCliente(DataRow d)
+            private static string textoCliente(DataRow d)
             {
                 string empresa = ("" + d["nombre_empresa"]).Trim();
                 string contacto = ("" + d["contacto"]).Trim();
@@ -487,10 +487,10 @@ namespace Codelex.Órdenes
                 if (rtn != "")
                     lineas.Add("RTN: " + rtn);
 
-                return UnirLineas(lineas);
+                return unirLineas(lineas);
             }
 
-            private static string TextoLugar(DataRow d)
+            private static string textoLugar(DataRow d)
             {
                 string locacion = ("" + d["locacion"]).Trim();
                 string tipo = ("" + d["tipo_locacion"]).Trim();
@@ -509,11 +509,11 @@ namespace Codelex.Órdenes
                 if (turno != "")
                     lineas.Add("Turno: " + turno);
 
-                return lineas.Count == 0 ? "Sin locación" : UnirLineas(lineas);
+                return lineas.Count == 0 ? "Sin locación" : unirLineas(lineas);
             }
 
             // Igual que el reporte de órdenes: vacío = sin evaluar, 1 = conforme, 0 = no conforme.
-            private static string TextoConformidad(DataRow d)
+            private static string textoConformidad(DataRow d)
             {
                 if ("" + d["estado"] != "Completada")
                     return "Se evalúa cuando la orden esté completada";
@@ -524,13 +524,13 @@ namespace Codelex.Órdenes
                 return "Sin evaluar";
             }
 
-            private static string TextoFactura(DataRow d)
+            private static string textoFactura(DataRow d)
             {
                 if (d["factura_id"] is DBNull)
                     return "Sin factura";
 
                 List<string> lineas = new List<string>();
-                lineas.Add("Factura N.° " + Facturacion.NumeroFactura(Convert.ToInt32(d["factura_id"])) + " - " + d["estado_pago"]);
+                lineas.Add("Factura N.° " + Facturacion.numeroFactura(Convert.ToInt32(d["factura_id"])) + " - " + d["estado_pago"]);
 
                 if (d["precio_facturado"] is not DBNull)
                     lineas.Add("Monto: L " + Convert.ToDecimal(d["precio_facturado"]).ToString("N2", CultureInfo.InvariantCulture));
@@ -538,12 +538,12 @@ namespace Codelex.Órdenes
                 if (d["fecha_factura"] is DateTime fecha)
                     lineas.Add("Fecha: " + fecha.ToString("dd/MM/yyyy"));
 
-                return UnirLineas(lineas);
+                return unirLineas(lineas);
             }
 
             // ---------- Cambio de estado ----------
 
-            private void ActualizarAcciones(FilaOrden? fila)
+            private void actualizarAcciones(FilaOrden? fila)
             {
                 if (fila == null)
                 {
@@ -568,48 +568,48 @@ namespace Codelex.Órdenes
                     : null;
                 cmbCambiarEstado.SelectedItem = cmbCambiarEstado.Items
                     .OfType<OpcionFiltro>()
-                    .FirstOrDefault(o => o.Id == fila.EstadoId);
+                    .FirstOrDefault(o => o.id == fila.EstadoId);
 
                 btnCancelarOrden.IsEnabled = !fila.EsFinal;
-                ActualizarBotonAplicar();
+                actualizarBotonAplicar();
             }
 
-            private void ActualizarBotonAplicar()
+            private void actualizarBotonAplicar()
             {
                 FilaOrden? fila = dgOrdenes.SelectedItem as FilaOrden;
                 OpcionFiltro? nuevo = cmbCambiarEstado.SelectedItem as OpcionFiltro;
 
                 btnAplicarEstado.IsEnabled = fila != null && !fila.EsFinal
-                                             && nuevo != null && nuevo.Id != fila.EstadoId;
+                                             && nuevo != null && nuevo.id != fila.EstadoId;
             }
 
-            private void cmbCambiarEstado_SelectionChanged(object sender, SelectionChangedEventArgs e)
+            private void cambiarEstadoSeleccionCambiada(object sender, SelectionChangedEventArgs e)
             {
-                ActualizarBotonAplicar();
+                actualizarBotonAplicar();
             }
 
-            private void btnAplicarEstado_Click(object sender, RoutedEventArgs e)
+            private void aplicarEstadoClic(object sender, RoutedEventArgs e)
             {
                 if (dgOrdenes.SelectedItem is not FilaOrden fila || cmbCambiarEstado.SelectedItem is not OpcionFiltro nuevo)
                     return;
 
-                if (nuevo.Id == fila.EstadoId)
+                if (nuevo.id == fila.EstadoId)
                     return;
 
-                string pregunta = "¿Cambiar la orden " + fila.OrdenId + " de \"" + fila.Estado + "\" a \"" + nuevo.Texto + "\"?";
+                string pregunta = "¿Cambiar la orden " + fila.OrdenId + " de \"" + fila.Estado + "\" a \"" + nuevo.texto + "\"?";
 
-                if (nuevo.Texto == "Cancelada")
+                if (nuevo.texto == "Cancelada")
                     pregunta += "\n\nLa orden se conserva, pero ya no podrá cambiar de estado.";
-                else if (nuevo.Texto == "Completada")
+                else if (nuevo.texto == "Completada")
                     pregunta += "\n\nLos equipos asignados quedarán libres y la orden ya no podrá cambiar de estado.";
 
                 if (MessageBox.Show(pregunta, "Gestión de órdenes", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                     return;
 
-                CambiarEstado(fila, nuevo.Id);
+                cambiarEstado(fila, nuevo.id);
             }
 
-            private void btnCancelarOrden_Click(object sender, RoutedEventArgs e)
+            private void cancelarOrdenClic(object sender, RoutedEventArgs e)
             {
                 if (dgOrdenes.SelectedItem is not FilaOrden fila)
                     return;
@@ -617,13 +617,13 @@ namespace Codelex.Órdenes
                 int canceladaId = 0;
                 foreach (OpcionFiltro item in cmbCambiarEstado.Items)
                 {
-                    if (item.Texto == "Cancelada")
-                        canceladaId = item.Id;
+                    if (item.texto == "Cancelada")
+                        canceladaId = item.id;
                 }
 
                 if (canceladaId == 0)
                 {
-                    MensajeCodelex.Mostrar(this, "Gestión de órdenes", "No existe el estado \"Cancelada\" en la base de datos.", false);
+                    MensajeCodelex.mostrar(this, "Gestión de órdenes", "No existe el estado \"Cancelada\" en la base de datos.", false);
                     return;
                 }
 
@@ -633,30 +633,30 @@ namespace Codelex.Órdenes
                 if (MessageBox.Show(pregunta, "Gestión de órdenes", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
                     return;
 
-                CambiarEstado(fila, canceladaId);
+                cambiarEstado(fila, canceladaId);
             }
 
-            private void CambiarEstado(FilaOrden fila, int estadoId)
+            private void cambiarEstado(FilaOrden fila, int estadoId)
             {
                 try
                 {
                     string mensaje;
-                    bool guardado = gestionBD.CambiarEstado(fila.OrdenId, estadoId, out mensaje);
+                    bool guardado = gestionBD.cambiarEstado(fila.OrdenId, estadoId, out mensaje);
 
-                    MensajeCodelex.Mostrar(this, "Gestión de órdenes", mensaje, guardado);
+                    MensajeCodelex.mostrar(this, "Gestión de órdenes", mensaje, guardado);
 
                     // Se recarga también si falló: casi siempre es porque la lista estaba desactualizada.
-                    CargarOrdenes(fila.OrdenId, true);
+                    cargarOrdenes(fila.OrdenId, true);
                 }
                 catch (Exception ex)
                 {
-                    MostrarError(ex);
+                    mostrarError(ex);
                 }
             }
 
         // ---------- Botones ----------
 
-            private void btnCrearFactura_Click(object sender, RoutedEventArgs e)
+            private void crearFacturaClic(object sender, RoutedEventArgs e)
             {
                 if (dgOrdenes.SelectedItem is not FilaOrden fila)
                     return;
@@ -666,10 +666,10 @@ namespace Codelex.Órdenes
                 ventana.ShowDialog();
 
                 // Al volver se relee la orden: si ya se facturó, el botón cambia a "Ver factura".
-                CargarOrdenes(fila.OrdenId, true);
+                cargarOrdenes(fila.OrdenId, true);
             }
 
-            private void btnVerFactura_Click(object sender, RoutedEventArgs e)
+            private void verFacturaClic(object sender, RoutedEventArgs e)
             {
                 if (facturaIdActual <= 0)
                     return;
@@ -678,17 +678,17 @@ namespace Codelex.Órdenes
                 ventana.Owner = this;
 
                 if (ventana.ShowDialog() == true && dgOrdenes.SelectedItem is FilaOrden fila)
-                    CargarOrdenes(fila.OrdenId, true);
+                    cargarOrdenes(fila.OrdenId, true);
             }
 
-            private void btnActualizar_Click(object sender, RoutedEventArgs e)
+            private void actualizarClic(object sender, RoutedEventArgs e)
                 {
-                    CargarOrdenes("", true);
+                    cargarOrdenes("", true);
                 }
 
-            private void btnNuevaOrden_Click(object sender, RoutedEventArgs e)
+            private void nuevaOrdenClic(object sender, RoutedEventArgs e)
             {
-                DataRow? cotizacion = SeleccionarCotizacion.Elegir(this, "");
+                DataRow? cotizacion = SeleccionarCotizacion.elegir(this, "");
                 if (cotizacion == null)
                     return;
 
@@ -696,30 +696,30 @@ namespace Codelex.Órdenes
                 ventana.Owner = this;
                 ventana.ShowDialog();
 
-                CargarOrdenes("", false);
+                cargarOrdenes("", false);
             }
 
             // ---------- Ventana ----------
 
-            private void DragWindow(object sender, MouseButtonEventArgs e)
+            private void arrastrarVentana(object sender, MouseButtonEventArgs e)
             {
                 if (e.ButtonState == MouseButtonState.Pressed)
                     DragMove();
             }
 
-            private void Minimizar_Click(object sender, RoutedEventArgs e)
+            private void minimizarClic(object sender, RoutedEventArgs e)
             {
                 WindowState = WindowState.Minimized;
             }
 
-            private void Salir_Click(object sender, RoutedEventArgs e)
+            private void salirClic(object sender, RoutedEventArgs e)
             {
                 Close();
             }
 
-            private void MostrarError(Exception ex)
+            private void mostrarError(Exception ex)
             {
-                MensajeCodelex.Mostrar(this, "Gestión de órdenes", ex.Message, false);
+                MensajeCodelex.mostrar(this, "Gestión de órdenes", ex.Message, false);
             }
         }
 }

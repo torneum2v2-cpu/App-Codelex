@@ -93,19 +93,19 @@
         </Style>
     </Window.Resources>
 
-    <Border Margin="20" CornerRadius="18" Background="{StaticResource BgGradient}" MouseLeftButtonDown="DragWindow">
+    <Border Margin="20" CornerRadius="18" Background="{StaticResource BgGradient}" MouseLeftButtonDown="arrastrarVentana">
         <Border.Effect>
             <DropShadowEffect BlurRadius="30" ShadowDepth="8" Opacity="0.45" Color="#000000"/>
         </Border.Effect>
         <Grid>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"
                         VerticalAlignment="Top" Margin="0,10,10,0" Panel.ZIndex="1">
-                <Button Style="{StaticResource WindowButton}" Click="Minimize_Click" ToolTip="Minimizar">
+                <Button Style="{StaticResource WindowButton}" Click="minimizarClic" ToolTip="Minimizar">
                     <Path Data="M0,0 L10,0"
                           Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                           StrokeThickness="1.6" Margin="0,8,0,0"/>
                 </Button>
-                <Button Style="{StaticResource WindowButton}" Click="Close_Click" ToolTip="Cerrar">
+                <Button Style="{StaticResource WindowButton}" Click="cerrarClic" ToolTip="Cerrar">
                     <Path Data="M0,0 L10,10 M10,0 L0,10"
                           Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                           StrokeThickness="1.6"/>
@@ -138,10 +138,10 @@
                            TextAlignment="Center" Visibility="Collapsed"/>
 
                 <Button x:Name="btnVerificar" Margin="0,20,0,0" IsDefault="True"
-                        Style="{StaticResource PrimaryButton}" Click="Verificar_Click"/>
+                        Style="{StaticResource PrimaryButton}" Click="verificarClic"/>
 
                 <TextBlock HorizontalAlignment="Center" Margin="0,16,0,0" FontSize="12.5">
-                    <Hyperlink Click="Volver_Click" TextDecorations="None"
+                    <Hyperlink Click="volverClic" TextDecorations="None"
                                Foreground="{StaticResource PrimaryLight}"
                                FontWeight="SemiBold">← Volver al inicio de sesión</Hyperlink>
                 </TextBlock>

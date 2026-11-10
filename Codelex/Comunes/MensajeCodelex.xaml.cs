@@ -27,7 +27,7 @@ namespace Codelex
             }
         }
 
-        public static void Mostrar(Window dueno, string titulo, string mensaje, bool exito)
+        public static void mostrar(Window dueno, string titulo, string mensaje, bool exito)
         {
             MensajeCodelex ventana = new MensajeCodelex(titulo, mensaje, exito);
 
@@ -44,13 +44,13 @@ namespace Codelex
             ventana.ShowDialog();
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Aceptar_Click(object sender, RoutedEventArgs e)
+        private void aceptarClic(object sender, RoutedEventArgs e)
         {
             Close();
         }

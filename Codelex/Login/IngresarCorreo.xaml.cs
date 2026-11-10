@@ -10,37 +10,37 @@ namespace Codelex
         {
             InitializeComponent();
         }
-        private void ShowCodeError(string message)
+        private void mostrarErrorCodigo(string message)
         {
             txtError1.Text = message;
             txtError1.Visibility = Visibility.Visible;
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
-        private void Minimize_Click(object sender, RoutedEventArgs e) =>
+        private void minimizarClic(object sender, RoutedEventArgs e) =>
          WindowState = WindowState.Minimized;
 
-        private void Close_Click(object sender, RoutedEventArgs e) => Close();
+        private void cerrarClic(object sender, RoutedEventArgs e) => Close();
 
-        private void BackToLogin_Click(Object sender, RoutedEventArgs e)
+        private void volverInicioClic(Object sender, RoutedEventArgs e)
         {
-            MainWindow m = new MainWindow();
+            VentanaPrincipal m = new VentanaPrincipal();
             m.Show();
             Close();
         }
-        private string _correoConsulta = "";
+        private string correoConsulta = "";
 
-        private bool ExisteCorreoEnSegundoPlano()
+        private bool existeCorreoEnSegundoPlano()
         {
             Empleado emp = new Empleado();
-            return emp.ExisteCorreo(_correoConsulta);
+            return emp.existeCorreo(correoConsulta);
         }
 
-        private async void Next_Click(Object sender, RoutedEventArgs e)
+        private async void siguienteClic(Object sender, RoutedEventArgs e)
         {
             txtError1.Visibility = Visibility.Collapsed;
 
@@ -48,38 +48,38 @@ namespace Codelex
 
             if (correo == "")
             {
-                ShowCodeError("Ingrese un correo.");
+                mostrarErrorCodigo("Ingrese un correo.");
                 return;
             }
 
-            _correoConsulta = correo;
+            correoConsulta = correo;
             IsEnabled = false;
-            Cargando cargando = Cargando.Iniciar(this, "Verificando correo...");
+            Cargando cargando = Cargando.iniciar(this, "Verificando correo...");
 
             bool existe = false;
             string errorBD = "";
 
             try
             {
-                existe = await Task.Run(ExisteCorreoEnSegundoPlano);
+                existe = await Task.Run(existeCorreoEnSegundoPlano);
             }
             catch (Exception ex)
             {
                 errorBD = ex.Message;
             }
 
-            cargando.Terminar();
+            cargando.terminar();
             IsEnabled = true;
 
             if (errorBD != "")
             {
-                ShowCodeError(errorBD);
+                mostrarErrorCodigo(errorBD);
                 return;
             }
 
             if (!existe)
             {
-                ShowCodeError("El correo ingresado no tiene una cuenta registrada");
+                mostrarErrorCodigo("El correo ingresado no tiene una cuenta registrada");
                 txtEmail.Focus();
                 return;
             }

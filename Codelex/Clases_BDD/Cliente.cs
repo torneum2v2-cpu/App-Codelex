@@ -6,61 +6,61 @@ namespace Codelex.Clases_BDD
 {
     class Cliente
     {
-        public const string TipoRtn = "RTN";
-        public const string TipoIdentidad = "Identidad";
+        public const string TIPO_RTN = "RTN";
+        public const string TIPO_IDENTIDAD = "Identidad";
 
-        public List<string> TiposIdentificacion()
+        public List<string> tiposIdentificacion()
         {
             List<string> tipos = new List<string>();
-            tipos.Add(TipoRtn);
-            tipos.Add(TipoIdentidad);
+            tipos.Add(TIPO_RTN);
+            tipos.Add(TIPO_IDENTIDAD);
             return tipos;
         }
 
         // RTN: 14 dígitos. Identidad: 13 dígitos.
-        public int LargoIdentificacion(string tipo)
+        public int largoIdentificacion(string tipo)
         {
-            if (tipo == TipoIdentidad)
+            if (tipo == TIPO_IDENTIDAD)
                 return 13;
 
             return 14;
         }
 
-        public string TipoPorLongitud(string numero)
+        public string tipoPorLongitud(string numero)
         {
-            if (LimpiarNumero(numero).Length == 13)
-                return TipoIdentidad;
+            if (limpiarNumero(numero).Length == 13)
+                return TIPO_IDENTIDAD;
 
-            return TipoRtn;
+            return TIPO_RTN;
         }
 
         // Los números de identidad y RTN se guardan sin guiones ni espacios.
-        public static string LimpiarNumero(string texto)
+        public static string limpiarNumero(string texto)
         {
             return texto.Replace("-", "").Replace(" ", "").Trim();
         }
 
-        public string ValidarIdentificacion(string tipo, string numero)
+        public string validarIdentificacion(string tipo, string numero)
         {
-            numero = LimpiarNumero(numero);
+            numero = limpiarNumero(numero);
 
             if (numero == "")
                 return "El RTN / identidad es obligatorio.";
-            if (tipo != TipoRtn && tipo != TipoIdentidad)
+            if (tipo != TIPO_RTN && tipo != TIPO_IDENTIDAD)
                 return "Seleccione si es RTN o identidad.";
-            if (!SoloNumeros(numero))
+            if (!soloNumeros(numero))
                 return "El " + tipo + " solo puede tener números, sin guiones ni espacios.";
             if (numero.Trim('0') == "")
                 return "El " + tipo + " no puede ser todo ceros.";
 
-            int largo = LargoIdentificacion(tipo);
+            int largo = largoIdentificacion(tipo);
             if (numero.Length != largo)
                 return "El " + tipo + " debe tener " + largo + " dígitos. Tiene " + numero.Length + ".";
 
             return "";
         }
 
-        public DataTable BuscarClientes(string texto, string buscarPor, string filtroEstado)
+        public DataTable buscarClientes(string texto, string buscarPor, string filtroEstado)
         {
             object estado = DBNull.Value;
             if (filtroEstado == "ACTIVOS")
@@ -68,55 +68,55 @@ namespace Codelex.Clases_BDD
             else if (filtroEstado == "INACTIVOS")
                 estado = false;
 
-            SqlCommand comando = Procedimiento("sp_BuscarClientes");
+            SqlCommand comando = procedimiento("sp_BuscarClientes");
             comando.Parameters.AddWithValue("@texto", texto);
             comando.Parameters.AddWithValue("@buscar_por", buscarPor);
             comando.Parameters.AddWithValue("@estado", estado);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public DataTable ObtenerCliente(string rtn)
+        public DataTable obtenerCliente(string rtn)
         {
-            return ConsultarPorCliente("sp_ObtenerCliente", rtn);
+            return consultarPorCliente("sp_ObtenerCliente", rtn);
         }
 
-        public DataTable LocacionesPorCliente(string rtn)
+        public DataTable locacionesPorCliente(string rtn)
         {
-            return ConsultarPorCliente("sp_ListarLocacionesPorCliente", rtn);
+            return consultarPorCliente("sp_ListarLocacionesPorCliente", rtn);
         }
 
-        public DataTable OrdenesPorCliente(string rtn)
+        public DataTable ordenesPorCliente(string rtn)
         {
-            return ConsultarPorCliente("sp_ListarOrdenesPorCliente", rtn);
+            return consultarPorCliente("sp_ListarOrdenesPorCliente", rtn);
         }
 
-        public DataTable FacturasPorCliente(string rtn)
+        public DataTable facturasPorCliente(string rtn)
         {
-            return ConsultarPorCliente("sp_ListarFacturasPorCliente", rtn);
+            return consultarPorCliente("sp_ListarFacturasPorCliente", rtn);
         }
 
-        public bool InsertarCliente(string tipo, string rtn, string empresa, string nombre, string apellido,
+        public bool insertarCliente(string tipo, string rtn, string empresa, string nombre, string apellido,
                                     string telefono, string correo, out string mensaje)
         {
-            return GuardarCliente("sp_InsertarCliente", 0, tipo, rtn, empresa, nombre, apellido, telefono, correo, out mensaje);
+            return guardarCliente("sp_InsertarCliente", 0, tipo, rtn, empresa, nombre, apellido, telefono, correo, out mensaje);
         }
 
-        public bool ActualizarCliente(int clienteId, string tipo, string rtn, string empresa, string nombre, string apellido,
+        public bool actualizarCliente(int clienteId, string tipo, string rtn, string empresa, string nombre, string apellido,
                                       string telefono, string correo, out string mensaje)
         {
-            return GuardarCliente("sp_ActualizarCliente", clienteId, tipo, rtn, empresa, nombre, apellido, telefono, correo, out mensaje);
+            return guardarCliente("sp_ActualizarCliente", clienteId, tipo, rtn, empresa, nombre, apellido, telefono, correo, out mensaje);
         }
 
-        public bool CambiarEstadoCliente(string rtn, bool activo, out string mensaje)
+        public bool cambiarEstadoCliente(string rtn, bool activo, out string mensaje)
         {
-            SqlCommand comando = Procedimiento("sp_CambiarEstadoCliente");
+            SqlCommand comando = procedimiento("sp_CambiarEstadoCliente");
             comando.Parameters.AddWithValue("@identificacion_cliente", rtn.Trim());
             comando.Parameters.AddWithValue("@estado_cliente", activo);
 
-            return Ejecutar(comando, out mensaje);
+            return ejecutar(comando, out mensaje);
         }
 
-        public bool SoloNumeros(string texto)
+        public bool soloNumeros(string texto)
         {
             foreach (char c in texto)
             {
@@ -127,13 +127,13 @@ namespace Codelex.Clases_BDD
             return true;
         }
 
-        private string ValidarCliente(string tipo, string rtn, string empresa, string nombre, string apellido,
+        private string validarCliente(string tipo, string rtn, string empresa, string nombre, string apellido,
                                       string telefono, string correo)
         {
             telefono = telefono.Trim();
             correo = correo.Trim();
 
-            string problema = ValidarIdentificacion(tipo, rtn);
+            string problema = validarIdentificacion(tipo, rtn);
             if (problema != "")
                 return problema;
 
@@ -146,7 +146,7 @@ namespace Codelex.Clases_BDD
 
             if (telefono == "")
                 return "El teléfono es obligatorio.";
-            if (!SoloNumeros(telefono))
+            if (!soloNumeros(telefono))
                 return "El teléfono solo puede tener números, sin guiones ni espacios.";
             if (telefono.Length != 8)
                 return "El teléfono debe tener 8 dígitos. Tiene " + telefono.Length + ".";
@@ -159,19 +159,19 @@ namespace Codelex.Clases_BDD
             return "";
         }
 
-        private bool GuardarCliente(string procedimiento, int clienteId, string tipo, string rtn, string empresa,
+        private bool guardarCliente(string nombreProcedimiento, int clienteId, string tipo, string rtn, string empresa,
                                     string nombre, string apellido, string telefono, string correo, out string mensaje)
         {
-            mensaje = ValidarCliente(tipo, rtn, empresa, nombre, apellido, telefono, correo);
+            mensaje = validarCliente(tipo, rtn, empresa, nombre, apellido, telefono, correo);
             if (mensaje != "")
                 return false;
 
-            SqlCommand comando = Procedimiento(procedimiento);
+            SqlCommand comando = procedimiento(nombreProcedimiento);
 
             if (clienteId > 0)
                 comando.Parameters.AddWithValue("@cliente_id", clienteId);
 
-            comando.Parameters.AddWithValue("@identificacion_cliente", LimpiarNumero(rtn));
+            comando.Parameters.AddWithValue("@identificacion_cliente", limpiarNumero(rtn));
             comando.Parameters.AddWithValue("@tipo_identificacion", tipo);
             comando.Parameters.AddWithValue("@nombre_empresa", empresa.Trim());
             comando.Parameters.AddWithValue("@nombre_cliente", nombre.Trim());
@@ -179,28 +179,28 @@ namespace Codelex.Clases_BDD
             comando.Parameters.AddWithValue("@telefono_cliente", telefono.Trim());
             comando.Parameters.AddWithValue("@correo_cliente", correo.Trim());
 
-            return Ejecutar(comando, out mensaje);
+            return ejecutar(comando, out mensaje);
         }
 
-        private SqlCommand Procedimiento(string nombre)
+        private SqlCommand procedimiento(string nombre)
         {
             SqlCommand comando = new SqlCommand(nombre);
             comando.CommandType = CommandType.StoredProcedure;
             return comando;
         }
 
-        private DataTable ConsultarPorCliente(string procedimiento, string rtn)
+        private DataTable consultarPorCliente(string nombreProcedimiento, string rtn)
         {
-            SqlCommand comando = Procedimiento(procedimiento);
+            SqlCommand comando = procedimiento(nombreProcedimiento);
             comando.Parameters.AddWithValue("@identificacion_cliente", rtn.Trim());
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        private DataTable Consultar(SqlCommand comando)
+        private DataTable consultar(SqlCommand comando)
         {
             DataTable tabla = new DataTable();
 
-            using (SqlConnection conexion = Conexion.ObtenerConexion())
+            using (SqlConnection conexion = Conexion.obtenerConexion())
             {
                 comando.Connection = conexion;
                 SqlDataAdapter adaptador = new SqlDataAdapter(comando);
@@ -210,7 +210,7 @@ namespace Codelex.Clases_BDD
             return tabla;
         }
 
-        private bool Ejecutar(SqlCommand comando, out string mensaje)
+        private bool ejecutar(SqlCommand comando, out string mensaje)
         {
             SqlParameter resultado = new SqlParameter("@resultado", SqlDbType.Int);
             resultado.Direction = ParameterDirection.Output;
@@ -220,7 +220,7 @@ namespace Codelex.Clases_BDD
             textoMensaje.Direction = ParameterDirection.Output;
             comando.Parameters.Add(textoMensaje);
 
-            using (SqlConnection conexion = Conexion.ObtenerConexion())
+            using (SqlConnection conexion = Conexion.obtenerConexion())
             {
                 comando.Connection = conexion;
                 comando.ExecuteNonQuery();

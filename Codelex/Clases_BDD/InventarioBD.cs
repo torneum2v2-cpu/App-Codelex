@@ -6,47 +6,47 @@ namespace Codelex.Clases_BDD
 {
     class InventarioBD : BaseDatos
     {
-        public DataTable BuscarInventario(string texto, string tipo)
+        public DataTable buscarInventario(string texto, string tipo)
         {
-            SqlCommand comando = Procedimiento("sp_BuscarInventario");
+            SqlCommand comando = procedimiento("sp_BuscarInventario");
             comando.Parameters.AddWithValue("@texto", texto.Trim());
             comando.Parameters.AddWithValue("@tipo", tipo);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public DataTable ListarProductos(string texto)
+        public DataTable listarProductos(string texto)
         {
-            SqlCommand comando = Procedimiento("sp_ListarProductosInventario");
+            SqlCommand comando = procedimiento("sp_ListarProductosInventario");
             comando.Parameters.AddWithValue("@texto", texto.Trim());
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public DataTable ListarEquipos(string texto)
+        public DataTable listarEquipos(string texto)
         {
-            SqlCommand comando = Procedimiento("sp_ListarEquiposInventario");
+            SqlCommand comando = procedimiento("sp_ListarEquiposInventario");
             comando.Parameters.AddWithValue("@texto", texto.Trim());
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public DataTable ListarProveedores()
+        public DataTable listarProveedores()
         {
-            return Consultar(Procedimiento("sp_ListarProveedores"));
+            return consultar(procedimiento("sp_ListarProveedores"));
         }
 
-        public DataTable ListarEmpleados()
+        public DataTable listarEmpleados()
         {
-            return Consultar(Procedimiento("sp_ListarEmpleadosInventario"));
+            return consultar(procedimiento("sp_ListarEmpleadosInventario"));
         }
 
-        public bool InsertarProveedor(string nombre, string telefono, string correo, out string mensaje, out int proveedorId)
+        public bool insertarProveedor(string nombre, string telefono, string correo, out string mensaje, out int proveedorId)
         {
             proveedorId = 0;
 
-            mensaje = ValidarProveedor(nombre, telefono, correo);
+            mensaje = validarProveedor(nombre, telefono, correo);
             if (mensaje != "")
                 return false;
 
-            SqlCommand comando = Procedimiento("sp_InsertarProveedor");
+            SqlCommand comando = procedimiento("sp_InsertarProveedor");
             comando.Parameters.AddWithValue("@nombre_proveedor", nombre.Trim());
             comando.Parameters.AddWithValue("@telefono_proveedor", telefono.Trim());
             comando.Parameters.AddWithValue("@correo_proveedor", correo.Trim());
@@ -55,22 +55,22 @@ namespace Codelex.Clases_BDD
             id.Direction = ParameterDirection.Output;
             comando.Parameters.Add(id);
 
-            bool guardado = Ejecutar(comando, out mensaje);
+            bool guardado = ejecutar(comando, out mensaje);
             if (guardado)
                 proveedorId = Convert.ToInt32(id.Value);
 
             return guardado;
         }
 
-        public bool InsertarProducto(string nombre, string tipo, out string mensaje, out int productoId)
+        public bool insertarProducto(string nombre, string tipo, out string mensaje, out int productoId)
         {
             productoId = 0;
 
-            mensaje = ValidarProducto(nombre, tipo);
+            mensaje = validarProducto(nombre, tipo);
             if (mensaje != "")
                 return false;
 
-            SqlCommand comando = Procedimiento("sp_InsertarProducto");
+            SqlCommand comando = procedimiento("sp_InsertarProducto");
             comando.Parameters.AddWithValue("@nombre_producto", nombre.Trim());
             comando.Parameters.AddWithValue("@tipo_producto", tipo.Trim());
 
@@ -78,14 +78,14 @@ namespace Codelex.Clases_BDD
             id.Direction = ParameterDirection.Output;
             comando.Parameters.Add(id);
 
-            bool guardado = Ejecutar(comando, out mensaje);
+            bool guardado = ejecutar(comando, out mensaje);
             if (guardado)
                 productoId = Convert.ToInt32(id.Value);
 
             return guardado;
         }
 
-        public string ValidarProducto(string nombre, string tipo)
+        public string validarProducto(string nombre, string tipo)
         {
             nombre = nombre.Trim();
             tipo = tipo.Trim();
@@ -102,7 +102,7 @@ namespace Codelex.Clases_BDD
             return "";
         }
 
-        public string ValidarEquipo(string nombre, string tipo, string marca, string modelo)
+        public string validarEquipo(string nombre, string tipo, string marca, string modelo)
         {
             nombre = nombre.Trim();
             tipo = tipo.Trim();
@@ -123,7 +123,7 @@ namespace Codelex.Clases_BDD
             return "";
         }
 
-        public bool SoloNumeros(string texto)
+        public bool soloNumeros(string texto)
         {
             foreach (char c in texto)
             {
@@ -134,7 +134,7 @@ namespace Codelex.Clases_BDD
             return true;
         }
 
-        public bool CaracteresDePrecio(string texto)
+        public bool caracteresDePrecio(string texto)
         {
             foreach (char c in texto)
             {
@@ -145,7 +145,7 @@ namespace Codelex.Clases_BDD
             return true;
         }
 
-        public DataTable CrearLista()
+        public DataTable crearLista()
         {
             DataTable lista = new DataTable();
             lista.Columns.Add("tipo", typeof(string));
@@ -160,13 +160,13 @@ namespace Codelex.Clases_BDD
             return lista;
         }
 
-        public bool AgregarProductoALista(DataTable lista, int productoId, string nombre, string tipo,
+        public bool agregarProductoALista(DataTable lista, int productoId, string nombre, string tipo,
                                           string cantidadTexto, string precioTexto, out string mensaje)
         {
             int cantidad;
             decimal precio;
 
-            mensaje = ValidarCantidadYPrecio(cantidadTexto, precioTexto, out cantidad, out precio);
+            mensaje = validarCantidadYPrecio(cantidadTexto, precioTexto, out cantidad, out precio);
             if (mensaje != "")
                 return false;
 
@@ -183,13 +183,13 @@ namespace Codelex.Clases_BDD
             return true;
         }
 
-        public bool AgregarEquipoALista(DataTable lista, string nombre, string tipo, string marca, string modelo,
+        public bool agregarEquipoALista(DataTable lista, string nombre, string tipo, string marca, string modelo,
                                         string cantidadTexto, string precioTexto, out string mensaje)
         {
             int cantidad;
             decimal precio;
 
-            mensaje = ValidarCantidadYPrecio(cantidadTexto, precioTexto, out cantidad, out precio);
+            mensaje = validarCantidadYPrecio(cantidadTexto, precioTexto, out cantidad, out precio);
             if (mensaje != "")
                 return false;
 
@@ -214,7 +214,7 @@ namespace Codelex.Clases_BDD
             return true;
         }
 
-        public decimal ValorTotal(DataTable inventario)
+        public decimal valorTotal(DataTable inventario)
         {
             decimal total = 0;
 
@@ -227,7 +227,7 @@ namespace Codelex.Clases_BDD
             return total;
         }
 
-        public int TotalUnidades(DataTable lista)
+        public int totalUnidades(DataTable lista)
         {
             int total = 0;
 
@@ -239,10 +239,10 @@ namespace Codelex.Clases_BDD
             return total;
         }
 
-        public bool RegistrarIngreso(int proveedorId, int empleadoId, string factura, DateTime? fecha,
+        public bool registrarIngreso(int proveedorId, int empleadoId, string factura, DateTime? fecha,
                                      DataTable lista, out string mensaje)
         {
-            mensaje = ValidarIngreso(proveedorId, empleadoId, factura, fecha, lista);
+            mensaje = validarIngreso(proveedorId, empleadoId, factura, fecha, lista);
             if (mensaje != "")
                 return false;
 
@@ -272,22 +272,22 @@ namespace Codelex.Clases_BDD
             if (fecha.HasValue)
                 fechaCompra = fecha.Value.Date;
 
-            SqlCommand comando = Procedimiento("sp_RegistrarIngresoInventario");
+            SqlCommand comando = procedimiento("sp_RegistrarIngresoInventario");
             comando.Parameters.AddWithValue("@proveedor_id", proveedorId);
             comando.Parameters.AddWithValue("@firma_empleado_id", empleadoId);
             comando.Parameters.AddWithValue("@numero_factura", factura.Trim());
             comando.Parameters.AddWithValue("@fecha_compra", fechaCompra);
-            AgregarTabla(comando, "@productos", "dbo.tipo_ingreso_productos", productos);
-            AgregarTabla(comando, "@equipos", "dbo.tipo_ingreso_equipos", equipos);
+            agregarTabla(comando, "@productos", "dbo.tipo_ingreso_productos", productos);
+            agregarTabla(comando, "@equipos", "dbo.tipo_ingreso_equipos", equipos);
 
             SqlParameter compra = new SqlParameter("@compra_id", SqlDbType.Int);
             compra.Direction = ParameterDirection.Output;
             comando.Parameters.Add(compra);
 
-            return Ejecutar(comando, out mensaje);
+            return ejecutar(comando, out mensaje);
         }
 
-        private string ValidarIngreso(int proveedorId, int empleadoId, string factura, DateTime? fecha, DataTable lista)
+        private string validarIngreso(int proveedorId, int empleadoId, string factura, DateTime? fecha, DataTable lista)
         {
             if (proveedorId <= 0)
                 return "Seleccione el proveedor.";
@@ -307,7 +307,7 @@ namespace Codelex.Clases_BDD
             return "";
         }
 
-        private string ValidarCantidadYPrecio(string cantidadTexto, string precioTexto, out int cantidad, out decimal precio)
+        private string validarCantidadYPrecio(string cantidadTexto, string precioTexto, out int cantidad, out decimal precio)
         {
             cantidad = 0;
             precio = 0;
@@ -328,7 +328,7 @@ namespace Codelex.Clases_BDD
             return "";
         }
 
-        private string ValidarProveedor(string nombre, string telefono, string correo)
+        private string validarProveedor(string nombre, string telefono, string correo)
         {
             nombre = nombre.Trim();
             telefono = telefono.Trim();
@@ -341,7 +341,7 @@ namespace Codelex.Clases_BDD
 
             if (telefono == "")
                 return "El teléfono es obligatorio.";
-            if (!SoloNumeros(telefono))
+            if (!soloNumeros(telefono))
                 return "El teléfono solo puede tener números, sin guiones ni espacios.";
             if (telefono.Length != 8)
                 return "El teléfono debe tener 8 dígitos. Tiene " + telefono.Length + ".";
@@ -356,7 +356,7 @@ namespace Codelex.Clases_BDD
             return "";
         }
 
-        private void AgregarTabla(SqlCommand comando, string nombre, string tipo, DataTable tabla)
+        private void agregarTabla(SqlCommand comando, string nombre, string tipo, DataTable tabla)
         {
             SqlParameter parametro = comando.Parameters.AddWithValue(nombre, tabla);
             parametro.SqlDbType = SqlDbType.Structured;

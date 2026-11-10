@@ -21,38 +21,38 @@ namespace Codelex
             InitializeComponent();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ventanaCargada(object sender, RoutedEventArgs e)
         {
-            lista = inventarioBD.CrearLista();
+            lista = inventarioBD.crearLista();
             dgLista.ItemsSource = lista.DefaultView;
             dpFecha.SelectedDate = DateTime.Today;
 
             try
             {
-                CargarProveedores(0);
-                LlenarCombo(cmbEmpleado, inventarioBD.ListarEmpleados(), "empleado_id", "nombre_completo");
-                CargarArticulos();
+                cargarProveedores(0);
+                llenarCombo(cmbEmpleado, inventarioBD.listarEmpleados(), "empleado_id", "nombre_completo");
+                cargarArticulos();
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
 
-            ActualizarTotal();
+            actualizarTotal();
         }
 
-        private void CargarProveedores(int seleccionar)
+        private void cargarProveedores(int seleccionar)
         {
-            LlenarCombo(cmbProveedor, inventarioBD.ListarProveedores(), "proveedor_id", "nombre_proveedor");
+            llenarCombo(cmbProveedor, inventarioBD.listarProveedores(), "proveedor_id", "nombre_proveedor");
 
             foreach (ItemLista item in cmbProveedor.Items)
             {
-                if (item.Id == seleccionar)
+                if (item.id == seleccionar)
                     cmbProveedor.SelectedItem = item;
             }
         }
 
-        private void LlenarCombo(ComboBox combo, DataTable tabla, string columnaId, string columnaTexto)
+        private void llenarCombo(ComboBox combo, DataTable tabla, string columnaId, string columnaTexto)
         {
             combo.Items.Clear();
 
@@ -62,21 +62,21 @@ namespace Codelex
             }
         }
 
-        private int IdSeleccionado(ComboBox combo)
+        private int idSeleccionado(ComboBox combo)
         {
             ItemLista? item = combo.SelectedItem as ItemLista;
 
             if (item == null)
                 return 0;
 
-            return item.Id;
+            return item.id;
         }
 
-        private void CargarArticulos()
+        private void cargarArticulos()
         {
-            dgProductos.ItemsSource = inventarioBD.ListarProductos(textoBusqueda).DefaultView;
+            dgProductos.ItemsSource = inventarioBD.listarProductos(textoBusqueda).DefaultView;
 
-            tablaEquipos = inventarioBD.ListarEquipos(textoBusqueda);
+            tablaEquipos = inventarioBD.listarEquipos(textoBusqueda);
 
             if (equiposNuevos != null)
             {
@@ -89,12 +89,12 @@ namespace Codelex
             dgEquipos.ItemsSource = tablaEquipos.DefaultView;
         }
 
-        private void ActualizarTotal()
+        private void actualizarTotal()
         {
-            txtTotal.Text = "Total a ingresar: " + inventarioBD.TotalUnidades(lista) + " unidades";
+            txtTotal.Text = "Total a ingresar: " + inventarioBD.totalUnidades(lista) + " unidades";
         }
 
-        private void Seleccionar(DataGrid tabla, string columna, string valor)
+        private void seleccionar(DataGrid tabla, string columna, string valor)
         {
             foreach (object item in tabla.Items)
             {
@@ -108,7 +108,7 @@ namespace Codelex
             }
         }
 
-        private void Pestana_Checked(object sender, RoutedEventArgs e)
+        private void pestanaMarcado(object sender, RoutedEventArgs e)
         {
             if (dgProductos == null || dgEquipos == null)
                 return;
@@ -125,44 +125,44 @@ namespace Codelex
             }
         }
 
-        private void BuscarTexto()
+        private void buscarTexto()
         {
             textoBusqueda = txtBuscar.Text.Trim();
 
             try
             {
-                CargarArticulos();
+                cargarArticulos();
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void Buscar_Click(object sender, RoutedEventArgs e)
+        private void buscarClic(object sender, RoutedEventArgs e)
         {
-            BuscarTexto();
+            buscarTexto();
         }
 
-        private void Buscar_KeyDown(object sender, KeyEventArgs e)
+        private void buscarTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
-                BuscarTexto();
+                buscarTexto();
         }
 
-        private void SoloNumeros(object sender, TextCompositionEventArgs e)
+        private void soloNumeros(object sender, TextCompositionEventArgs e)
         {
-            if (!inventarioBD.SoloNumeros(e.Text))
+            if (!inventarioBD.soloNumeros(e.Text))
                 e.Handled = true;
         }
 
-        private void SoloPrecio(object sender, TextCompositionEventArgs e)
+        private void soloPrecio(object sender, TextCompositionEventArgs e)
         {
-            if (!inventarioBD.CaracteresDePrecio(e.Text))
+            if (!inventarioBD.caracteresDePrecio(e.Text))
                 e.Handled = true;
         }
 
-        private void AgregarALista_Click(object sender, RoutedEventArgs e)
+        private void agregarAListaClic(object sender, RoutedEventArgs e)
         {
             string mensaje;
             bool agregado;
@@ -173,11 +173,11 @@ namespace Codelex
 
                 if (producto == null)
                 {
-                    MensajeCodelex.Mostrar(this, "Inventario", "Seleccione un producto de la tabla.", false);
+                    MensajeCodelex.mostrar(this, "Inventario", "Seleccione un producto de la tabla.", false);
                     return;
                 }
 
-                agregado = inventarioBD.AgregarProductoALista(lista, Convert.ToInt32(producto["producto_id"]),
+                agregado = inventarioBD.agregarProductoALista(lista, Convert.ToInt32(producto["producto_id"]),
                     "" + producto["nombre_producto"], "" + producto["tipo_producto"],
                     txtCantidad.Text, txtPrecio.Text, out mensaje);
             }
@@ -187,113 +187,113 @@ namespace Codelex
 
                 if (equipo == null)
                 {
-                    MensajeCodelex.Mostrar(this, "Inventario", "Seleccione un equipo de la tabla.", false);
+                    MensajeCodelex.mostrar(this, "Inventario", "Seleccione un equipo de la tabla.", false);
                     return;
                 }
 
-                agregado = inventarioBD.AgregarEquipoALista(lista, "" + equipo["nombre_equipo"], "" + equipo["tipo_equipo"],
+                agregado = inventarioBD.agregarEquipoALista(lista, "" + equipo["nombre_equipo"], "" + equipo["tipo_equipo"],
                     "" + equipo["marca_equipo"], "" + equipo["modelo_equipo"],
                     txtCantidad.Text, txtPrecio.Text, out mensaje);
             }
 
             if (!agregado)
             {
-                MensajeCodelex.Mostrar(this, "Inventario", mensaje, false);
+                MensajeCodelex.mostrar(this, "Inventario", mensaje, false);
                 return;
             }
 
             txtCantidad.Text = "";
             txtPrecio.Text = "";
-            ActualizarTotal();
+            actualizarTotal();
         }
 
-        private void NuevoArticulo_Click(object sender, RoutedEventArgs e)
+        private void nuevoArticuloClic(object sender, RoutedEventArgs e)
         {
             NuevoProductoEquipo ventana = new NuevoProductoEquipo();
             ventana.Owner = this;
             ventana.ShowDialog();
 
-            if (!ventana.Registrado)
+            if (!ventana.registrado)
                 return;
 
             try
             {
-                if (ventana.EsEquipo)
+                if (ventana.esEquipo)
                 {
                     if (equiposNuevos == null)
                         equiposNuevos = tablaEquipos.Clone();
 
-                    equiposNuevos.Rows.Add(ventana.Nombre, ventana.Tipo, ventana.Marca, ventana.Modelo, 0);
+                    equiposNuevos.Rows.Add(ventana.nombre, ventana.tipo, ventana.marca, ventana.modelo, 0);
 
-                    CargarArticulos();
+                    cargarArticulos();
                     rbEquipos.IsChecked = true;
                     dgEquipos.SelectedItem = dgEquipos.Items[dgEquipos.Items.Count - 1];
                     dgEquipos.ScrollIntoView(dgEquipos.SelectedItem);
                 }
                 else
                 {
-                    CargarArticulos();
+                    cargarArticulos();
                     rbProductos.IsChecked = true;
-                    Seleccionar(dgProductos, "producto_id", "" + ventana.ProductoId);
+                    seleccionar(dgProductos, "producto_id", "" + ventana.productoId);
                 }
 
                 txtCantidad.Focus();
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void NuevoProveedor_Click(object sender, RoutedEventArgs e)
+        private void nuevoProveedorClic(object sender, RoutedEventArgs e)
         {
             NuevoProveedor ventana = new NuevoProveedor();
             ventana.Owner = this;
             ventana.ShowDialog();
 
-            if (ventana.ProveedorId == 0)
+            if (ventana.proveedorId == 0)
                 return;
 
             try
             {
-                CargarProveedores(ventana.ProveedorId);
+                cargarProveedores(ventana.proveedorId);
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void Quitar_Click(object sender, RoutedEventArgs e)
+        private void quitarClic(object sender, RoutedEventArgs e)
         {
             DataRowView? fila = dgLista.SelectedItem as DataRowView;
 
             if (fila == null)
             {
-                MensajeCodelex.Mostrar(this, "Inventario", "Seleccione un elemento de la lista a ingresar.", false);
+                MensajeCodelex.mostrar(this, "Inventario", "Seleccione un elemento de la lista a ingresar.", false);
                 return;
             }
 
             lista.Rows.Remove(fila.Row);
-            ActualizarTotal();
+            actualizarTotal();
         }
 
-        private void Vaciar_Click(object sender, RoutedEventArgs e)
+        private void vaciarClic(object sender, RoutedEventArgs e)
         {
             lista.Rows.Clear();
-            ActualizarTotal();
+            actualizarTotal();
         }
 
-        private void Guardar_Click(object sender, RoutedEventArgs e)
+        private void guardarClic(object sender, RoutedEventArgs e)
         {
             try
             {
                 string mensaje;
 
-                bool registrado = inventarioBD.RegistrarIngreso(IdSeleccionado(cmbProveedor), IdSeleccionado(cmbEmpleado),
+                bool registrado = inventarioBD.registrarIngreso(idSeleccionado(cmbProveedor), idSeleccionado(cmbEmpleado),
                     txtFactura.Text, dpFecha.SelectedDate, lista, out mensaje);
 
-                MensajeCodelex.Mostrar(this, "Inventario", mensaje, registrado);
+                MensajeCodelex.mostrar(this, "Inventario", mensaje, registrado);
 
                 if (registrado)
                 {
@@ -303,11 +303,11 @@ namespace Codelex
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void ventanaCerrando(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (guardado || lista.Rows.Count == 0)
                 return;
@@ -319,25 +319,25 @@ namespace Codelex
                 e.Cancel = true;
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimizar_Click(object sender, RoutedEventArgs e)
+        private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
-        private void Salir_Click(object sender, RoutedEventArgs e)
+        private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
-        private void MostrarError(Exception ex)
+        private void mostrarError(Exception ex)
         {
-            MensajeCodelex.Mostrar(this, "Inventario", ex.Message, false);
+            MensajeCodelex.mostrar(this, "Inventario", ex.Message, false);
         }
     }
 }

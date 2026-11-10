@@ -29,24 +29,24 @@ namespace Codelex.BDD
 
     public static class CuentasRecordadas
     {
-        private static readonly string Carpeta = Path.Combine(
+        private static readonly string CARPETA = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Codelex");
 
-        private static readonly string Archivo = Path.Combine(Carpeta, "cuentas.json");
+        private static readonly string ARCHIVO = Path.Combine(CARPETA, "cuentas.json");
 
-        private static readonly JsonSerializerOptions Opciones = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions OPCIONES = new JsonSerializerOptions
         {
             WriteIndented = true
         };
 
-        public static List<CuentaRecordada> Listar()
+        public static List<CuentaRecordada> listar()
         {
             try
             {
-                if (!File.Exists(Archivo))
+                if (!File.Exists(ARCHIVO))
                     return new List<CuentaRecordada>();
 
-                string json = File.ReadAllText(Archivo);
+                string json = File.ReadAllText(ARCHIVO);
                 return JsonSerializer.Deserialize<List<CuentaRecordada>>(json) ?? new List<CuentaRecordada>();
             }
             catch
@@ -55,16 +55,16 @@ namespace Codelex.BDD
             }
         }
 
-        public static bool Existe(string usuario)
+        public static bool existe(string usuario)
         {
-            return Listar().Any(c => string.Equals(c.Usuario, usuario, StringComparison.OrdinalIgnoreCase));
+            return listar().Any(c => string.Equals(c.Usuario, usuario, StringComparison.OrdinalIgnoreCase));
         }
 
-        public static void Guardar(string usuario, string nombreCompleto, string contrasena)
+        public static void guardar(string usuario, string nombreCompleto, string contrasena)
         {
             try
             {
-                List<CuentaRecordada> cuentas = Listar();
+                List<CuentaRecordada> cuentas = listar();
 
                 byte[] protegida = ProtectedData.Protect(
                     Encoding.UTF8.GetBytes(contrasena), null, DataProtectionScope.CurrentUser);
@@ -82,7 +82,7 @@ namespace Codelex.BDD
                 else
                     cuentas.Add(nueva);
 
-                Escribir(cuentas);
+                escribir(cuentas);
             }
             catch
             {
@@ -90,20 +90,20 @@ namespace Codelex.BDD
             }
         }
 
-        public static void Quitar(string usuario)
+        public static void quitar(string usuario)
         {
             try
             {
-                List<CuentaRecordada> cuentas = Listar();
+                List<CuentaRecordada> cuentas = listar();
                 cuentas.RemoveAll(c => string.Equals(c.Usuario, usuario, StringComparison.OrdinalIgnoreCase));
-                Escribir(cuentas);
+                escribir(cuentas);
             }
             catch
             {
             }
         }
 
-        public static string ObtenerContrasena(CuentaRecordada cuenta)
+        public static string obtenerContrasena(CuentaRecordada cuenta)
         {
             try
             {
@@ -117,10 +117,10 @@ namespace Codelex.BDD
             }
         }
 
-        private static void Escribir(List<CuentaRecordada> cuentas)
+        private static void escribir(List<CuentaRecordada> cuentas)
         {
-            Directory.CreateDirectory(Carpeta);
-            File.WriteAllText(Archivo, JsonSerializer.Serialize(cuentas, Opciones));
+            Directory.CreateDirectory(CARPETA);
+            File.WriteAllText(ARCHIVO, JsonSerializer.Serialize(cuentas, OPCIONES));
         }
     }
 }

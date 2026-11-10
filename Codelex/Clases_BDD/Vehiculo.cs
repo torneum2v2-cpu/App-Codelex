@@ -5,7 +5,7 @@ namespace Codelex.Clases_BDD
 {
     class Vehiculo : BaseDatos
     {
-        public DataTable BuscarVehiculos(string texto, string filtroEstado)
+        public DataTable buscarVehiculos(string texto, string filtroEstado)
         {
             object estado = DBNull.Value;
             if (filtroEstado == "ACTIVOS")
@@ -13,39 +13,39 @@ namespace Codelex.Clases_BDD
             else if (filtroEstado == "INACTIVOS")
                 estado = false;
 
-            SqlCommand comando = Procedimiento("sp_BuscarVehiculos");
+            SqlCommand comando = procedimiento("sp_BuscarVehiculos");
             comando.Parameters.AddWithValue("@texto", texto);
             comando.Parameters.AddWithValue("@estado", estado);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public DataTable ObtenerVehiculo(int vehiculoId)
+        public DataTable obtenerVehiculo(int vehiculoId)
         {
-            SqlCommand comando = Procedimiento("sp_ObtenerVehiculo");
+            SqlCommand comando = procedimiento("sp_ObtenerVehiculo");
             comando.Parameters.AddWithValue("@vehiculo_id", vehiculoId);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public bool InsertarVehiculo(string placa, string marca, string modelo, out string mensaje)
+        public bool insertarVehiculo(string placa, string marca, string modelo, out string mensaje)
         {
-            return GuardarVehiculo("sp_InsertarVehiculo", 0, placa, marca, modelo, out mensaje);
+            return guardarVehiculo("sp_InsertarVehiculo", 0, placa, marca, modelo, out mensaje);
         }
 
-        public bool ActualizarVehiculo(int vehiculoId, string placa, string marca, string modelo, out string mensaje)
+        public bool actualizarVehiculo(int vehiculoId, string placa, string marca, string modelo, out string mensaje)
         {
-            return GuardarVehiculo("sp_ActualizarVehiculo", vehiculoId, placa, marca, modelo, out mensaje);
+            return guardarVehiculo("sp_ActualizarVehiculo", vehiculoId, placa, marca, modelo, out mensaje);
         }
 
-        public bool CambiarEstadoVehiculo(int vehiculoId, bool activo, out string mensaje)
+        public bool cambiarEstadoVehiculo(int vehiculoId, bool activo, out string mensaje)
         {
-            SqlCommand comando = Procedimiento("sp_CambiarEstadoVehiculo");
+            SqlCommand comando = procedimiento("sp_CambiarEstadoVehiculo");
             comando.Parameters.AddWithValue("@vehiculo_id", vehiculoId);
             comando.Parameters.AddWithValue("@estado_vehiculo", activo);
 
-            return Ejecutar(comando, out mensaje);
+            return ejecutar(comando, out mensaje);
         }
 
-        public bool CaracteresDePlaca(string texto)
+        public bool caracteresDePlaca(string texto)
         {
             foreach (char c in texto)
             {
@@ -56,7 +56,7 @@ namespace Codelex.Clases_BDD
             return true;
         }
 
-        private string ValidarVehiculo(string placa, string marca, string modelo)
+        private string validarVehiculo(string placa, string marca, string modelo)
         {
             placa = placa.Trim();
             marca = marca.Trim();
@@ -64,7 +64,7 @@ namespace Codelex.Clases_BDD
 
             if (placa == "")
                 return "La placa es obligatoria.";
-            if (!CaracteresDePlaca(placa))
+            if (!caracteresDePlaca(placa))
                 return "La placa solo puede tener letras, números y guion, sin espacios.";
             if (placa.Length < 5)
                 return "La placa debe tener al menos 5 caracteres. Tiene " + placa.Length + ".";
@@ -84,14 +84,14 @@ namespace Codelex.Clases_BDD
             return "";
         }
 
-        private bool GuardarVehiculo(string procedimiento, int vehiculoId, string placa, string marca,
+        private bool guardarVehiculo(string nombreProcedimiento, int vehiculoId, string placa, string marca,
                                      string modelo, out string mensaje)
         {
-            mensaje = ValidarVehiculo(placa, marca, modelo);
+            mensaje = validarVehiculo(placa, marca, modelo);
             if (mensaje != "")
                 return false;
 
-            SqlCommand comando = Procedimiento(procedimiento);
+            SqlCommand comando = procedimiento(nombreProcedimiento);
 
             if (vehiculoId > 0)
                 comando.Parameters.AddWithValue("@vehiculo_id", vehiculoId);
@@ -100,7 +100,7 @@ namespace Codelex.Clases_BDD
             comando.Parameters.AddWithValue("@marca_vehiculo", marca.Trim());
             comando.Parameters.AddWithValue("@modelo_vehiculo", modelo.Trim());
 
-            return Ejecutar(comando, out mensaje);
+            return ejecutar(comando, out mensaje);
         }
     }
 }

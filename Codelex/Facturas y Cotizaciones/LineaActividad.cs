@@ -17,24 +17,24 @@ namespace Codelex.Facturas_y_Cotizaciones
         public string Medida
         {
             get { return medida; }
-            set { medida = value; Avisar("Medida"); }
+            set { medida = value; avisar("Medida"); }
         }
 
         public int Personas
         {
             get { return personas; }
-            set { personas = value; Avisar("Personas"); }
+            set { personas = value; avisar("Personas"); }
         }
 
         public decimal Precio
         {
             get { return precio; }
-            set { precio = value; Avisar("Precio"); }
+            set { precio = value; avisar("Precio"); }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        private void Avisar(string propiedad)
+        private void avisar(string propiedad)
         {
             if (PropertyChanged != null)
                 PropertyChanged(this, new PropertyChangedEventArgs(propiedad));

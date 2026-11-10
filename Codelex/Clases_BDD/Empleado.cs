@@ -5,24 +5,24 @@ namespace Codelex.Clases_BDD
 {
     class Empleado : BaseDatos
     {
-        public bool ExisteCorreo(string correo)
+        public bool existeCorreo(string correo)
         {
             if (correo.Trim() == "")
                 return false;
 
-            SqlCommand comando = Procedimiento("sp_ExisteCorreoEmpleado");
+            SqlCommand comando = procedimiento("sp_ExisteCorreoEmpleado");
             comando.Parameters.AddWithValue("@correo", correo.Trim());
 
-            DataTable tabla = Consultar(comando);
+            DataTable tabla = consultar(comando);
             return Convert.ToInt32(tabla.Rows[0]["cantidad"]) > 0;
         }
 
-        public DataTable ListarCargos()
+        public DataTable listarCargos()
         {
-            return Consultar(Procedimiento("sp_ListarCargos"));
+            return consultar(procedimiento("sp_ListarCargos"));
         }
 
-        public DataTable BuscarEmpleados(string texto, string buscarPor, string filtroEstado)
+        public DataTable buscarEmpleados(string texto, string buscarPor, string filtroEstado)
         {
             object estado = DBNull.Value;
             if (filtroEstado == "ACTIVOS")
@@ -30,76 +30,76 @@ namespace Codelex.Clases_BDD
             else if (filtroEstado == "INACTIVOS")
                 estado = false;
 
-            SqlCommand comando = Procedimiento("sp_BuscarEmpleados");
+            SqlCommand comando = procedimiento("sp_BuscarEmpleados");
             comando.Parameters.AddWithValue("@texto", texto);
             comando.Parameters.AddWithValue("@buscar_por", buscarPor);
             comando.Parameters.AddWithValue("@estado", estado);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public DataTable ObtenerEmpleado(int empleadoId)
+        public DataTable obtenerEmpleado(int empleadoId)
         {
-            SqlCommand comando = Procedimiento("sp_ObtenerEmpleado");
+            SqlCommand comando = procedimiento("sp_ObtenerEmpleado");
             comando.Parameters.AddWithValue("@empleado_id", empleadoId);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public DataTable AsistenciasPorEmpleado(int empleadoId, DateTime desde, DateTime hasta)
+        public DataTable asistenciasPorEmpleado(int empleadoId, DateTime desde, DateTime hasta)
         {
-            return ConsultarPorRango("sp_AsistenciasPorEmpleado", empleadoId, desde, hasta);
+            return consultarPorRango("sp_AsistenciasPorEmpleado", empleadoId, desde, hasta);
         }
 
-        public DataTable OrdenesPorEmpleado(int empleadoId, DateTime desde, DateTime hasta)
+        public DataTable ordenesPorEmpleado(int empleadoId, DateTime desde, DateTime hasta)
         {
-            return ConsultarPorRango("sp_OrdenesPorEmpleado", empleadoId, desde, hasta);
+            return consultarPorRango("sp_OrdenesPorEmpleado", empleadoId, desde, hasta);
         }
 
-        public bool InsertarEmpleado(int cargoId, string nombre, string apellido, string identidad,
+        public bool insertarEmpleado(int cargoId, string nombre, string apellido, string identidad,
                                      string telefono, string correo,
                                      out int empleadoId, out string mensaje)
         {
             empleadoId = 0;
-            mensaje = ValidarEmpleado(cargoId, nombre, apellido, identidad, telefono, correo);
+            mensaje = validarEmpleado(cargoId, nombre, apellido, identidad, telefono, correo);
             if (mensaje != "")
                 return false;
 
-            SqlCommand comando = Procedimiento("sp_InsertarEmpleado");
-            AgregarParametrosEmpleado(comando, cargoId, nombre, apellido, identidad, telefono, correo);
+            SqlCommand comando = procedimiento("sp_InsertarEmpleado");
+            agregarParametrosEmpleado(comando, cargoId, nombre, apellido, identidad, telefono, correo);
 
             SqlParameter id = new SqlParameter("@empleado_id", SqlDbType.Int);
             id.Direction = ParameterDirection.Output;
             comando.Parameters.Add(id);
 
-            bool guardado = Ejecutar(comando, out mensaje);
+            bool guardado = ejecutar(comando, out mensaje);
             if (guardado && id.Value != DBNull.Value)
                 empleadoId = Convert.ToInt32(id.Value);
             return guardado;
         }
 
-        public bool ActualizarEmpleado(int empleadoId, int cargoId, string nombre, string apellido, string identidad,
+        public bool actualizarEmpleado(int empleadoId, int cargoId, string nombre, string apellido, string identidad,
                                        string telefono, string correo, out string mensaje)
         {
-            mensaje = ValidarEmpleado(cargoId, nombre, apellido, identidad, telefono, correo);
+            mensaje = validarEmpleado(cargoId, nombre, apellido, identidad, telefono, correo);
             if (mensaje != "")
                 return false;
 
-            SqlCommand comando = Procedimiento("sp_ActualizarEmpleado");
+            SqlCommand comando = procedimiento("sp_ActualizarEmpleado");
             comando.Parameters.AddWithValue("@empleado_id", empleadoId);
-            AgregarParametrosEmpleado(comando, cargoId, nombre, apellido, identidad, telefono, correo);
+            agregarParametrosEmpleado(comando, cargoId, nombre, apellido, identidad, telefono, correo);
 
-            return Ejecutar(comando, out mensaje);
+            return ejecutar(comando, out mensaje);
         }
 
-        public bool CambiarEstadoEmpleado(int empleadoId, bool activo, out string mensaje)
+        public bool cambiarEstadoEmpleado(int empleadoId, bool activo, out string mensaje)
         {
-            SqlCommand comando = Procedimiento("sp_CambiarEstadoEmpleado");
+            SqlCommand comando = procedimiento("sp_CambiarEstadoEmpleado");
             comando.Parameters.AddWithValue("@empleado_id", empleadoId);
             comando.Parameters.AddWithValue("@estado_empleado", activo);
 
-            return Ejecutar(comando, out mensaje);
+            return ejecutar(comando, out mensaje);
         }
 
-        public bool SoloNumeros(string texto)
+        public bool soloNumeros(string texto)
         {
             foreach (char c in texto)
             {
@@ -110,10 +110,10 @@ namespace Codelex.Clases_BDD
             return true;
         }
 
-        private string ValidarEmpleado(int cargoId, string nombre, string apellido, string identidad,
+        private string validarEmpleado(int cargoId, string nombre, string apellido, string identidad,
                                        string telefono, string correo)
         {
-            identidad = Cliente.LimpiarNumero(identidad);
+            identidad = Cliente.limpiarNumero(identidad);
             telefono = telefono.Trim();
             correo = correo.Trim();
 
@@ -126,14 +126,14 @@ namespace Codelex.Clases_BDD
 
             if (identidad == "")
                 return "La identidad es obligatoria.";
-            if (!SoloNumeros(identidad))
+            if (!soloNumeros(identidad))
                 return "La identidad solo puede tener números, sin guiones ni espacios.";
             if (identidad.Length != 13)
                 return "La identidad debe tener 13 dígitos. Tiene " + identidad.Length + ".";
 
             if (telefono != "")
             {
-                if (!SoloNumeros(telefono))
+                if (!soloNumeros(telefono))
                     return "El teléfono solo puede tener números, sin guiones ni espacios.";
                 if (telefono.Length != 8)
                     return "El teléfono debe tener 8 dígitos. Tiene " + telefono.Length + ".";
@@ -145,24 +145,24 @@ namespace Codelex.Clases_BDD
             return "";
         }
 
-        private void AgregarParametrosEmpleado(SqlCommand comando, int cargoId, string nombre, string apellido,
+        private void agregarParametrosEmpleado(SqlCommand comando, int cargoId, string nombre, string apellido,
                                                string identidad, string telefono, string correo)
         {
             comando.Parameters.AddWithValue("@cargo_id", cargoId);
             comando.Parameters.AddWithValue("@nombre_empleado", nombre.Trim());
             comando.Parameters.AddWithValue("@apellido_empleado", apellido.Trim());
-            comando.Parameters.AddWithValue("@identidad", Cliente.LimpiarNumero(identidad));
+            comando.Parameters.AddWithValue("@identidad", Cliente.limpiarNumero(identidad));
             comando.Parameters.AddWithValue("@telefono_empleado", telefono.Trim());
             comando.Parameters.AddWithValue("@correo_empleado", correo.Trim());
         }
 
-        private DataTable ConsultarPorRango(string procedimiento, int empleadoId, DateTime desde, DateTime hasta)
+        private DataTable consultarPorRango(string nombreProcedimiento, int empleadoId, DateTime desde, DateTime hasta)
         {
-            SqlCommand comando = Procedimiento(procedimiento);
+            SqlCommand comando = procedimiento(nombreProcedimiento);
             comando.Parameters.AddWithValue("@empleado_id", empleadoId);
             comando.Parameters.Add("@desde", SqlDbType.Date).Value = desde.Date;
             comando.Parameters.Add("@hasta", SqlDbType.Date).Value = hasta.Date;
-            return Consultar(comando);
+            return consultar(comando);
         }
     }
 }

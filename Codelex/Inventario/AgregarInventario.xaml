@@ -10,7 +10,7 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize"
         FontFamily="Segoe UI"
-        Loaded="Window_Loaded" Closing="Window_Closing">
+        Loaded="ventanaCargada" Closing="ventanaCerrando">
     <Window.Resources>
 
         <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
@@ -377,10 +377,10 @@
                 </Grid.RowDefinitions>
 
                 <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{StaticResource BgGradient}"
-                        Padding="28,18,14,18" MouseLeftButtonDown="DragWindow">
+                        Padding="28,18,14,18" MouseLeftButtonDown="arrastrarVentana">
                     <Grid>
                         <StackPanel Orientation="Horizontal">
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Volver"
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Volver"
                                     Width="44" Height="38" Margin="0,0,14,0" VerticalAlignment="Center">
                                 <Path Data="M30,12 H2 M10,20 L2,12 L10,4"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
@@ -400,12 +400,12 @@
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                            <Button Style="{StaticResource WindowButton}" Click="Minimizar_Click" ToolTip="Minimizar">
+                            <Button Style="{StaticResource WindowButton}" Click="minimizarClic" ToolTip="Minimizar">
                                 <Path Data="M0,0 L10,0"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6" Margin="0,8,0,0"/>
                             </Button>
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Cerrar">
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Cerrar">
                                 <Path Data="M0,0 L10,10 M10,0 L0,10"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6"/>
@@ -448,7 +448,7 @@
                                         <ComboBox x:Name="cmbProveedor" Grid.Column="0"/>
                                         <Button x:Name="btnNuevoProveedor" Grid.Column="1" Content="+ Nuevo"
                                                 Style="{StaticResource SecondaryButton}" Margin="8,0,0,0"
-                                                Click="NuevoProveedor_Click" ToolTip="Registrar un proveedor nuevo"/>
+                                                Click="nuevoProveedorClic" ToolTip="Registrar un proveedor nuevo"/>
                                     </Grid>
                                 </StackPanel>
 
@@ -487,21 +487,21 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBox x:Name="txtBuscar" Grid.Column="0" Margin="0,0,10,0" KeyDown="Buscar_KeyDown"
+                                    <TextBox x:Name="txtBuscar" Grid.Column="0" Margin="0,0,10,0" KeyDown="buscarTeclaPresionada"
                                              ToolTip="Escriba y presione Enter para buscar"/>
                                     <Button x:Name="btnBuscar" Grid.Column="1" Content="Buscar"
-                                            Style="{StaticResource PrimaryButton}" Click="Buscar_Click"/>
+                                            Style="{StaticResource PrimaryButton}" Click="buscarClic"/>
                                 </Grid>
 
                                 <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
                                     <RadioButton x:Name="rbProductos" Content="Productos" GroupName="Articulos"
-                                                 Style="{StaticResource Pestana}" IsChecked="True" Checked="Pestana_Checked"/>
+                                                 Style="{StaticResource Pestana}" IsChecked="True" Checked="pestanaMarcado"/>
                                     <RadioButton x:Name="rbEquipos" Content="Equipos" GroupName="Articulos"
-                                                 Style="{StaticResource Pestana}" Checked="Pestana_Checked"/>
+                                                 Style="{StaticResource Pestana}" Checked="pestanaMarcado"/>
                                 </StackPanel>
 
                                 <Button x:Name="btnNuevoArticulo" DockPanel.Dock="Bottom" Content="Nuevo producto / equipo..."
-                                        Style="{StaticResource SecondaryButton}" Margin="0,10,0,0" Click="NuevoArticulo_Click"
+                                        Style="{StaticResource SecondaryButton}" Margin="0,10,0,0" Click="nuevoArticuloClic"
                                         ToolTip="Registra un producto o equipo que todavía no existe"/>
 
                                 <Grid DockPanel.Dock="Bottom" Margin="0,12,0,0">
@@ -514,15 +514,15 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="Cantidad" Style="{StaticResource Etiqueta}"/>
-                                        <TextBox x:Name="txtCantidad" MaxLength="5" PreviewTextInput="SoloNumeros"/>
+                                        <TextBox x:Name="txtCantidad" MaxLength="5" PreviewTextInput="soloNumeros"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
                                         <TextBlock Text="Precio unitario (L)" Style="{StaticResource Etiqueta}"/>
-                                        <TextBox x:Name="txtPrecio" MaxLength="12" PreviewTextInput="SoloPrecio"/>
+                                        <TextBox x:Name="txtPrecio" MaxLength="12" PreviewTextInput="soloPrecio"/>
                                     </StackPanel>
                                     <Button x:Name="btnAgregarLista" Grid.Column="4" Content="Agregar a la lista  ›"
                                             Style="{StaticResource PrimaryButton}" VerticalAlignment="Bottom"
-                                            Click="AgregarALista_Click"/>
+                                            Click="agregarAListaClic"/>
                                 </Grid>
 
                                 <Grid>
@@ -561,9 +561,9 @@
 
                                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,12,0,0">
                                     <Button x:Name="btnQuitar" Content="‹  Quitar seleccionado" Width="190"
-                                            Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" Click="Quitar_Click"/>
+                                            Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" Click="quitarClic"/>
                                     <Button x:Name="btnVaciar" Content="Vaciar lista" Width="130"
-                                            Style="{StaticResource SecondaryButton}" Click="Vaciar_Click"/>
+                                            Style="{StaticResource SecondaryButton}" Click="vaciarClic"/>
                                 </StackPanel>
 
                                 <DataGrid x:Name="dgLista" Style="{StaticResource Tabla}"
@@ -586,9 +586,9 @@
                                    Style="{StaticResource Nota}" VerticalAlignment="Center" Margin="0,0,300,0"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button x:Name="btnCancelar" Content="Cancelar" Width="120"
-                                    Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" Click="Salir_Click"/>
+                                    Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" Click="salirClic"/>
                             <Button x:Name="btnGuardar" Content="Guardar todo" Width="150"
-                                    Style="{StaticResource PrimaryButton}" Click="Guardar_Click"/>
+                                    Style="{StaticResource PrimaryButton}" Click="guardarClic"/>
                         </StackPanel>
                     </Grid>
                 </Grid>

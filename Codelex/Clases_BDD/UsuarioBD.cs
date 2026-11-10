@@ -16,12 +16,12 @@ namespace Codelex.Clases_BDD
 
         }
 
-        public DataTable ListarRoles()
+        public DataTable listarRoles()
         {
-            return Consultar(Procedimiento("sp_ListarRoles"));
+            return consultar(procedimiento("sp_ListarRoles"));
         }
 
-        public DataTable BuscarUsuarios(string texto, string buscarPor, string filtroEstado)
+        public DataTable buscarUsuarios(string texto, string buscarPor, string filtroEstado)
         {
             object estado = DBNull.Value;
             if (filtroEstado == "ACTIVOS")
@@ -29,36 +29,36 @@ namespace Codelex.Clases_BDD
             else if (filtroEstado == "INACTIVOS")
                 estado = false;
 
-            SqlCommand comando = Procedimiento("sp_BuscarUsuarios");
+            SqlCommand comando = procedimiento("sp_BuscarUsuarios");
             comando.Parameters.AddWithValue("@texto", texto);
             comando.Parameters.AddWithValue("@buscar_por", buscarPor);
             comando.Parameters.AddWithValue("@estado", estado);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public DataTable BuscarEmpleadosSinUsuario(string texto)
+        public DataTable buscarEmpleadosSinUsuario(string texto)
         {
-            SqlCommand comando = Procedimiento("sp_BuscarEmpleadosSinUsuario");
+            SqlCommand comando = procedimiento("sp_BuscarEmpleadosSinUsuario");
             comando.Parameters.AddWithValue("@texto", texto);
-            return Consultar(comando);
+            return consultar(comando);
         }
 
-        public bool ExisteUsuario(string usuario, int excluirUsuarioId)
+        public bool existeUsuario(string usuario, int excluirUsuarioId)
         {
-            SqlCommand comando = Procedimiento("sp_ExisteUsuario");
+            SqlCommand comando = procedimiento("sp_ExisteUsuario");
             comando.Parameters.AddWithValue("@usuario", usuario.Trim());
             comando.Parameters.AddWithValue("@excluir_usuario_id", excluirUsuarioId);
 
-            DataTable tabla = Consultar(comando);
+            DataTable tabla = consultar(comando);
             return Convert.ToInt32(tabla.Rows[0]["cantidad"]) > 0;
         }
 
-        public string UsuarioDisponible(string usuarioBase)
+        public string usuarioDisponible(string usuarioBase)
         {
             string candidato = usuarioBase;
             int numero = 2;
 
-            while (candidato != "" && ExisteUsuario(candidato, 0))
+            while (candidato != "" && existeUsuario(candidato, 0))
             {
                 candidato = usuarioBase + numero;
                 numero++;
@@ -67,34 +67,34 @@ namespace Codelex.Clases_BDD
             return candidato;
         }
 
-        public bool CrearUsuario(int empleadoId, string usuario, string contrasena, int rolId, out string mensaje)
+        public bool crearUsuario(int empleadoId, string usuario, string contrasena, int rolId, out string mensaje)
         {
-            return GuardarUsuario(true, empleadoId, usuario, contrasena, rolId, out mensaje);
+            return guardarUsuario(true, empleadoId, usuario, contrasena, rolId, out mensaje);
         }
 
-        public bool ActualizarUsuario(int usuarioId, string usuario, string contrasena, int rolId, out string mensaje)
+        public bool actualizarUsuario(int usuarioId, string usuario, string contrasena, int rolId, out string mensaje)
         {
-            return GuardarUsuario(false, usuarioId, usuario, contrasena, rolId, out mensaje);
+            return guardarUsuario(false, usuarioId, usuario, contrasena, rolId, out mensaje);
         }
 
-        public bool CambiarEstadoUsuario(int usuarioId, bool activo, out string mensaje)
+        public bool cambiarEstadoUsuario(int usuarioId, bool activo, out string mensaje)
         {
-            SqlCommand comando = Procedimiento("sp_CambiarEstadoUsuario");
+            SqlCommand comando = procedimiento("sp_CambiarEstadoUsuario");
             comando.Parameters.AddWithValue("@usuario_id", usuarioId);
             comando.Parameters.AddWithValue("@estado_usuario", activo);
 
-            return Ejecutar(comando, out mensaje);
+            return ejecutar(comando, out mensaje);
         }
 
-        public bool EliminarUsuario(int usuarioId, out string mensaje)
+        public bool eliminarUsuario(int usuarioId, out string mensaje)
         {
-            SqlCommand comando = Procedimiento("sp_EliminarUsuario");
+            SqlCommand comando = procedimiento("sp_EliminarUsuario");
             comando.Parameters.AddWithValue("@usuario_id", usuarioId);
 
-            return Ejecutar(comando, out mensaje);
+            return ejecutar(comando, out mensaje);
         }
 
-        private string ValidarUsuario(string usuario, string contrasena, int rolId, bool esNuevo)
+        private string validarUsuario(string usuario, string contrasena, int rolId, bool esNuevo)
         {
             usuario = usuario.Trim();
 
@@ -113,48 +113,48 @@ namespace Codelex.Clases_BDD
         }
 
         // Hoy el login compara la contrasena tal cual. Si el equipo usa hash, se cambia aqui y en ValidarLogin.
-        private string PrepararContrasena(string contrasena)
+        private string prepararContrasena(string contrasena)
         {
             return contrasena;
         }
 
-        private bool GuardarUsuario(bool esNuevo, int id, string usuario, string contrasena, int rolId, out string mensaje)
+        private bool guardarUsuario(bool esNuevo, int id, string usuario, string contrasena, int rolId, out string mensaje)
         {
-            mensaje = ValidarUsuario(usuario, contrasena, rolId, esNuevo);
+            mensaje = validarUsuario(usuario, contrasena, rolId, esNuevo);
             if (mensaje != "")
                 return false;
 
             SqlCommand comando;
             if (esNuevo)
             {
-                comando = Procedimiento("sp_InsertarUsuario");
+                comando = procedimiento("sp_InsertarUsuario");
                 comando.Parameters.AddWithValue("@empleado_id", id);
             }
             else
             {
-                comando = Procedimiento("sp_ActualizarUsuario");
+                comando = procedimiento("sp_ActualizarUsuario");
                 comando.Parameters.AddWithValue("@usuario_id", id);
             }
 
             comando.Parameters.AddWithValue("@usuario", usuario.Trim());
-            comando.Parameters.AddWithValue("@contrasena_hash", PrepararContrasena(contrasena));
+            comando.Parameters.AddWithValue("@contrasena_hash", prepararContrasena(contrasena));
             comando.Parameters.AddWithValue("@rol_id", rolId);
 
-            return Ejecutar(comando, out mensaje);
+            return ejecutar(comando, out mensaje);
         }
 
-        private SqlCommand Procedimiento(string nombre)
+        private SqlCommand procedimiento(string nombre)
         {
             SqlCommand comando = new SqlCommand(nombre);
             comando.CommandType = CommandType.StoredProcedure;
             return comando;
         }
 
-        private DataTable Consultar(SqlCommand comando)
+        private DataTable consultar(SqlCommand comando)
         {
             DataTable tabla = new DataTable();
 
-            using (SqlConnection conexion = Conexion.ObtenerConexion())
+            using (SqlConnection conexion = Conexion.obtenerConexion())
             {
                 comando.Connection = conexion;
                 SqlDataAdapter adaptador = new SqlDataAdapter(comando);
@@ -164,7 +164,7 @@ namespace Codelex.Clases_BDD
             return tabla;
         }
 
-        private bool Ejecutar(SqlCommand comando, out string mensaje)
+        private bool ejecutar(SqlCommand comando, out string mensaje)
         {
             SqlParameter resultado = new SqlParameter("@resultado", SqlDbType.Int);
             resultado.Direction = ParameterDirection.Output;
@@ -174,7 +174,7 @@ namespace Codelex.Clases_BDD
             textoMensaje.Direction = ParameterDirection.Output;
             comando.Parameters.Add(textoMensaje);
 
-            using (SqlConnection conexion = Conexion.ObtenerConexion())
+            using (SqlConnection conexion = Conexion.obtenerConexion())
             {
                 comando.Connection = conexion;
                 comando.ExecuteNonQuery();

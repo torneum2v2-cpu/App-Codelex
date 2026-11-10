@@ -10,7 +10,7 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize"
         FontFamily="Segoe UI"
-        Loaded="Window_Loaded">
+        Loaded="ventanaCargada">
     <Window.Resources>
         <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
         <SolidColorBrush x:Key="PrimaryLight" Color="#5FE0D2"/>
@@ -338,10 +338,10 @@
                 </Grid.RowDefinitions>
 
                 <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{StaticResource BgGradient}"
-                        Padding="28,18,14,18" MouseLeftButtonDown="DragWindow">
+                        Padding="28,18,14,18" MouseLeftButtonDown="arrastrarVentana">
                     <Grid>
                         <StackPanel Orientation="Horizontal">
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Volver"
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Volver"
                                     Width="46" Height="36" Margin="0,0,14,0" VerticalAlignment="Center">
                                 <Path Data="M30,12 H2 M8,18 L2,12 L8,6"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
@@ -361,12 +361,12 @@
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                            <Button Style="{StaticResource WindowButton}" Click="Minimizar_Click" ToolTip="Minimizar">
+                            <Button Style="{StaticResource WindowButton}" Click="minimizarClic" ToolTip="Minimizar">
                                 <Path Data="M0,0 L10,0"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6" Margin="0,8,0,0"/>
                             </Button>
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Cerrar">
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Cerrar">
                                 <Path Data="M0,0 L10,10 M10,0 L0,10"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6"/>
@@ -453,10 +453,10 @@
 
                             <UniformGrid Columns="2" Margin="0,16,0,0">
                                 <Button Content="Limpiar" Style="{StaticResource SecondaryButton}"
-                                        Margin="0,0,5,0" Click="Limpiar_Click"
+                                        Margin="0,0,5,0" Click="limpiarClic"
                                         ToolTip="Borra los campos de la locación"/>
                                 <Button Content="Guardar" Style="{StaticResource PrimaryButton}"
-                                        Margin="5,0,0,0" Click="Guardar_Click"
+                                        Margin="5,0,0,0" Click="guardarClic"
                                         ToolTip="Registra la locación para el cliente seleccionado"/>
                             </UniformGrid>
                         </StackPanel>
@@ -467,12 +467,12 @@
                             <TextBlock DockPanel.Dock="Top" Text="Clientes" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
                             <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,10">
                                 <TextBlock Text="Buscar:" Style="{StaticResource Etiqueta}" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                <TextBox x:Name="txtBuscarCliente" Width="220" Margin="0,0,10,0" TextChanged="txtBuscar_TextChanged"/>
+                                <TextBox x:Name="txtBuscarCliente" Width="220" Margin="0,0,10,0" TextChanged="buscarTextoCambiado"/>
                                 <TextBlock Text="por RTN, empresa o nombre" Style="{StaticResource Nota}" VerticalAlignment="Center"/>
                             </StackPanel>
                             <DataGrid x:Name="dgClientes" Style="{StaticResource Tabla}" AutoGenerateColumns="False"
                                       IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single"
-                                      SelectionChanged="dgClientes_SelectionChanged">
+                                      SelectionChanged="clientesSeleccionCambiada">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="RTN / identidad" Binding="{Binding identificacion_cliente}" Width="*"/>
                                     <DataGridTextColumn Header="Empresa" Binding="{Binding nombre_empresa}" Width="*"/>

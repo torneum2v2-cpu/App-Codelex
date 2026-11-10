@@ -6,12 +6,12 @@ namespace Codelex.Clases_BDD
 {
     class FotoPerfilBD : BaseDatos
     {
-        public byte[]? Obtener(int usuarioId)
+        public byte[]? obtener(int usuarioId)
         {
-            SqlCommand comando = Procedimiento("sp_ObtenerFotoUsuario");
+            SqlCommand comando = procedimiento("sp_ObtenerFotoUsuario");
             comando.Parameters.AddWithValue("@usuario_id", usuarioId);
 
-            DataTable tabla = Consultar(comando);
+            DataTable tabla = consultar(comando);
             if (tabla.Rows.Count == 0 || tabla.Rows[0][0] == DBNull.Value)
                 return null;
 
@@ -19,15 +19,15 @@ namespace Codelex.Clases_BDD
         }
 
         // foto = null borra la foto del usuario.
-        public void Guardar(int usuarioId, byte[]? foto)
+        public void guardar(int usuarioId, byte[]? foto)
         {
-            SqlCommand comando = Procedimiento("sp_GuardarFotoUsuario");
+            SqlCommand comando = procedimiento("sp_GuardarFotoUsuario");
             comando.Parameters.AddWithValue("@usuario_id", usuarioId);
 
             SqlParameter parametro = comando.Parameters.Add("@foto", SqlDbType.VarBinary, -1);
             parametro.Value = (object?)foto ?? DBNull.Value;
 
-            using (SqlConnection conexion = Conexion.ObtenerConexion())
+            using (SqlConnection conexion = Conexion.obtenerConexion())
             {
                 comando.Connection = conexion;
                 comando.ExecuteNonQuery();

@@ -29,10 +29,10 @@
 
                 <!-- Encabezado Superior -->
                 <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{StaticResource BgGradient}"
-                        Padding="28,18,14,18" MouseLeftButtonDown="DragWindow">
+                        Padding="28,18,14,18" MouseLeftButtonDown="arrastrarVentana">
                     <Grid>
                         <StackPanel Orientation="Horizontal">
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Volver"
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Volver"
                                     Width="46" Height="36" Margin="0,0,14,0" VerticalAlignment="Center">
                                 <Path Data="M30,12 H2 M8,18 L2,12 L8,6"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
@@ -52,12 +52,12 @@
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                            <Button Style="{StaticResource WindowButton}" Click="Minimizar_Click" ToolTip="Minimizar">
+                            <Button Style="{StaticResource WindowButton}" Click="minimizarClic" ToolTip="Minimizar">
                                 <Path Data="M0,0 L10,0"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6" Margin="0,8,0,0"/>
                             </Button>
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Cerrar">
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Cerrar">
                                 <Path Data="M0,0 L10,10 M10,0 L0,10"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6"/>
@@ -92,7 +92,7 @@
 
                                     <StackPanel Grid.Column="0" Margin="0,0,10,0">
                                         <TextBlock Text="N.° de cotización:" Style="{StaticResource Etiqueta}"/>
-                                        <TextBox x:Name="txtN_documento" Text="(automático)" IsReadOnly="True"/>
+                                        <TextBox x:Name="txtNDocumento" Text="(automático)" IsReadOnly="True"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1" Margin="0,0,10,0">
@@ -126,9 +126,9 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBox x:Name="TxtIdentidad" Grid.Column="0" Margin="0,0,8,0"/>
+                                        <TextBox x:Name="txtIdentidad" Grid.Column="0" Margin="0,0,8,0"/>
                                         <Button x:Name="btnBuscarCliente" Grid.Column="1" Width="38" Padding="0"
-                                                Style="{StaticResource PrimaryButton}" Click="BuscarCliente_Click"
+                                                Style="{StaticResource PrimaryButton}" Click="buscarClienteClic"
                                                 ToolTip="Buscar cliente registrado">
                                             <Path Data="M11,4 A7,7 0 1 0 11,18 A7,7 0 1 0 11,4 M21,21 L16,16" Stroke="#06282B" StrokeThickness="2"
                                                   StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stretch="Uniform"
@@ -137,22 +137,22 @@
                                     </Grid>
 
                                     <TextBlock Text="Empresa:" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="TxtEmpresa" Margin="0,0,0,8"/>
+                                    <TextBox x:Name="txtEmpresa" Margin="0,0,0,8"/>
 
                                     <TextBlock Text="Nombre del contacto:" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="TxtContacto" Margin="0,0,0,8"/>
+                                    <TextBox x:Name="txtContacto" Margin="0,0,0,8"/>
 
                                     <TextBlock Text="Apellido del contacto:" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="TxtApellido" Margin="0,0,0,8"/>
+                                    <TextBox x:Name="txtApellido" Margin="0,0,0,8"/>
 
                                     <TextBlock Text="Teléfono:" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="TxtTelefono" Margin="0,0,0,8"/>
+                                    <TextBox x:Name="txtTelefono" Margin="0,0,0,8"/>
 
                                     <TextBlock Text="Correo electrónico:" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="TxtCorreo" Margin="0,0,0,10"/>
+                                    <TextBox x:Name="txtCorreo" Margin="0,0,0,10"/>
 
                                     <TextBlock Text="Use la lupa para elegir un cliente registrado o escriba los datos de uno nuevo." Style="{StaticResource Nota}" Margin="0,0,0,8"/>
-                                    <Button x:Name="btnLimpiarCliente" Content="Limpiar cliente" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Click="btnLimpiarClientes"/>
+                                    <Button x:Name="btnLimpiarCliente" Content="Limpiar cliente" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left" Click="limpiarClientes"/>
                                 </StackPanel>
                             </Border>
 
@@ -201,14 +201,14 @@
                                     <StackPanel Grid.Column="2" Margin="0,0,10,0">
                                         <TextBlock Text=" " Style="{StaticResource Etiqueta}"/>
                                         <Button x:Name="btnAgregarLinea" Content="Agregar" Style="{StaticResource PrimaryButton}"
-                                                Width="100" Click="btnAgregarLinea_Click"
+                                                Width="100" Click="agregarLineaClic"
                                                 ToolTip="Agrega la actividad elegida a la cotización"/>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="3">
                                         <TextBlock Text=" " Style="{StaticResource Etiqueta}"/>
                                         <Button x:Name="btnQuitarLinea" Content="Quitar" Style="{StaticResource SecondaryButton}"
-                                                Width="100" Click="btnQuitarLinea_Click"
+                                                Width="100" Click="quitarLineaClic"
                                                 ToolTip="Quita la actividad seleccionada"/>
                                     </StackPanel>
                                 </Grid>
@@ -224,7 +224,7 @@
                                                 <DataTemplate>
                                                     <TextBox Style="{StaticResource CeldaCantidad}"
                                                              Text="{Binding Medida, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
-                                                             MaxLength="12" LostFocus="Medida_LostFocus"/>
+                                                             MaxLength="12" LostFocus="medidaFocoPerdido"/>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
@@ -279,13 +279,13 @@
                         <!-- SECCIÓN 4: Botones de acción -->
                         <UniformGrid Grid.Row="3" Columns="3" Margin="0,0,0,15">
                             <Button x:Name="btnNuevoDocumento" Content="Nueva cotización" Style="{StaticResource SecondaryButton}"
-                                    Margin="0,0,5,0" Click="btnNuevoDocumento_Click"
+                                    Margin="0,0,5,0" Click="nuevoDocumentoClic"
                                     ToolTip="Limpia el formulario para empezar una nueva"/>
                             <Button x:Name="btnGuardar" Content="Guardar cotización" Style="{StaticResource PrimaryButton}"
-                                    Margin="5,0,5,0" Click="btnGuardar_Click"
+                                    Margin="5,0,5,0" Click="guardarClic"
                                     ToolTip="Guarda la cotización"/>
                             <Button x:Name="btnCancelar" Content="Cancelar" Style="{StaticResource SecondaryButton}"
-                                    Margin="5,0,0,0" Click="btnCancelar_Click"
+                                    Margin="5,0,0,0" Click="cancelarClic"
                                     ToolTip="Cierra la ventana"/>
                         </UniformGrid>
 

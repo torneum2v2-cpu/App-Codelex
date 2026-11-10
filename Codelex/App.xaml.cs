@@ -13,19 +13,19 @@ namespace Codelex
             DispatcherUnhandledException += (s, args) =>
             {
                 args.Handled = true;
-                MostrarErrorGlobal(args.Exception);
+                mostrarErrorGlobal(args.Exception);
             };
             TaskScheduler.UnobservedTaskException += (s, args) => args.SetObserved();
 
-            int cantidad = CuentasRecordadas.Listar().Count;
+            int cantidad = CuentasRecordadas.listar().Count;
 
             if (cantidad == 0)
-                new MainWindow().Show();
+                new VentanaPrincipal().Show();
             else
                 new SeleccionarCuenta(cantidad == 1).Show();
         }
 
-        private static void MostrarErrorGlobal(Exception ex)
+        private static void mostrarErrorGlobal(Exception ex)
         {
             string mensaje = ex.Message;
             if (ex is Microsoft.Data.SqlClient.SqlException || ex.InnerException is Microsoft.Data.SqlClient.SqlException)

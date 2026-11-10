@@ -10,7 +10,7 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize"
         FontFamily="Segoe UI"
-        Loaded="Window_Loaded">
+        Loaded="ventanaCargada">
     <Window.Resources>
         <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
         <SolidColorBrush x:Key="PrimaryLight" Color="#5FE0D2"/>
@@ -258,10 +258,10 @@
                 </Grid.RowDefinitions>
 
                 <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{StaticResource BgGradient}"
-                        Padding="28,18,14,18" MouseLeftButtonDown="DragWindow">
+                        Padding="28,18,14,18" MouseLeftButtonDown="arrastrarVentana">
                     <Grid>
                         <StackPanel Orientation="Horizontal">
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Volver"
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Volver"
                                     Width="44" Height="38" Margin="0,0,14,0" VerticalAlignment="Center">
                                 <Path Data="M30,12 H2 M10,20 L2,12 L10,4"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
@@ -281,12 +281,12 @@
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                            <Button Style="{StaticResource WindowButton}" Click="Minimizar_Click" ToolTip="Minimizar">
+                            <Button Style="{StaticResource WindowButton}" Click="minimizarClic" ToolTip="Minimizar">
                                 <Path Data="M0,0 L10,0"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6" Margin="0,8,0,0"/>
                             </Button>
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Cerrar">
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Cerrar">
                                 <Path Data="M0,0 L10,10 M10,0 L0,10"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6"/>
@@ -308,7 +308,7 @@
                             <StackPanel Margin="0,0,0,12">
                                 <TextBlock Text="Placa *" Style="{StaticResource Etiqueta}"/>
                                 <TextBox x:Name="txtPlaca" MaxLength="15" CharacterCasing="Upper"
-                                         PreviewTextInput="SoloPlaca"/>
+                                         PreviewTextInput="soloPlaca"/>
                             </StackPanel>
 
                             <Grid>
@@ -346,18 +346,18 @@
                                        TextWrapping="Wrap" Margin="0,8,0,0"/>
 
                             <Button x:Name="btnRegistrar" Content="Registrar vehículo nuevo" Style="{StaticResource SecondaryButton}"
-                                    Margin="0,18,0,0" Click="Registrar_Click"
+                                    Margin="0,18,0,0" Click="registrarClic"
                                     ToolTip="Abre la ventana para registrar un vehículo"/>
 
                             <UniformGrid Columns="3" Margin="0,10,0,0">
                                 <Button x:Name="btnLimpiar" Content="Limpiar" Style="{StaticResource SecondaryButton}"
-                                        Margin="0,0,5,0" Click="Limpiar_Click"
+                                        Margin="0,0,5,0" Click="limpiarClic"
                                         ToolTip="Deja de editar y vacía el formulario"/>
                                 <Button x:Name="btnActualizar" Content="Actualizar" Style="{StaticResource PrimaryButton}"
-                                        Margin="5,0,5,0" Click="Actualizar_Click"
+                                        Margin="5,0,5,0" Click="actualizarClic"
                                         ToolTip="Guarda los cambios del vehículo que se está editando"/>
                                 <Button x:Name="btnCambiarEstado" Content="Desactivar" Style="{StaticResource SecondaryButton}"
-                                        Margin="5,0,0,0" Click="CambiarEstado_Click"
+                                        Margin="5,0,0,0" Click="cambiarEstadoClic"
                                         ToolTip="Activa o desactiva el vehículo (no se borra)"/>
                             </UniformGrid>
                         </StackPanel>
@@ -381,17 +381,17 @@
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBox x:Name="txtBuscar" Grid.Column="0" Margin="0,0,10,0" KeyDown="Buscar_KeyDown"
+                                    <TextBox x:Name="txtBuscar" Grid.Column="0" Margin="0,0,10,0" KeyDown="buscarTeclaPresionada"
                                              ToolTip="Escriba y presione Enter para buscar por placa, marca o modelo"/>
                                     <Button x:Name="btnBuscar" Grid.Column="1" Content="Buscar"
-                                            Style="{StaticResource PrimaryButton}" Margin="0,0,6,0" Click="Buscar_Click"/>
+                                            Style="{StaticResource PrimaryButton}" Margin="0,0,6,0" Click="buscarClic"/>
                                     <Button x:Name="btnMostrarTodos" Grid.Column="2" Content="Mostrar todos"
-                                            Style="{StaticResource SecondaryButton}" Margin="0,0,16,0" Click="MostrarTodos_Click"/>
+                                            Style="{StaticResource SecondaryButton}" Margin="0,0,16,0" Click="mostrarTodosClic"/>
                                     <Button x:Name="btnActivos" Grid.Column="3" Content="Activos"
-                                            Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" Click="Activos_Click"
+                                            Style="{StaticResource SecondaryButton}" Margin="0,0,6,0" Click="activosClic"
                                             ToolTip="Mostrar solo los vehículos activos"/>
                                     <Button x:Name="btnInactivos" Grid.Column="4" Content="Inactivos"
-                                            Style="{StaticResource SecondaryButton}" Click="Inactivos_Click"
+                                            Style="{StaticResource SecondaryButton}" Click="inactivosClic"
                                             ToolTip="Mostrar solo los vehículos inactivos"/>
                                 </Grid>
                             </StackPanel>
@@ -404,7 +404,7 @@
                                 <DataGrid x:Name="dgVehiculos" Style="{StaticResource Tabla}"
                                           AutoGenerateColumns="False" IsReadOnly="True"
                                           CanUserAddRows="False" SelectionMode="Single"
-                                          PreviewMouseLeftButtonUp="dgVehiculos_Click">
+                                          PreviewMouseLeftButtonUp="vehiculosClic">
                                     <DataGrid.Columns>
                                         <DataGridTextColumn Header="Placa" Binding="{Binding placa}" Width="*"/>
                                         <DataGridTextColumn Header="Marca" Binding="{Binding marca_vehiculo}" Width="*"/>

@@ -6,18 +6,18 @@ namespace Codelex.Clases_BDD
 {
     class BaseDatos
     {
-        protected SqlCommand Procedimiento(string nombre)
+        protected SqlCommand procedimiento(string nombre)
         {
             SqlCommand comando = new SqlCommand(nombre);
             comando.CommandType = CommandType.StoredProcedure;
             return comando;
         }
 
-        protected DataTable Consultar(SqlCommand comando)
+        protected DataTable consultar(SqlCommand comando)
         {
             DataTable tabla = new DataTable();
 
-            using (SqlConnection conexion = Conexion.ObtenerConexion())
+            using (SqlConnection conexion = Conexion.obtenerConexion())
             {
                 comando.Connection = conexion;
                 SqlDataAdapter adaptador = new SqlDataAdapter(comando);
@@ -27,7 +27,7 @@ namespace Codelex.Clases_BDD
             return tabla;
         }
 
-        protected bool Ejecutar(SqlCommand comando, out string mensaje)
+        protected bool ejecutar(SqlCommand comando, out string mensaje)
         {
             SqlParameter resultado = new SqlParameter("@resultado", SqlDbType.Int);
             resultado.Direction = ParameterDirection.Output;
@@ -37,7 +37,7 @@ namespace Codelex.Clases_BDD
             textoMensaje.Direction = ParameterDirection.Output;
             comando.Parameters.Add(textoMensaje);
 
-            using (SqlConnection conexion = Conexion.ObtenerConexion())
+            using (SqlConnection conexion = Conexion.obtenerConexion())
             {
                 comando.Connection = conexion;
                 comando.ExecuteNonQuery();

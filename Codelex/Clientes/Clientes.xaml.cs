@@ -23,47 +23,47 @@ namespace Codelex
             InitializeComponent();
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private void ventanaCargada(object sender, RoutedEventArgs e)
         {
-            foreach (string tipo in clienteBD.TiposIdentificacion())
+            foreach (string tipo in clienteBD.tiposIdentificacion())
             {
                 cmbTipoId.Items.Add(tipo);
             }
 
-            cmbTipoId.SelectionChanged += cmbTipoId_SelectionChanged;
+            cmbTipoId.SelectionChanged += tipoIdSeleccionCambiada;
             cmbTipoId.SelectedIndex = 0;
 
-            LimpiarFormulario();
-            CargarClientes();
+            limpiarFormulario();
+            cargarClientes();
         }
 
-        private void cmbTipoId_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void tipoIdSeleccionCambiada(object sender, SelectionChangedEventArgs e)
         {
-            txtRTN.MaxLength = clienteBD.LargoIdentificacion("" + cmbTipoId.SelectedItem);
+            txtRTN.MaxLength = clienteBD.largoIdentificacion("" + cmbTipoId.SelectedItem);
         }
 
-        private void CargarClientes()
+        private void cargarClientes()
         {
             try
             {
-                DataTable tabla = clienteBD.BuscarClientes(textoBusqueda, buscarPor, filtroEstado);
+                DataTable tabla = clienteBD.buscarClientes(textoBusqueda, buscarPor, filtroEstado);
                 dgClientes.ItemsSource = tabla.DefaultView;
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void CargarEnFormulario(string rtn)
+        private void cargarEnFormulario(string rtn)
         {
             try
             {
-                DataTable tabla = clienteBD.ObtenerCliente(rtn);
+                DataTable tabla = clienteBD.obtenerCliente(rtn);
 
                 if (tabla.Rows.Count == 0)
                 {
-                    MensajeCodelex.Mostrar(this, "Clientes", "No se encontró el cliente.", false);
+                    MensajeCodelex.mostrar(this, "Clientes", "No se encontró el cliente.", false);
                     return;
                 }
 
@@ -81,15 +81,15 @@ namespace Codelex
                 txtTelefono.Text = fila["telefono_cliente"].ToString();
                 txtCorreo.Text = fila["correo_cliente"].ToString();
 
-                ActualizarBotones();
+                actualizarBotones();
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void LimpiarFormulario()
+        private void limpiarFormulario()
         {
             clienteId = 0;
             clienteActual = "";
@@ -103,11 +103,11 @@ namespace Codelex
             txtTelefono.Text = "";
             txtCorreo.Text = "";
 
-            ActualizarBotones();
+            actualizarBotones();
             txtRTN.Focus();
         }
 
-        private void ActualizarBotones()
+        private void actualizarBotones()
         {
             if (clienteActual == "")
             {
@@ -138,42 +138,42 @@ namespace Codelex
             }
         }
 
-        private void SoloNumeros(object sender, TextCompositionEventArgs e)
+        private void soloNumeros(object sender, TextCompositionEventArgs e)
         {
-            if (!clienteBD.SoloNumeros(e.Text))
+            if (!clienteBD.soloNumeros(e.Text))
                 e.Handled = true;
         }
 
-        private void Nuevo_Click(object sender, RoutedEventArgs e)
+        private void nuevoClic(object sender, RoutedEventArgs e)
         {
-            LimpiarFormulario();
+            limpiarFormulario();
         }
 
-        private void Crear_Click(object sender, RoutedEventArgs e)
+        private void crearClic(object sender, RoutedEventArgs e)
         {
             try
             {
                 string mensaje;
 
-                bool guardado = clienteBD.InsertarCliente(
+                bool guardado = clienteBD.insertarCliente(
                     "" + cmbTipoId.SelectedItem, txtRTN.Text, txtEmpresa.Text, txtNombre.Text, txtApellido.Text,
                     txtTelefono.Text, txtCorreo.Text, out mensaje);
 
-                MostrarMensaje(guardado, mensaje);
+                mostrarMensaje(guardado, mensaje);
 
                 if (guardado)
                 {
-                    CargarClientes();
-                    CargarEnFormulario(Cliente.LimpiarNumero(txtRTN.Text));
+                    cargarClientes();
+                    cargarEnFormulario(Cliente.limpiarNumero(txtRTN.Text));
                 }
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void Actualizar_Click(object sender, RoutedEventArgs e)
+        private void actualizarClic(object sender, RoutedEventArgs e)
         {
             if (clienteActual == "")
                 return;
@@ -182,25 +182,25 @@ namespace Codelex
             {
                 string mensaje;
 
-                bool guardado = clienteBD.ActualizarCliente(
+                bool guardado = clienteBD.actualizarCliente(
                     clienteId, "" + cmbTipoId.SelectedItem, txtRTN.Text, txtEmpresa.Text, txtNombre.Text, txtApellido.Text,
                     txtTelefono.Text, txtCorreo.Text, out mensaje);
 
-                MostrarMensaje(guardado, mensaje);
+                mostrarMensaje(guardado, mensaje);
 
                 if (guardado)
                 {
-                    CargarClientes();
-                    CargarEnFormulario(Cliente.LimpiarNumero(txtRTN.Text));
+                    cargarClientes();
+                    cargarEnFormulario(Cliente.limpiarNumero(txtRTN.Text));
                 }
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void CambiarEstado_Click(object sender, RoutedEventArgs e)
+        private void cambiarEstadoClic(object sender, RoutedEventArgs e)
         {
             if (clienteActual == "")
                 return;
@@ -220,24 +220,24 @@ namespace Codelex
             try
             {
                 string mensaje;
-                bool guardado = clienteBD.CambiarEstadoCliente(clienteActual, nuevoEstado, out mensaje);
+                bool guardado = clienteBD.cambiarEstadoCliente(clienteActual, nuevoEstado, out mensaje);
 
-                MostrarMensaje(guardado, mensaje);
+                mostrarMensaje(guardado, mensaje);
 
                 if (guardado)
                 {
                     clienteActualActivo = nuevoEstado;
-                    ActualizarBotones();
-                    CargarClientes();
+                    actualizarBotones();
+                    cargarClientes();
                 }
             }
             catch (Exception ex)
             {
-                MostrarError(ex);
+                mostrarError(ex);
             }
         }
 
-        private void VerDetalle_Click(object sender, RoutedEventArgs e)
+        private void verDetalleClic(object sender, RoutedEventArgs e)
         {
             if (clienteActual == "")
             {
@@ -245,10 +245,10 @@ namespace Codelex
                 return;
             }
 
-            AbrirDetalle(clienteActual);
+            abrirDetalle(clienteActual);
         }
 
-        private void dgClientes_Click(object sender, MouseButtonEventArgs e)
+        private void clientesClic(object sender, MouseButtonEventArgs e)
         {
             if (dgClientes.SelectedItem == null)
                 return;
@@ -256,93 +256,93 @@ namespace Codelex
             DataRowView fila = (DataRowView)dgClientes.SelectedItem;
             string rtn = "" + fila["identificacion_cliente"];
 
-            AbrirDetalle(rtn);
+            abrirDetalle(rtn);
 
             dgClientes.SelectedItem = null;
         }
 
-        private void AbrirDetalle(string rtn)
+        private void abrirDetalle(string rtn)
         {
             ClienteDetalle detalle = new ClienteDetalle(rtn);
             detalle.Owner = this;
             detalle.ShowDialog();
 
-            if (detalle.EditarCliente)
-                CargarEnFormulario(rtn);
+            if (detalle.editarCliente)
+                cargarEnFormulario(rtn);
         }
 
-        private void PorRTN_Click(object sender, RoutedEventArgs e)
+        private void porRTNClic(object sender, RoutedEventArgs e)
         {
             textoBusqueda = txtBuscar.Text.Trim();
             buscarPor = "RTN";
-            CargarClientes();
+            cargarClientes();
         }
 
-        private void PorNombre_Click(object sender, RoutedEventArgs e)
+        private void porNombreClic(object sender, RoutedEventArgs e)
         {
             textoBusqueda = txtBuscar.Text.Trim();
             buscarPor = "NOMBRE";
-            CargarClientes();
+            cargarClientes();
         }
 
-        private void MostrarTodos_Click(object sender, RoutedEventArgs e)
+        private void mostrarTodosClic(object sender, RoutedEventArgs e)
         {
             txtBuscar.Text = "";
             textoBusqueda = "";
             buscarPor = "";
             filtroEstado = "TODOS";
-            CargarClientes();
+            cargarClientes();
         }
 
-        private void Activos_Click(object sender, RoutedEventArgs e)
+        private void activosClic(object sender, RoutedEventArgs e)
         {
             filtroEstado = "ACTIVOS";
-            CargarClientes();
+            cargarClientes();
         }
 
-        private void Inactivos_Click(object sender, RoutedEventArgs e)
+        private void inactivosClic(object sender, RoutedEventArgs e)
         {
             filtroEstado = "INACTIVOS";
-            CargarClientes();
+            cargarClientes();
         }
 
-        private void Buscar_KeyDown(object sender, KeyEventArgs e)
+        private void buscarTeclaPresionada(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
                 textoBusqueda = txtBuscar.Text.Trim();
                 buscarPor = "";
-                CargarClientes();
+                cargarClientes();
             }
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimizar_Click(object sender, RoutedEventArgs e)
+        private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
-        private void Salir_Click(object sender, RoutedEventArgs e)
+        private void salirClic(object sender, RoutedEventArgs e)
         {
             Close();
         }
 
-        private void MostrarMensaje(bool correcto, string mensaje)
+        private void mostrarMensaje(bool correcto, string mensaje)
         {
             if (correcto)
-               MensajeCodelex.Mostrar(this,"Clientes", mensaje, true);
+               MensajeCodelex.mostrar(this,"Clientes", mensaje, true);
             else
-                MensajeCodelex.Mostrar(this, "Clientes", mensaje, false);
+                MensajeCodelex.mostrar(this, "Clientes", mensaje, false);
         }
 
-        private void MostrarError(Exception ex)
+        private void mostrarError(Exception ex)
         {
-            MensajeCodelex.Mostrar(this, "Clientes", ex.Message, false);
+            MensajeCodelex.mostrar(this, "Clientes", ex.Message, false);
         }
     }
 }

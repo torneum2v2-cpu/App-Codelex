@@ -327,10 +327,10 @@
                 </Grid.RowDefinitions>
 
                 <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{StaticResource BgGradient}"
-                        Padding="28,18,14,18" MouseLeftButtonDown="DragWindow">
+                        Padding="28,18,14,18" MouseLeftButtonDown="arrastrarVentana">
                     <Grid>
                         <StackPanel Orientation="Horizontal">
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Volver"
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Volver"
                                     Width="46" Height="36" Margin="0,0,14,0" VerticalAlignment="Center">
                                 <Path Data="M30,12 H2 M8,18 L2,12 L8,6"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
@@ -350,12 +350,12 @@
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                            <Button Style="{StaticResource WindowButton}" Click="Minimizar_Click" ToolTip="Minimizar">
+                            <Button Style="{StaticResource WindowButton}" Click="minimizarClic" ToolTip="Minimizar">
                                 <Path Data="M0,0 L10,0"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6" Margin="0,8,0,0"/>
                             </Button>
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Cerrar">
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Cerrar">
                                 <Path Data="M0,0 L10,10 M10,0 L0,10"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6"/>
@@ -377,7 +377,7 @@
                     <Border Grid.Row="0" Style="{StaticResource Card}" Padding="18,10" Margin="0,0,0,12">
                         <UniformGrid Columns="3">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Cursor="Hand"
-                                        Tag="1" MouseLeftButtonUp="Paso_Click" Background="Transparent">
+                                        Tag="1" MouseLeftButtonUp="pasoClic" Background="Transparent">
                                 <Border x:Name="circulo1" Width="30" Height="30" CornerRadius="15" Background="{StaticResource Primary}">
                                     <TextBlock x:Name="numero1" Text="1" Foreground="White" FontWeight="Bold"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -386,7 +386,7 @@
                                            Foreground="{StaticResource DarkText}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Cursor="Hand"
-                                        Tag="2" MouseLeftButtonUp="Paso_Click" Background="Transparent">
+                                        Tag="2" MouseLeftButtonUp="pasoClic" Background="Transparent">
                                 <Border x:Name="circulo2" Width="30" Height="30" CornerRadius="15" Background="{StaticResource CardLine}">
                                     <TextBlock x:Name="numero2" Text="2" Foreground="{StaticResource SoftText}" FontWeight="Bold"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -395,7 +395,7 @@
                                            Foreground="{StaticResource SoftText}" Margin="10,0,0,0" VerticalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Cursor="Hand"
-                                        Tag="3" MouseLeftButtonUp="Paso_Click" Background="Transparent">
+                                        Tag="3" MouseLeftButtonUp="pasoClic" Background="Transparent">
                                 <Border x:Name="circulo3" Width="30" Height="30" CornerRadius="15" Background="{StaticResource CardLine}">
                                     <TextBlock x:Name="numero3" Text="3" Foreground="{StaticResource SoftText}" FontWeight="Bold"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -431,7 +431,7 @@
                                             </Grid.ColumnDefinitions>
                                             <TextBox x:Name="txtCotizacion" Grid.Column="0" IsReadOnly="True" Margin="0,0,8,0"/>
                                             <Button x:Name="btnCambiarCotizacion" Grid.Column="1" Width="38" Padding="0"
-                                                    Style="{StaticResource PrimaryButton}" Click="CambiarCotizacion_Click"
+                                                    Style="{StaticResource PrimaryButton}" Click="cambiarCotizacionClic"
                                                     ToolTip="Elegir otra cotización">
                                                 <Path Data="M11,4 A7,7 0 1 0 11,18 A7,7 0 1 0 11,4 M21,21 L16,16" Stroke="#06282B" StrokeThickness="2"
                                                       StrokeStartLineCap="Round" StrokeEndLineCap="Round" Stretch="Uniform"
@@ -453,27 +453,27 @@
                                         <UniformGrid Columns="2">
                                             <StackPanel Margin="0,0,10,8">
                                                 <TextBlock Text="RTN / N.° de identidad:" Style="{StaticResource Etiqueta}"/>
-                                                <TextBox x:Name="TxtIdentidad" IsReadOnly="True"/>
+                                                <TextBox x:Name="txtIdentidad" IsReadOnly="True"/>
                                             </StackPanel>
                                             <StackPanel Margin="0,0,0,8">
                                                 <TextBlock Text="Empresa:" Style="{StaticResource Etiqueta}"/>
-                                                <TextBox x:Name="TxtEmpresa" IsReadOnly="True"/>
+                                                <TextBox x:Name="txtEmpresa" IsReadOnly="True"/>
                                             </StackPanel>
                                             <StackPanel Margin="0,0,10,8">
                                                 <TextBlock Text="Nombre del contacto:" Style="{StaticResource Etiqueta}"/>
-                                                <TextBox x:Name="TxtContacto" IsReadOnly="True"/>
+                                                <TextBox x:Name="txtContacto" IsReadOnly="True"/>
                                             </StackPanel>
                                             <StackPanel Margin="0,0,0,8">
                                                 <TextBlock Text="Apellido del contacto:" Style="{StaticResource Etiqueta}"/>
-                                                <TextBox x:Name="TxtApellido" IsReadOnly="True"/>
+                                                <TextBox x:Name="txtApellido" IsReadOnly="True"/>
                                             </StackPanel>
                                             <StackPanel Margin="0,0,10,0">
                                                 <TextBlock Text="Teléfono:" Style="{StaticResource Etiqueta}"/>
-                                                <TextBox x:Name="TxtTelefono" IsReadOnly="True"/>
+                                                <TextBox x:Name="txtTelefono" IsReadOnly="True"/>
                                             </StackPanel>
                                             <StackPanel>
                                                 <TextBlock Text="Correo electrónico:" Style="{StaticResource Etiqueta}"/>
-                                                <TextBox x:Name="TxtCorreo" IsReadOnly="True"/>
+                                                <TextBox x:Name="txtCorreo" IsReadOnly="True"/>
                                             </StackPanel>
                                         </UniformGrid>
                                     </StackPanel>
@@ -493,7 +493,7 @@
                                             <TextBlock Text="¿Cuándo?" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
 
                                             <!-- Siempre es "(automático)"; se mantiene oculto porque el código lo usa. -->
-                                            <TextBox x:Name="txtN_orden" Text="(automático)" IsReadOnly="True" Visibility="Collapsed"/>
+                                            <TextBox x:Name="txtNOrden" Text="(automático)" IsReadOnly="True" Visibility="Collapsed"/>
 
                                             <TextBlock Text="Fecha de solicitud:" Style="{StaticResource Etiqueta}"/>
                                             <DatePicker x:Name="dpFechaSolicitud" Margin="0,0,0,8"/>
@@ -524,7 +524,7 @@
                                             <ComboBox x:Name="cmbTipoLocacion" Margin="0,0,0,8"/>
 
                                             <TextBlock Text="Dirección de la limpieza:" Style="{StaticResource Etiqueta}"/>
-                                            <TextBox x:Name="txtDireccion_limpieza" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                            <TextBox x:Name="txtDireccionLimpieza" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,0,0,8"/>
 
                                             <TextBlock Text="Descripción de la limpieza (opcional):" Style="{StaticResource Etiqueta}"/>
                                             <TextBox x:Name="txtDescripcionLimpieza" Height="50" AcceptsReturn="True" TextWrapping="Wrap"/>
@@ -583,8 +583,8 @@
                                                 <ListBox x:Name="lstEmpleadosDisponibles" Height="150"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="5,0">
-                                                <Button x:Name="btnAgregarEmpleado" Content=">" Style="{StaticResource SecondaryButton}" Width="35" Padding="0" Margin="0,0,0,3" Click="btnAgregarEmpleado_Click"/>
-                                                <Button x:Name="btnQuitarEmpleado" Content="&lt;" Style="{StaticResource SecondaryButton}" Width="35" Padding="0" Click="btnQuitarEmpleado_Click"/>
+                                                <Button x:Name="btnAgregarEmpleado" Content=">" Style="{StaticResource SecondaryButton}" Width="35" Padding="0" Margin="0,0,0,3" Click="agregarEmpleadoClic"/>
+                                                <Button x:Name="btnQuitarEmpleado" Content="&lt;" Style="{StaticResource SecondaryButton}" Width="35" Padding="0" Click="quitarEmpleadoClic"/>
                                             </StackPanel>
                                             <StackPanel Grid.Column="2">
                                                 <TextBlock Text="Asignados:" Style="{StaticResource Etiqueta}"/>
@@ -599,7 +599,7 @@
                                             </StackPanel>
                                             <StackPanel Margin="5,0,0,0">
                                                 <TextBlock Text="Piso / área:" Style="{StaticResource Etiqueta}"/>
-                                                <TextBox x:Name="txtPiso_area"/>
+                                                <TextBox x:Name="txtPisoArea"/>
                                             </StackPanel>
                                         </UniformGrid>
                                         <TextBlock Text="Vehículo:" Style="{StaticResource Etiqueta}" Margin="0,8,0,5"/>
@@ -628,16 +628,16 @@
                         <Grid>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                                 <Button x:Name="btnCancelar" Content="Cancelar" Style="{StaticResource SecondaryButton}"
-                                        Margin="0,0,8,0" Click="btnCancelar_Click"
+                                        Margin="0,0,8,0" Click="cancelarClic"
                                         ToolTip="Cierra la ventana sin guardar la orden"/>
                             </StackPanel>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                 <Button x:Name="btnAtras" Content="&lt; Atrás" Style="{StaticResource SecondaryButton}"
-                                        Margin="0,0,8,0" Visibility="Collapsed" Click="btnAtras_Click"/>
+                                        Margin="0,0,8,0" Visibility="Collapsed" Click="atrasClic"/>
                                 <Button x:Name="btnSiguiente" Content="Siguiente >" Style="{StaticResource PrimaryButton}"
-                                        MinWidth="140" Click="btnSiguiente_Click"/>
+                                        MinWidth="140" Click="siguienteClic"/>
                                 <Button x:Name="btnGuardarOrden" Content="Guardar orden" Style="{StaticResource PrimaryButton}"
-                                        MinWidth="160" Visibility="Collapsed" Click="btnGuardarOrden_Click"
+                                        MinWidth="160" Visibility="Collapsed" Click="guardarOrdenClic"
                                         ToolTip="Guarda los datos del formulario como una orden nueva"/>
                             </StackPanel>
                         </Grid>

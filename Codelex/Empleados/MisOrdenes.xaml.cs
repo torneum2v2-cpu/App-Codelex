@@ -20,29 +20,29 @@ namespace Codelex
             Height = Math.Min(Height, SystemParameters.WorkArea.Height - 10);
         }
 
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void ventanaCargada(object sender, RoutedEventArgs e)
         {
             IsEnabled = false;
-            Cargando espera = Cargando.Iniciar(this, "Cargando tus órdenes...");
+            Cargando espera = Cargando.iniciar(this, "Cargando tus órdenes...");
 
             DataTable? tabla = null;
             string errorBD = "";
 
             try
             {
-                tabla = await Task.Run(() => trabajoBD.Ordenes(empleadoId));
+                tabla = await Task.Run(() => trabajoBD.ordenes(empleadoId));
             }
             catch (Exception ex)
             {
                 errorBD = ex.Message;
             }
 
-            espera.Terminar();
+            espera.terminar();
             IsEnabled = true;
 
             if (tabla == null)
             {
-                MensajeCodelex.Mostrar(this, "Mis órdenes", errorBD, false);
+                MensajeCodelex.mostrar(this, "Mis órdenes", errorBD, false);
                 return;
             }
 
@@ -51,29 +51,29 @@ namespace Codelex
 
             if (tabla.Rows.Count == 0)
             {
-                LimpiarDetalle();
+                limpiarDetalle();
                 return;
             }
 
             dgOrdenes.SelectedIndex = 0;
         }
 
-        private void Ordenes_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ordenesSeleccionCambiada(object sender, SelectionChangedEventArgs e)
         {
             if (dgOrdenes.SelectedItem is not DataRowView fila)
                 return;
 
-            CargarDetalle("" + fila["orden_id"]);
+            cargarDetalle("" + fila["orden_id"]);
         }
 
-        private void CargarDetalle(string ordenId)
+        private void cargarDetalle(string ordenId)
         {
             try
             {
-                DataTable cabecera = trabajoBD.Detalle(ordenId, empleadoId);
+                DataTable cabecera = trabajoBD.detalle(ordenId, empleadoId);
                 if (cabecera.Rows.Count == 0)
                 {
-                    LimpiarDetalle();
+                    limpiarDetalle();
                     return;
                 }
 
@@ -86,20 +86,20 @@ namespace Codelex
 
                 lstCampos.ItemsSource = new List<CampoDetalle>
                 {
-                    new CampoDetalle("Cliente", Texto(f, "cliente")),
-                    new CampoDetalle("Servicio", Texto(f, "servicio")),
-                    new CampoDetalle("Fecha de solicitud", Fecha(f, "fecha_solicitud")),
-                    new CampoDetalle("Fecha del servicio", Fecha(f, "fecha_servicio")),
-                    new CampoDetalle("Locación", Texto(f, "locacion")),
-                    new CampoDetalle("Dirección", Texto(f, "direccion")),
-                    new CampoDetalle("Vehículo", Texto(f, "vehiculo")),
-                    new CampoDetalle("Supervisor", Texto(f, "supervisor")),
-                    new CampoDetalle("Mi turno", Texto(f, "turno")),
-                    new CampoDetalle("Mi piso / área", Texto(f, "piso_area")),
-                    new CampoDetalle("Observaciones", Texto(f, "observacion"))
+                    new CampoDetalle("Cliente", texto(f, "cliente")),
+                    new CampoDetalle("Servicio", texto(f, "servicio")),
+                    new CampoDetalle("Fecha de solicitud", fecha(f, "fecha_solicitud")),
+                    new CampoDetalle("Fecha del servicio", fecha(f, "fecha_servicio")),
+                    new CampoDetalle("Locación", texto(f, "locacion")),
+                    new CampoDetalle("Dirección", texto(f, "direccion")),
+                    new CampoDetalle("Vehículo", texto(f, "vehiculo")),
+                    new CampoDetalle("Supervisor", texto(f, "supervisor")),
+                    new CampoDetalle("Mi turno", texto(f, "turno")),
+                    new CampoDetalle("Mi piso / área", texto(f, "piso_area")),
+                    new CampoDetalle("Observaciones", texto(f, "observacion"))
                 };
 
-                DataTable listas = trabajoBD.Listas(ordenId, empleadoId);
+                DataTable listas = trabajoBD.listas(ordenId, empleadoId);
 
                 lstSecciones.ItemsSource = listas.AsEnumerable()
                     .GroupBy(r => new { Orden = Convert.ToInt32(r["orden"]), Nombre = "" + r["seccion"] })
@@ -111,11 +111,11 @@ namespace Codelex
             }
             catch (Exception ex)
             {
-                MensajeCodelex.Mostrar(this, "Mis órdenes", ex.Message, false);
+                MensajeCodelex.mostrar(this, "Mis órdenes", ex.Message, false);
             }
         }
 
-        private void LimpiarDetalle()
+        private void limpiarDetalle()
         {
             txtOrden.Text = "Detalle de la orden";
             bordeEstado.Visibility = Visibility.Collapsed;
@@ -124,13 +124,13 @@ namespace Codelex
             txtSinOrdenes.Visibility = dgOrdenes.Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private static string Texto(DataRow fila, string columna)
+        private static string texto(DataRow fila, string columna)
         {
             string valor = ("" + fila[columna]).Trim();
             return valor == "" ? "—" : valor;
         }
 
-        private static string Fecha(DataRow fila, string columna)
+        private static string fecha(DataRow fila, string columna)
         {
             if (fila.IsNull(columna))
                 return "—";
@@ -138,18 +138,18 @@ namespace Codelex
             return Convert.ToDateTime(fila[columna]).ToString("dd/MM/yyyy");
         }
 
-        private void DragWindow(object sender, MouseButtonEventArgs e)
+        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)
                 DragMove();
         }
 
-        private void Minimizar_Click(object sender, RoutedEventArgs e)
+        private void minimizarClic(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;
         }
 
-        private void Cerrar_Click(object sender, RoutedEventArgs e)
+        private void cerrarClic(object sender, RoutedEventArgs e)
         {
             Close();
         }

@@ -10,7 +10,7 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize"
         FontFamily="Segoe UI"
-        Loaded="Window_Loaded">
+        Loaded="ventanaCargada">
     <Window.Resources>
         <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
         <SolidColorBrush x:Key="PrimaryLight" Color="#5FE0D2"/>
@@ -327,10 +327,10 @@
                 </Grid.RowDefinitions>
 
                 <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{StaticResource BgGradient}"
-                        Padding="28,18,14,18" MouseLeftButtonDown="DragWindow">
+                        Padding="28,18,14,18" MouseLeftButtonDown="arrastrarVentana">
                     <Grid>
                         <StackPanel Orientation="Horizontal">
-                            <Button Style="{StaticResource WindowButton}" Click="Cerrar_Click" ToolTip="Volver"
+                            <Button Style="{StaticResource WindowButton}" Click="cerrarClic" ToolTip="Volver"
                                     Width="44" Height="38" Margin="0,0,14,0" VerticalAlignment="Center">
                                 <Path Data="M30,12 H2 M10,20 L2,12 L10,4"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
@@ -349,12 +349,12 @@
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                            <Button Style="{StaticResource WindowButton}" Click="Minimizar_Click" ToolTip="Minimizar">
+                            <Button Style="{StaticResource WindowButton}" Click="minimizarClic" ToolTip="Minimizar">
                                 <Path Data="M0,0 L10,0"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6" Margin="0,8,0,0"/>
                             </Button>
-                            <Button Style="{StaticResource WindowButton}" Click="Cerrar_Click" ToolTip="Cerrar">
+                            <Button Style="{StaticResource WindowButton}" Click="cerrarClic" ToolTip="Cerrar">
                                 <Path Data="M0,10 L10,0 M0,0 L10,10"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6"/>
@@ -390,7 +390,7 @@
                                     <StackPanel Grid.Column="0" Margin="0,0,14,0">
                                         <TextBlock Text="Empleado" Style="{StaticResource Etiqueta}"/>
                                         <ComboBox x:Name="cmbEmpleado" SelectedValuePath="empleado_id"
-                                                  SelectionChanged="cmbEmpleado_SelectionChanged">
+                                                  SelectionChanged="empleadoSeleccionCambiada">
                                             <ComboBox.ItemTemplate>
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding nombre_completo}"/>
@@ -407,7 +407,7 @@
                                         <DatePicker x:Name="dpHasta"/>
                                     </StackPanel>
                                     <Button Grid.Column="3" Content="Generar reporte" Width="150" VerticalAlignment="Bottom"
-                                            Style="{StaticResource PrimaryButton}" Click="Generar_Click"/>
+                                            Style="{StaticResource PrimaryButton}" Click="generarClic"/>
                                 </Grid>
                             </StackPanel>
                         </Border>
@@ -512,11 +512,11 @@
                     <Grid Grid.Row="2" Margin="0,16,0,0">
                         <StackPanel Orientation="Horizontal">
                             <Button Content="Exportar" Width="120" Style="{StaticResource SecondaryButton}"
-                                    Margin="0,0,10,0" Click="Exportar_Click" ToolTip="Guarda el reporte en un archivo CSV (abre en Excel)"/>
-                            <Button Content="Imprimir" Width="120" Style="{StaticResource SecondaryButton}" Click="Imprimir_Click"/>
+                                    Margin="0,0,10,0" Click="exportarClic" ToolTip="Guarda el reporte en un archivo CSV (abre en Excel)"/>
+                            <Button Content="Imprimir" Width="120" Style="{StaticResource SecondaryButton}" Click="imprimirClic"/>
                         </StackPanel>
                         <Button Content="Cerrar" Width="110" HorizontalAlignment="Right"
-                                Style="{StaticResource SecondaryButton}" Click="Cerrar_Click"/>
+                                Style="{StaticResource SecondaryButton}" Click="cerrarClic"/>
                     </Grid>
                 </Grid>
             </Grid>

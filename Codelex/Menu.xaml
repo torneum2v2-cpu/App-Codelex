@@ -194,7 +194,7 @@
     </Window.Resources>
 
     <Grid Margin="16">
-        <Border CornerRadius="14" MouseLeftButtonDown="DragWindow">
+        <Border CornerRadius="14" MouseLeftButtonDown="arrastrarVentana">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="24" ShadowDepth="0" Opacity="0.35" Color="#000000"/>
             </Border.Effect>
@@ -211,7 +211,7 @@
                         <StackPanel DockPanel.Dock="Top" Margin="6,0,0,0">
                             <StackPanel Orientation="Horizontal">
                                 <Button x:Name="btnPerfil" Style="{StaticResource AvatarButton}"
-                                        Width="38" Height="38" Click="Perfil_Click" ToolTip="Mi cuenta">
+                                        Width="38" Height="38" Click="perfilClic" ToolTip="Mi cuenta">
                                     <Border x:Name="avatarFondo" CornerRadius="19"
                                             Background="{StaticResource ButtonGradient}">
                                         <TextBlock x:Name="txtIniciales" Foreground="White" FontSize="14"
@@ -253,7 +253,7 @@
 
                                         <Border Height="1" Background="{StaticResource CardLine}" Margin="4,0,4,6"/>
 
-                                        <Button Style="{StaticResource PopupItem}" Click="MiPerfil_Click">
+                                        <Button Style="{StaticResource PopupItem}" Click="miPerfilClic">
                                             <StackPanel Orientation="Horizontal">
                                                 <Path Style="{StaticResource NavIcon}"
                                                       Data="M20,21 V19 A4,4 0 0 0 16,15 H8 A4,4 0 0 0 4,19 V21 M8,7 A4,4 0 1 0 16,7 A4,4 0 1 0 8,7"/>
@@ -261,7 +261,7 @@
                                             </StackPanel>
                                         </Button>
 
-                                        <Button Style="{StaticResource PopupItem}" Click="CambiarFoto_Click">
+                                        <Button Style="{StaticResource PopupItem}" Click="cambiarFotoClic">
                                             <StackPanel Orientation="Horizontal">
                                                 <Path Style="{StaticResource NavIcon}"
                                                       Data="M23,19 A2,2 0 0 1 21,21 H3 A2,2 0 0 1 1,19 V8 A2,2 0 0 1 3,6 H7 L9,3 H15 L17,6 H21 A2,2 0 0 1 23,8 Z M8,13 A4,4 0 1 0 16,13 A4,4 0 1 0 8,13"/>
@@ -270,7 +270,7 @@
                                         </Button>
 
                                         <Button x:Name="btnQuitarFoto" Style="{StaticResource PopupItem}"
-                                                Click="QuitarFoto_Click" Visibility="Collapsed">
+                                                Click="quitarFotoClic" Visibility="Collapsed">
                                             <StackPanel Orientation="Horizontal">
                                                 <Path Style="{StaticResource NavIcon}"
                                                       Data="M3,6 H21 M19,6 L18,20 A2,2 0 0 1 16,22 H8 A2,2 0 0 1 6,20 L5,6 M10,11 V17 M14,11 V17 M9,6 V4 A1,1 0 0 1 10,3 H14 A1,1 0 0 1 15,4 V6"/>
@@ -281,7 +281,7 @@
                                         <Border Height="1" Background="{StaticResource CardLine}" Margin="4,6,4,6"/>
 
                                         <Button Style="{StaticResource PopupItem}" Foreground="{StaticResource Danger}"
-                                                Click="Logout_Click">
+                                                Click="cerrarSesionClic">
                                             <StackPanel Orientation="Horizontal">
                                                 <Path Style="{StaticResource NavIcon}"
                                                       Data="M9,21 H5 A2,2 0 0 1 3,19 V5 A2,2 0 0 1 5,3 H9 M16,17 L21,12 L16,7 M21,12 H9"/>
@@ -296,56 +296,56 @@
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <StackPanel x:Name="panelNav">
                                 <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="inicio"
-                                         IsChecked="True" Click="Nav_Click">
+                                         IsChecked="True" Click="navClic">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Style="{StaticResource NavIcon}"
                                           Data="M3,9 L12,2 L21,9 V20 A2,2 0 0 1 19,22 H5 A2,2 0 0 1 3,20 Z M9,22 V12 H15 V22"/>
                                         <TextBlock Text="Panel principal" Margin="14,0,0,0" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </RadioButton>
-                                <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="reportes" Click="Nav_Click">
+                                <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="reportes" Click="navClic">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Style="{StaticResource NavIcon}"
                                           Data="M18,20 V10 M12,20 V4 M6,20 V14"/>
                                         <TextBlock Text="Reportes" Margin="14,0,0,0" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </RadioButton>
-                                <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="ordenes" Click="Nav_Click">
+                                <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="ordenes" Click="navClic">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Style="{StaticResource NavIcon}"
                                           Data="M9,4 H7 A2,2 0 0 0 5,6 V20 A2,2 0 0 0 7,22 H17 A2,2 0 0 0 19,20 V6 A2,2 0 0 0 17,4 H15 M9,2 H15 V6 H9 Z M9,12 H15 M9,16 H13"/>
                                         <TextBlock Text="Órdenes" Margin="14,0,0,0" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </RadioButton>
-                                <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="vehiculos" Click="Nav_Click">
+                                <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="vehiculos" Click="navClic">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Style="{StaticResource NavIcon}"
                                           Data="M1,3 H16 V16 H1 Z M16,8 H20 L23,11 V16 H16 Z M3,18.5 A2.5,2.5 0 1 0 8,18.5 A2.5,2.5 0 1 0 3,18.5 M16,18.5 A2.5,2.5 0 1 0 21,18.5 A2.5,2.5 0 1 0 16,18.5"/>
                                         <TextBlock Text="Vehículos" Margin="14,0,0,0" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </RadioButton>
-                                <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="clientes" Click="Nav_Click">
+                                <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="clientes" Click="navClic">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Style="{StaticResource NavIcon}"
                                           Data="M5,7 A4,4 0 1 0 13,7 A4,4 0 1 0 5,7 M2,21 V19 A4,4 0 0 1 6,15 H12 A4,4 0 0 1 16,19 V21 M16,3.1 A4,4 0 0 1 16,10.9 M22,21 V19 A4,4 0 0 0 19,15.1"/>
                                         <TextBlock Text="Clientes" Margin="14,0,0,0" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </RadioButton>
-                                <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="empleados" Click="Nav_Click">
+                                <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="empleados" Click="navClic">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Style="{StaticResource NavIcon}"
                                           Data="M4,4 H20 A2,2 0 0 1 22,6 V18 A2,2 0 0 1 20,20 H4 A2,2 0 0 1 2,18 V6 A2,2 0 0 1 4,4 Z M7,9 A2,2 0 1 0 11,9 A2,2 0 1 0 7,9 M5,16 A4,4 0 0 1 13,16 M15,9 H19 M15,13 H19"/>
                                         <TextBlock Text="Empleados" Margin="14,0,0,0" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </RadioButton>
-                                <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="inventario" Click="Nav_Click">
+                                <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="inventario" Click="navClic">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Style="{StaticResource NavIcon}"
                                           Data="M3,7 L12,3 L21,7 L21,17 L12,21 L3,17 Z M3,7 L12,11 L21,7 M12,11 L12,21"/>
                                         <TextBlock Text="Inventario" Margin="14,0,0,0" VerticalAlignment="Center"/>
                                     </StackPanel>
                                 </RadioButton>
-                                <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="usuarios" Click="Nav_Click">
+                                <RadioButton Style="{StaticResource NavRadio}" GroupName="nav" Tag="usuarios" Click="navClic">
                                     <StackPanel Orientation="Horizontal">
                                         <Path Style="{StaticResource NavIcon}"
                                           Data="M20,21 V19 A4,4 0 0 0 16,15 H8 A4,4 0 0 0 4,19 V21 M8,7 A4,4 0 1 0 16,7 A4,4 0 1 0 8,7"/>
@@ -382,7 +382,7 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Button Style="{StaticResource CardButton}" Width="300" Height="104"
-                                            Tag="{Binding Destino}" Click="Opcion_Click">
+                                            Tag="{Binding Destino}" Click="opcionClic">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto"/>
@@ -407,12 +407,12 @@
 
                     <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right"
                                 VerticalAlignment="Top" Margin="0,10,10,0" Panel.ZIndex="1">
-                        <Button Style="{StaticResource WindowButton}" Click="Minimize_Click" ToolTip="Minimizar">
+                        <Button Style="{StaticResource WindowButton}" Click="minimizarClic" ToolTip="Minimizar">
                             <Path Data="M0,0 L10,0"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   StrokeThickness="1.6" Margin="0,8,0,0"/>
                         </Button>
-                        <Button Style="{StaticResource WindowButton}" Click="Close_Click" ToolTip="Cerrar">
+                        <Button Style="{StaticResource WindowButton}" Click="cerrarClic" ToolTip="Cerrar">
                             <Path Data="M0,0 L10,10 M10,0 L0,10"
                                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                   StrokeThickness="1.6"/>

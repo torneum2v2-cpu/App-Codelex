@@ -5,7 +5,7 @@
         WindowStartupLocation="CenterScreen"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize" FontFamily="Segoe UI"
-        Loaded="Window_Loaded">
+        Loaded="ventanaCargada">
 
     <Window.Resources>
         <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
@@ -385,10 +385,10 @@
 
                 <!-- Encabezado -->
                 <Border Grid.Row="0" CornerRadius="14,14,0,0" Background="{StaticResource BgGradient}"
-                        Padding="28,18,14,18" MouseLeftButtonDown="DragWindow">
+                        Padding="28,18,14,18" MouseLeftButtonDown="arrastrarVentana">
                     <Grid>
                         <StackPanel Orientation="Horizontal">
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Volver"
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Volver"
                                     Width="46" Height="36" Margin="0,0,14,0" VerticalAlignment="Center">
                                 <Path Data="M30,12 H2 M8,18 L2,12 L8,6"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
@@ -408,12 +408,12 @@
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
-                            <Button Style="{StaticResource WindowButton}" Click="Minimizar_Click" ToolTip="Minimizar">
+                            <Button Style="{StaticResource WindowButton}" Click="minimizarClic" ToolTip="Minimizar">
                                 <Path Data="M0,0 L10,0"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6" Margin="0,8,0,0"/>
                             </Button>
-                            <Button Style="{StaticResource WindowButton}" Click="Salir_Click" ToolTip="Cerrar">
+                            <Button Style="{StaticResource WindowButton}" Click="salirClic" ToolTip="Cerrar">
                                 <Path Data="M0,0 L10,10 M10,0 L0,10"
                                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                                       StrokeThickness="1.6"/>
@@ -482,27 +482,27 @@
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" Margin="0,0,10,0">
                                         <TextBlock Text="Buscar:" Style="{StaticResource Etiqueta}"/>
-                                        <TextBox x:Name="txtBuscar" TextChanged="txtBuscar_TextChanged"
+                                        <TextBox x:Name="txtBuscar" TextChanged="buscarTextoCambiado"
                                                  ToolTip="N.° de orden, RTN, empresa o nombre del contacto"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="1" Margin="0,0,10,0">
                                         <TextBlock Text="Estado:" Style="{StaticResource Etiqueta}"/>
-                                        <ComboBox x:Name="cmbFiltroEstado" SelectionChanged="Filtro_Changed"/>
+                                        <ComboBox x:Name="cmbFiltroEstado" SelectionChanged="filtroCambiado"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2" Margin="0,0,10,0">
                                         <TextBlock Text="Supervisor:" Style="{StaticResource Etiqueta}"/>
-                                        <ComboBox x:Name="cmbFiltroSupervisor" SelectionChanged="Filtro_Changed"/>
+                                        <ComboBox x:Name="cmbFiltroSupervisor" SelectionChanged="filtroCambiado"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="3" Margin="0,0,10,0">
                                         <TextBlock Text="Fecha de limpieza desde:" Style="{StaticResource Etiqueta}"/>
-                                        <DatePicker x:Name="dpDesde" SelectedDateChanged="Filtro_Changed"/>
+                                        <DatePicker x:Name="dpDesde" SelectedDateChanged="filtroCambiado"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="4" Margin="0,0,10,0">
                                         <TextBlock Text="Hasta:" Style="{StaticResource Etiqueta}"/>
-                                        <DatePicker x:Name="dpHasta" SelectedDateChanged="Filtro_Changed"/>
+                                        <DatePicker x:Name="dpHasta" SelectedDateChanged="filtroCambiado"/>
                                     </StackPanel>
                                     <Button Grid.Column="5" Content="Limpiar filtros" Style="{StaticResource SecondaryButton}"
-                                            VerticalAlignment="Bottom" Click="btnLimpiarFiltros_Click"/>
+                                            VerticalAlignment="Bottom" Click="limpiarFiltrosClic"/>
                                 </Grid>
                             </StackPanel>
                         </Border>
@@ -522,7 +522,7 @@
                                     </Grid>
                                     <DataGrid x:Name="dgOrdenes" Style="{StaticResource Tabla}" Height="520"
                                               AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
-                                              SelectionMode="Single" SelectionChanged="dgOrdenes_SelectionChanged">
+                                              SelectionMode="Single" SelectionChanged="ordenesSeleccionCambiada">
                                         <DataGrid.Columns>
                                             <DataGridTextColumn Header="N.° orden" Binding="{Binding OrdenId}" Width="100"/>
                                             <DataGridTextColumn Header="Solicitud" Binding="{Binding FechaSolicitud, StringFormat=dd/MM/yyyy}" Width="95"/>
@@ -607,23 +607,23 @@
                                     <TextBlock Text="Cambiar estado a:" Style="{StaticResource Etiqueta}" VerticalAlignment="Center" Margin="0,0,10,0"/>
                                     <ComboBox x:Name="cmbCambiarEstado" Width="170" Margin="0,0,10,0"/>
                                     <Button x:Name="btnAplicarEstado" Content="Aplicar estado" Style="{StaticResource PrimaryButton}"
-                                            Click="btnAplicarEstado_Click" IsEnabled="False"/>
+                                            Click="aplicarEstadoClic" IsEnabled="False"/>
                                     <Button x:Name="btnCancelarOrden" Content="Cancelar orden" Style="{StaticResource SecondaryButton}"
-                                            Margin="10,0,0,0" Click="btnCancelarOrden_Click" IsEnabled="False"
+                                            Margin="10,0,0,0" Click="cancelarOrdenClic" IsEnabled="False"
                                             ToolTip="Marca la orden como Cancelada (no borra el registro)"/>
                                     <Button x:Name="btnCrearFactura" Content="Crear factura" Style="{StaticResource PrimaryButton}"
-                                            Margin="10,0,0,0" Click="btnCrearFactura_Click" Visibility="Collapsed"
+                                            Margin="10,0,0,0" Click="crearFacturaClic" Visibility="Collapsed"
                                             ToolTip="Factura esta orden completada"/>
                                     <Button x:Name="btnVerFactura" Content="Ver factura" Style="{StaticResource PrimaryButton}"
-                                            Margin="10,0,0,0" Click="btnVerFactura_Click" Visibility="Collapsed"
+                                            Margin="10,0,0,0" Click="verFacturaClic" Visibility="Collapsed"
                                             ToolTip="Muestra la factura de esta orden"/>
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                                     <Button x:Name="btnActualizar" Content="Actualizar" Style="{StaticResource SecondaryButton}"
-                                            Margin="0,0,10,0" Click="btnActualizar_Click"/>
+                                            Margin="0,0,10,0" Click="actualizarClic"/>
                                     <Button x:Name="btnNuevaOrden" Content="Nueva orden" Style="{StaticResource PrimaryButton}"
-                                            Click="btnNuevaOrden_Click"/>
+                                            Click="nuevaOrdenClic"/>
                                 </StackPanel>
                             </Grid>
                         </Border>

@@ -295,7 +295,9 @@
                                         CornerRadius="10" Padding="4" Margin="0,4,0,0"
                                         MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
                                         MaxHeight="240">
-                                    <ScrollViewer><StackPanel IsItemsHost="True"/></ScrollViewer>
+                                    <ScrollViewer>
+                                        <StackPanel IsItemsHost="True"/>
+                                    </ScrollViewer>
                                 </Border>
                             </Popup>
                         </Grid>
@@ -417,49 +419,64 @@
                                 <TextBlock Text="Datos del empleado" Style="{StaticResource TituloCard}" Margin="0,0,0,12"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="14"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="14"/>
+                                        <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="Auto"/>
-                                    </Grid.RowDefinitions>
-                                <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,12">
-                                    <TextBlock Text="Nombre" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtNombre" IsReadOnly="True"/>
-                                </StackPanel>
-                                <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,12">
-                                    <TextBlock Text="Apellido" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtApellido" IsReadOnly="True"/>
-                                </StackPanel>
-                                <StackPanel Grid.Row="0" Grid.Column="4" Margin="0,0,0,12">
-                                    <TextBlock Text="Cargo" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtCargo" IsReadOnly="True"/>
-                                </StackPanel>
-                                <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,12">
-                                    <TextBlock Text="Identidad" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtIdentidad" IsReadOnly="True"/>
-                                </StackPanel>
-                                <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,12">
-                                    <TextBlock Text="Teléfono" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtTelefono" IsReadOnly="True"/>
-                                </StackPanel>
-                                <StackPanel Grid.Row="1" Grid.Column="4" Margin="0,0,0,12">
-                                    <TextBlock Text="Correo" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtCorreo" IsReadOnly="True"/>
-                                </StackPanel>
-                                <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,12">
-                                    <TextBlock Text="Usuario" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtUsuario" IsReadOnly="True"/>
-                                </StackPanel>
-                                <StackPanel Grid.Row="2" Grid.Column="4" Margin="0,0,0,12">
-                                    <TextBlock Text="Estado" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtEstado" IsReadOnly="True"/>
-                                </StackPanel>
+
+                                    <Border x:Name="avatarEmpleado" Grid.Column="0" Width="130" Height="130"
+                                            CornerRadius="65" VerticalAlignment="Top" Margin="0,18,24,0"
+                                            Background="{StaticResource ButtonGradient}">
+                                        <TextBlock x:Name="txtInicialesEmpleado" Text="?" Foreground="White"
+                                                   FontSize="44" FontWeight="Bold"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <Grid Grid.Column="1">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="14"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="14"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,12">
+                                            <TextBlock Text="Nombre" Style="{StaticResource Etiqueta}"/>
+                                            <TextBox x:Name="txtNombre" IsReadOnly="True"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,12">
+                                            <TextBlock Text="Apellido" Style="{StaticResource Etiqueta}"/>
+                                            <TextBox x:Name="txtApellido" IsReadOnly="True"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="0" Grid.Column="4" Margin="0,0,0,12">
+                                            <TextBlock Text="Cargo" Style="{StaticResource Etiqueta}"/>
+                                            <TextBox x:Name="txtCargo" IsReadOnly="True"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,12">
+                                            <TextBlock Text="Identidad" Style="{StaticResource Etiqueta}"/>
+                                            <TextBox x:Name="txtIdentidad" IsReadOnly="True"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,0,0,12">
+                                            <TextBlock Text="Teléfono" Style="{StaticResource Etiqueta}"/>
+                                            <TextBox x:Name="txtTelefono" IsReadOnly="True"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="1" Grid.Column="4" Margin="0,0,0,12">
+                                            <TextBlock Text="Correo" Style="{StaticResource Etiqueta}"/>
+                                            <TextBox x:Name="txtCorreo" IsReadOnly="True"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,12">
+                                            <TextBlock Text="Usuario" Style="{StaticResource Etiqueta}"/>
+                                            <TextBox x:Name="txtUsuario" IsReadOnly="True"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Row="2" Grid.Column="4" Margin="0,0,0,12">
+                                            <TextBlock Text="Estado" Style="{StaticResource Etiqueta}"/>
+                                            <TextBox x:Name="txtEstado" IsReadOnly="True"/>
+                                        </StackPanel>
+                                    </Grid>
                                 </Grid>
                             </StackPanel>
                         </Border>

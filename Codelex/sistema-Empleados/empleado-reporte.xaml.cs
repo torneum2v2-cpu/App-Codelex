@@ -6,13 +6,14 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Codelex.AccesoDatos;
+using System.Windows.Media;
 
 namespace Codelex
 {
     public partial class EmpleadoReporte : Window
     {
         Empleado empleadoBD = new Empleado();
+        FotoPerfilBD fotoBD = new FotoPerfilBD();
 
         int empleadoInicial;
         bool cargando = true;
@@ -29,7 +30,7 @@ namespace Codelex
             InitializeComponent();
             Height = Math.Min(Height, SystemParameters.WorkArea.Height - 10);
 
-           
+
             if (Sesion.Nivel == NivelAcceso.Basico)
                 empleadoId = Sesion.EmpleadoId;
 
@@ -120,10 +121,53 @@ namespace Codelex
                 txtCorreo.Text = fila["correo_empleado"].ToString();
                 txtUsuario.Text = fila["usuario"].ToString();
                 txtEstado.Text = fila["estado"].ToString();
+
+                cargarFoto(fila);
             }
             catch (Exception ex)
             {
                 mostrarError(ex);
+            }
+        }
+
+        /// <summary>
+        /// Muestra la foto de perfil del usuario del empleado, o sus iniciales si no tiene.
+        /// </summary>
+        /// <param name="fila">Fila con los datos del empleado.</param>
+        private void cargarFoto(DataRow fila)
+        {
+            string iniciales = "";
+            if (txtNombre.Text.Length > 0)
+                iniciales += char.ToUpper(txtNombre.Text[0]);
+            if (txtApellido.Text.Length > 0)
+                iniciales += char.ToUpper(txtApellido.Text[0]);
+
+            ImageSource? foto = null;
+
+            try
+            {
+                if (fila.Table.Columns.Contains("usuario_id") && fila["usuario_id"] != DBNull.Value)
+                {
+                    byte[]? datos = fotoBD.obtener(Convert.ToInt32(fila["usuario_id"]));
+                    if (datos != null)
+                        foto = FotoPerfil.cargar(datos);
+                }
+            }
+            catch
+            {
+                // Si no se puede leer la foto, se quedan las iniciales.
+            }
+
+            if (foto == null)
+            {
+                avatarEmpleado.Background = (Brush)FindResource("ButtonGradient");
+                txtInicialesEmpleado.Text = iniciales.Length > 0 ? iniciales : "?";
+                txtInicialesEmpleado.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                avatarEmpleado.Background = new ImageBrush(foto) { Stretch = Stretch.UniformToFill };
+                txtInicialesEmpleado.Visibility = Visibility.Collapsed;
             }
         }
 

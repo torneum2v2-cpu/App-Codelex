@@ -490,10 +490,10 @@
                                         </StackPanel>
 
                                         <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,12">
-                                            <Grid Margin="0,0,0,4">
-                                                <TextBlock Text="Apellido" Style="{StaticResource Etiqueta}" VerticalAlignment="Bottom" Margin="0"/>
-                                                <Button x:Name="btnBuscarEmpleado" Width="38" Height="30" Padding="0"
-                                                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                                            <Grid Margin="0,0,0,8">
+                                                <TextBlock Text="Apellido" Style="{StaticResource Etiqueta}" VerticalAlignment="Center" Margin="0"/>
+                                                <Button x:Name="btnBuscarEmpleado" Width="38" Padding="0"
+                                                        HorizontalAlignment="Right"
                                                         Style="{StaticResource PrimaryButton}" Click="buscarEmpleadoClic"
                                                         ToolTip="Buscar empleado registrado">
                                                     <Path Data="M11,4 A7,7 0 1 0 11,18 A7,7 0 1 0 11,4 M21,21 L16,16" Stroke="#06282B" StrokeThickness="2"

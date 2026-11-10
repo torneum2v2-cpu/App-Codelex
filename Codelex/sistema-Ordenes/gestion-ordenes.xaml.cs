@@ -24,8 +24,8 @@ namespace Codelex.Ordenes
             /// <param name="texto">Texto a usar.</param>
             public OpcionFiltro(int id, string texto)
             {
-                id = id;
-                texto = texto;
+                this.id = id;
+                this.texto = texto;
             }
 
             /// <summary>

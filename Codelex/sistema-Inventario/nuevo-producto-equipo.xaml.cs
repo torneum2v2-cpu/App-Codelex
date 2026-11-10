@@ -110,15 +110,15 @@ namespace Codelex
                 }
                 else
                 {
-                    int productoId;
-                    bool guardado = inventarioBD.insertarProducto(txtNombre.Text, txtTipo.Text, out mensaje, out productoId);
+                    int idNuevo;
+                    bool guardado = inventarioBD.insertarProducto(txtNombre.Text, txtTipo.Text, out mensaje, out idNuevo);
 
                     MensajeCodelex.mostrar(this, "Inventario", mensaje, guardado);
 
                     if (!guardado)
                         return;
 
-                    productoId = productoId;
+                    productoId = idNuevo;
                 }
 
                 nombre = txtNombre.Text.Trim();

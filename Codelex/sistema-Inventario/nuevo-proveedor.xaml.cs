@@ -60,16 +60,16 @@ namespace Codelex
             try
             {
                 string mensaje;
-                int proveedorId;
+                int idNuevo;
 
                 bool guardado = inventarioBD.insertarProveedor(txtNombre.Text, txtTelefono.Text, txtCorreo.Text,
-                                                               out mensaje, out proveedorId);
+                                                               out mensaje, out idNuevo);
 
                 MensajeCodelex.mostrar(this, "Inventario", mensaje, guardado);
 
                 if (guardado)
                 {
-                    proveedorId = proveedorId;
+                    proveedorId = idNuevo;
                     Close();
                 }
             }

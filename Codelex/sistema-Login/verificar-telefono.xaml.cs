@@ -21,7 +21,7 @@ namespace Codelex
         {
             InitializeComponent();
             usuario = usuarioLogin;
-            recordar = recordar;
+            this.recordar = recordar;
             contrasena = password;
 
             if (usuario.TieneLlave)

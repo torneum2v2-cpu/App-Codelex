@@ -21,9 +21,9 @@ namespace Codelex
         /// <param name="tipo">Tipo de dato.</param>
         public ItemLista(int id, string texto, string tipo)
         {
-            id = id;
-            texto = texto;
-            tipo = tipo;
+            this.id = id;
+            this.texto = texto;
+            this.tipo = tipo;
         }
 
         /// <summary>

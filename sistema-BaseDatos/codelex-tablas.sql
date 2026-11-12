@@ -297,6 +297,31 @@ CREATE TABLE orden_actividades
 )
 GO
 
+-- Control de calidad: quién marcó cada actividad y cuándo, y quién aprobó la orden y cuándo
+IF COL_LENGTH('orden_actividades', 'usuario_id') IS NULL
+	ALTER TABLE orden_actividades
+	ADD usuario_id INT NULL
+		CONSTRAINT FK_ORDEN_ACTIVIDADES_USUARIOS REFERENCES usuarios(usuario_id);
+GO
+
+IF COL_LENGTH('orden_actividades', 'fecha_marcado') IS NULL
+	ALTER TABLE orden_actividades ADD fecha_marcado DATETIME NULL;
+GO
+
+IF COL_LENGTH('ordenes', 'control_calidad_fecha') IS NULL
+	ALTER TABLE ordenes ADD control_calidad_fecha DATETIME NULL;
+GO
+
+IF COL_LENGTH('ordenes', 'control_calidad_usuario_id') IS NULL
+	ALTER TABLE ordenes
+	ADD control_calidad_usuario_id INT NULL
+		CONSTRAINT FK_ORDENES_CONTROL_USUARIOS REFERENCES usuarios(usuario_id);
+GO
+
+IF COL_LENGTH('ordenes', 'control_calidad_nota') IS NULL
+	ALTER TABLE ordenes ADD control_calidad_nota VARCHAR(200) NULL;
+GO
+
 IF OBJECT_ID('formas_pago') IS NULL
 CREATE TABLE formas_pago
 (

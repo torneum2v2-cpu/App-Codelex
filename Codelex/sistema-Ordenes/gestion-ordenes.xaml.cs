@@ -152,7 +152,6 @@ namespace Codelex.Ordenes
             bool reconstruyendo = false;
 
             string detalleMostrado = "";
-            DataTable actividadesOrden = new DataTable();
             // Factura de la orden mostrada en el detalle (0 = todavía no tiene).
             int facturaIdActual = 0;
 
@@ -489,6 +488,7 @@ namespace Codelex.Ordenes
                     dObservaciones.Text = observaciones == "" ? "Sin observaciones" : observaciones;
 
                     dConformidad.Text = textoConformidad(d);
+                    dControl.Text = textoControl(d, fila.Estado);
                     dFactura.Text = textoFactura(d);
 
                     llenarListas(fila.OrdenId);
@@ -518,8 +518,7 @@ namespace Codelex.Ordenes
             private void llenarListas(string ordenId)
             {
                 DataTable tabla = gestionBD.listarDetalle(ordenId);
-                actividadesOrden = gestionBD.listarActividades(ordenId);
-                int seleccionada = lstActividades.SelectedIndex;
+                DataTable actividadesOrden = gestionBD.listarActividades(ordenId);
 
                 List<string> actividades = new List<string>();
 
@@ -554,8 +553,6 @@ namespace Codelex.Ordenes
                     productos.Add("Sin productos ni equipos");
 
                 lstActividades.ItemsSource = actividades;
-                if (seleccionada >= 0 && seleccionada < actividadesOrden.Rows.Count)
-                    lstActividades.SelectedIndex = seleccionada;
                 lstEmpleados.ItemsSource = empleados;
                 lstProductos.ItemsSource = productos;
             }
@@ -629,6 +626,34 @@ namespace Codelex.Ordenes
 
             // Igual que el reporte de órdenes: vacío = sin evaluar, 1 = conforme, 0 = no conforme.
             /// <summary>
+            /// Arma el texto del control de calidad que se muestra en el detalle de la orden.
+            /// </summary>
+            /// <param name="d">Fila con el detalle de la orden.</param>
+            /// <param name="estado">Estado actual de la orden.</param>
+            /// <returns>Texto con quién y cuándo aprobó el control, o su situación actual.</returns>
+            private static string textoControl(DataRow d, string estado)
+            {
+                if (d["control_calidad_fecha"] == DBNull.Value)
+                {
+                    if (estado == "Completada")
+                        return "Sin registro (orden anterior al control de calidad)";
+                    if (estado == "En proceso")
+                        return "Pendiente: revise las actividades para poder completar la orden";
+
+                    return "Se hace cuando la orden está en proceso";
+                }
+
+                string texto = "Aprobado el " + Convert.ToDateTime(d["control_calidad_fecha"]).ToString("dd/MM/yyyy HH:mm")
+                               + " por " + d["control_calidad_usuario"];
+
+                string nota = ("" + d["control_calidad_nota"]).Trim();
+                if (nota != "")
+                    texto += ". Nota: " + nota;
+
+                return texto;
+            }
+
+            /// <summary>
             /// Arma el texto de la conformidad del cliente que se muestra en el detalle de la orden.
             /// </summary>
             /// <param name="d">Fila con los datos de la orden.</param>
@@ -683,15 +708,15 @@ namespace Codelex.Ordenes
                     btnCancelarOrden.IsEnabled = false;
                     btnCrearFactura.Visibility = Visibility.Collapsed;
                     btnVerFactura.Visibility = Visibility.Collapsed;
-                    btnMarcarActividad.Visibility = Visibility.Collapsed;
+                    btnControlCalidad.Visibility = Visibility.Collapsed;
                     panelConformidad.Visibility = Visibility.Collapsed;
                     return;
                 }
 
-                // Las actividades se marcan mientras la orden está en proceso; la conformidad se registra al completarla.
-                btnMarcarActividad.Visibility = Visibility.Collapsed;
+                // El control de calidad se hace con la orden en proceso; la conformidad se registra al completarla.
+                btnControlCalidad.Visibility = Visibility.Collapsed;
                 if (fila.Estado == "En proceso")
-                    btnMarcarActividad.Visibility = Visibility.Visible;
+                    btnControlCalidad.Visibility = Visibility.Visible;
 
                 panelConformidad.Visibility = Visibility.Collapsed;
                 if (fila.Estado == "Completada")
@@ -715,36 +740,35 @@ namespace Codelex.Ordenes
             }
 
             /// <summary>
-            /// Marca o desmarca como hecha la actividad seleccionada de la orden.
+            /// Abre el control de calidad de la orden seleccionada.
             /// </summary>
             /// <param name="sender">Control que originó el evento.</param>
             /// <param name="e">Datos del evento.</param>
-            private void marcarActividadClic(object sender, RoutedEventArgs e)
+            private void controlCalidadClic(object sender, RoutedEventArgs e)
             {
-                int posicion = lstActividades.SelectedIndex;
-                if (posicion < 0 || posicion >= actividadesOrden.Rows.Count)
+                if (dgOrdenes.SelectedItem is FilaOrden fila)
+                    abrirControlCalidad(fila);
+            }
+
+            /// <summary>
+            /// Abre el control de calidad: la orden solo se completa por aquí, cuando todas sus actividades están revisadas.
+            /// </summary>
+            /// <param name="fila">Orden que se va a revisar.</param>
+            private void abrirControlCalidad(FilaOrden fila)
+            {
+                if (fila.Estado != "En proceso")
                 {
-                    MensajeCodelex.mostrar(this, "Gestión de órdenes", "Seleccione una actividad de la lista.", false);
+                    MensajeCodelex.mostrar(this, "Gestión de órdenes",
+                        "El control de calidad se hace con la orden en proceso. Primero cámbiela a \"En proceso\".", false);
                     return;
                 }
 
-                DataRow actividad = actividadesOrden.Rows[posicion];
-                bool hecha = Convert.ToBoolean(actividad["estado"]);
+                ControlCalidad ventana = new ControlCalidad(fila.OrdenId);
+                ventana.Owner = this;
+                ventana.ShowDialog();
 
-                try
-                {
-                    string mensaje;
-                    bool guardado = gestionBD.marcarActividad(detalleMostrado, Convert.ToInt32(actividad["actividad_id"]), !hecha, out mensaje);
-
-                    if (!guardado)
-                        MensajeCodelex.mostrar(this, "Gestión de órdenes", mensaje, false);
-
-                    llenarListas(detalleMostrado);
-                }
-                catch (Exception ex)
-                {
-                    mostrarError(ex);
-                }
+                // Se recarga siempre: aunque no se complete, ya pudieron marcarse actividades.
+                cargarOrdenes(fila.OrdenId, true);
             }
 
             /// <summary>
@@ -827,12 +851,18 @@ namespace Codelex.Ordenes
                 if (nuevo.id == fila.EstadoId)
                     return;
 
+                // Una orden no se completa con solo cambiar el estado: tiene que pasar por el control de calidad.
+                if (nuevo.texto == "Completada")
+                {
+                    abrirControlCalidad(fila);
+                    return;
+                }
+
                 string pregunta = "¿Cambiar la orden " + fila.OrdenId + " de \"" + fila.Estado + "\" a \"" + nuevo.texto + "\"?";
 
                 if (nuevo.texto == "Cancelada")
                     pregunta += "\n\n" + textoCancelacion(fila.Estado);
-                else if (nuevo.texto == "Completada")
-                    pregunta += "\n\nTodas las actividades deben estar marcadas como hechas. Los equipos asignados quedarán libres y la orden ya no podrá cambiar de estado.";
+
 
                 if (!MensajeCodelex.preguntar(this, "Gestión de órdenes", pregunta))
                     return;

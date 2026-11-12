@@ -1,4 +1,5 @@
 using Codelex.AccesoDatos;
+using System.Data;
 
 namespace Codelex.Pruebas
 {
@@ -110,6 +111,26 @@ namespace Codelex.Pruebas
             Assert.NotEqual("", clienteBD.validarIdentificacion("RTN", "99991990123456"));
             Assert.NotEqual("", clienteBD.validarIdentificacion("Identidad", "08011990123456"));
             Assert.NotEqual("", clienteBD.validarIdentificacion("", "08011990123456"));
+        }
+
+        [Fact]
+        public void elControlDeCalidadExigeTodasLasActividades()
+        {
+            GestionOrdenesBD gestionBD = new GestionOrdenesBD();
+
+            DataTable actividades = new DataTable();
+            actividades.Columns.Add("estado", typeof(bool));
+            Assert.NotEqual("", gestionBD.validarControl(actividades, ""));
+
+            actividades.Rows.Add(true);
+            actividades.Rows.Add(false);
+            Assert.Equal(1, gestionBD.contarRevisadas(actividades));
+            Assert.Contains("Faltan 1", gestionBD.validarControl(actividades, ""));
+
+            actividades.Rows[1]["estado"] = true;
+            Assert.Equal(2, gestionBD.contarRevisadas(actividades));
+            Assert.Equal("", gestionBD.validarControl(actividades, "Todo bien"));
+            Assert.NotEqual("", gestionBD.validarControl(actividades, new string('x', 201)));
         }
 
         [Fact]

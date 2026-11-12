@@ -76,6 +76,66 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
+        /// Cuenta cuántas actividades de la orden ya fueron revisadas (marcadas como hechas).
+        /// </summary>
+        /// <param name="actividades">Tabla de actividades de la orden (columna estado).</param>
+        /// <returns>Cantidad de actividades revisadas.</returns>
+        public int contarRevisadas(DataTable actividades)
+        {
+            int revisadas = 0;
+
+            foreach (DataRow fila in actividades.Rows)
+            {
+                if (Convert.ToBoolean(fila["estado"]))
+                    revisadas++;
+            }
+
+            return revisadas;
+        }
+
+        /// <summary>
+        /// Valida el control de calidad: la orden solo se aprueba si todas sus actividades fueron revisadas.
+        /// </summary>
+        /// <param name="actividades">Tabla de actividades de la orden (columna estado).</param>
+        /// <param name="nota">Nota opcional escrita por quien hace el control.</param>
+        /// <returns>Texto del error, o texto vacío si ya se puede aprobar.</returns>
+        public string validarControl(DataTable actividades, string nota)
+        {
+            if (actividades.Rows.Count == 0)
+                return "La orden no tiene actividades para revisar.";
+
+            int pendientes = actividades.Rows.Count - contarRevisadas(actividades);
+            if (pendientes > 0)
+                return "Faltan " + pendientes + " actividades por revisar. La orden sigue en proceso.";
+
+            if (nota.Trim().Length > 200)
+                return "La nota del control no puede tener más de 200 caracteres.";
+
+            return "";
+        }
+
+        /// <summary>
+        /// Aprueba el control de calidad y completa la orden (solo si todas las actividades fueron revisadas).
+        /// </summary>
+        /// <param name="ordenId">Identificador de orden.</param>
+        /// <param name="actividades">Tabla de actividades de la orden (columna estado).</param>
+        /// <param name="nota">Nota opcional escrita por quien hace el control.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
+        public bool completarConControl(string ordenId, DataTable actividades, string nota, out string mensaje)
+        {
+            mensaje = validarControl(actividades, nota);
+            if (mensaje != "")
+                return false;
+
+            SqlCommand comando = procedimiento("sp_CompletarOrdenConControl");
+            comando.Parameters.AddWithValue("@orden_id", ordenId);
+            comando.Parameters.AddWithValue("@nota", nota.Trim());
+
+            return ejecutar(comando, out mensaje);
+        }
+
+        /// <summary>
         /// Registra si el cliente quedó conforme con el servicio de una orden completada.
         /// </summary>
         /// <param name="ordenId">Identificador de orden.</param>

@@ -18,6 +18,7 @@
     <Compile Include="../Codelex/sistema-AccesoDatos/facturacion.cs" />
     <Compile Include="../Codelex/sistema-AccesoDatos/inventario-bd.cs" />
     <Compile Include="../Codelex/sistema-AccesoDatos/servicio-bd.cs" />
+    <Compile Include="../Codelex/sistema-AccesoDatos/gestion-ordenes-bd.cs" />
     <Compile Include="../Codelex/sistema-AccesoDatos/usuario-bd.cs" />
     <Compile Include="../Codelex/sistema-AccesoDatos/contrasenas.cs" Condition="Exists('../Codelex/sistema-AccesoDatos/contrasenas.cs')" />
   </ItemGroup>

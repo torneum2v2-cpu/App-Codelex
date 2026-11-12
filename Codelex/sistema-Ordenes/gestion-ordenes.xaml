@@ -585,15 +585,18 @@
                                                         ToolTip="Registra que el cliente no quedó conforme con el servicio"/>
                                             </StackPanel>
 
+                                            <TextBlock Text="Control de calidad:" Style="{StaticResource Etiqueta}"/>
+                                            <TextBlock x:Name="dControl" Style="{StaticResource Valor}" TextWrapping="Wrap"/>
+
                                             <TextBlock Text="Factura:" Style="{StaticResource Etiqueta}"/>
                                             <TextBlock x:Name="dFactura" Style="{StaticResource Valor}"/>
 
                                             <TextBlock Text="Actividades:" Style="{StaticResource Etiqueta}"/>
                                             <ListBox x:Name="lstActividades" Height="100" Margin="0,0,0,6"/>
-                                            <Button x:Name="btnMarcarActividad" Content="Marcar / desmarcar como hecha"
-                                                    Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left"
-                                                    Width="230" Margin="0,0,0,10" Click="marcarActividadClic" Visibility="Collapsed"
-                                                    ToolTip="Seleccione una actividad de la lista. Todas deben estar hechas para completar la orden"/>
+                                            <Button x:Name="btnControlCalidad" Content="Control de calidad"
+                                                    Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left"
+                                                    Width="200" Margin="0,0,0,10" Click="controlCalidadClic" Visibility="Collapsed"
+                                                    ToolTip="Revise las actividades una por una; cuando todas estén revisadas se puede completar la orden"/>
 
                                             <TextBlock Text="Empleados asignados:" Style="{StaticResource Etiqueta}"/>
                                             <ListBox x:Name="lstEmpleados" Height="100" Margin="0,0,0,10"/>

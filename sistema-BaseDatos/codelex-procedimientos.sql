@@ -2202,6 +2202,9 @@ BEGIN
 		   ISNULL(o.observacion, '') AS observacion,
 		   ISNULL(eo.nombre_estado_orden, '') AS estado,
 		   o.conformidad_cliente,
+		   o.control_calidad_fecha,
+		   ISNULL(uc.usuario, '') AS control_calidad_usuario,
+		   ISNULL(o.control_calidad_nota, '') AS control_calidad_nota,
 		   f.factura_id,
 		   f.estado_pago,
 		   f.precio_facturado,
@@ -2211,6 +2214,7 @@ BEGIN
 	LEFT JOIN locaciones l ON l.locacion_id = o.locacion_id
 	LEFT JOIN vehiculos v ON v.vehiculo_id = o.vehiculo_id
 	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
+	LEFT JOIN usuarios uc ON uc.usuario_id = o.control_calidad_usuario_id
 	LEFT JOIN facturas f ON f.orden_id = o.orden_id AND f.estado_pago <> 'Anulada'
 	OUTER APPLY (SELECT TOP 1 x.turno, x.piso_area
 				 FROM orden_empleados x
@@ -2369,9 +2373,12 @@ BEGIN
 		   a.frecuencia,
 		   a.precio,
 		   ISNULL(oa.estado, 0) AS estado,
-		   oa.duracion_min
+		   oa.duracion_min,
+		   oa.fecha_marcado,
+		   ISNULL(u.usuario, '') AS marcado_por
 	FROM orden_actividades oa
 	INNER JOIN actividades a ON a.actividad_id = oa.actividad_id
+	LEFT JOIN usuarios u ON u.usuario_id = oa.usuario_id
 	WHERE oa.orden_id = @orden_id
 	ORDER BY a.descripcion;
 END
@@ -2601,7 +2608,13 @@ BEGIN
 
 		IF @pendientes > 0
 		BEGIN
-			SET @mensaje = 'Faltan ' + CAST(@pendientes AS VARCHAR(10)) + ' actividades por marcar como hechas.';
+			SET @mensaje = 'Faltan ' + CAST(@pendientes AS VARCHAR(10)) + ' actividades por revisar en el control de calidad.';
+			RETURN;
+		END
+
+		IF NOT EXISTS (SELECT 1 FROM ordenes WHERE orden_id = @orden_id AND control_calidad_fecha IS NOT NULL)
+		BEGIN
+			SET @mensaje = 'La orden se completa con el control de calidad.';
 			RETURN;
 		END
 	END
@@ -2671,6 +2684,90 @@ BEGIN
 END
 GO
 
+-- Control de calidad de una orden
+-- Una orden en proceso solo se completa si todas sus actividades fueron revisadas (marcadas como hechas).
+-- Si falta alguna, la orden sigue en proceso. Al aprobarla queda guardado quién la revisó y cuándo.
+CREATE OR ALTER PROCEDURE sp_CompletarOrdenConControl
+	@orden_id VARCHAR(50),
+	@nota VARCHAR(500) = NULL,
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	DECLARE @estado VARCHAR(25), @total INT, @pendientes INT, @completada INT, @r INT, @m VARCHAR(100);
+
+	SELECT @estado = eo.nombre_estado_orden
+	FROM ordenes o
+	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
+	WHERE o.orden_id = @orden_id;
+
+	IF NOT EXISTS (SELECT 1 FROM ordenes WHERE orden_id = @orden_id)
+	BEGIN
+		SET @mensaje = 'La orden no existe.';
+		RETURN;
+	END
+
+	IF ISNULL(@estado, '') <> 'En proceso'
+	BEGIN
+		SET @mensaje = 'El control de calidad se hace a una orden en proceso.';
+		RETURN;
+	END
+
+	IF LEN(ISNULL(@nota, '')) > 200
+	BEGIN
+		SET @mensaje = 'La nota del control no puede tener mas de 200 caracteres.';
+		RETURN;
+	END
+
+	SELECT @total = COUNT(1),
+		   @pendientes = SUM(CASE WHEN ISNULL(estado, 0) = 0 THEN 1 ELSE 0 END)
+	FROM orden_actividades
+	WHERE orden_id = @orden_id;
+
+	IF ISNULL(@total, 0) = 0
+	BEGIN
+		SET @mensaje = 'La orden no tiene actividades para revisar.';
+		RETURN;
+	END
+
+	IF @pendientes > 0
+	BEGIN
+		SET @mensaje = 'Faltan ' + CAST(@pendientes AS VARCHAR(10)) + ' de ' + CAST(@total AS VARCHAR(10))
+					 + ' actividades por revisar. La orden sigue en proceso.';
+		RETURN;
+	END
+
+	UPDATE ordenes
+	SET control_calidad_fecha = GETDATE(),
+		control_calidad_usuario_id = TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT),
+		control_calidad_nota = NULLIF(LTRIM(RTRIM(ISNULL(@nota, ''))), '')
+	WHERE orden_id = @orden_id;
+
+	SET @completada = (SELECT estado_orden_id FROM estados_orden WHERE nombre_estado_orden = 'Completada');
+
+	EXEC sp_CambiarEstadoOrden @orden_id, @completada, @r OUTPUT, @m OUTPUT;
+
+	IF @r = 0
+	BEGIN
+		-- No se pudo completar: el control no queda aprobado
+		UPDATE ordenes
+		SET control_calidad_fecha = NULL, control_calidad_usuario_id = NULL, control_calidad_nota = NULL
+		WHERE orden_id = @orden_id;
+
+		SET @mensaje = @m;
+		RETURN;
+	END
+
+	SET @resultado = 1;
+	SET @mensaje = 'Control de calidad aprobado. La orden quedo completada.';
+END
+GO
+
 CREATE OR ALTER PROCEDURE sp_MarcarActividadOrden
 	@orden_id VARCHAR(50),
 	@actividad_id INT,
@@ -2707,7 +2804,9 @@ BEGIN
 
 	UPDATE orden_actividades
 	SET estado = @estado,
-		duracion_min = CASE WHEN @estado = 1 THEN @duracion_min ELSE NULL END
+		duracion_min = CASE WHEN @estado = 1 THEN @duracion_min ELSE NULL END,
+		usuario_id = CASE WHEN @estado = 1 THEN TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT) ELSE NULL END,
+		fecha_marcado = CASE WHEN @estado = 1 THEN GETDATE() ELSE NULL END
 	WHERE orden_id = @orden_id AND actividad_id = @actividad_id;
 
 	SET @resultado = 1;

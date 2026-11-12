@@ -1,4 +1,4 @@
-IF DB_ID('Codelex') IS NULL
+﻿IF DB_ID('Codelex') IS NULL
 	CREATE DATABASE Codelex;
 GO
 
@@ -10,6 +10,10 @@ BEGIN
 	RAISERROR('No se pudo usar la base Codelex.', 16, 1);
 	SET NOEXEC ON;
 END
+GO
+
+-- Necesario para el indice filtrado de FACTURAS (SSMS y la aplicacion ya lo traen activado)
+SET QUOTED_IDENTIFIER ON;
 GO
 
 -- Tablas
@@ -106,7 +110,8 @@ CREATE TABLE locaciones
 	nombre_locacion VARCHAR(60),
 	direccion VARCHAR(80),
 	tipo_locacion VARCHAR(25),
-	identificacion_cliente VARCHAR(30) CONSTRAINT FK_LOCACIONES_CLIENTES REFERENCES clientes(identificacion_cliente) ON UPDATE CASCADE
+	identificacion_cliente VARCHAR(30) CONSTRAINT FK_LOCACIONES_CLIENTES REFERENCES clientes(identificacion_cliente) ON UPDATE CASCADE,
+	estado_locacion BIT NOT NULL CONSTRAINT DF_LOCACIONES_estadoLocacion DEFAULT 1
 )
 GO
 
@@ -182,6 +187,21 @@ CREATE TABLE productos
 	nombre_producto VARCHAR(50),
 	tipo_producto VARCHAR(20),
 	stock INT
+)
+GO
+
+IF OBJECT_ID('ajustes_inventario') IS NULL
+CREATE TABLE ajustes_inventario
+(
+	ajuste_id INT PRIMARY KEY IDENTITY,
+	producto_id INT NOT NULL FOREIGN KEY REFERENCES productos(producto_id),
+	tipo_ajuste VARCHAR(10) NOT NULL
+		CONSTRAINT CK_AJUSTES_INVENTARIO_tipoAjuste CHECK (tipo_ajuste IN ('Merma', 'Perdida', 'Conteo')),
+	stock_antes INT NOT NULL,
+	stock_despues INT NOT NULL,
+	motivo VARCHAR(100) NOT NULL,
+	usuario_id INT FOREIGN KEY REFERENCES usuarios(usuario_id),
+	fecha_ajuste DATETIME NOT NULL CONSTRAINT DF_AJUSTES_INVENTARIO_fechaAjuste DEFAULT GETDATE()
 )
 GO
 
@@ -282,16 +302,23 @@ IF OBJECT_ID('facturas') IS NULL
 CREATE TABLE facturas
 (
 	factura_id INT PRIMARY KEY IDENTITY,
-	orden_id VARCHAR(50) FOREIGN KEY REFERENCES ordenes(orden_id) UNIQUE,
+	orden_id VARCHAR(50) FOREIGN KEY REFERENCES ordenes(orden_id),
 	fecha_factura DATE,
 	tipo_pago VARCHAR(10) NOT NULL DEFAULT 'Contado'
 		CHECK (tipo_pago IN ('Contado', 'Credito')),
 	estado_pago VARCHAR(50) DEFAULT 'Pendiente'
-		CHECK (estado_pago IN ('Pendiente', 'Pagada')),
+		CONSTRAINT CK_FACTURAS_estadoPago CHECK (estado_pago IN ('Pendiente', 'Pagada', 'Anulada')),
 	fecha_pago DATE,
 	forma_pago_id INT FOREIGN KEY REFERENCES formas_pago(forma_pago_id),
-	precio_facturado MONEY
+	precio_facturado MONEY,
+	motivo_anulacion VARCHAR(100),
+	fecha_anulacion DATE
 )
+GO
+
+-- Una orden solo puede tener una factura vigente (si se anula, se puede facturar de nuevo)
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_FACTURAS_orden' AND object_id = OBJECT_ID('facturas'))
+	CREATE UNIQUE INDEX UX_FACTURAS_orden ON facturas(orden_id) WHERE estado_pago <> 'Anulada';
 GO
 
 IF OBJECT_ID('cotizaciones') IS NULL

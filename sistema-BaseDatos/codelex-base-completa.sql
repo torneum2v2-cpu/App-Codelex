@@ -12,6 +12,10 @@ BEGIN
 END
 GO
 
+-- Necesario para el indice filtrado de FACTURAS (SSMS y la aplicacion ya lo traen activado)
+SET QUOTED_IDENTIFIER ON;
+GO
+
 -- Nombres estandar: tablas en plural y minuscula, campos en singular con guion bajo.
 -- Solo cambia las bases creadas con los nombres anteriores; si la base ya esta al dia, no hace nada.
 
@@ -520,7 +524,8 @@ CREATE TABLE locaciones
 	nombre_locacion VARCHAR(60),
 	direccion VARCHAR(80),
 	tipo_locacion VARCHAR(25),
-	identificacion_cliente VARCHAR(30) CONSTRAINT FK_LOCACIONES_CLIENTES REFERENCES clientes(identificacion_cliente) ON UPDATE CASCADE
+	identificacion_cliente VARCHAR(30) CONSTRAINT FK_LOCACIONES_CLIENTES REFERENCES clientes(identificacion_cliente) ON UPDATE CASCADE,
+	estado_locacion BIT NOT NULL CONSTRAINT DF_LOCACIONES_estadoLocacion DEFAULT 1
 )
 GO
 
@@ -596,6 +601,21 @@ CREATE TABLE productos
 	nombre_producto VARCHAR(50),
 	tipo_producto VARCHAR(20),
 	stock INT
+)
+GO
+
+IF OBJECT_ID('ajustes_inventario') IS NULL
+CREATE TABLE ajustes_inventario
+(
+	ajuste_id INT PRIMARY KEY IDENTITY,
+	producto_id INT NOT NULL FOREIGN KEY REFERENCES productos(producto_id),
+	tipo_ajuste VARCHAR(10) NOT NULL
+		CONSTRAINT CK_AJUSTES_INVENTARIO_tipoAjuste CHECK (tipo_ajuste IN ('Merma', 'Perdida', 'Conteo')),
+	stock_antes INT NOT NULL,
+	stock_despues INT NOT NULL,
+	motivo VARCHAR(100) NOT NULL,
+	usuario_id INT FOREIGN KEY REFERENCES usuarios(usuario_id),
+	fecha_ajuste DATETIME NOT NULL CONSTRAINT DF_AJUSTES_INVENTARIO_fechaAjuste DEFAULT GETDATE()
 )
 GO
 
@@ -696,16 +716,23 @@ IF OBJECT_ID('facturas') IS NULL
 CREATE TABLE facturas
 (
 	factura_id INT PRIMARY KEY IDENTITY,
-	orden_id VARCHAR(50) FOREIGN KEY REFERENCES ordenes(orden_id) UNIQUE,
+	orden_id VARCHAR(50) FOREIGN KEY REFERENCES ordenes(orden_id),
 	fecha_factura DATE,
 	tipo_pago VARCHAR(10) NOT NULL DEFAULT 'Contado'
 		CHECK (tipo_pago IN ('Contado', 'Credito')),
 	estado_pago VARCHAR(50) DEFAULT 'Pendiente'
-		CHECK (estado_pago IN ('Pendiente', 'Pagada')),
+		CONSTRAINT CK_FACTURAS_estadoPago CHECK (estado_pago IN ('Pendiente', 'Pagada', 'Anulada')),
 	fecha_pago DATE,
 	forma_pago_id INT FOREIGN KEY REFERENCES formas_pago(forma_pago_id),
-	precio_facturado MONEY
+	precio_facturado MONEY,
+	motivo_anulacion VARCHAR(100),
+	fecha_anulacion DATE
 )
+GO
+
+-- Una orden solo puede tener una factura vigente (si se anula, se puede facturar de nuevo)
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_FACTURAS_orden' AND object_id = OBJECT_ID('facturas'))
+	CREATE UNIQUE INDEX UX_FACTURAS_orden ON facturas(orden_id) WHERE estado_pago <> 'Anulada';
 GO
 
 IF OBJECT_ID('cotizaciones') IS NULL
@@ -1595,6 +1622,49 @@ BEGIN
 END
 GO
 
+IF COL_LENGTH('locaciones', 'estado_locacion') IS NULL
+	ALTER TABLE locaciones
+	ADD estado_locacion BIT NOT NULL
+		CONSTRAINT DF_LOCACIONES_estadoLocacion DEFAULT 1;
+GO
+
+IF COL_LENGTH('facturas', 'motivo_anulacion') IS NULL
+	ALTER TABLE facturas ADD motivo_anulacion VARCHAR(100) NULL;
+GO
+
+IF COL_LENGTH('facturas', 'fecha_anulacion') IS NULL
+	ALTER TABLE facturas ADD fecha_anulacion DATE NULL;
+GO
+
+-- El estado de la factura ahora acepta 'Anulada'
+IF NOT EXISTS (SELECT 1 FROM sys.check_constraints
+			   WHERE name = 'CK_FACTURAS_estadoPago' AND parent_object_id = OBJECT_ID('facturas'))
+BEGIN
+	DECLARE @sql NVARCHAR(MAX) = N'';
+
+	SELECT @sql = @sql + N'ALTER TABLE facturas DROP CONSTRAINT ' + QUOTENAME(name) + N'; '
+	FROM sys.check_constraints
+	WHERE parent_object_id = OBJECT_ID('facturas') AND definition LIKE '%estado_pago%';
+
+	EXEC sp_executesql @sql;
+
+	EXEC('ALTER TABLE facturas ADD CONSTRAINT CK_FACTURAS_estadoPago
+		  CHECK (estado_pago IN (''Pendiente'', ''Pagada'', ''Anulada''))');
+END
+GO
+
+-- Una orden con factura anulada se puede facturar otra vez (el unico pasa a ser un índice filtrado)
+DECLARE @sql NVARCHAR(MAX) = N'';
+
+SELECT @sql = @sql + N'ALTER TABLE facturas DROP CONSTRAINT ' + QUOTENAME(kc.name) + N'; '
+FROM sys.key_constraints kc
+INNER JOIN sys.index_columns ic ON ic.object_id = kc.parent_object_id AND ic.index_id = kc.unique_index_id
+INNER JOIN sys.columns c ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+WHERE kc.parent_object_id = OBJECT_ID('facturas') AND kc.type = 'UQ' AND c.name = 'orden_id';
+
+EXEC sp_executesql @sql;
+GO
+
 -- Login y recuperación de contraseña
 
 CREATE OR ALTER PROCEDURE sp_ObtenerUsuarioLogin
@@ -2339,6 +2409,7 @@ BEGIN
 	SELECT locacion_id, nombre_locacion, direccion, tipo_locacion, identificacion_cliente
 	FROM locaciones
 	WHERE identificacion_cliente = @identificacion_cliente
+	  AND estado_locacion = 1
 	ORDER BY nombre_locacion;
 END
 GO
@@ -2350,7 +2421,38 @@ BEGIN
 
 	SELECT locacion_id, nombre_locacion, direccion, tipo_locacion, identificacion_cliente
 	FROM locaciones
+	WHERE estado_locacion = 1
 	ORDER BY nombre_locacion;
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_BuscarLocaciones
+	@texto VARCHAR(60) = '',
+	@estado BIT = NULL,
+	@identificacion_cliente VARCHAR(30) = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
+
+	SELECT l.locacion_id,
+		   l.nombre_locacion,
+		   l.direccion,
+		   l.tipo_locacion,
+		   l.identificacion_cliente,
+		   ISNULL(c.nombre_empresa, l.identificacion_cliente) AS cliente,
+		   l.estado_locacion,
+		   CASE WHEN l.estado_locacion = 1 THEN 'Activa' ELSE 'Inactiva' END AS estado
+	FROM locaciones l
+	LEFT JOIN clientes c ON c.identificacion_cliente = l.identificacion_cliente
+	WHERE (@texto = '' OR l.nombre_locacion LIKE '%' + @texto + '%'
+		   OR l.direccion LIKE '%' + @texto + '%'
+		   OR l.identificacion_cliente LIKE '%' + @texto + '%'
+		   OR c.nombre_empresa LIKE '%' + @texto + '%')
+	  AND (@estado IS NULL OR l.estado_locacion = @estado)
+	  AND (@identificacion_cliente IS NULL OR l.identificacion_cliente = @identificacion_cliente)
+	ORDER BY l.nombre_locacion;
 END
 GO
 
@@ -2427,6 +2529,45 @@ BEGIN
 
 	SET @resultado = 1;
 	SET @mensaje = 'Locacion actualizada correctamente.';
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_CambiarEstadoLocacion
+	@locacion_id INT,
+	@estado_locacion BIT,
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	IF NOT EXISTS (SELECT 1 FROM locaciones WHERE locacion_id = @locacion_id)
+	BEGIN
+		SET @mensaje = 'La locacion no existe.';
+		RETURN;
+	END
+
+	IF @estado_locacion = 0
+	AND EXISTS (SELECT 1 FROM ordenes o
+				INNER JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
+				WHERE o.locacion_id = @locacion_id
+				  AND eo.nombre_estado_orden IN ('Pendiente', 'En proceso'))
+	BEGIN
+		SET @mensaje = 'No se puede desactivar: tiene ordenes pendientes o en proceso.';
+		RETURN;
+	END
+
+	UPDATE locaciones
+	SET estado_locacion = @estado_locacion
+	WHERE locacion_id = @locacion_id;
+
+	SET @resultado = 1;
+	SET @mensaje = CASE WHEN @estado_locacion = 1
+						THEN 'Locacion activada correctamente.'
+						ELSE 'Locacion desactivada correctamente.' END;
 END
 GO
 
@@ -3016,6 +3157,15 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM vehiculos WHERE vehiculo_id = @vehiculo_id)
 	BEGIN
 		SET @mensaje = 'El vehiculo no existe.';
+		RETURN;
+	END
+
+	IF @estado_vehiculo = 0
+	AND EXISTS (SELECT 1 FROM ordenes o
+				INNER JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
+				WHERE o.vehiculo_id = @vehiculo_id AND eo.nombre_estado_orden = 'En proceso')
+	BEGIN
+		SET @mensaje = 'No se puede desactivar: el vehiculo esta en una orden en proceso.';
 		RETURN;
 	END
 
@@ -3678,7 +3828,7 @@ BEGIN
 	LEFT JOIN locaciones l ON l.locacion_id = o.locacion_id
 	LEFT JOIN vehiculos v ON v.vehiculo_id = o.vehiculo_id
 	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
-	LEFT JOIN facturas f ON f.orden_id = o.orden_id
+	LEFT JOIN facturas f ON f.orden_id = o.orden_id AND f.estado_pago <> 'Anulada'
 	OUTER APPLY (SELECT TOP 1 x.turno, x.piso_area
 				 FROM orden_empleados x
 				 WHERE x.orden_id = o.orden_id
@@ -4052,6 +4202,18 @@ BEGIN
 		RETURN;
 	END
 
+	IF @nuevo = 'Completada'
+	BEGIN
+		DECLARE @pendientes INT = (SELECT COUNT(1) FROM orden_actividades
+								   WHERE orden_id = @orden_id AND ISNULL(estado, 0) = 0);
+
+		IF @pendientes > 0
+		BEGIN
+			SET @mensaje = 'Faltan ' + CAST(@pendientes AS VARCHAR(10)) + ' actividades por marcar como hechas.';
+			RETURN;
+		END
+	END
+
 	IF @nuevo = 'En proceso' AND ISNULL(@actual, '') <> 'En proceso'
 	BEGIN
 		DECLARE @ocupado VARCHAR(100);
@@ -4074,8 +4236,9 @@ BEGIN
 
 		UPDATE ordenes SET estado_orden_id = @estado_orden_id WHERE orden_id = @orden_id;
 
-		-- Al cancelar se devuelve el stock de los productos
-		IF @nuevo = 'Cancelada'
+		-- Al cancelar una orden que aun no empezo se devuelve el stock de los productos.
+		-- Si ya estaba en proceso, los productos ya se usaron y no se devuelven.
+		IF @nuevo = 'Cancelada' AND ISNULL(@actual, '') <> 'En proceso'
 		BEGIN
 			UPDATE p
 			SET p.stock = ISNULL(p.stock, 0) + op.cantidad
@@ -4094,6 +4257,9 @@ BEGIN
 
 		SET @resultado = 1;
 		SET @mensaje = 'La orden ahora esta ' + LOWER(@nuevo) + '.';
+
+		IF @nuevo = 'Cancelada' AND ISNULL(@actual, '') = 'En proceso'
+			SET @mensaje = 'Orden cancelada. Los productos ya se usaron y no vuelven al inventario.';
 	END TRY
 	BEGIN CATCH
 		IF @@TRANCOUNT > 0
@@ -5296,7 +5462,7 @@ BEGIN
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM facturas WHERE orden_id = @orden_id)
+	IF EXISTS (SELECT 1 FROM facturas WHERE orden_id = @orden_id AND estado_pago <> 'Anulada')
 	BEGIN
 		SET @mensaje = 'Esta orden ya fue facturada.';
 		RETURN;
@@ -5443,6 +5609,7 @@ BEGIN
 		   ISNULL(l.nombre_locacion, '') AS nombre_locacion,
 		   ISNULL(l.tipo_locacion, '') AS tipo_locacion,
 		   ISNULL(l.direccion, '') AS direccion,
+		   ISNULL(f.motivo_anulacion, '') AS motivo_anulacion,
 		   pg.pagado,
 		   ISNULL(f.precio_facturado, 0) - pg.pagado AS saldo
 	FROM facturas f
@@ -5519,7 +5686,7 @@ BEGIN
 		   ISNULL(l.direccion, '') AS direccion,
 		   ISNULL(s.nombre_servicio, '') AS nombre_servicio,
 		   CASE WHEN eo.nombre_estado_orden = 'Completada'
-				 AND NOT EXISTS (SELECT 1 FROM facturas f WHERE f.orden_id = o.orden_id)
+				 AND NOT EXISTS (SELECT 1 FROM facturas f WHERE f.orden_id = o.orden_id AND f.estado_pago <> 'Anulada')
 				THEN 1 ELSE 0 END AS facturable
 	FROM ordenes o
 	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
@@ -5643,6 +5810,12 @@ BEGIN
 		RETURN;
 	END
 
+	IF @estado = 'Anulada'
+	BEGIN
+		SET @mensaje = 'La factura esta anulada.';
+		RETURN;
+	END
+
 	IF @estado = 'Pagada'
 	BEGIN
 		SET @mensaje = 'La factura ya esta pagada.';
@@ -5718,9 +5891,11 @@ BEGIN
 	SET @mensaje = '';
 	SET @fecha_pago = ISNULL(@fecha_pago, CAST(GETDATE() AS DATE));
 
-	DECLARE @factura_id INT, @forma_pago_id INT, @numero INT, @saldo MONEY, @saldo_total MONEY;
+	DECLARE @factura_id INT, @forma_pago_id INT, @numero INT, @saldo MONEY, @saldo_total MONEY,
+			@estado_factura VARCHAR(50);
 
 	SELECT @factura_id = cc.factura_id,
+		   @estado_factura = f.estado_pago,
 		   @forma_pago_id = f.forma_pago_id,
 		   @numero = q.numero_cuota,
 		   @saldo = q.monto_cuota - ISNULL(q.monto_pagado, 0)
@@ -5732,6 +5907,12 @@ BEGIN
 	IF @factura_id IS NULL
 	BEGIN
 		SET @mensaje = 'La cuota no existe.';
+		RETURN;
+	END
+
+	IF @estado_factura = 'Anulada'
+	BEGIN
+		SET @mensaje = 'La factura esta anulada.';
 		RETURN;
 	END
 
@@ -5817,6 +5998,12 @@ BEGIN
 	IF @tipo = 'Credito'
 	BEGIN
 		SET @mensaje = 'Las facturas a credito se pagan por cuotas.';
+		RETURN;
+	END
+
+	IF @estado = 'Anulada'
+	BEGIN
+		SET @mensaje = 'La factura esta anulada.';
 		RETURN;
 	END
 
@@ -5915,7 +6102,8 @@ BEGIN
 	INNER JOIN facturas f ON f.factura_id = cc.factura_id
 	INNER JOIN ordenes o ON o.orden_id = f.orden_id
 	LEFT JOIN clientes c ON c.identificacion_cliente = o.identificacion_cliente
-	WHERE (@texto = '' OR f.orden_id LIKE '%' + @texto + '%'
+	WHERE f.estado_pago <> 'Anulada'
+	  AND (@texto = '' OR f.orden_id LIKE '%' + @texto + '%'
 		   OR o.identificacion_cliente LIKE '%' + @texto + '%'
 		   OR c.nombre_empresa LIKE '%' + @texto + '%')
 	  AND (@estado_cuenta = '' OR cc.estado_cuenta = @estado_cuenta)
@@ -6078,6 +6266,172 @@ BEGIN
 	FROM productos
 	WHERE ISNULL(stock, 0) <= @minimo
 	ORDER BY stock, nombre_producto;
+END
+GO
+
+-- Anular una factura
+-- Una factura se anula con un motivo. Si es a credito y ya tiene abonos no se puede anular.
+-- Al anular, la orden queda libre para facturarse otra vez.
+CREATE OR ALTER PROCEDURE sp_AnularFactura
+	@factura_id INT,
+	@motivo VARCHAR(100),
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	DECLARE @tipo VARCHAR(10), @estado VARCHAR(50);
+
+	SELECT @tipo = tipo_pago, @estado = estado_pago FROM facturas WHERE factura_id = @factura_id;
+
+	IF @tipo IS NULL
+	BEGIN
+		SET @mensaje = 'La factura no existe.';
+		RETURN;
+	END
+
+	IF @estado = 'Anulada'
+	BEGIN
+		SET @mensaje = 'La factura ya esta anulada.';
+		RETURN;
+	END
+
+	IF @motivo IS NULL OR LEN(LTRIM(RTRIM(@motivo))) < 5
+	BEGIN
+		SET @mensaje = 'El motivo de la anulacion debe tener al menos 5 caracteres.';
+		RETURN;
+	END
+
+	IF @tipo = 'Credito'
+	AND EXISTS (SELECT 1 FROM cuentas_por_cobrar cc
+				INNER JOIN cuotas q ON q.cuenta_id = cc.cuenta_id
+				WHERE cc.factura_id = @factura_id AND ISNULL(q.monto_pagado, 0) > 0)
+	BEGIN
+		SET @mensaje = 'No se puede anular: la factura a credito ya tiene abonos.';
+		RETURN;
+	END
+
+	UPDATE facturas
+	SET estado_pago = 'Anulada',
+		motivo_anulacion = LTRIM(RTRIM(@motivo)),
+		fecha_anulacion = CAST(GETDATE() AS DATE)
+	WHERE factura_id = @factura_id;
+
+	SET @resultado = 1;
+	SET @mensaje = 'La factura se anulo correctamente.';
+END
+GO
+
+-- Ajustes de inventario
+-- Merma y Perdida descuentan unidades del stock. Conteo fija el stock en lo que se conto.
+
+CREATE OR ALTER PROCEDURE sp_AjustarInventario
+	@producto_id INT,
+	@tipo_ajuste VARCHAR(10),
+	@cantidad INT,
+	@motivo VARCHAR(100),
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SET XACT_ABORT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	DECLARE @stock INT, @nuevo INT;
+
+	SELECT @stock = ISNULL(stock, 0) FROM productos WHERE producto_id = @producto_id;
+
+	IF @stock IS NULL
+	BEGIN
+		SET @mensaje = 'El producto no existe.';
+		RETURN;
+	END
+
+	IF @tipo_ajuste IS NULL OR @tipo_ajuste NOT IN ('Merma', 'Perdida', 'Conteo')
+	BEGIN
+		SET @mensaje = 'El tipo de ajuste no es valido.';
+		RETURN;
+	END
+
+	IF @motivo IS NULL OR LEN(LTRIM(RTRIM(@motivo))) < 5
+	BEGIN
+		SET @mensaje = 'El motivo debe tener al menos 5 caracteres.';
+		RETURN;
+	END
+
+	IF @cantidad IS NULL OR @cantidad < 0 OR (@cantidad = 0 AND @tipo_ajuste <> 'Conteo')
+	BEGIN
+		SET @mensaje = 'La cantidad no es valida.';
+		RETURN;
+	END
+
+	IF @tipo_ajuste = 'Conteo'
+		SET @nuevo = @cantidad;
+	ELSE
+		SET @nuevo = @stock - @cantidad;
+
+	IF @nuevo < 0
+	BEGIN
+		SET @mensaje = 'La cantidad es mayor que el stock actual (' + CAST(@stock AS VARCHAR(10)) + ').';
+		RETURN;
+	END
+
+	IF @nuevo = @stock
+	BEGIN
+		SET @mensaje = 'El conteo es igual al stock actual. No hay nada que ajustar.';
+		RETURN;
+	END
+
+	BEGIN TRY
+		BEGIN TRANSACTION;
+
+		UPDATE productos SET stock = @nuevo WHERE producto_id = @producto_id;
+
+		INSERT INTO ajustes_inventario (producto_id, tipo_ajuste, stock_antes, stock_despues, motivo, usuario_id)
+		VALUES (@producto_id, @tipo_ajuste, @stock, @nuevo, LTRIM(RTRIM(@motivo)),
+				TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT));
+
+		COMMIT TRANSACTION;
+
+		SET @resultado = 1;
+		SET @mensaje = 'Ajuste registrado. Stock: ' + CAST(@stock AS VARCHAR(10)) + ' a ' + CAST(@nuevo AS VARCHAR(10)) + '.';
+	END TRY
+	BEGIN CATCH
+		IF @@TRANCOUNT > 0
+			ROLLBACK TRANSACTION;
+
+		SET @mensaje = LEFT(ERROR_MESSAGE(), 100);
+	END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE sp_ListarAjustesInventario
+	@producto_id INT = NULL
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT TOP 200
+		   a.ajuste_id,
+		   a.fecha_ajuste,
+		   p.nombre_producto,
+		   a.tipo_ajuste,
+		   a.stock_antes,
+		   a.stock_despues,
+		   a.motivo,
+		   ISNULL(u.usuario, '') AS usuario
+	FROM ajustes_inventario a
+	INNER JOIN productos p ON p.producto_id = a.producto_id
+	LEFT JOIN usuarios u ON u.usuario_id = a.usuario_id
+	WHERE @producto_id IS NULL OR a.producto_id = @producto_id
+	ORDER BY a.ajuste_id DESC;
 END
 GO
 
@@ -6292,6 +6646,27 @@ BEGIN
 				 WHEN EXISTS (SELECT 1 FROM inserted) THEN 'INSERT'
 				 ELSE 'DELETE' END,
 			'productos',
+			LEFT(HOST_NAME(), 50),
+			GETDATE());
+END
+GO
+
+CREATE OR ALTER TRIGGER trg_bitacora_AJUSTES_INVENTARIO
+ON ajustes_inventario
+AFTER INSERT, UPDATE, DELETE
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
+		RETURN;
+
+	INSERT INTO bitacoras (usuario_id, accion, tabla, equipo_sistema, fecha_bitacora)
+	VALUES (TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT),
+			CASE WHEN EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted) THEN 'UPDATE'
+				 WHEN EXISTS (SELECT 1 FROM inserted) THEN 'INSERT'
+				 ELSE 'DELETE' END,
+			'ajustes_inventario',
 			LEFT(HOST_NAME(), 50),
 			GETDATE());
 END

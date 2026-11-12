@@ -1,6 +1,7 @@
 ﻿using Codelex.AccesoDatos;
 using System.Data;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace Codelex
@@ -105,10 +106,25 @@ namespace Codelex
         }
 
         /// <summary>
+        /// Atiende el cambio de cargo: muestra con qué rol entra el usuario de ese empleado.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
+        private void cargoSeleccionCambiado(object sender, SelectionChangedEventArgs e)
+        {
+            if (cmbCargo.SelectedItem == null)
+                return;
+
+            DataRowView fila = (DataRowView)cmbCargo.SelectedItem;
+            lblRolCargo.Text = "Con este cargo el usuario entra como: " + fila["nombre_rol"];
+        }
+
+        /// <summary>
         /// Limpia formulario.
         /// </summary>
         private void limpiarFormulario()
         {
+            lblRolCargo.Text = "El cargo define a qué puede entrar el usuario de este empleado.";
             empleadoActual = 0;
             empleadoActualActivo = true;
 

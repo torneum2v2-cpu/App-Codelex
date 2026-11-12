@@ -401,13 +401,15 @@
 
                                 <StackPanel Grid.Row="0" Grid.ColumnSpan="3" Margin="0,0,0,12">
                                     <TextBlock Text="Cargo *" Style="{StaticResource Etiqueta}"/>
-                                    <ComboBox x:Name="cmbCargo" SelectedValuePath="cargo_id">
+                                    <ComboBox x:Name="cmbCargo" SelectedValuePath="cargo_id" SelectionChanged="cargoSeleccionCambiado">
                                         <ComboBox.ItemTemplate>
                                             <DataTemplate>
                                                 <TextBlock Text="{Binding nombre_cargo}"/>
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
+                                    <TextBlock x:Name="lblRolCargo" Style="{StaticResource Nota}" Margin="0,4,0,0"
+                                               Text="El cargo define a qué puede entrar el usuario de este empleado."/>
                                 </StackPanel>
                                 <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,12">
                                     <TextBlock Text="Nombre *" Style="{StaticResource Etiqueta}"/>

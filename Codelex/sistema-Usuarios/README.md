@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Crear y administrar las cuentas de acceso: elegir un empleado (con la lupa), definir usuario, contraseña y rol, y activar o desactivar la cuenta.
+Crear y administrar las cuentas de acceso: elegir un empleado (con la lupa), definir usuario y contraseña, y activar o desactivar la cuenta. El rol no se escoge: sale del cargo del empleado (Administrador = Usuario Avanzado, Supervisor = Usuario Medio, Operario = Usuario Básico). Solo un usuario avanzado crea o cambia cuentas de administrador.
 
 ## Archivos
 
@@ -14,7 +14,7 @@ Crear y administrar las cuentas de acceso: elegir un empleado (con la lupa), def
 ## Dependencias
 
 - Clase `UsuarioBD` de `sistema-AccesoDatos`.
-- Procedimientos: `sp_BuscarUsuarios`, `sp_BuscarEmpleadosSinUsuario`, `sp_InsertarUsuario`, `sp_ActualizarUsuario`, `sp_CambiarEstadoUsuario`, `sp_EliminarUsuario`, `sp_ExisteUsuario`, `sp_ListarRoles`.
+- Procedimientos: `sp_BuscarUsuarios`, `sp_BuscarEmpleadosSinUsuario`, `sp_InsertarUsuario`, `sp_ActualizarUsuario`, `sp_CambiarEstadoUsuario`, `sp_EliminarUsuario`, `sp_ExisteUsuario`.
 - Tablas: `usuarios`, `roles`, `empleados`.
 
 ## Cómo ejecutarlo

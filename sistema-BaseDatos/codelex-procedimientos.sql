@@ -205,17 +205,6 @@ GO
 
 -- Usuarios
 
-CREATE OR ALTER PROCEDURE sp_ListarRoles
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SELECT rol_id, nombre_rol
-	FROM roles
-	ORDER BY rol_id;
-END
-GO
-
 CREATE OR ALTER PROCEDURE sp_BuscarUsuarios
 	@texto VARCHAR(50) = NULL,
 	@buscar_por VARCHAR(10) = NULL,
@@ -230,9 +219,11 @@ BEGIN
 	SELECT u.usuario_id, u.empleado_id, u.usuario, u.rol_id, u.estado_usuario,
 		   e.nombre_empleado, e.apellido_empleado, e.correo_empleado, e.telefono_empleado,
 		   r.nombre_rol AS rol,
+		   ISNULL(c.nombre_cargo, '') AS nombre_cargo,
 		   CASE WHEN u.estado_usuario = 1 THEN 'Activo' ELSE 'Inactivo' END AS estado
 	FROM usuarios u
 	INNER JOIN empleados e ON e.empleado_id = u.empleado_id
+	LEFT JOIN cargos c ON c.cargo_id = e.cargo_id
 	LEFT JOIN roles r ON r.rol_id = u.rol_id
 	WHERE (@estado IS NULL OR u.estado_usuario = @estado)
 	  AND (@texto = ''
@@ -265,9 +256,11 @@ BEGIN
 	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
 
 	SELECT e.empleado_id, e.nombre_empleado, e.apellido_empleado, e.identidad,
-		   e.telefono_empleado, e.correo_empleado, c.nombre_cargo
+		   e.telefono_empleado, e.correo_empleado, c.nombre_cargo,
+		   ISNULL(r.nombre_rol, '') AS rol_cargo
 	FROM empleados e
 	LEFT JOIN cargos c ON c.cargo_id = e.cargo_id
+	LEFT JOIN roles r ON r.rol_id = c.rol_id
 	WHERE NOT EXISTS (SELECT 1 FROM usuarios u WHERE u.empleado_id = e.empleado_id)
 	  AND (@texto = ''
 		   OR e.identidad LIKE '%' + @texto + '%'
@@ -296,7 +289,6 @@ CREATE OR ALTER PROCEDURE sp_InsertarUsuario
 	@empleado_id INT,
 	@usuario VARCHAR(50),
 	@contrasena_hash VARCHAR(255),
-	@rol_id INT,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
 AS
@@ -332,9 +324,15 @@ BEGIN
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM roles WHERE rol_id = @rol_id)
+	-- El rol sale del cargo del empleado
+	DECLARE @rol_id INT = (SELECT c.rol_id
+						   FROM empleados e
+						   INNER JOIN cargos c ON c.cargo_id = e.cargo_id
+						   WHERE e.empleado_id = @empleado_id);
+
+	IF @rol_id IS NULL
 	BEGIN
-		SET @mensaje = 'El rol seleccionado no existe.';
+		SET @mensaje = 'El cargo del empleado no tiene un rol asignado.';
 		RETURN;
 	END
 
@@ -350,7 +348,6 @@ CREATE OR ALTER PROCEDURE sp_ActualizarUsuario
 	@usuario_id INT,
 	@usuario VARCHAR(50),
 	@contrasena_hash VARCHAR(255) = NULL,
-	@rol_id INT,
 	@resultado INT OUTPUT,
 	@mensaje VARCHAR(100) OUTPUT
 AS
@@ -382,9 +379,16 @@ BEGIN
 		RETURN;
 	END
 
-	IF NOT EXISTS (SELECT 1 FROM roles WHERE rol_id = @rol_id)
+	-- El rol sale del cargo del empleado
+	DECLARE @rol_id INT = (SELECT c.rol_id
+						   FROM usuarios u
+						   INNER JOIN empleados e ON e.empleado_id = u.empleado_id
+						   INNER JOIN cargos c ON c.cargo_id = e.cargo_id
+						   WHERE u.usuario_id = @usuario_id);
+
+	IF @rol_id IS NULL
 	BEGIN
-		SET @mensaje = 'El rol seleccionado no existe.';
+		SET @mensaje = 'El cargo del empleado no tiene un rol asignado.';
 		RETURN;
 	END
 
@@ -924,7 +928,10 @@ CREATE OR ALTER PROCEDURE sp_ListarCargos
 AS
 BEGIN
 	SET NOCOUNT ON;
-	SELECT cargo_id, nombre_cargo FROM cargos ORDER BY nombre_cargo;
+	SELECT c.cargo_id, c.nombre_cargo, ISNULL(r.nombre_rol, '') AS nombre_rol
+	FROM cargos c
+	LEFT JOIN roles r ON r.rol_id = c.rol_id
+	ORDER BY c.nombre_cargo;
 END
 GO
 
@@ -1081,6 +1088,13 @@ BEGIN
 		telefono_empleado = NULLIF(@telefono_empleado, ''),
 		correo_empleado = NULLIF(@correo_empleado, '')
 	WHERE empleado_id = @empleado_id;
+
+	-- Si cambió el cargo, el usuario del empleado toma el rol del nuevo cargo
+	UPDATE u
+	SET u.rol_id = c.rol_id
+	FROM usuarios u
+	INNER JOIN cargos c ON c.cargo_id = @cargo_id
+	WHERE u.empleado_id = @empleado_id AND c.rol_id IS NOT NULL;
 
 	SET @resultado = 1;
 	SET @mensaje = 'Empleado actualizado correctamente.';

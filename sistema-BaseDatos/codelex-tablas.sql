@@ -48,6 +48,13 @@ CREATE TABLE roles
 )
 GO
 
+-- Cada cargo tiene un rol: el rol del usuario sale del cargo de su empleado
+IF COL_LENGTH('cargos', 'rol_id') IS NULL
+	ALTER TABLE cargos
+	ADD rol_id INT NULL
+		CONSTRAINT FK_CARGOS_ROLES REFERENCES roles(rol_id);
+GO
+
 IF OBJECT_ID('usuarios') IS NULL
 CREATE TABLE usuarios
 (
@@ -713,6 +720,25 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM cargos)
 	INSERT INTO cargos (nombre_cargo) VALUES ('Administrador'), ('Operario'), ('Supervisor');
+GO
+
+-- Rol de cada cargo: Administrador = Avanzado, Supervisor = Medio, Operario (y cualquier otro cargo) = Básico
+UPDATE c
+SET c.rol_id = r.rol_id
+FROM cargos c
+INNER JOIN roles r ON r.nombre_rol = CASE c.nombre_cargo WHEN 'Administrador' THEN 'Usuario Avanzado'
+														  WHEN 'Supervisor' THEN 'Usuario Medio'
+														  ELSE 'Usuario Básico' END
+WHERE c.rol_id IS NULL;
+GO
+
+-- Los usuarios que ya existen toman el rol de su cargo
+UPDATE u
+SET u.rol_id = c.rol_id
+FROM usuarios u
+INNER JOIN empleados e ON e.empleado_id = u.empleado_id
+INNER JOIN cargos c ON c.cargo_id = e.cargo_id
+WHERE c.rol_id IS NOT NULL AND ISNULL(u.rol_id, 0) <> c.rol_id;
 GO
 
 INSERT INTO estados_orden (nombre_estado_orden)

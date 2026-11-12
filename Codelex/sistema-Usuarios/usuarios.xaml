@@ -414,7 +414,7 @@
                             </Border>
                             <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
                                 <TextBlock Text="Usuarios" Foreground="White" FontSize="22" FontWeight="Bold"/>
-                                <TextBlock Text="Administra quién puede ingresar al sistema y con qué rol." Foreground="{StaticResource Muted}" FontSize="13"/>
+                                <TextBlock Text="Administra quién puede ingresar al sistema. El rol sale del cargo del empleado." Foreground="{StaticResource Muted}" FontSize="13"/>
                             </StackPanel>
                         </StackPanel>
 
@@ -523,8 +523,9 @@
                                         </StackPanel>
 
                                         <StackPanel Grid.Row="3" Grid.ColumnSpan="3" Margin="0,0,0,12">
-                                            <TextBlock Text="Rol *" Style="{StaticResource Etiqueta}"/>
-                                            <ComboBox x:Name="cmbRol" DisplayMemberPath="nombre_rol" SelectedValuePath="rol_id"/>
+                                            <TextBlock Text="Rol (lo define el cargo del empleado)" Style="{StaticResource Etiqueta}"/>
+                                            <TextBox x:Name="txtRol" IsReadOnly="True"
+                                                     ToolTip="El rol no se escoge: sale del cargo del empleado. Para cambiarlo, cambie el cargo en Empleados"/>
                                         </StackPanel>
 
                                         <StackPanel Grid.Row="4" Grid.Column="0">

@@ -32,6 +32,28 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
+        /// Revisa si quien tiene la sesión abierta puede asignar ese cargo.
+        /// El cargo da el rol del usuario, y el rol avanzado (Administrador) solo lo asigna un usuario avanzado.
+        /// </summary>
+        /// <param name="cargoId">Identificador del cargo.</param>
+        /// <returns>Texto del error, o texto vacío si puede asignarlo.</returns>
+        private string validarPermisoCargo(int cargoId)
+        {
+            if (Sesion.Nivel == NivelAcceso.Avanzado)
+                return "";
+
+            foreach (DataRow fila in listarCargos().Rows)
+            {
+                bool esAvanzado = ("" + fila["nombre_rol"]).ToLower().Contains("avanzado");
+
+                if (Convert.ToInt32(fila["cargo_id"]) == cargoId && esAvanzado)
+                    return "Solo un usuario avanzado puede asignar el cargo " + fila["nombre_cargo"] + ".";
+            }
+
+            return "";
+        }
+
+        /// <summary>
         /// Busca empleados.
         /// </summary>
         /// <param name="texto">Texto a usar.</param>
@@ -107,6 +129,8 @@ namespace Codelex.AccesoDatos
         {
             empleadoId = 0;
             mensaje = validarEmpleado(cargoId, nombre, apellido, identidad, telefono, correo);
+            if (mensaje == "")
+                mensaje = validarPermisoCargo(cargoId);
             if (mensaje != "")
                 return false;
 
@@ -139,6 +163,8 @@ namespace Codelex.AccesoDatos
                                        string telefono, string correo, out string mensaje)
         {
             mensaje = validarEmpleado(cargoId, nombre, apellido, identidad, telefono, correo);
+            if (mensaje == "")
+                mensaje = validarPermisoCargo(cargoId);
             if (mensaje != "")
                 return false;
 

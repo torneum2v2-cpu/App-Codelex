@@ -15,6 +15,7 @@ namespace Codelex
         int usuarioActual = 0;
         int empleadoActual = 0;
         bool usuarioActivo = true;
+        string rolActual = "";
 
         string textoBusqueda = "";
         string buscarPor = "";
@@ -35,29 +36,23 @@ namespace Codelex
         /// <param name="e">Datos del evento.</param>
         private void ventanaCargada(object sender, RoutedEventArgs e)
         {
-            cargarRoles();
             limpiarFormulario();
             cargarUsuarios();
         }
 
         /// <summary>
-        /// Carga roles.
+        /// Muestra el rol que le toca al empleado según su cargo.
         /// </summary>
-        private void cargarRoles()
+        /// <param name="rol">Nombre del rol.</param>
+        /// <param name="cargo">Nombre del cargo.</param>
+        private void mostrarRol(string rol, string cargo)
         {
-            try
-            {
-                DataTable roles = usuarioBD.listarRoles();
+            rolActual = rol;
 
-                if (Sesion.Nivel != NivelAcceso.Avanzado)
-                    roles.DefaultView.RowFilter = "nombreRol NOT LIKE '%Avanzado%'";
-
-                cmbRol.ItemsSource = roles.DefaultView;
-            }
-            catch (Exception ex)
-            {
-                mostrarError(ex);
-            }
+            if (rol == "")
+                txtRol.Text = "";
+            else
+                txtRol.Text = rol + "  (cargo: " + cargo + ")";
         }
 
         /// <summary>
@@ -103,7 +98,7 @@ namespace Codelex
             txtCorreo.Text = "";
             txtTelefono.Text = "";
             txtUsuario.Text = "";
-            cmbRol.SelectedIndex = -1;
+            mostrarRol("", "");
             pbContrasena.Clear();
             pbConfirmar.Clear();
 
@@ -158,7 +153,7 @@ namespace Codelex
             }
             txtUsuario.Text = sugerido;
 
-            cmbRol.SelectedIndex = -1;
+            mostrarRol("" + fila["rol_cargo"], "" + fila["nombre_cargo"]);
             pbContrasena.Clear();
             pbConfirmar.Clear();
 
@@ -182,10 +177,7 @@ namespace Codelex
 
             txtUsuario.Text = "" + fila["usuario"];
 
-            if (fila["rol_id"] == DBNull.Value)
-                cmbRol.SelectedIndex = -1;
-            else
-                cmbRol.SelectedValue = Convert.ToInt32(fila["rol_id"]);
+            mostrarRol("" + fila["rol"], "" + fila["nombre_cargo"]);
 
             pbContrasena.Clear();
             pbConfirmar.Clear();
@@ -253,8 +245,12 @@ namespace Codelex
             if (problema != "")
                 return problema;
 
-            if (cmbRol.SelectedValue == null)
-                return "Seleccione un rol.";
+            if (rolActual == "")
+                return "El cargo del empleado no tiene un rol asignado.";
+
+            problema = usuarioBD.validarPermisoRol(rolActual);
+            if (problema != "")
+                return problema;
 
             if (pbContrasena.Password != pbConfirmar.Password)
                 return "Las contraseñas no coinciden.";
@@ -306,8 +302,7 @@ namespace Codelex
                 string mensaje;
 
                 bool guardado = usuarioBD.crearUsuario(
-                    empleadoActual, txtUsuario.Text, pbContrasena.Password,
-                    Convert.ToInt32(cmbRol.SelectedValue), out mensaje);
+                    empleadoActual, txtUsuario.Text, pbContrasena.Password, out mensaje);
 
                 mostrarMensaje(guardado, mensaje);
 
@@ -345,8 +340,7 @@ namespace Codelex
                 string mensaje;
 
                 bool guardado = usuarioBD.actualizarUsuario(
-                    usuarioActual, txtUsuario.Text, pbContrasena.Password,
-                    Convert.ToInt32(cmbRol.SelectedValue), out mensaje);
+                    usuarioActual, txtUsuario.Text, pbContrasena.Password, out mensaje);
 
                 mostrarMensaje(guardado, mensaje);
 

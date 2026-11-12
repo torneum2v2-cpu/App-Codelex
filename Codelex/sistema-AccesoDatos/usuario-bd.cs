@@ -20,15 +20,6 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
-        /// Lista roles.
-        /// </summary>
-        /// <returns>Tabla con los datos consultados.</returns>
-        public DataTable listarRoles()
-        {
-            return consultar(procedimiento("sp_ListarRoles"));
-        }
-
-        /// <summary>
         /// Busca usuarios.
         /// </summary>
         /// <param name="texto">Texto a usar.</param>
@@ -103,12 +94,11 @@ namespace Codelex.AccesoDatos
         /// <param name="empleadoId">Identificador de empleado.</param>
         /// <param name="usuario">Nombre de usuario.</param>
         /// <param name="contrasena">Contraseña.</param>
-        /// <param name="rolId">Identificador de rol.</param>
         /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
         /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
-        public bool crearUsuario(int empleadoId, string usuario, string contrasena, int rolId, out string mensaje)
+        public bool crearUsuario(int empleadoId, string usuario, string contrasena, out string mensaje)
         {
-            return guardarUsuario(true, empleadoId, usuario, contrasena, rolId, out mensaje);
+            return guardarUsuario(true, empleadoId, usuario, contrasena, out mensaje);
         }
 
         /// <summary>
@@ -117,12 +107,11 @@ namespace Codelex.AccesoDatos
         /// <param name="usuarioId">Identificador del usuario.</param>
         /// <param name="usuario">Nombre de usuario.</param>
         /// <param name="contrasena">Contraseña.</param>
-        /// <param name="rolId">Identificador de rol.</param>
         /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
         /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
-        public bool actualizarUsuario(int usuarioId, string usuario, string contrasena, int rolId, out string mensaje)
+        public bool actualizarUsuario(int usuarioId, string usuario, string contrasena, out string mensaje)
         {
-            return guardarUsuario(false, usuarioId, usuario, contrasena, rolId, out mensaje);
+            return guardarUsuario(false, usuarioId, usuario, contrasena, out mensaje);
         }
 
         /// <summary>
@@ -156,6 +145,20 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
+        /// Revisa si quien tiene la sesión abierta puede crear o cambiar cuentas con ese rol.
+        /// El rol sale del cargo del empleado; el rol avanzado (Administrador) solo lo maneja un usuario avanzado.
+        /// </summary>
+        /// <param name="rol">Nombre del rol que le toca al empleado por su cargo.</param>
+        /// <returns>Texto del error, o texto vacío si puede hacerlo.</returns>
+        public string validarPermisoRol(string rol)
+        {
+            if (rol.ToLower().Contains("avanzado") && Sesion.Nivel != NivelAcceso.Avanzado)
+                return "Solo un usuario avanzado puede crear o cambiar cuentas de administrador.";
+
+            return "";
+        }
+
+        /// <summary>
         /// Valida el nombre de usuario y la contraseña (la contraseña vacía solo se acepta si no es un usuario nuevo).
         /// </summary>
         /// <param name="usuario">Nombre de usuario.</param>
@@ -182,21 +185,13 @@ namespace Codelex.AccesoDatos
         /// </summary>
         /// <param name="usuario">Nombre de usuario.</param>
         /// <param name="contrasena">Contraseña escrita (vacía si no se cambia).</param>
-        /// <param name="rolId">Identificador del rol.</param>
         /// <param name="esNuevo">true si el usuario es nuevo.</param>
         /// <returns>Texto resultante.</returns>
-        private string validarUsuario(string usuario, string contrasena, int rolId, bool esNuevo)
+        private string validarUsuario(string usuario, string contrasena, bool esNuevo)
         {
             usuario = usuario.Trim();
 
-            string problema = validarAcceso(usuario, contrasena, esNuevo);
-            if (problema != "")
-                return problema;
-
-            if (rolId <= 0)
-                return "Seleccione un rol.";
-
-            return "";
+            return validarAcceso(usuario, contrasena, esNuevo);
         }
 
         // Hoy el login compara la contrasena tal cual. Si el equipo usa hash, se cambia aqui y en ValidarLogin.
@@ -224,9 +219,9 @@ namespace Codelex.AccesoDatos
         /// <param name="rolId">Identificador de rol.</param>
         /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
         /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
-        private bool guardarUsuario(bool esNuevo, int id, string usuario, string contrasena, int rolId, out string mensaje)
+        private bool guardarUsuario(bool esNuevo, int id, string usuario, string contrasena, out string mensaje)
         {
-            mensaje = validarUsuario(usuario, contrasena, rolId, esNuevo);
+            mensaje = validarUsuario(usuario, contrasena, esNuevo);
             if (mensaje != "")
                 return false;
 
@@ -244,7 +239,6 @@ namespace Codelex.AccesoDatos
 
             comando.Parameters.AddWithValue("@usuario", usuario.Trim());
             comando.Parameters.AddWithValue("@contrasena_hash", prepararContrasena(contrasena));
-            comando.Parameters.AddWithValue("@rol_id", rolId);
 
             return ejecutar(comando, out mensaje);
         }

@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Registrar y administrar empleados (cargo, identidad de 13 dígitos sin guiones, contacto y estado), ver el reporte de asistencia y órdenes de cada empleado, y la pantalla "Mis órdenes" para el empleado que inició sesión.
+Registrar y administrar empleados (cargo, que define el rol de su usuario; identidad de 13 dígitos sin guiones, contacto y estado), ver el reporte de asistencia y órdenes de cada empleado, y la pantalla "Mis órdenes" para el empleado que inició sesión.
 
 ## Archivos
 

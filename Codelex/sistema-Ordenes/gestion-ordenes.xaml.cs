@@ -728,9 +728,9 @@ namespace Codelex.Ordenes
                 string pregunta = "¿Cambiar la orden " + fila.OrdenId + " de \"" + fila.Estado + "\" a \"" + nuevo.texto + "\"?";
 
                 if (nuevo.texto == "Cancelada")
-                    pregunta += "\n\nLa orden se conserva, pero ya no podrá cambiar de estado.";
+                    pregunta += "\n\n" + textoCancelacion(fila.Estado);
                 else if (nuevo.texto == "Completada")
-                    pregunta += "\n\nLos equipos asignados quedarán libres y la orden ya no podrá cambiar de estado.";
+                    pregunta += "\n\nTodas las actividades deben estar marcadas como hechas. Los equipos asignados quedarán libres y la orden ya no podrá cambiar de estado.";
 
                 if (!MensajeCodelex.preguntar(this, "Gestión de órdenes", pregunta))
                     return;
@@ -761,13 +761,25 @@ namespace Codelex.Ordenes
                     return;
                 }
 
-                string pregunta = "¿Desea cancelar la orden " + fila.OrdenId + "?\n\n" +
-                                  "La orden no se borra: queda con estado Cancelada y ya no podrá cambiar de estado.";
+                string pregunta = "¿Desea cancelar la orden " + fila.OrdenId + "?\n\n" + textoCancelacion(fila.Estado);
 
                 if (!MensajeCodelex.preguntar(this, "Gestión de órdenes", pregunta))
                     return;
 
                 cambiarEstado(fila, canceladaId);
+            }
+
+            /// <summary>
+            /// Explica qué pasa con el inventario al cancelar una orden, según su estado actual.
+            /// </summary>
+            /// <param name="estadoActual">Estado en que se encuentra la orden.</param>
+            /// <returns>Texto que se muestra en la confirmación.</returns>
+            private string textoCancelacion(string estadoActual)
+            {
+                if (estadoActual == "En proceso")
+                    return "La orden ya está en proceso: los productos ya se usaron y NO vuelven al inventario. La orden se conserva, pero ya no podrá cambiar de estado.";
+
+                return "Los productos de la orden vuelven al inventario. La orden se conserva, pero ya no podrá cambiar de estado.";
             }
 
             /// <summary>

@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <!-- Se compilan solo las clases de acceso a datos que no necesitan WPF, así las pruebas corren en cualquier sistema -->
+  <ItemGroup>
+    <Compile Include="../Codelex/sistema-AccesoDatos/validacion.cs" />
+    <Compile Include="../Codelex/sistema-AccesoDatos/sesion.cs" />
+    <Compile Include="../Codelex/sistema-AccesoDatos/usuario.cs" />
+    <Compile Include="../Codelex/sistema-AccesoDatos/conexion.cs" />
+    <Compile Include="../Codelex/sistema-AccesoDatos/base-datos.cs" />
+    <Compile Include="../Codelex/sistema-AccesoDatos/cliente.cs" />
+    <Compile Include="../Codelex/sistema-AccesoDatos/facturacion.cs" />
+    <Compile Include="../Codelex/sistema-AccesoDatos/inventario-bd.cs" />
+    <Compile Include="../Codelex/sistema-AccesoDatos/servicio-bd.cs" />
+    <Compile Include="../Codelex/sistema-AccesoDatos/usuario-bd.cs" />
+    <Compile Include="../Codelex/sistema-AccesoDatos/contrasenas.cs" Condition="Exists('../Codelex/sistema-AccesoDatos/contrasenas.cs')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DSInternals.Win32.WebAuthn" Version="3.4.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.1" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

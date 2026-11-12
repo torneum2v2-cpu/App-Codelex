@@ -2,18 +2,18 @@
 
 ## Propósito
 
-Registrar las locaciones (lugares de servicio) de un cliente: nombre, tipo y dirección.
+Registrar, editar, activar y desactivar las locaciones (lugares de servicio) de un cliente: nombre, tipo y dirección. Una locación desactivada ya no aparece al crear cotizaciones y órdenes.
 
 ## Archivos
 
 | Archivo | Para qué sirve |
 |---|---|
-| `ingresar-locacion.xaml(.cs)` | Formulario para agregar una locación a un cliente. |
+| `ingresar-locacion.xaml(.cs)` | Formulario para agregar una locación a un cliente; al elegir una de la tabla se edita o se activa/desactiva. |
 
 ## Dependencias
 
 - Clases `Cliente` y `Locacion` de `sistema-AccesoDatos`.
-- Procedimientos: `sp_InsertarLocacion`, `sp_ListarLocacionesPorCliente`.
+- Procedimientos: `sp_InsertarLocacion`, `sp_ActualizarLocacion`, `sp_CambiarEstadoLocacion`, `sp_BuscarLocaciones`, `sp_ListarLocacionesPorCliente`.
 - Tablas: `locaciones`, `clientes`.
 
 ## Cómo ejecutarlo

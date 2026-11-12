@@ -2651,6 +2651,14 @@ BEGIN
 		RETURN;
 	END
 
+	IF NOT EXISTS (SELECT 1 FROM ordenes o
+				   INNER JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
+				   WHERE o.orden_id = @orden_id AND eo.nombre_estado_orden = 'En proceso')
+	BEGIN
+		SET @mensaje = 'Solo se marcan actividades de una orden en proceso.';
+		RETURN;
+	END
+
 	IF @duracion_min IS NOT NULL AND @duracion_min < 0
 	BEGIN
 		SET @mensaje = 'La duracion no puede ser negativa.';

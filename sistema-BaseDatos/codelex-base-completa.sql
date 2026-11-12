@@ -1118,6 +1118,68 @@ IF TYPE_ID('dbo.tipo_equipo_actividades') IS NULL
 	);
 GO
 
+-- Índices para que las búsquedas y los reportes sigan rápidos cuando haya muchos datos
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ORDENES_cliente' AND object_id = OBJECT_ID('ordenes'))
+	CREATE INDEX IX_ORDENES_cliente ON ordenes(identificacion_cliente);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ORDENES_estado' AND object_id = OBJECT_ID('ordenes'))
+	CREATE INDEX IX_ORDENES_estado ON ordenes(estado_orden_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ORDENES_cotizacion' AND object_id = OBJECT_ID('ordenes'))
+	CREATE INDEX IX_ORDENES_cotizacion ON ordenes(cotizacion_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ORDENES_vehiculo' AND object_id = OBJECT_ID('ordenes'))
+	CREATE INDEX IX_ORDENES_vehiculo ON ordenes(vehiculo_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ORDENES_supervisor' AND object_id = OBJECT_ID('ordenes'))
+	CREATE INDEX IX_ORDENES_supervisor ON ordenes(supervisor_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ORDEN_EMPLEADOS_empleado' AND object_id = OBJECT_ID('orden_empleados'))
+	CREATE INDEX IX_ORDEN_EMPLEADOS_empleado ON orden_empleados(empleado_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ORDEN_EQUIPOS_equipo' AND object_id = OBJECT_ID('orden_equipos'))
+	CREATE INDEX IX_ORDEN_EQUIPOS_equipo ON orden_equipos(equipo_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_LOCACIONES_cliente' AND object_id = OBJECT_ID('locaciones'))
+	CREATE INDEX IX_LOCACIONES_cliente ON locaciones(identificacion_cliente);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_COTIZACIONES_cliente' AND object_id = OBJECT_ID('cotizaciones'))
+	CREATE INDEX IX_COTIZACIONES_cliente ON cotizaciones(identificacion_cliente);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ABONOS_factura' AND object_id = OBJECT_ID('abonos'))
+	CREATE INDEX IX_ABONOS_factura ON abonos(factura_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ASISTENCIAS_empleado_fecha' AND object_id = OBJECT_ID('asistencias'))
+	CREATE INDEX IX_ASISTENCIAS_empleado_fecha ON asistencias(empleado_id, fecha_asistencia);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_BITACORAS_fecha' AND object_id = OBJECT_ID('bitacoras'))
+	CREATE INDEX IX_BITACORAS_fecha ON bitacoras(fecha_bitacora);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_EMPLEADOS_cargo' AND object_id = OBJECT_ID('empleados'))
+	CREATE INDEX IX_EMPLEADOS_cargo ON empleados(cargo_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_COMPRAS_PRODUCTOS_producto' AND object_id = OBJECT_ID('compras_productos'))
+	CREATE INDEX IX_COMPRAS_PRODUCTOS_producto ON compras_productos(producto_id);
+GO
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_COMPRAS_EQUIPOS_equipo' AND object_id = OBJECT_ID('compras_equipos'))
+	CREATE INDEX IX_COMPRAS_EQUIPOS_equipo ON compras_equipos(equipo_id);
+GO
+
 -- Datos iniciales
 
 INSERT INTO formas_pago (nombre_forma_pago)
@@ -4353,6 +4415,14 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM orden_actividades WHERE orden_id = @orden_id AND actividad_id = @actividad_id)
 	BEGIN
 		SET @mensaje = 'La actividad no pertenece a la orden.';
+		RETURN;
+	END
+
+	IF NOT EXISTS (SELECT 1 FROM ordenes o
+				   INNER JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
+				   WHERE o.orden_id = @orden_id AND eo.nombre_estado_orden = 'En proceso')
+	BEGIN
+		SET @mensaje = 'Solo se marcan actividades de una orden en proceso.';
 		RETURN;
 	END
 

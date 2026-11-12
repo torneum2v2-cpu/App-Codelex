@@ -576,12 +576,24 @@
 
                                             <TextBlock Text="Conformidad del cliente:" Style="{StaticResource Etiqueta}"/>
                                             <TextBlock x:Name="dConformidad" Style="{StaticResource Valor}"/>
+                                            <StackPanel x:Name="panelConformidad" Orientation="Horizontal" Margin="0,0,0,12" Visibility="Collapsed">
+                                                <Button Content="Cliente conforme" Style="{StaticResource SecondaryButton}"
+                                                        Width="150" Margin="0,0,8,0" Click="conformeClic"
+                                                        ToolTip="Registra que el cliente quedó conforme con el servicio"/>
+                                                <Button Content="No conforme" Style="{StaticResource SecondaryButton}"
+                                                        Width="130" Click="noConformeClic"
+                                                        ToolTip="Registra que el cliente no quedó conforme con el servicio"/>
+                                            </StackPanel>
 
                                             <TextBlock Text="Factura:" Style="{StaticResource Etiqueta}"/>
                                             <TextBlock x:Name="dFactura" Style="{StaticResource Valor}"/>
 
                                             <TextBlock Text="Actividades:" Style="{StaticResource Etiqueta}"/>
-                                            <ListBox x:Name="lstActividades" Height="100" Margin="0,0,0,10"/>
+                                            <ListBox x:Name="lstActividades" Height="100" Margin="0,0,0,6"/>
+                                            <Button x:Name="btnMarcarActividad" Content="Marcar / desmarcar como hecha"
+                                                    Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left"
+                                                    Width="230" Margin="0,0,0,10" Click="marcarActividadClic" Visibility="Collapsed"
+                                                    ToolTip="Seleccione una actividad de la lista. Todas deben estar hechas para completar la orden"/>
 
                                             <TextBlock Text="Empleados asignados:" Style="{StaticResource Etiqueta}"/>
                                             <ListBox x:Name="lstEmpleados" Height="100" Margin="0,0,0,10"/>

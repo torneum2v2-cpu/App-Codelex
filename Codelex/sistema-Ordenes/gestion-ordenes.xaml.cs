@@ -152,6 +152,7 @@ namespace Codelex.Ordenes
             bool reconstruyendo = false;
 
             string detalleMostrado = "";
+            DataTable actividadesOrden = new DataTable();
             // Factura de la orden mostrada en el detalle (0 = todavía no tiene).
             int facturaIdActual = 0;
 
@@ -517,8 +518,20 @@ namespace Codelex.Ordenes
             private void llenarListas(string ordenId)
             {
                 DataTable tabla = gestionBD.listarDetalle(ordenId);
+                actividadesOrden = gestionBD.listarActividades(ordenId);
+                int seleccionada = lstActividades.SelectedIndex;
 
                 List<string> actividades = new List<string>();
+
+                foreach (DataRow actividad in actividadesOrden.Rows)
+                {
+                    string marca = "• ";
+                    if (Convert.ToBoolean(actividad["estado"]))
+                        marca = "✓ ";
+
+                    actividades.Add(marca + actividad["descripcion"]);
+                }
+
                 List<string> empleados = new List<string>();
                 List<string> productos = new List<string>();
 
@@ -527,9 +540,7 @@ namespace Codelex.Ordenes
                     int seccion = Convert.ToInt32(fila["seccion"]);
                     string texto = "" + fila["texto"];
 
-                    if (seccion == 1)
-                        actividades.Add(texto);
-                    else if (seccion == 2)
+                    if (seccion == 2)
                         empleados.Add(texto);
                     else
                         productos.Add(texto);   // productos (3) y equipos (4)
@@ -543,6 +554,8 @@ namespace Codelex.Ordenes
                     productos.Add("Sin productos ni equipos");
 
                 lstActividades.ItemsSource = actividades;
+                if (seleccionada >= 0 && seleccionada < actividadesOrden.Rows.Count)
+                    lstActividades.SelectedIndex = seleccionada;
                 lstEmpleados.ItemsSource = empleados;
                 lstProductos.ItemsSource = productos;
             }
@@ -670,8 +683,19 @@ namespace Codelex.Ordenes
                     btnCancelarOrden.IsEnabled = false;
                     btnCrearFactura.Visibility = Visibility.Collapsed;
                     btnVerFactura.Visibility = Visibility.Collapsed;
+                    btnMarcarActividad.Visibility = Visibility.Collapsed;
+                    panelConformidad.Visibility = Visibility.Collapsed;
                     return;
                 }
+
+                // Las actividades se marcan mientras la orden está en proceso; la conformidad se registra al completarla.
+                btnMarcarActividad.Visibility = Visibility.Collapsed;
+                if (fila.Estado == "En proceso")
+                    btnMarcarActividad.Visibility = Visibility.Visible;
+
+                panelConformidad.Visibility = Visibility.Collapsed;
+                if (fila.Estado == "Completada")
+                    panelConformidad.Visibility = Visibility.Visible;
 
                 // Crear factura: orden completada sin factura. Ver factura: orden completada con factura.
                 bool completada = fila.Estado == "Completada";
@@ -688,6 +712,84 @@ namespace Codelex.Ordenes
 
                 btnCancelarOrden.IsEnabled = !fila.EsFinal;
                 actualizarBotonAplicar();
+            }
+
+            /// <summary>
+            /// Marca o desmarca como hecha la actividad seleccionada de la orden.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
+            private void marcarActividadClic(object sender, RoutedEventArgs e)
+            {
+                int posicion = lstActividades.SelectedIndex;
+                if (posicion < 0 || posicion >= actividadesOrden.Rows.Count)
+                {
+                    MensajeCodelex.mostrar(this, "Gestión de órdenes", "Seleccione una actividad de la lista.", false);
+                    return;
+                }
+
+                DataRow actividad = actividadesOrden.Rows[posicion];
+                bool hecha = Convert.ToBoolean(actividad["estado"]);
+
+                try
+                {
+                    string mensaje;
+                    bool guardado = gestionBD.marcarActividad(detalleMostrado, Convert.ToInt32(actividad["actividad_id"]), !hecha, out mensaje);
+
+                    if (!guardado)
+                        MensajeCodelex.mostrar(this, "Gestión de órdenes", mensaje, false);
+
+                    llenarListas(detalleMostrado);
+                }
+                catch (Exception ex)
+                {
+                    mostrarError(ex);
+                }
+            }
+
+            /// <summary>
+            /// Registra que el cliente quedó conforme con el servicio.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
+            private void conformeClic(object sender, RoutedEventArgs e)
+            {
+                guardarConformidad(true);
+            }
+
+            /// <summary>
+            /// Registra que el cliente no quedó conforme con el servicio.
+            /// </summary>
+            /// <param name="sender">Control que originó el evento.</param>
+            /// <param name="e">Datos del evento.</param>
+            private void noConformeClic(object sender, RoutedEventArgs e)
+            {
+                guardarConformidad(false);
+            }
+
+            /// <summary>
+            /// Guarda la conformidad del cliente y vuelve a mostrar el detalle de la orden.
+            /// </summary>
+            /// <param name="conforme">true si el cliente quedó conforme; false si no.</param>
+            private void guardarConformidad(bool conforme)
+            {
+                if (dgOrdenes.SelectedItem is not FilaOrden fila)
+                    return;
+
+                try
+                {
+                    string mensaje;
+                    bool guardado = gestionBD.registrarConformidad(fila.OrdenId, conforme, out mensaje);
+
+                    MensajeCodelex.mostrar(this, "Gestión de órdenes", mensaje, guardado);
+
+                    if (guardado)
+                        mostrarDetalle(fila);
+                }
+                catch (Exception ex)
+                {
+                    mostrarError(ex);
+                }
             }
 
             /// <summary>

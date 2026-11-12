@@ -2,20 +2,20 @@
 
 ## Propósito
 
-Crear órdenes de limpieza a partir de una cotización (personal, vehículo, fechas y turno), ver y administrar el estado de las órdenes, y facturar las completadas. Los productos se descuentan del inventario, los equipos se asignan solos y los empleados en una orden "En proceso" no se pueden asignar a otra. Una orden solo se completa si todas sus actividades están marcadas. Al cancelar una orden pendiente, los productos vuelven al inventario; si ya estaba en proceso, no vuelven porque ya se usaron.
+Crear órdenes de limpieza a partir de una cotización (personal, vehículo, fechas y turno), ver y administrar el estado de las órdenes, y facturar las completadas. Los productos se descuentan del inventario, los equipos se asignan solos y los empleados en una orden "En proceso" no se pueden asignar a otra. En el detalle de una orden en proceso se marcan las actividades como hechas; la orden solo se completa si todas lo están. Al completarla se registra si el cliente quedó conforme. Al cancelar una orden pendiente, los productos vuelven al inventario; si ya estaba en proceso, no vuelven porque ya se usaron.
 
 ## Archivos
 
 | Archivo | Para qué sirve |
 |---|---|
 | `ingresar-ordenes.xaml(.cs)` | Asistente de 3 pasos para crear una orden. Se abre directo desde el menú; la cotización se elige con la lupa. |
-| `gestion-ordenes.xaml(.cs)` | Tabla de órdenes, detalle, cambio de estado, factura y conformidad. |
+| `gestion-ordenes.xaml(.cs)` | Tabla de órdenes, detalle, actividades hechas, cambio de estado, factura y conformidad. |
 | `seleccionar-cotizacion.xaml(.cs)` | Cuadro para elegir (o crear) la cotización de la orden. |
 
 ## Dependencias
 
 - Clases `Orden`, `DatosOrden`, `GestionOrdenesBD`, `Cliente` y `Vehiculo` de `sistema-AccesoDatos`.
-- Procedimientos: `sp_ListarCotizacionesOrden`, `sp_DetalleCotizacion`, `sp_ResumenCotizacion`, `sp_ListarEmpleadosOrden`, `sp_InsertarOrden`, `sp_ListarOrdenesGestion`, `sp_DetalleOrdenGestion`, `sp_ListasOrdenGestion`, `sp_CambiarEstadoOrden`.
+- Procedimientos: `sp_ListarCotizacionesOrden`, `sp_DetalleCotizacion`, `sp_ResumenCotizacion`, `sp_ListarEmpleadosOrden`, `sp_InsertarOrden`, `sp_ListarOrdenesGestion`, `sp_DetalleOrdenGestion`, `sp_ListasOrdenGestion`, `sp_CambiarEstadoOrden`, `sp_ListarActividadesPorOrden`, `sp_MarcarActividadOrden`, `sp_RegistrarConformidadOrden`.
 - Tablas: `ordenes`, `orden_empleados`, `orden_productos`, `orden_equipos`, `orden_actividades`, `estados_orden`.
 - Módulos: `sistema-FacturasCotizaciones`, `sistema-Clientes`, `sistema-Vehiculos`.
 

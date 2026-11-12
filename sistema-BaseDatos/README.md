@@ -12,7 +12,7 @@ Scripts de SQL Server de Codelex: tablas, tipos, datos fijos (servicios, activid
 | `codelex-procedimientos.sql` | Solo funciones, procedimientos y disparadores | Después de `codelex-tablas.sql`, o cuando cambie un procedimiento |
 | `codelex-base-completa.sql` | Todo junto, más los cambios para bases de versiones anteriores (incluye el cambio de nombres de tablas y campos) | Para crear la base o para poner al día una que ya existe |
 
-Las facturas anuladas quedan con estado `Anulada` y la orden se puede facturar otra vez. Los ajustes de inventario se guardan en `ajustes_inventario`. Cada cargo tiene un rol (`cargos.rol_id`) y el usuario de un empleado toma siempre el rol de su cargo. Cada abono guarda a qué cuotas se aplicó (`abono_cuotas`) para poder deshacer el último abono sin borrarlo.
+Las facturas anuladas quedan con estado `Anulada` y la orden se puede facturar otra vez. Los ajustes de inventario se guardan en `ajustes_inventario`. Las tablas tienen índices en las llaves que más se consultan (órdenes, abonos, asistencias, bitácora). Cada cargo tiene un rol (`cargos.rol_id`) y el usuario de un empleado toma siempre el rol de su cargo. Cada abono guarda a qué cuotas se aplicó (`abono_cuotas`) para poder deshacer el último abono sin borrarlo.
 
 Los tres se pueden ejecutar varias veces sin errores y sin duplicar datos. Cada cambio en la base se agrega en los tres archivos.
 

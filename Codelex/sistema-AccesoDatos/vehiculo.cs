@@ -117,7 +117,7 @@ namespace Codelex.AccesoDatos
             if (problema != "")
                 return problema;
 
-            problema = Validacion.validarTexto(modelo, "El modelo", 2, 25);
+            problema = Validacion.validarModelo(modelo, "El modelo", 25);
             if (problema != "")
                 return problema;
 

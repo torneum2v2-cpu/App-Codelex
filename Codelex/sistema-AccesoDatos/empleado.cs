@@ -39,6 +39,17 @@ namespace Codelex.AccesoDatos
         /// <returns>Texto del error, o texto vacío si puede asignarlo.</returns>
         private string validarPermisoCargo(int cargoId)
         {
+            return validarPermisoCargo(cargoId, "asignar");
+        }
+
+        /// <summary>
+        /// Revisa si quien tiene la sesión abierta puede asignar o quitar ese cargo (el de administrador es solo de un usuario avanzado).
+        /// </summary>
+        /// <param name="cargoId">Identificador del cargo.</param>
+        /// <param name="accion">Texto de la acción para el mensaje: "asignar" o "quitar".</param>
+        /// <returns>Texto del error, o texto vacío si puede hacerlo.</returns>
+        private string validarPermisoCargo(int cargoId, string accion)
+        {
             if (Sesion.Nivel == NivelAcceso.Avanzado)
                 return "";
 
@@ -47,10 +58,37 @@ namespace Codelex.AccesoDatos
                 bool esAvanzado = ("" + fila["nombre_rol"]).ToLower().Contains("avanzado");
 
                 if (Convert.ToInt32(fila["cargo_id"]) == cargoId && esAvanzado)
-                    return "Solo un usuario avanzado puede asignar el cargo " + fila["nombre_cargo"] + ".";
+                    return "Solo un usuario avanzado puede " + accion + " el cargo " + fila["nombre_cargo"] + ".";
             }
 
             return "";
+        }
+
+        /// <summary>
+        /// Revisa que quien tiene la sesión abierta pueda cambiar el cargo del empleado.
+        /// Si el cargo no cambia no se revisa nada; si cambia, el cargo de administrador ni se asigna ni se quita sin ser usuario avanzado.
+        /// </summary>
+        /// <param name="empleadoId">Identificador de empleado.</param>
+        /// <param name="cargoNuevoId">Identificador del cargo que se quiere guardar.</param>
+        /// <returns>Texto del error, o texto vacío si puede hacerlo.</returns>
+        private string validarCambioDeCargo(int empleadoId, int cargoNuevoId)
+        {
+            if (Sesion.Nivel == NivelAcceso.Avanzado)
+                return "";
+
+            DataTable actual = obtenerEmpleado(empleadoId);
+            if (actual.Rows.Count == 0 || actual.Rows[0]["cargo_id"] == DBNull.Value)
+                return validarPermisoCargo(cargoNuevoId, "asignar");
+
+            int cargoActualId = Convert.ToInt32(actual.Rows[0]["cargo_id"]);
+            if (cargoActualId == cargoNuevoId)
+                return "";
+
+            string problema = validarPermisoCargo(cargoActualId, "quitar");
+            if (problema != "")
+                return problema;
+
+            return validarPermisoCargo(cargoNuevoId, "asignar");
         }
 
         /// <summary>
@@ -164,7 +202,7 @@ namespace Codelex.AccesoDatos
         {
             mensaje = validarEmpleado(cargoId, nombre, apellido, identidad, telefono, correo);
             if (mensaje == "")
-                mensaje = validarPermisoCargo(cargoId);
+                mensaje = validarCambioDeCargo(empleadoId, cargoId);
             if (mensaje != "")
                 return false;
 
@@ -227,11 +265,11 @@ namespace Codelex.AccesoDatos
             if (cargoId <= 0)
                 return "Seleccione el cargo del empleado.";
 
-            string problema = Validacion.validarNombrePersona(nombre, "El nombre", true);
+            string problema = Validacion.validarNombrePersona(nombre, "El nombre", true, 30);
             if (problema != "")
                 return problema;
 
-            problema = Validacion.validarNombrePersona(apellido, "El apellido", true);
+            problema = Validacion.validarNombrePersona(apellido, "El apellido", true, 30);
             if (problema != "")
                 return problema;
 

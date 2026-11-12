@@ -9,6 +9,7 @@ namespace Codelex.Pruebas
         [InlineData("+504 3244-9022")]
         [InlineData("22345678")]
         [InlineData("98765430")]
+        [InlineData("98765432")]
         public void telefonoValido(string telefono)
         {
             Assert.Equal("", Validacion.validarTelefono(telefono, true));
@@ -78,6 +79,7 @@ namespace Codelex.Pruebas
         [InlineData("Nuñez")]
         [InlineData("De la Cruz-Oliva")]
         [InlineData("O'Connor")]
+        [InlineData("Ma. José")]
         public void nombreValido(string nombre)
         {
             Assert.Equal("", Validacion.validarNombrePersona(nombre, "El nombre", true));
@@ -98,6 +100,9 @@ namespace Codelex.Pruebas
         [Theory]
         [InlineData("Limpieza Total S. de R.L.")]
         [InlineData("A&B Servicios")]
+        [InlineData("Repuestos 2000")]
+        [InlineData("Ferretería 777")]
+        [InlineData("AAA Servicios")]
         public void empresaValida(string empresa)
         {
             Assert.Equal("", Validacion.validarEmpresa(empresa, "La empresa", true));
@@ -150,6 +155,8 @@ namespace Codelex.Pruebas
         [Theory]
         [InlineData("08011990123456", true)]
         [InlineData("08012015000123", true)]
+        [InlineData("08019015000123", true)]
+        [InlineData("08019998040130", true)]
         [InlineData("99011990123456", false)]
         [InlineData("0801199012345", false)]
         [InlineData("08011990000000", false)]
@@ -165,7 +172,7 @@ namespace Codelex.Pruebas
         [InlineData("MAB123", true)]
         [InlineData("HA-1234", false)]
         [InlineData("1234567", false)]
-        [InlineData("HAB 1234", false)]
+        [InlineData("HAB 1234", true)]
         [InlineData("HAB-0000", false)]
         public void placa(string placa, bool esValida)
         {
@@ -175,7 +182,8 @@ namespace Codelex.Pruebas
         [Fact]
         public void placaSeNormaliza()
         {
-            Assert.Equal("HAB-1234", Validacion.normalizarPlaca("hab1234"));
+            Assert.Equal("HAB1234", Validacion.normalizarPlaca("hab-1234"));
+            Assert.Equal("HAB1234", Validacion.normalizarPlaca(" hab 1234 "));
         }
 
         [Theory]
@@ -198,6 +206,31 @@ namespace Codelex.Pruebas
         public void contrasena(string contrasena, string usuario, bool esValida)
         {
             Assert.Equal(esValida, Validacion.validarContrasena(contrasena, usuario) == "");
+        }
+
+        [Theory]
+        [InlineData("3")]
+        [InlineData("626")]
+        [InlineData("208")]
+        [InlineData("Hilux 4x4")]
+        public void modeloPuedeSerSoloNumeros(string modelo)
+        {
+            Assert.Equal("", Validacion.validarModelo(modelo, "El modelo", 25));
+        }
+
+        [Fact]
+        public void modeloVacioOSoloSimbolosNoSirve()
+        {
+            Assert.NotEqual("", Validacion.validarModelo("", "El modelo", 25));
+            Assert.NotEqual("", Validacion.validarModelo("---", "El modelo", 25));
+        }
+
+        [Fact]
+        public void nombreRespetaElLargoDeLaColumna()
+        {
+            string largo = "Maria Fernanda Guadalupe Hernandez";
+            Assert.Equal("", Validacion.validarNombrePersona(largo, "El nombre", true, 50));
+            Assert.NotEqual("", Validacion.validarNombrePersona(largo, "El nombre", true, 30));
         }
 
         [Fact]

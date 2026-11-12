@@ -71,7 +71,7 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
-        /// Indica si el texto repite el mismo carácter seguido la cantidad de veces indicada.
+        /// Indica si el texto repite la misma letra seguida la cantidad de veces indicada (los números no cuentan).
         /// </summary>
         /// <param name="texto">Texto a revisar.</param>
         /// <param name="veces">Cantidad de repeticiones seguidas que se consideran sospechosas.</param>
@@ -82,7 +82,7 @@ namespace Codelex.AccesoDatos
 
             for (int i = 1; i < texto.Length; i++)
             {
-                if (char.ToLower(texto[i]) == char.ToLower(texto[i - 1]) && texto[i] != ' ')
+                if (char.IsLetter(texto[i]) && char.ToLower(texto[i]) == char.ToLower(texto[i - 1]))
                     seguidos++;
                 else
                     seguidos = 1;
@@ -181,7 +181,7 @@ namespace Codelex.AccesoDatos
             if (primero != '2' && primero != '3' && primero != '7' && primero != '8' && primero != '9')
                 return "El teléfono debe empezar con 2 (fijo) o con 3, 7, 8 o 9 (celular).";
 
-            if (todosIguales(digitos.Substring(2)) || digitos == "12345678" || digitos == "23456789" || digitos == "98765432")
+            if (todosIguales(digitos.Substring(2)) || digitos == "12345678" || digitos == "23456789")
                 return "El teléfono no parece real. Revise los números.";
 
             return "";
@@ -273,8 +273,9 @@ namespace Codelex.AccesoDatos
         /// <param name="valor">Texto escrito por el usuario.</param>
         /// <param name="etiqueta">Cómo se llama el dato en el mensaje, por ejemplo "El nombre".</param>
         /// <param name="obligatorio">true si no se puede dejar vacío.</param>
+        /// <param name="maximo">Cantidad máxima de caracteres que se pueden guardar.</param>
         /// <returns>Texto del error, o texto vacío si es válido.</returns>
-        public static string validarNombrePersona(string valor, string etiqueta, bool obligatorio)
+        public static string validarNombrePersona(string valor, string etiqueta, bool obligatorio, int maximo = 50)
         {
             valor = valor.Trim();
 
@@ -288,18 +289,18 @@ namespace Codelex.AccesoDatos
 
             if (valor.Length < 2)
                 return etiqueta + " debe tener al menos 2 letras.";
-            if (valor.Length > 50)
-                return etiqueta + " no puede tener más de 50 caracteres.";
+            if (valor.Length > maximo)
+                return etiqueta + " no puede tener más de " + maximo + " caracteres.";
 
             foreach (char c in valor)
             {
-                bool permitido = char.IsLetter(c) || c == ' ' || c == '\'' || c == '-';
+                bool permitido = char.IsLetter(c) || c == ' ' || c == '\'' || c == '-' || c == '.';
                 if (!permitido)
                     return etiqueta + " solo puede tener letras. No se permiten números ni símbolos.";
             }
 
-            if (!char.IsLetter(valor[0]) || !char.IsLetter(valor[valor.Length - 1]))
-                return etiqueta + " debe empezar y terminar con una letra.";
+            if (!char.IsLetter(valor[0]) || !(char.IsLetter(valor[valor.Length - 1]) || valor[valor.Length - 1] == '.'))
+                return etiqueta + " debe empezar con una letra y terminar con una letra o un punto.";
             if (valor.Contains("  "))
                 return etiqueta + " no puede tener espacios seguidos.";
             if (!tieneVocal(valor) || repiteCaracter(valor, 3))
@@ -359,7 +360,7 @@ namespace Codelex.AccesoDatos
                     return etiqueta + " tiene símbolos que no se permiten.";
             }
 
-            if (repiteCaracter(valor, 3))
+            if (repiteCaracter(valor, 4))
                 return etiqueta + " no parece un nombre real. Revíselo.";
 
             return "";
@@ -387,6 +388,35 @@ namespace Codelex.AccesoDatos
                 return etiqueta + " debe tener letras, no solo números o símbolos.";
             if (repiteCaracter(valor, 4))
                 return etiqueta + " no parece real. Revíselo.";
+
+            return "";
+        }
+
+        /// <summary>
+        /// Valida un modelo (de vehículo o equipo): puede ser solo números, como Mazda 3 o Peugeot 208.
+        /// </summary>
+        /// <param name="valor">Texto escrito por el usuario.</param>
+        /// <param name="etiqueta">Cómo se llama el dato en el mensaje, por ejemplo "El modelo".</param>
+        /// <param name="maximo">Cantidad máxima de caracteres.</param>
+        /// <returns>Texto del error, o texto vacío si es válido.</returns>
+        public static string validarModelo(string valor, string etiqueta, int maximo)
+        {
+            valor = valor.Trim();
+
+            if (valor == "")
+                return etiqueta + " es obligatorio.";
+            if (valor.Length > maximo)
+                return etiqueta + " no puede tener más de " + maximo + " caracteres.";
+
+            bool tieneLetraONumero = false;
+            foreach (char c in valor)
+            {
+                if (char.IsLetterOrDigit(c))
+                    tieneLetraONumero = true;
+            }
+
+            if (!tieneLetraONumero)
+                return etiqueta + " debe tener letras o números.";
 
             return "";
         }
@@ -453,7 +483,7 @@ namespace Codelex.AccesoDatos
             if (numero.Length != 13)
                 return "La identidad debe tener 13 dígitos. Tiene " + numero.Length + ".";
 
-            string problema = validarSecuencia(numero, 5, "La identidad");
+            string problema = validarSecuencia(numero, 5, "La identidad", false);
             if (problema != "")
                 return problema;
 
@@ -478,7 +508,7 @@ namespace Codelex.AccesoDatos
             if (numero.Length != 14)
                 return "El RTN debe tener 14 dígitos. Tiene " + numero.Length + ".";
 
-            return validarSecuencia(numero, 6, "El RTN");
+            return validarSecuencia(numero, 6, "El RTN", true);
         }
 
         /// <summary>
@@ -497,8 +527,9 @@ namespace Codelex.AccesoDatos
         /// <param name="numero">Número solo con dígitos.</param>
         /// <param name="largoConsecutivo">Cantidad de dígitos del consecutivo final (5 en identidad, 6 en RTN).</param>
         /// <param name="etiqueta">Cómo se llama el dato en el mensaje, por ejemplo "La identidad".</param>
+        /// <param name="esRtn">true si es un RTN: las empresas también pueden llevar un año que empieza con 9 (9000 a 9999).</param>
         /// <returns>Texto del error, o texto vacío si la secuencia es válida.</returns>
-        private static string validarSecuencia(string numero, int largoConsecutivo, string etiqueta)
+        private static string validarSecuencia(string numero, int largoConsecutivo, string etiqueta, bool esRtn)
         {
             int departamento = int.Parse(numero.Substring(0, 2));
             int municipio = int.Parse(numero.Substring(2, 2));
@@ -513,7 +544,8 @@ namespace Codelex.AccesoDatos
                 return etiqueta + " no es válida: el departamento " + numero.Substring(0, 2) + " tiene municipios del 01 al "
                        + maximoMunicipio.ToString("00") + " y se escribió " + numero.Substring(2, 2) + ".";
 
-            if (anio < ANIO_MINIMO || anio > DateTime.Today.Year)
+            bool anioDeEmpresa = esRtn && anio >= 9000 && anio <= 9999;
+            if (!anioDeEmpresa && (anio < ANIO_MINIMO || anio > DateTime.Today.Year))
                 return etiqueta + " no es válida: el año (" + anio + ") debe estar entre " + ANIO_MINIMO + " y " + DateTime.Today.Year + ".";
 
             if (consecutivo.Trim('0') == "")
@@ -537,8 +569,8 @@ namespace Codelex.AccesoDatos
             if (placa == "")
                 return "La placa es obligatoria.";
 
-            string sinGuion = placa.Replace("-", "");
-            if (placa.Length - sinGuion.Length > 1)
+            string sinGuion = placa.Replace("-", "").Replace(" ", "");
+            if (placa.Length - placa.Replace("-", "").Length > 1)
                 return "La placa solo puede tener un guion. " + ejemplo;
             if (sinGuion.Length < 6 || sinGuion.Length > 7)
                 return "La placa debe tener 3 letras y 3 o 4 números. " + ejemplo;
@@ -561,18 +593,13 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
-        /// Deja la placa en mayúsculas y con el formato LLL-NNNN, para que HAB1234 y hab-1234 sean la misma.
+        /// Deja la placa en mayúsculas y sin guion ni espacios (HAB1234), para que HAB-1234, hab 1234 y HAB1234 sean la misma.
         /// </summary>
         /// <param name="placa">Placa escrita por el usuario.</param>
         /// <returns>Placa normalizada.</returns>
         public static string normalizarPlaca(string placa)
         {
-            string sinGuion = placa.Trim().ToUpper().Replace("-", "");
-
-            if (sinGuion.Length < 4)
-                return sinGuion;
-
-            return sinGuion.Substring(0, 3) + "-" + sinGuion.Substring(3);
+            return placa.Trim().ToUpper().Replace("-", "").Replace(" ", "");
         }
 
         /// <summary>

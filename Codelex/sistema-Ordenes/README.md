@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Crear órdenes de limpieza a partir de una cotización (personal, vehículo, fechas y turno), ver y administrar el estado de las órdenes, y facturar las completadas. Los productos se descuentan del inventario, los equipos se asignan solos y los empleados en una orden "En proceso" no se pueden asignar a otra. En el detalle de una orden en proceso se marcan las actividades como hechas; la orden solo se completa si todas lo están. Al completarla se registra si el cliente quedó conforme. Al cancelar una orden pendiente, los productos vuelven al inventario; si ya estaba en proceso, no vuelven porque ya se usaron.
+Crear órdenes de limpieza a partir de una cotización (personal, vehículo, fechas y turno), ver y administrar el estado de las órdenes, y facturar las completadas. Los productos se descuentan del inventario, los equipos se asignan solos y los empleados en una orden "En proceso" no se pueden asignar a otra. En el detalle de una orden en proceso se marcan las actividades como hechas; la orden solo se completa si todas lo están. Al completarla se registra si el cliente quedó conforme. Una orden en proceso no vuelve a pendiente. Al cancelar una orden pendiente, los productos vuelven al inventario; si ya estaba en proceso, no vuelven porque ya se usaron.
 
 ## Archivos
 

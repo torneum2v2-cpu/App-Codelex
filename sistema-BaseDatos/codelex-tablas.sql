@@ -784,23 +784,36 @@ IF NOT EXISTS (SELECT 1 FROM cargos)
 	INSERT INTO cargos (nombre_cargo) VALUES ('Administrador'), ('Operario'), ('Supervisor');
 GO
 
--- Rol de cada cargo: Administrador = Avanzado, Supervisor = Medio, Operario (y cualquier otro cargo) = Básico
-UPDATE c
-SET c.rol_id = r.rol_id
-FROM cargos c
-INNER JOIN roles r ON r.nombre_rol = CASE c.nombre_cargo WHEN 'Administrador' THEN 'Usuario Avanzado'
-														  WHEN 'Supervisor' THEN 'Usuario Medio'
-														  ELSE 'Usuario Básico' END
-WHERE c.rol_id IS NULL;
+-- Rol de cada cargo: Administrador = Avanzado, Supervisor = Medio, Operario (y cualquier otro cargo) = Básico.
+-- Solo se hace cuando hay cargos sin rol (la primera vez); después los usuarios ya siguen a su cargo desde los procedimientos.
+IF EXISTS (SELECT 1 FROM cargos WHERE rol_id IS NULL)
+BEGIN
+	UPDATE c
+	SET c.rol_id = r.rol_id
+	FROM cargos c
+	INNER JOIN roles r ON r.nombre_rol = CASE c.nombre_cargo WHEN 'Administrador' THEN 'Usuario Avanzado'
+															  WHEN 'Supervisor' THEN 'Usuario Medio'
+															  ELSE 'Usuario Básico' END
+	WHERE c.rol_id IS NULL;
+
+	-- Los usuarios que ya existen toman el rol de su cargo
+	UPDATE u
+	SET u.rol_id = c.rol_id
+	FROM usuarios u
+	INNER JOIN empleados e ON e.empleado_id = u.empleado_id
+	INNER JOIN cargos c ON c.cargo_id = e.cargo_id
+	WHERE c.rol_id IS NOT NULL AND ISNULL(u.rol_id, 0) <> c.rol_id;
+END
 GO
 
--- Los usuarios que ya existen toman el rol de su cargo
-UPDATE u
-SET u.rol_id = c.rol_id
-FROM usuarios u
-INNER JOIN empleados e ON e.empleado_id = u.empleado_id
-INNER JOIN cargos c ON c.cargo_id = e.cargo_id
-WHERE c.rol_id IS NOT NULL AND ISNULL(u.rol_id, 0) <> c.rol_id;
+-- Las placas se guardan en mayúsculas y sin guion ni espacios (HAB1234)
+UPDATE v
+SET v.placa = UPPER(REPLACE(REPLACE(v.placa, '-', ''), ' ', ''))
+FROM vehiculos v
+WHERE v.placa <> UPPER(REPLACE(REPLACE(v.placa, '-', ''), ' ', ''))
+  AND NOT EXISTS (SELECT 1 FROM vehiculos o
+				  WHERE o.vehiculo_id <> v.vehiculo_id
+					AND o.placa = UPPER(REPLACE(REPLACE(v.placa, '-', ''), ' ', '')));
 GO
 
 INSERT INTO estados_orden (nombre_estado_orden)

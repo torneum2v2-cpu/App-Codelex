@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Registrar vehículos (placa, marca y modelo) y administrarlos: buscar, editar y activar o desactivar (no se desactiva un vehículo que está en una orden en proceso).
+Registrar vehículos (placa de 3 letras y 3 o 4 números, que se guarda en mayúsculas y sin guion, marca y modelo) y administrarlos: buscar, editar y activar o desactivar (no se desactiva un vehículo que está en una orden en proceso).
 
 ## Archivos
 

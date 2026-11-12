@@ -140,7 +140,7 @@ namespace Codelex.AccesoDatos
             if (problema != "")
                 return problema;
 
-            return Validacion.validarTexto(modelo, "El modelo", 2, 50);
+            return Validacion.validarModelo(modelo, "El modelo", 50);
         }
 
         /// <summary>

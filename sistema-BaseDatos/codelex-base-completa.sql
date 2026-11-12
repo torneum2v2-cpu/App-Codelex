@@ -1,4 +1,4 @@
-IF DB_ID('Codelex') IS NULL
+﻿IF DB_ID('Codelex') IS NULL
 	CREATE DATABASE Codelex;
 GO
 
@@ -1198,23 +1198,36 @@ IF NOT EXISTS (SELECT 1 FROM cargos)
 	INSERT INTO cargos (nombre_cargo) VALUES ('Administrador'), ('Operario'), ('Supervisor');
 GO
 
--- Rol de cada cargo: Administrador = Avanzado, Supervisor = Medio, Operario (y cualquier otro cargo) = Básico
-UPDATE c
-SET c.rol_id = r.rol_id
-FROM cargos c
-INNER JOIN roles r ON r.nombre_rol = CASE c.nombre_cargo WHEN 'Administrador' THEN 'Usuario Avanzado'
-														  WHEN 'Supervisor' THEN 'Usuario Medio'
-														  ELSE 'Usuario Básico' END
-WHERE c.rol_id IS NULL;
+-- Rol de cada cargo: Administrador = Avanzado, Supervisor = Medio, Operario (y cualquier otro cargo) = Básico.
+-- Solo se hace cuando hay cargos sin rol (la primera vez); después los usuarios ya siguen a su cargo desde los procedimientos.
+IF EXISTS (SELECT 1 FROM cargos WHERE rol_id IS NULL)
+BEGIN
+	UPDATE c
+	SET c.rol_id = r.rol_id
+	FROM cargos c
+	INNER JOIN roles r ON r.nombre_rol = CASE c.nombre_cargo WHEN 'Administrador' THEN 'Usuario Avanzado'
+															  WHEN 'Supervisor' THEN 'Usuario Medio'
+															  ELSE 'Usuario Básico' END
+	WHERE c.rol_id IS NULL;
+
+	-- Los usuarios que ya existen toman el rol de su cargo
+	UPDATE u
+	SET u.rol_id = c.rol_id
+	FROM usuarios u
+	INNER JOIN empleados e ON e.empleado_id = u.empleado_id
+	INNER JOIN cargos c ON c.cargo_id = e.cargo_id
+	WHERE c.rol_id IS NOT NULL AND ISNULL(u.rol_id, 0) <> c.rol_id;
+END
 GO
 
--- Los usuarios que ya existen toman el rol de su cargo
-UPDATE u
-SET u.rol_id = c.rol_id
-FROM usuarios u
-INNER JOIN empleados e ON e.empleado_id = u.empleado_id
-INNER JOIN cargos c ON c.cargo_id = e.cargo_id
-WHERE c.rol_id IS NOT NULL AND ISNULL(u.rol_id, 0) <> c.rol_id;
+-- Las placas se guardan en mayúsculas y sin guion ni espacios (HAB1234)
+UPDATE v
+SET v.placa = UPPER(REPLACE(REPLACE(v.placa, '-', ''), ' ', ''))
+FROM vehiculos v
+WHERE v.placa <> UPPER(REPLACE(REPLACE(v.placa, '-', ''), ' ', ''))
+  AND NOT EXISTS (SELECT 1 FROM vehiculos o
+				  WHERE o.vehiculo_id <> v.vehiculo_id
+					AND o.placa = UPPER(REPLACE(REPLACE(v.placa, '-', ''), ' ', '')));
 GO
 
 INSERT INTO estados_orden (nombre_estado_orden)
@@ -2847,6 +2860,28 @@ BEGIN
 		RETURN;
 	END
 
+	-- No se puede cambiar el cargo del unico administrador activo (el sistema se quedaria sin quien gestione usuarios)
+	DECLARE @rol_actual VARCHAR(50) = (SELECT r.nombre_rol FROM empleados e
+									   INNER JOIN cargos c ON c.cargo_id = e.cargo_id
+									   INNER JOIN roles r ON r.rol_id = c.rol_id
+									   WHERE e.empleado_id = @empleado_id);
+	DECLARE @rol_nuevo VARCHAR(50) = (SELECT r.nombre_rol FROM cargos c
+									  INNER JOIN roles r ON r.rol_id = c.rol_id
+									  WHERE c.cargo_id = @cargo_id);
+
+	IF @rol_actual = 'Usuario Avanzado' AND ISNULL(@rol_nuevo, '') <> 'Usuario Avanzado'
+	AND EXISTS (SELECT 1 FROM usuarios WHERE empleado_id = @empleado_id AND estado_usuario = 1)
+	AND NOT EXISTS (SELECT 1 FROM usuarios u
+					INNER JOIN empleados e2 ON e2.empleado_id = u.empleado_id
+					INNER JOIN cargos c2 ON c2.cargo_id = e2.cargo_id
+					INNER JOIN roles r2 ON r2.rol_id = c2.rol_id
+					WHERE r2.nombre_rol = 'Usuario Avanzado' AND u.estado_usuario = 1
+					  AND u.empleado_id <> @empleado_id)
+	BEGIN
+		SET @mensaje = 'No se puede cambiar el cargo del unico administrador del sistema.';
+		RETURN;
+	END
+
 	UPDATE empleados
 	SET cargo_id = @cargo_id,
 		nombre_empleado = @nombre_empleado,
@@ -4305,6 +4340,8 @@ BEGIN
 
 	DECLARE @actual VARCHAR(25), @nuevo VARCHAR(25);
 
+	DECLARE @actual_id INT = (SELECT estado_orden_id FROM ordenes WHERE orden_id = @orden_id);
+
 	SELECT @actual = eo.nombre_estado_orden
 	FROM ordenes o
 	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
@@ -4327,6 +4364,13 @@ BEGIN
 	IF ISNULL(@actual, '') IN ('Completada', 'Cancelada')
 	BEGIN
 		SET @mensaje = 'La orden ya esta ' + LOWER(@actual) + ' y no se puede cambiar.';
+		RETURN;
+	END
+
+	-- Una orden que ya empezo no vuelve a pendiente (sus productos ya se usaron)
+	IF @nuevo = 'Pendiente' AND ISNULL(@actual, '') = 'En proceso'
+	BEGIN
+		SET @mensaje = 'Una orden en proceso no puede volver a pendiente.';
 		RETURN;
 	END
 
@@ -4362,7 +4406,16 @@ BEGIN
 	BEGIN TRY
 		BEGIN TRANSACTION;
 
-		UPDATE ordenes SET estado_orden_id = @estado_orden_id WHERE orden_id = @orden_id;
+		-- Solo cambia si nadie la cambio mientras tanto (evita devolver el stock dos veces)
+		UPDATE ordenes SET estado_orden_id = @estado_orden_id
+		WHERE orden_id = @orden_id AND ISNULL(estado_orden_id, 0) = ISNULL(@actual_id, 0);
+
+		IF @@ROWCOUNT = 0
+		BEGIN
+			ROLLBACK TRANSACTION;
+			SET @mensaje = 'La orden cambio de estado mientras tanto. Actualice la lista.';
+			RETURN;
+		END
 
 		-- Al cancelar una orden que aun no empezo se devuelve el stock de los productos.
 		-- Si ya estaba en proceso, los productos ya se usaron y no se devuelven.
@@ -6079,6 +6132,20 @@ BEGIN
 	BEGIN TRY
 		BEGIN TRANSACTION;
 
+		-- Se reclama el abono primero: si otro clic ya lo deshizo, no se resta dos veces
+		UPDATE abonos
+		SET anulado = 1,
+			motivo_anulacion = LTRIM(RTRIM(@motivo)),
+			fecha_anulacion = CAST(GETDATE() AS DATE)
+		WHERE abono_id = @abono_id AND anulado = 0;
+
+		IF @@ROWCOUNT = 0
+		BEGIN
+			ROLLBACK TRANSACTION;
+			SET @mensaje = 'El abono ya fue deshecho.';
+			RETURN;
+		END
+
 		UPDATE q
 		SET q.monto_pagado = ISNULL(q.monto_pagado, 0) - ac.monto,
 			q.estado_cuota = CASE WHEN ISNULL(q.monto_pagado, 0) - ac.monto >= q.monto_cuota THEN 'Pagada'
@@ -6090,12 +6157,6 @@ BEGIN
 		FROM cuotas q
 		INNER JOIN abono_cuotas ac ON ac.cuota_id = q.cuota_id
 		WHERE ac.abono_id = @abono_id;
-
-		UPDATE abonos
-		SET anulado = 1,
-			motivo_anulacion = LTRIM(RTRIM(@motivo)),
-			fecha_anulacion = CAST(GETDATE() AS DATE)
-		WHERE abono_id = @abono_id;
 
 		UPDATE facturas
 		SET estado_pago = 'Pendiente', fecha_pago = NULL
@@ -6575,7 +6636,13 @@ BEGIN
 	SET estado_pago = 'Anulada',
 		motivo_anulacion = LTRIM(RTRIM(@motivo)),
 		fecha_anulacion = CAST(GETDATE() AS DATE)
-	WHERE factura_id = @factura_id;
+	WHERE factura_id = @factura_id AND estado_pago = @estado;
+
+	IF @@ROWCOUNT = 0
+	BEGIN
+		SET @mensaje = 'La factura cambio mientras tanto. Vuelva a abrirla.';
+		RETURN;
+	END
 
 	SET @resultado = 1;
 	SET @mensaje = 'La factura se anulo correctamente.';
@@ -6648,7 +6715,26 @@ BEGIN
 	BEGIN TRY
 		BEGIN TRANSACTION;
 
-		UPDATE productos SET stock = @nuevo WHERE producto_id = @producto_id;
+		-- Merma y perdida restan sobre el stock que haya en este momento (una orden pudo usar productos mientras tanto)
+		DECLARE @cambio TABLE (stock_antes INT, stock_despues INT);
+
+		IF @tipo_ajuste = 'Conteo'
+			UPDATE productos SET stock = @nuevo
+			OUTPUT deleted.stock, inserted.stock INTO @cambio
+			WHERE producto_id = @producto_id;
+		ELSE
+			UPDATE productos SET stock = stock - @cantidad
+			OUTPUT deleted.stock, inserted.stock INTO @cambio
+			WHERE producto_id = @producto_id AND ISNULL(stock, 0) >= @cantidad;
+
+		IF NOT EXISTS (SELECT 1 FROM @cambio)
+		BEGIN
+			ROLLBACK TRANSACTION;
+			SET @mensaje = 'El stock cambio mientras tanto y ya no alcanza. Vuelva a intentarlo.';
+			RETURN;
+		END
+
+		SELECT @stock = stock_antes, @nuevo = stock_despues FROM @cambio;
 
 		INSERT INTO ajustes_inventario (producto_id, tipo_ajuste, stock_antes, stock_despues, motivo, usuario_id)
 		VALUES (@producto_id, @tipo_ajuste, @stock, @nuevo, LTRIM(RTRIM(@motivo)),

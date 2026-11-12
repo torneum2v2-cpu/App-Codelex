@@ -355,8 +355,8 @@
                                       Width="22" Height="22"/>
                             </Border>
                             <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
-                                <TextBlock Text="Ingresar locación" Foreground="White" FontSize="22" FontWeight="Bold"/>
-                                <TextBlock Text="Registra una locación para un cliente." Foreground="{StaticResource Muted}" FontSize="13"/>
+                                <TextBlock Text="Locaciones" Foreground="White" FontSize="22" FontWeight="Bold"/>
+                                <TextBlock Text="Registra, edita o desactiva las locaciones de un cliente." Foreground="{StaticResource Muted}" FontSize="13"/>
                             </StackPanel>
                         </StackPanel>
 
@@ -426,7 +426,7 @@
                     <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}" Margin="8,0,0,0">
                         <StackPanel>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
-                                <TextBlock Text="Datos de la locación" Style="{StaticResource TituloCard}"/>
+                                <TextBlock x:Name="lblTituloLocacion" Text="Nueva locación" Style="{StaticResource TituloCard}"/>
                                 <TextBlock Text="  * obligatorio" Style="{StaticResource Nota}" VerticalAlignment="Bottom"/>
                             </StackPanel>
                             <Grid>
@@ -451,13 +451,16 @@
                                 <TextBox x:Name="txtDireccion" MaxLength="80"/>
                             </StackPanel>
 
-                            <UniformGrid Columns="2" Margin="0,16,0,0">
-                                <Button Content="Limpiar" Style="{StaticResource SecondaryButton}"
+                            <UniformGrid x:Name="gridBotones" Columns="3" Margin="0,16,0,0">
+                                <Button Content="Nueva" Style="{StaticResource SecondaryButton}"
                                         Margin="0,0,5,0" Click="limpiarClic"
-                                        ToolTip="Borra los campos de la locación"/>
+                                        ToolTip="Borra los campos para registrar otra locación"/>
+                                <Button x:Name="btnEstado" Content="Desactivar" Style="{StaticResource SecondaryButton}"
+                                        Margin="5,0,5,0" Click="cambiarEstadoClic" Visibility="Collapsed"
+                                        ToolTip="Activa o desactiva la locación seleccionada"/>
                                 <Button Content="Guardar" Style="{StaticResource PrimaryButton}"
-                                        Margin="5,0,0,0" Click="guardarClic"
-                                        ToolTip="Registra la locación para el cliente seleccionado"/>
+                                        Margin="5,0,0,0" Click="guardarClic" IsDefault="True"
+                                        ToolTip="Guarda la locación del cliente seleccionado"/>
                             </UniformGrid>
                         </StackPanel>
                     </Border>
@@ -484,13 +487,15 @@
 
                     <Border x:Name="cardLocaciones" Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}" Margin="8,16,0,0">
                         <DockPanel>
-                            <TextBlock DockPanel.Dock="Top" Text="Locaciones del cliente" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
+                            <TextBlock DockPanel.Dock="Top" Text="Locaciones del cliente (seleccione una para editarla)" Style="{StaticResource TituloCard}" Margin="0,0,0,10"/>
                             <DataGrid x:Name="dgLocaciones" Style="{StaticResource Tabla}" AutoGenerateColumns="False"
-                                      IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single" Cursor="Arrow">
+                                      IsReadOnly="True" CanUserAddRows="False" SelectionMode="Single"
+                                      SelectionChanged="locacionesSeleccionCambiada">
                                 <DataGrid.Columns>
                                     <DataGridTextColumn Header="Nombre" Binding="{Binding nombre_locacion}" Width="*"/>
                                     <DataGridTextColumn Header="Tipo" Binding="{Binding tipo_locacion}" Width="*"/>
                                     <DataGridTextColumn Header="Dirección" Binding="{Binding direccion}" Width="1.5*"/>
+                                    <DataGridTextColumn Header="Estado" Binding="{Binding estado}" Width="0.7*"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </DockPanel>

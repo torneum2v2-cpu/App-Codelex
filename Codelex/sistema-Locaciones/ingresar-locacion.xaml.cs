@@ -13,6 +13,8 @@ namespace Codelex
 
         string clienteRtn = "";
         string rtnInicial = "";
+        int locacionActual = 0;
+        bool locacionActiva = true;
 
         /// <summary>
         /// Inicializa la ventana y prepara sus controles.
@@ -113,7 +115,7 @@ namespace Codelex
                 return;
             }
 
-            DataTable tabla = clienteBD.locacionesPorCliente(clienteRtn);
+            DataTable tabla = locacionBD.locacionesDeCliente(clienteRtn);
             dgLocaciones.ItemsSource = tabla.DefaultView;
         }
 
@@ -122,10 +124,86 @@ namespace Codelex
         /// </summary>
         private void limpiarFormulario()
         {
+            locacionActual = 0;
+            locacionActiva = true;
+            lblTituloLocacion.Text = "Nueva locación";
+            btnEstado.Visibility = Visibility.Collapsed;
+
             txtNombre.Text = "";
             txtDireccion.Text = "";
             cmbTipo.SelectedIndex = -1;
+            dgLocaciones.SelectedItem = null;
             txtNombre.Focus();
+        }
+
+        /// <summary>
+        /// Atiende el cambio de selección de locaciones: carga la locación en el formulario para editarla.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
+        private void locacionesSeleccionCambiada(object sender, SelectionChangedEventArgs e)
+        {
+            if (dgLocaciones.SelectedItem == null)
+                return;
+
+            DataRowView fila = (DataRowView)dgLocaciones.SelectedItem;
+
+            locacionActual = Convert.ToInt32(fila["locacion_id"]);
+            locacionActiva = Convert.ToBoolean(fila["estado_locacion"]);
+
+            txtNombre.Text = "" + fila["nombre_locacion"];
+            txtDireccion.Text = "" + fila["direccion"];
+            cmbTipo.SelectedItem = "" + fila["tipo_locacion"];
+
+            lblTituloLocacion.Text = "Editar locación";
+            if (locacionActiva)
+                btnEstado.Content = "Desactivar";
+            else
+                btnEstado.Content = "Activar";
+            btnEstado.Visibility = Visibility.Visible;
+        }
+
+        /// <summary>
+        /// Activa o desactiva la locación seleccionada, pidiendo confirmación.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
+        private void cambiarEstadoClic(object sender, RoutedEventArgs e)
+        {
+            if (locacionActual == 0)
+            {
+                aviso("Seleccione una locación de la tabla.");
+                return;
+            }
+
+            string accion = "activar";
+            if (locacionActiva)
+                accion = "desactivar";
+
+            string pregunta = "¿Desea " + accion + " la locación " + txtNombre.Text + "?";
+            if (locacionActiva)
+                pregunta += "\n\nYa no aparecerá al crear cotizaciones y órdenes.";
+
+            if (!MensajeCodelex.preguntar(this, "Locaciones", pregunta))
+                return;
+
+            try
+            {
+                string mensaje;
+                bool cambiado = locacionBD.cambiarEstadoLocacion(locacionActual, !locacionActiva, out mensaje);
+
+                MensajeCodelex.mostrar(this, "Locaciones", mensaje, cambiado);
+
+                if (cambiado)
+                {
+                    limpiarFormulario();
+                    cargarLocaciones();
+                }
+            }
+            catch (Exception ex)
+            {
+                mostrarError(ex);
+            }
         }
 
         /// <summary>
@@ -188,8 +266,17 @@ namespace Codelex
             {
                 string mensaje;
 
-                bool guardada = locacionBD.insertarLocacion(
-                    clienteRtn, txtNombre.Text, "" + cmbTipo.SelectedItem, txtDireccion.Text, out mensaje);
+                bool guardada;
+                if (locacionActual == 0)
+                {
+                    guardada = locacionBD.insertarLocacion(
+                        clienteRtn, txtNombre.Text, "" + cmbTipo.SelectedItem, txtDireccion.Text, out mensaje);
+                }
+                else
+                {
+                    guardada = locacionBD.actualizarLocacion(
+                        locacionActual, clienteRtn, txtNombre.Text, "" + cmbTipo.SelectedItem, txtDireccion.Text, out mensaje);
+                }
 
                 MensajeCodelex.mostrar(this, "Locaciones", mensaje, guardada);
 

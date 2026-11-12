@@ -5,7 +5,8 @@
         WindowStartupLocation="CenterScreen"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize"
-        FontFamily="Segoe UI">
+        FontFamily="Segoe UI"
+        FocusManager.FocusedElement="{Binding ElementName=txtIdentidad}">
 
     <Window.Resources>
         <ResourceDictionary>

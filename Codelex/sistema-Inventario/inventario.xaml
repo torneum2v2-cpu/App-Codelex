@@ -357,7 +357,7 @@
                             <Button x:Name="btnAgregar" Content="Agregar al inventario" Width="200"
                                     Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Click="agregarClic"
                                     ToolTip="Registra la compra de productos y equipos"/>
-                            <Button x:Name="btnCerrar" Content="Cerrar" Width="110"
+                            <Button x:Name="btnCerrar" IsCancel="True" Content="Cerrar" Width="110"
                                     Style="{StaticResource SecondaryButton}" Click="salirClic"/>
                         </StackPanel>
                     </Grid>

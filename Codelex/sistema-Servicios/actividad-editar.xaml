@@ -537,7 +537,7 @@
                     </Grid>
 
                     <UniformGrid Grid.Row="2" Columns="2" Margin="0,14,0,0" HorizontalAlignment="Right" Width="380">
-                        <Button Content="Cancelar" Style="{StaticResource SecondaryButton}" Margin="0,0,5,0" Click="salirClic"/>
+                        <Button Content="Cancelar" IsCancel="True" Style="{StaticResource SecondaryButton}" Margin="0,0,5,0" Click="salirClic"/>
                         <Button x:Name="btnGuardar" Content="Guardar actividad" Style="{StaticResource PrimaryButton}" Margin="5,0,0,0"
                                 Click="guardarClic" ToolTip="Guarda la actividad con sus rangos, productos y equipos"/>
                     </UniformGrid>

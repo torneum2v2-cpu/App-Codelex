@@ -532,7 +532,7 @@
                                     Margin="0,0,10,0" Click="exportarClic" ToolTip="Guarda el reporte en un archivo CSV (abre en Excel)"/>
                             <Button Content="Imprimir" Width="120" Style="{StaticResource SecondaryButton}" Click="imprimirClic"/>
                         </StackPanel>
-                        <Button Content="Cerrar" Width="110" HorizontalAlignment="Right"
+                        <Button Content="Cerrar" IsCancel="True" Width="110" HorizontalAlignment="Right"
                                 Style="{StaticResource SecondaryButton}" Click="cerrarClic"/>
                     </Grid>
                 </Grid>

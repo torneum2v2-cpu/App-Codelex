@@ -402,7 +402,7 @@
                             <Button x:Name="btnEditar" Content="Editar cliente" Width="140"
                                     Style="{StaticResource SecondaryButton}" Click="editarClic"/>
                         </StackPanel>
-                        <Button x:Name="btnCerrar" Content="Cerrar" Width="110" HorizontalAlignment="Right"
+                        <Button x:Name="btnCerrar" IsCancel="True" Content="Cerrar" Width="110" HorizontalAlignment="Right"
                                 Style="{StaticResource SecondaryButton}" Click="cerrarClic"/>
                     </Grid>
                 </Grid>

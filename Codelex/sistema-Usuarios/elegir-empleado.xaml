@@ -318,7 +318,7 @@
                                    Style="{StaticResource Nota}" VerticalAlignment="Center" Width="360"
                                    HorizontalAlignment="Left"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button x:Name="btnCancelar" Content="Cancelar" Width="110" Margin="0,0,10,0"
+                            <Button x:Name="btnCancelar" IsCancel="True" Content="Cancelar" Width="110" Margin="0,0,10,0"
                                     Style="{StaticResource SecondaryButton}" Click="cancelarClic"/>
                             <Button x:Name="btnSeleccionar" Content="Seleccionar" Width="130"
                                     Style="{StaticResource PrimaryButton}" Click="seleccionarClic"/>

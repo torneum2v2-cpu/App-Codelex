@@ -10,6 +10,7 @@ Todas las llamadas a SQL Server. Las pantallas no escriben consultas: solo llama
 |---|---|
 | `conexion.cs` | Abre la conexión con SQL Server y envía el usuario de la sesión para la bitácora. |
 | `base-datos.cs` | Clase base: crea comandos de procedimiento, consulta y ejecuta. |
+| `validacion.cs` | Reglas de validación para datos de Honduras: identidad (13 dígitos) y RTN (14) con departamento, municipio, año y consecutivo; teléfono de 8 dígitos (empieza con 2, 3, 7, 8 o 9, no todo ceros); correo; nombres sin números; empresa de 3 o más caracteres; dirección; placa; usuario y contraseña. También da el formato `+504 XXXX-XXXX`. |
 | `sesion.cs` | Datos del usuario que inició sesión y su nivel de acceso. |
 | `cliente.cs, empleado.cs, vehiculo.cs, locacion.cs` | Clientes, empleados, vehículos y locaciones. |
 | `datos-orden.cs, gestion-ordenes-bd.cs, mi-trabajo-bd.cs` | Órdenes, gestión de órdenes y órdenes del empleado. |

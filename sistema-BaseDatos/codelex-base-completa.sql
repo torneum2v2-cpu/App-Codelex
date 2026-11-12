@@ -921,6 +921,32 @@ IF COL_LENGTH('abonos', 'concepto') IS NULL
 		CONSTRAINT DF_ABONOS_concepto DEFAULT 'Abono';
 GO
 
+-- Un abono mal registrado se puede deshacer (queda anulado con su motivo, no se borra)
+IF COL_LENGTH('abonos', 'anulado') IS NULL
+	ALTER TABLE abonos
+	ADD anulado BIT NOT NULL
+		CONSTRAINT DF_ABONOS_anulado DEFAULT 0;
+GO
+
+IF COL_LENGTH('abonos', 'motivo_anulacion') IS NULL
+	ALTER TABLE abonos ADD motivo_anulacion VARCHAR(100) NULL;
+GO
+
+IF COL_LENGTH('abonos', 'fecha_anulacion') IS NULL
+	ALTER TABLE abonos ADD fecha_anulacion DATE NULL;
+GO
+
+-- A qué cuotas se aplicó cada abono (sirve para poder deshacerlo)
+IF OBJECT_ID('abono_cuotas') IS NULL
+CREATE TABLE abono_cuotas
+(
+	abono_id INT NOT NULL FOREIGN KEY REFERENCES abonos(abono_id),
+	cuota_id INT NOT NULL FOREIGN KEY REFERENCES cuotas(cuota_id),
+	monto MONEY NOT NULL,
+	CONSTRAINT PK_ABONO_CUOTAS PRIMARY KEY (abono_id, cuota_id)
+)
+GO
+
 IF COL_LENGTH('clientes', 'cliente_id') IS NULL AND COL_LENGTH('clientes', 'identificacion_cliente') IS NOT NULL
 BEGIN
 	DECLARE @sql NVARCHAR(MAX) = N'';
@@ -5860,12 +5886,122 @@ BEGIN
 		INSERT INTO abonos (factura_id, fecha_abono, monto, forma_pago_id, saldo_despues, concepto)
 		VALUES (@factura_id, @fecha_abono, @monto, @forma_pago_id, @saldo - @monto, 'Abono');
 
+		INSERT INTO abono_cuotas (abono_id, cuota_id, monto)
+		SELECT SCOPE_IDENTITY(), cuota_id, aplicado
+		FROM @nuevas
+		WHERE aplicado > 0;
+
 		EXEC sp_RecalcularEstadoFactura @factura_id, @fecha_abono;
 
 		COMMIT TRANSACTION;
 
 		SET @resultado = 1;
 		SET @mensaje = 'El abono se registro correctamente.';
+	END TRY
+	BEGIN CATCH
+		IF @@TRANCOUNT > 0
+			ROLLBACK TRANSACTION;
+
+		SET @mensaje = LEFT(ERROR_MESSAGE(), 100);
+	END CATCH
+END
+GO
+
+-- Deshacer un abono mal registrado
+-- Solo se puede deshacer el ultimo abono vigente de la factura. El abono queda anulado con su motivo
+-- y las cuotas vuelven a como estaban antes de ese abono.
+CREATE OR ALTER PROCEDURE sp_AnularAbono
+	@abono_id INT,
+	@motivo VARCHAR(100),
+	@resultado INT OUTPUT,
+	@mensaje VARCHAR(100) OUTPUT
+AS
+BEGIN
+	SET NOCOUNT ON;
+	SET XACT_ABORT ON;
+
+	SET @resultado = 0;
+	SET @mensaje = '';
+
+	DECLARE @factura_id INT, @anulado BIT, @estado VARCHAR(50), @saldo MONEY;
+
+	SELECT @factura_id = a.factura_id, @anulado = a.anulado, @estado = f.estado_pago
+	FROM abonos a
+	INNER JOIN facturas f ON f.factura_id = a.factura_id
+	WHERE a.abono_id = @abono_id;
+
+	IF @factura_id IS NULL
+	BEGIN
+		SET @mensaje = 'El abono no existe.';
+		RETURN;
+	END
+
+	IF @anulado = 1
+	BEGIN
+		SET @mensaje = 'El abono ya fue deshecho.';
+		RETURN;
+	END
+
+	IF @estado = 'Anulada'
+	BEGIN
+		SET @mensaje = 'La factura esta anulada.';
+		RETURN;
+	END
+
+	IF @motivo IS NULL OR LEN(LTRIM(RTRIM(@motivo))) < 5
+	BEGIN
+		SET @mensaje = 'El motivo debe tener al menos 5 caracteres.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM abonos WHERE factura_id = @factura_id AND anulado = 0 AND abono_id > @abono_id)
+	BEGIN
+		SET @mensaje = 'Solo se puede deshacer el ultimo abono de la factura.';
+		RETURN;
+	END
+
+	IF NOT EXISTS (SELECT 1 FROM abono_cuotas WHERE abono_id = @abono_id)
+	BEGIN
+		SET @mensaje = 'Este abono es anterior y no se puede deshacer. Anule la factura si hace falta.';
+		RETURN;
+	END
+
+	BEGIN TRY
+		BEGIN TRANSACTION;
+
+		UPDATE q
+		SET q.monto_pagado = ISNULL(q.monto_pagado, 0) - ac.monto,
+			q.estado_cuota = CASE WHEN ISNULL(q.monto_pagado, 0) - ac.monto >= q.monto_cuota THEN 'Pagada'
+								  WHEN ISNULL(q.monto_pagado, 0) - ac.monto > 0 THEN 'Parcial'
+								  WHEN q.fecha_vencimiento < CAST(GETDATE() AS DATE) THEN 'Vencida'
+								  ELSE 'Pendiente' END,
+			q.fecha_pago = CASE WHEN ISNULL(q.monto_pagado, 0) - ac.monto > 0 THEN q.fecha_pago ELSE NULL END,
+			q.forma_pago_id = CASE WHEN ISNULL(q.monto_pagado, 0) - ac.monto > 0 THEN q.forma_pago_id ELSE NULL END
+		FROM cuotas q
+		INNER JOIN abono_cuotas ac ON ac.cuota_id = q.cuota_id
+		WHERE ac.abono_id = @abono_id;
+
+		UPDATE abonos
+		SET anulado = 1,
+			motivo_anulacion = LTRIM(RTRIM(@motivo)),
+			fecha_anulacion = CAST(GETDATE() AS DATE)
+		WHERE abono_id = @abono_id;
+
+		UPDATE facturas
+		SET estado_pago = 'Pendiente', fecha_pago = NULL
+		WHERE factura_id = @factura_id AND estado_pago = 'Pagada';
+
+		EXEC sp_RecalcularEstadoFactura @factura_id, NULL;
+
+		SELECT @saldo = SUM(q.monto_cuota - ISNULL(q.monto_pagado, 0))
+		FROM cuentas_por_cobrar cc
+		INNER JOIN cuotas q ON q.cuenta_id = cc.cuenta_id
+		WHERE cc.factura_id = @factura_id;
+
+		COMMIT TRANSACTION;
+
+		SET @resultado = 1;
+		SET @mensaje = 'Abono deshecho. El saldo pendiente es ' + CAST(@saldo AS VARCHAR(20)) + '.';
 	END TRY
 	BEGIN CATCH
 		IF @@TRANCOUNT > 0
@@ -5941,6 +6077,9 @@ BEGIN
 		VALUES (@factura_id, @fecha_pago, @saldo, @forma_pago_id, @saldo_total - @saldo,
 				'Cuota ' + CAST(@numero AS VARCHAR(5)));
 
+		INSERT INTO abono_cuotas (abono_id, cuota_id, monto)
+		VALUES (SCOPE_IDENTITY(), @cuota_id, @saldo);
+
 		EXEC sp_RecalcularEstadoFactura @factura_id, @fecha_pago;
 
 		COMMIT TRANSACTION;
@@ -5963,7 +6102,14 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT a.fecha_abono, a.concepto, a.monto, ISNULL(fp.nombre_forma_pago, '') AS nombre_forma_pago, a.saldo_despues
+	SELECT a.abono_id,
+		   a.fecha_abono,
+		   a.concepto,
+		   a.monto,
+		   ISNULL(fp.nombre_forma_pago, '') AS nombre_forma_pago,
+		   a.saldo_despues,
+		   a.anulado,
+		   CASE WHEN a.anulado = 1 THEN 'Deshecho: ' + ISNULL(a.motivo_anulacion, '') ELSE 'Vigente' END AS estado
 	FROM abonos a
 	LEFT JOIN formas_pago fp ON fp.forma_pago_id = a.forma_pago_id
 	WHERE a.factura_id = @factura_id

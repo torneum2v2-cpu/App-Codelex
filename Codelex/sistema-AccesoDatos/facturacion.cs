@@ -314,16 +314,26 @@ namespace Codelex.AccesoDatos
         /// <returns>Texto del error, o texto vacío si es válido.</returns>
         public string validarAnulacion(string motivo)
         {
-            motivo = motivo.Trim();
+            return Validacion.validarMotivo(motivo);
+        }
 
-            if (motivo == "")
-                return "El motivo de la anulación es obligatorio.";
-            if (motivo.Length < 5)
-                return "El motivo debe tener al menos 5 caracteres.";
-            if (motivo.Length > 100)
-                return "El motivo no puede tener más de 100 caracteres.";
+        /// <summary>
+        /// Deshace un abono mal registrado. Solo se puede deshacer el último abono de la factura.
+        /// </summary>
+        /// <param name="abonoId">Identificador del abono.</param>
+        /// <param name="motivo">Motivo escrito por el usuario.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
+        public bool deshacerAbono(int abonoId, string motivo, out string mensaje)
+        {
+            mensaje = Validacion.validarMotivo(motivo);
+            if (mensaje != "")
+                return false;
 
-            return "";
+            SqlCommand comando = procedimiento("sp_AnularAbono");
+            comando.Parameters.AddWithValue("@abono_id", abonoId);
+            comando.Parameters.AddWithValue("@motivo", motivo.Trim());
+            return ejecutar(comando, out mensaje);
         }
 
         /// <summary>

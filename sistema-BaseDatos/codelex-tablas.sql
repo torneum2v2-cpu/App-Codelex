@@ -507,6 +507,32 @@ IF COL_LENGTH('abonos', 'concepto') IS NULL
 		CONSTRAINT DF_ABONOS_concepto DEFAULT 'Abono';
 GO
 
+-- Un abono mal registrado se puede deshacer (queda anulado con su motivo, no se borra)
+IF COL_LENGTH('abonos', 'anulado') IS NULL
+	ALTER TABLE abonos
+	ADD anulado BIT NOT NULL
+		CONSTRAINT DF_ABONOS_anulado DEFAULT 0;
+GO
+
+IF COL_LENGTH('abonos', 'motivo_anulacion') IS NULL
+	ALTER TABLE abonos ADD motivo_anulacion VARCHAR(100) NULL;
+GO
+
+IF COL_LENGTH('abonos', 'fecha_anulacion') IS NULL
+	ALTER TABLE abonos ADD fecha_anulacion DATE NULL;
+GO
+
+-- A qué cuotas se aplicó cada abono (sirve para poder deshacerlo)
+IF OBJECT_ID('abono_cuotas') IS NULL
+CREATE TABLE abono_cuotas
+(
+	abono_id INT NOT NULL FOREIGN KEY REFERENCES abonos(abono_id),
+	cuota_id INT NOT NULL FOREIGN KEY REFERENCES cuotas(cuota_id),
+	monto MONEY NOT NULL,
+	CONSTRAINT PK_ABONO_CUOTAS PRIMARY KEY (abono_id, cuota_id)
+)
+GO
+
 IF COL_LENGTH('clientes', 'cliente_id') IS NULL AND COL_LENGTH('clientes', 'identificacion_cliente') IS NOT NULL
 BEGIN
 	DECLARE @sql NVARCHAR(MAX) = N'';

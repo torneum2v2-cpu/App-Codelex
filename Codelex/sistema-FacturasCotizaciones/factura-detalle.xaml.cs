@@ -20,6 +20,7 @@ namespace Codelex.FacturasCotizaciones
         bool huboCambios = false;
         DataRow? cabeceraActual = null;
         DataTable lineasActuales = new DataTable();
+        int abonoPorDeshacer = 0;
 
         /// <summary>
         /// Inicializa la ventana y prepara sus controles.
@@ -142,6 +143,19 @@ namespace Codelex.FacturasCotizaciones
                 DataTable abonos = facturaBD.listarAbonos(facturaId);
                 dgAbonos.ItemsSource = abonos.DefaultView;
 
+                // El único abono que se puede deshacer es el último que sigue vigente.
+                abonoPorDeshacer = 0;
+                foreach (DataRow abono in abonos.Rows)
+                {
+                    if (!Convert.ToBoolean(abono["anulado"]))
+                        abonoPorDeshacer = Convert.ToInt32(abono["abono_id"]);
+                }
+
+                btnDeshacer.Visibility = Visibility.Collapsed;
+                pnlDeshacer.Visibility = Visibility.Collapsed;
+                if (abonoPorDeshacer > 0 && estadoPago != "Anulada")
+                    btnDeshacer.Visibility = Visibility.Visible;
+
                 btnAbono.Visibility = Visibility.Collapsed;
                 btnSaldar.Visibility = Visibility.Collapsed;
                 if (saldoActual > 0 && estadoPago != "Anulada")
@@ -205,6 +219,65 @@ namespace Codelex.FacturasCotizaciones
                 totales.Add("Total: " + lblTotal.Text);
 
                 ImpresionDocumento.imprimir(this, "Factura", dNumero.Text, encabezado, lineas, totales);
+            }
+            catch (Exception ex)
+            {
+                MensajeCodelex.mostrar(this, "Factura", ex.Message, false);
+            }
+        }
+
+        /// <summary>
+        /// Atiende el clic de deshacer abono: muestra el cuadro para escribir el motivo.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
+        private void deshacerClic(object sender, RoutedEventArgs e)
+        {
+            txtMotivoAbono.Text = "";
+            pnlDeshacer.Visibility = Visibility.Visible;
+            txtMotivoAbono.Focus();
+        }
+
+        /// <summary>
+        /// Cierra el cuadro del motivo sin deshacer el abono.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
+        private void cancelarDeshacerClic(object sender, RoutedEventArgs e)
+        {
+            pnlDeshacer.Visibility = Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// Valida el motivo, pide confirmación y deshace el último abono.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
+        private void confirmarDeshacerClic(object sender, RoutedEventArgs e)
+        {
+            string error = Validacion.validarMotivo(txtMotivoAbono.Text);
+            if (error != "")
+            {
+                MensajeCodelex.mostrar(this, "Factura", error, false);
+                return;
+            }
+
+            string pregunta = "¿Deshacer el último abono de esta factura?\n\nEl saldo pendiente volverá a subir.";
+            if (!MensajeCodelex.preguntar(this, "Factura", pregunta))
+                return;
+
+            try
+            {
+                string mensaje;
+                bool deshecho = facturaBD.deshacerAbono(abonoPorDeshacer, txtMotivoAbono.Text, out mensaje);
+
+                MensajeCodelex.mostrar(this, "Factura", mensaje, deshecho);
+
+                if (deshecho)
+                {
+                    huboCambios = true;
+                    cargarFactura();
+                }
             }
             catch (Exception ex)
             {

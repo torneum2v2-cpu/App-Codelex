@@ -241,8 +241,29 @@
                                         <DataGridTextColumn Header="Monto (L)" Binding="{Binding monto, StringFormat=N2}" Width="*"/>
                                         <DataGridTextColumn Header="Método" Binding="{Binding nombre_forma_pago}" Width="*"/>
                                         <DataGridTextColumn Header="Saldo después (L)" Binding="{Binding saldo_despues, StringFormat=N2}" Width="*"/>
+                                        <DataGridTextColumn Header="Estado" Binding="{Binding estado}" Width="1.4*"/>
                                     </DataGrid.Columns>
                                 </DataGrid>
+
+                                <Button x:Name="btnDeshacer" Content="Deshacer último abono" Style="{StaticResource SecondaryButton}"
+                                        Width="210" HorizontalAlignment="Right" Margin="0,10,0,0" Click="deshacerClic"
+                                        ToolTip="Si se registró mal el último abono, se puede deshacer con un motivo"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border x:Name="pnlDeshacer" Style="{StaticResource Card}" Margin="0,0,0,15" Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock Text="Deshacer el último abono" Style="{StaticResource TituloCard}" Margin="0,0,0,8"/>
+                                <TextBlock Text="El abono queda marcado como deshecho (no se borra) y las cuotas vuelven a como estaban antes."
+                                           Style="{StaticResource Nota}" Margin="0,0,0,10"/>
+                                <TextBlock Text="Motivo * (mínimo 5 caracteres)" Style="{StaticResource Etiqueta}"/>
+                                <TextBox x:Name="txtMotivoAbono" MaxLength="100"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+                                    <Button Content="Volver" Style="{StaticResource SecondaryButton}" Width="120"
+                                            Margin="0,0,10,0" Click="cancelarDeshacerClic"/>
+                                    <Button Content="Confirmar" Style="{StaticResource PrimaryButton}" Width="150"
+                                            Click="confirmarDeshacerClic"/>
+                                </StackPanel>
                             </StackPanel>
                         </Border>
 

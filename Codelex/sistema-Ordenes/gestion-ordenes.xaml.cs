@@ -732,7 +732,7 @@ namespace Codelex.Ordenes
                 else if (nuevo.texto == "Completada")
                     pregunta += "\n\nLos equipos asignados quedarán libres y la orden ya no podrá cambiar de estado.";
 
-                if (MessageBox.Show(pregunta, "Gestión de órdenes", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                if (!MensajeCodelex.preguntar(this, "Gestión de órdenes", pregunta))
                     return;
 
                 cambiarEstado(fila, nuevo.id);
@@ -764,7 +764,7 @@ namespace Codelex.Ordenes
                 string pregunta = "¿Desea cancelar la orden " + fila.OrdenId + "?\n\n" +
                                   "La orden no se borra: queda con estado Cancelada y ya no podrá cambiar de estado.";
 
-                if (MessageBox.Show(pregunta, "Gestión de órdenes", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+                if (!MensajeCodelex.preguntar(this, "Gestión de órdenes", pregunta))
                     return;
 
                 cambiarEstado(fila, canceladaId);

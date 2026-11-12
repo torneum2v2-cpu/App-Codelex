@@ -38,7 +38,7 @@ namespace Codelex
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Detalle del cliente", MessageBoxButton.OK, MessageBoxImage.Error);
+                MensajeCodelex.mostrar(this, "Detalle del cliente", ex.Message, false);
             }
         }
 
@@ -51,7 +51,7 @@ namespace Codelex
 
             if (tabla.Rows.Count == 0)
             {
-                MessageBox.Show("No se encontró el cliente.", "Detalle del cliente", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MensajeCodelex.mostrar(this, "Detalle del cliente", "No se encontró el cliente.", false);
                 return;
             }
 

@@ -264,8 +264,7 @@ namespace Codelex
             else
                 pregunta = "¿Desea desactivar el cliente " + txtNombre.Text + "?";
 
-            MessageBoxResult respuesta = MessageBox.Show(pregunta, "Clientes", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (respuesta != MessageBoxResult.Yes)
+            if (!MensajeCodelex.preguntar(this, "Clientes", pregunta))
                 return;
 
             try
@@ -297,7 +296,7 @@ namespace Codelex
         {
             if (clienteActual == "")
             {
-                MessageBox.Show("Seleccione un cliente de la tabla.", "Clientes", MessageBoxButton.OK, MessageBoxImage.Information);
+                MensajeCodelex.mostrar(this, "Clientes", "Seleccione un cliente de la tabla.", true);
                 return;
             }
 

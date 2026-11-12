@@ -167,8 +167,7 @@ namespace Codelex.FacturasCotizaciones
             string pregunta = "¿Saldar la cuota " + cuota["numero_cuota"] + " por "
                               + facturaBD.dinero(Convert.ToDecimal(cuota["saldo"])) + "?";
 
-            MessageBoxResult respuesta = MessageBox.Show(pregunta, "Factura", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (respuesta != MessageBoxResult.Yes)
+            if (!MensajeCodelex.preguntar(this, "Factura", pregunta))
                 return;
 
             try

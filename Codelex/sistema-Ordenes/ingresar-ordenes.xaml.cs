@@ -507,11 +507,7 @@ namespace Codelex
         {
             if (clienteRtn != "")
             {
-                MessageBoxResult respuesta = MessageBox.Show(
-                    "¿Desea cancelar la orden? Se perderán los datos ingresados.",
-                    "Órdenes", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-                if (respuesta != MessageBoxResult.Yes)
+                if (!MensajeCodelex.preguntar(this, "Órdenes", "¿Desea cancelar la orden? Se perderán los datos ingresados."))
                     return;
             }
 

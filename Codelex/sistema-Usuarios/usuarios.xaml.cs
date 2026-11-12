@@ -321,7 +321,7 @@ namespace Codelex
             string error = validarFormulario(true);
             if (error != "")
             {
-                MessageBox.Show(error, "Usuarios", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MensajeCodelex.mostrar(this, "Usuarios", error, false);
                 return;
             }
 
@@ -360,7 +360,7 @@ namespace Codelex
             string error = validarFormulario(false);
             if (error != "")
             {
-                MessageBox.Show(error, "Usuarios", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MensajeCodelex.mostrar(this, "Usuarios", error, false);
                 return;
             }
 
@@ -405,8 +405,7 @@ namespace Codelex
             else
                 pregunta = "¿Desea desactivar el usuario " + txtUsuario.Text + "?";
 
-            MessageBoxResult respuesta = MessageBox.Show(pregunta, "Usuarios", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (respuesta != MessageBoxResult.Yes)
+            if (!MensajeCodelex.preguntar(this, "Usuarios", pregunta))
                 return;
 
             try
@@ -567,9 +566,9 @@ namespace Codelex
         private void mostrarMensaje(bool correcto, string mensaje)
         {
             if (correcto)
-                MessageBox.Show(mensaje, "Usuarios", MessageBoxButton.OK, MessageBoxImage.Information);
+                MensajeCodelex.mostrar(this, "Usuarios", mensaje, true);
             else
-                MessageBox.Show(mensaje, "Usuarios", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MensajeCodelex.mostrar(this, "Usuarios", mensaje, false);
         }
 
         /// <summary>
@@ -578,7 +577,7 @@ namespace Codelex
         /// <param name="ex">Excepción que se produjo.</param>
         private void mostrarError(Exception ex)
         {
-            MessageBox.Show(ex.Message, "Usuarios", MessageBoxButton.OK, MessageBoxImage.Error);
+            MensajeCodelex.mostrar(this, "Usuarios", ex.Message, false);
         }
     }
 }

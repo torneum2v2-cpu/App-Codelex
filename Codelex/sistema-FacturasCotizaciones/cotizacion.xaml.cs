@@ -524,11 +524,7 @@ namespace Codelex.FacturasCotizaciones
 
             if (hayDatos)
             {
-                MessageBoxResult respuesta = MessageBox.Show(
-                    "¿Desea cancelar? Se perderán los datos ingresados.",
-                    "Cotizaciones", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-                if (respuesta != MessageBoxResult.Yes)
+                if (!MensajeCodelex.preguntar(this, "Cotizaciones", "¿Desea cancelar? Se perderán los datos ingresados."))
                     return;
             }
 

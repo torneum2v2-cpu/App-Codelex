@@ -43,7 +43,7 @@ namespace Codelex
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Buscar empleado", MessageBoxButton.OK, MessageBoxImage.Error);
+                MensajeCodelex.mostrar(this, "Buscar empleado", ex.Message, false);
             }
         }
 
@@ -54,8 +54,7 @@ namespace Codelex
         {
             if (dgEmpleados.SelectedItem == null)
             {
-                MessageBox.Show("Seleccione un empleado de la tabla.", "Buscar empleado",
-                                MessageBoxButton.OK, MessageBoxImage.Information);
+                MensajeCodelex.mostrar(this, "Buscar empleado", "Seleccione un empleado de la tabla.", true);
                 return;
             }
 

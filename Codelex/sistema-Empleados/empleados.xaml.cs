@@ -272,8 +272,7 @@ namespace Codelex
             else
                 pregunta = "¿Desea desactivar al empleado " + nombre + "?";
 
-            MessageBoxResult respuesta = MessageBox.Show(pregunta, "Empleados", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (respuesta != MessageBoxResult.Yes)
+            if (!MensajeCodelex.preguntar(this, "Empleados", pregunta))
                 return;
 
             try

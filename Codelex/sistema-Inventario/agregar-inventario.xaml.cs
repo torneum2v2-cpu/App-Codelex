@@ -411,10 +411,7 @@ namespace Codelex
             if (guardado || lista.Rows.Count == 0)
                 return;
 
-            MessageBoxResult respuesta = MessageBox.Show("La lista a ingresar no se ha guardado. ¿Desea salir de todos modos?",
-                "Inventario", MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-            if (respuesta != MessageBoxResult.Yes)
+            if (!MensajeCodelex.preguntar(this, "Inventario", "La lista a ingresar no se ha guardado. ¿Desea salir de todos modos?"))
                 e.Cancel = true;
         }
 

@@ -224,8 +224,7 @@ namespace Codelex
             else
                 pregunta = "¿Desea desactivar el vehículo " + placaActual + "?";
 
-            MessageBoxResult respuesta = MessageBox.Show(pregunta, "Vehículos", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (respuesta != MessageBoxResult.Yes)
+            if (!MensajeCodelex.preguntar(this, "Vehículos", pregunta))
                 return;
 
             try

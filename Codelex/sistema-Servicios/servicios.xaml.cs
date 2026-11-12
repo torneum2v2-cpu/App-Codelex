@@ -166,8 +166,7 @@ namespace Codelex
             }
 
             string pregunta = "¿Eliminar el servicio " + txtServicio.Text + "?";
-            MessageBoxResult respuesta = MessageBox.Show(pregunta, "Servicios", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (respuesta != MessageBoxResult.Yes)
+            if (!MensajeCodelex.preguntar(this, "Servicios", pregunta))
                 return;
 
             try
@@ -272,8 +271,7 @@ namespace Codelex
             }
 
             string pregunta = "¿Eliminar la actividad " + fila["descripcion"] + "?";
-            MessageBoxResult respuesta = MessageBox.Show(pregunta, "Servicios", MessageBoxButton.YesNo, MessageBoxImage.Question);
-            if (respuesta != MessageBoxResult.Yes)
+            if (!MensajeCodelex.preguntar(this, "Servicios", pregunta))
                 return;
 
             try

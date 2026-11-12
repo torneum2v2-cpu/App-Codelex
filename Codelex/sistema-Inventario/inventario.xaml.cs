@@ -128,6 +128,20 @@ namespace Codelex
         }
 
         /// <summary>
+        /// Atiende el clic de ajustar existencias.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
+        private void ajustarClic(object sender, RoutedEventArgs e)
+        {
+            AjustarInventario ventana = new AjustarInventario();
+            ventana.Owner = this;
+            ventana.ShowDialog();
+
+            cargarInventario();
+        }
+
+        /// <summary>
         /// Permite mover la ventana arrastrando la barra superior con el mouse.
         /// </summary>
         /// <param name="sender">Control que originó el evento.</param>

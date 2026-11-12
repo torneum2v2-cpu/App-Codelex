@@ -349,8 +349,11 @@
 
                     <Grid Grid.Row="2" Margin="0,14,0,0">
                         <TextBlock Text="Disponible: equipos que no están asignados a una orden sin devolver. Valor: equipos a su precio de compra y productos a su costo promedio."
-                                   Style="{StaticResource Nota}" VerticalAlignment="Center" Margin="0,0,330,0"/>
+                                   Style="{StaticResource Nota}" VerticalAlignment="Center" Margin="0,0,520,0"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button x:Name="btnAjustar" Content="Ajustar existencias" Width="180"
+                                    Style="{StaticResource SecondaryButton}" Margin="0,0,10,0" Click="ajustarClic"
+                                    ToolTip="Registra mermas, pérdidas o un conteo físico de productos"/>
                             <Button x:Name="btnAgregar" Content="Agregar al inventario" Width="200"
                                     Style="{StaticResource PrimaryButton}" Margin="0,0,10,0" Click="agregarClic"
                                     ToolTip="Registra la compra de productos y equipos"/>

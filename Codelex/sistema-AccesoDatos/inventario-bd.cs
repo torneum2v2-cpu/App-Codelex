@@ -148,6 +148,108 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
+        /// Tipos de ajuste que el usuario puede elegir.
+        /// </summary>
+        public string[] tiposAjuste = { "Merma (se dañó o venció)", "Pérdida (se extravió)", "Conteo físico (stock real)" };
+
+        /// <summary>
+        /// Convierte el texto elegido en la pantalla al valor que guarda la base de datos.
+        /// </summary>
+        /// <param name="texto">Texto elegido en la lista de tipos de ajuste.</param>
+        /// <returns>Merma, Perdida, Conteo o texto vacío si no se eligió ninguno.</returns>
+        public string valorTipoAjuste(string texto)
+        {
+            if (texto.StartsWith("Merma"))
+                return "Merma";
+            if (texto.StartsWith("Pérdida"))
+                return "Perdida";
+            if (texto.StartsWith("Conteo"))
+                return "Conteo";
+
+            return "";
+        }
+
+        /// <summary>
+        /// Valida los datos de un ajuste de inventario.
+        /// </summary>
+        /// <param name="productoId">Identificador del producto (0 si no se eligió).</param>
+        /// <param name="tipo">Tipo de ajuste elegido (Merma, Perdida o Conteo).</param>
+        /// <param name="cantidadTexto">Cantidad escrita por el usuario.</param>
+        /// <param name="motivo">Motivo del ajuste.</param>
+        /// <param name="cantidad">(salida) Cantidad ya convertida a número.</param>
+        /// <returns>Texto del error, o texto vacío si todo es válido.</returns>
+        public string validarAjuste(int productoId, string tipo, string cantidadTexto, string motivo, out int cantidad)
+        {
+            cantidad = 0;
+            cantidadTexto = cantidadTexto.Trim();
+            motivo = motivo.Trim();
+
+            if (productoId == 0)
+                return "Seleccione un producto de la tabla.";
+            if (tipo == "")
+                return "Seleccione el tipo de ajuste.";
+
+            if (cantidadTexto == "")
+                return "La cantidad es obligatoria.";
+            if (!soloNumeros(cantidadTexto))
+                return "La cantidad solo puede tener números enteros.";
+            if (cantidadTexto.Length > 7)
+                return "La cantidad no puede tener más de 7 dígitos.";
+
+            cantidad = int.Parse(cantidadTexto);
+            if (cantidad == 0 && tipo != "Conteo")
+                return "La cantidad debe ser mayor que cero.";
+
+            if (motivo == "")
+                return "El motivo es obligatorio.";
+            if (motivo.Length < 5)
+                return "El motivo debe tener al menos 5 caracteres.";
+            if (motivo.Length > 100)
+                return "El motivo no puede tener más de 100 caracteres.";
+
+            return "";
+        }
+
+        /// <summary>
+        /// Registra un ajuste de inventario (merma, pérdida o conteo físico) de un producto.
+        /// </summary>
+        /// <param name="productoId">Identificador del producto.</param>
+        /// <param name="tipo">Tipo de ajuste elegido (Merma, Perdida o Conteo).</param>
+        /// <param name="cantidadTexto">Cantidad escrita por el usuario.</param>
+        /// <param name="motivo">Motivo del ajuste.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
+        public bool ajustarInventario(int productoId, string tipo, string cantidadTexto, string motivo, out string mensaje)
+        {
+            int cantidad;
+            mensaje = validarAjuste(productoId, tipo, cantidadTexto, motivo, out cantidad);
+            if (mensaje != "")
+                return false;
+
+            SqlCommand comando = procedimiento("sp_AjustarInventario");
+            comando.Parameters.AddWithValue("@producto_id", productoId);
+            comando.Parameters.AddWithValue("@tipo_ajuste", tipo);
+            comando.Parameters.AddWithValue("@cantidad", cantidad);
+            comando.Parameters.AddWithValue("@motivo", motivo.Trim());
+
+            return ejecutar(comando, out mensaje);
+        }
+
+        /// <summary>
+        /// Lista los últimos ajustes de inventario.
+        /// </summary>
+        /// <param name="productoId">Identificador del producto (0 para ver los de todos).</param>
+        /// <returns>Tabla con los ajustes.</returns>
+        public DataTable listarAjustes(int productoId)
+        {
+            SqlCommand comando = procedimiento("sp_ListarAjustesInventario");
+            if (productoId > 0)
+                comando.Parameters.AddWithValue("@producto_id", productoId);
+
+            return consultar(comando);
+        }
+
+        /// <summary>
         /// Impide escribir caracteres que no sean números.
         /// </summary>
         /// <param name="texto">Texto a usar.</param>

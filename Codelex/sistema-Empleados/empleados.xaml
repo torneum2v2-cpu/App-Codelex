@@ -12,6 +12,7 @@
         FontFamily="Segoe UI"
         Loaded="ventanaCargada">
     <Window.Resources>
+        <local:FormatoTelefono x:Key="Telefono"/>
         <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
         <SolidColorBrush x:Key="PrimaryLight" Color="#5FE0D2"/>
         <SolidColorBrush x:Key="Muted" Color="#8FC4BD"/>
@@ -422,7 +423,7 @@
                                 </StackPanel>
                                 <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,12">
                                     <TextBlock Text="Teléfono" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtTelefono" MaxLength="8" PreviewTextInput="soloNumeros"/>
+                                    <TextBox x:Name="txtTelefono" MaxLength="8" PreviewTextInput="soloNumeros" ToolTip="Escriba los 8 dígitos, sin +504. Se mostrará como +504 XXXX-XXXX"/>
                                 </StackPanel>
                                 <StackPanel Grid.Row="4" Grid.ColumnSpan="3" Margin="0">
                                     <TextBlock Text="Correo" Style="{StaticResource Etiqueta}"/>
@@ -526,7 +527,7 @@
                                         <DataGridTextColumn Header="Nombre" Binding="{Binding nombre_empleado}" Width="*"/>
                                         <DataGridTextColumn Header="Apellido" Binding="{Binding apellido_empleado}" Width="*"/>
                                         <DataGridTextColumn Header="Identidad" Binding="{Binding identidad}" Width="*"/>
-                                        <DataGridTextColumn Header="Teléfono" Binding="{Binding telefono_empleado}" Width="86"/>
+                                        <DataGridTextColumn Header="Teléfono" Binding="{Binding telefono_empleado, Converter={StaticResource Telefono}}" Width="128"/>
                                         <DataGridTextColumn Header="Usuario" Binding="{Binding usuario}" Width="*"/>
                                         <DataGridTextColumn Header="Estado" Binding="{Binding estado}" Width="80"/>
                                     </DataGrid.Columns>

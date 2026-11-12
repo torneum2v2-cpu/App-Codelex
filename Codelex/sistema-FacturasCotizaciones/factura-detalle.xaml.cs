@@ -100,7 +100,7 @@ namespace Codelex.FacturasCotizaciones
             dRtn.Text = vacio("" + f["identificacion_cliente"]);
             dEmpresa.Text = vacio("" + f["nombre_empresa"]);
             dContacto.Text = vacio((("" + f["nombre_cliente"]) + " " + ("" + f["apellido_cliente"])).Trim());
-            dTelefono.Text = vacio("" + f["telefono_cliente"]);
+            dTelefono.Text = vacio(Validacion.formatoTelefono("" + f["telefono_cliente"]));
             dCorreo.Text = vacio("" + f["correo_cliente"]);
 
             dLocacion.Text = vacio("" + f["nombre_locacion"]);

@@ -62,7 +62,7 @@ namespace Codelex
             txtEmpresa.Text = fila["nombre_empresa"].ToString();
             txtContacto.Text = fila["nombre_cliente"].ToString();
             txtApellido.Text = fila["apellido_cliente"].ToString();
-            txtTelefono.Text = fila["telefono_cliente"].ToString();
+            txtTelefono.Text = Validacion.formatoTelefono("" + fila["telefono_cliente"]);
             txtCorreo.Text = fila["correo_cliente"].ToString();
             txtEstado.Text = fila["estado"].ToString();
         }

@@ -2,7 +2,6 @@
 using Codelex.AccesoDatos;
 using System.Data;
 using System.Globalization;
-using System.Net.Mail;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
@@ -146,7 +145,7 @@ namespace Codelex
             txtNombre.Text = "" + fila["nombre_empleado"];
             txtApellido.Text = "" + fila["apellido_empleado"];
             txtCorreo.Text = "" + fila["correo_empleado"];
-            txtTelefono.Text = "" + fila["telefono_empleado"];
+            txtTelefono.Text = Validacion.formatoTelefono("" + fila["telefono_empleado"]);
 
             string sugerido = generarUsuario(txtNombre.Text, txtApellido.Text);
             try
@@ -179,7 +178,7 @@ namespace Codelex
             txtNombre.Text = "" + fila["nombre_empleado"];
             txtApellido.Text = "" + fila["apellido_empleado"];
             txtCorreo.Text = "" + fila["correo_empleado"];
-            txtTelefono.Text = "" + fila["telefono_empleado"];
+            txtTelefono.Text = Validacion.formatoTelefono("" + fila["telefono_empleado"]);
 
             txtUsuario.Text = "" + fila["usuario"];
 
@@ -246,44 +245,21 @@ namespace Codelex
             if (empleadoActual == 0)
                 return "Elija un empleado con el botón Buscar empleado.";
 
-            if (esNuevo && !correoValido(txtCorreo.Text))
+            if (esNuevo && Validacion.validarCorreo(txtCorreo.Text, true, 50) != "")
                 return "El correo del empleado está vacío o no tiene un formato válido. " +
                        "Corríjalo en el módulo de Empleados antes de continuar.";
 
-            if (txtUsuario.Text.Trim() == "")
-                return "El usuario es obligatorio.";
-
-            if (txtUsuario.Text.Trim().Contains(' '))
-                return "El usuario no puede llevar espacios.";
+            string problema = usuarioBD.validarAcceso(txtUsuario.Text, pbContrasena.Password, esNuevo);
+            if (problema != "")
+                return problema;
 
             if (cmbRol.SelectedValue == null)
                 return "Seleccione un rol.";
-
-            if (esNuevo && pbContrasena.Password == "")
-                return "La contraseña es obligatoria.";
 
             if (pbContrasena.Password != pbConfirmar.Password)
                 return "Las contraseñas no coinciden.";
 
             return "";
-        }
-
-        /// <summary>
-        /// Indica si el texto tiene forma de correo electrónico.
-        /// </summary>
-        /// <param name="correo">Correo electrónico.</param>
-        /// <returns>true si parece un correo válido; false en caso contrario.</returns>
-        private bool correoValido(string correo)
-        {
-            correo = correo.Trim();
-
-            if (correo == "")
-                return false;
-
-            if (!MailAddress.TryCreate(correo, out MailAddress? direccion))
-                return false;
-
-            return direccion.Address == correo && direccion.Host.Contains('.');
         }
 
         /// <summary>

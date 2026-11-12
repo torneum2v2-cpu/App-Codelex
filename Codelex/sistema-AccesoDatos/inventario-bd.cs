@@ -81,7 +81,7 @@ namespace Codelex.AccesoDatos
 
             SqlCommand comando = procedimiento("sp_InsertarProveedor");
             comando.Parameters.AddWithValue("@nombre_proveedor", nombre.Trim());
-            comando.Parameters.AddWithValue("@telefono_proveedor", telefono.Trim());
+            comando.Parameters.AddWithValue("@telefono_proveedor", Validacion.normalizarTelefono(telefono));
             comando.Parameters.AddWithValue("@correo_proveedor", correo.Trim());
 
             SqlParameter id = new SqlParameter("@proveedor_id", SqlDbType.Int);
@@ -106,16 +106,11 @@ namespace Codelex.AccesoDatos
             nombre = nombre.Trim();
             tipo = tipo.Trim();
 
-            if (nombre == "")
-                return "El nombre del producto es obligatorio.";
-            if (nombre.Length > 50)
-                return "El nombre no puede tener más de 50 caracteres.";
-            if (tipo == "")
-                return "El tipo de producto es obligatorio.";
-            if (tipo.Length > 20)
-                return "El tipo de producto no puede tener más de 20 caracteres.";
+            string problema = Validacion.validarTexto(nombre, "El nombre del producto", 3, 50);
+            if (problema != "")
+                return problema;
 
-            return "";
+            return Validacion.validarTexto(tipo, "El tipo de producto", 3, 20);
         }
 
         /// <summary>
@@ -133,18 +128,19 @@ namespace Codelex.AccesoDatos
             marca = marca.Trim();
             modelo = modelo.Trim();
 
-            if (nombre == "")
-                return "El nombre del equipo es obligatorio.";
-            if (tipo == "")
-                return "El tipo de equipo es obligatorio.";
-            if (marca == "")
-                return "La marca es obligatoria.";
-            if (modelo == "")
-                return "El modelo es obligatorio.";
-            if (nombre.Length > 50 || tipo.Length > 50 || marca.Length > 50 || modelo.Length > 50)
-                return "Los datos del equipo no pueden tener más de 50 caracteres.";
+            string problema = Validacion.validarTexto(nombre, "El nombre del equipo", 3, 50);
+            if (problema != "")
+                return problema;
 
-            return "";
+            problema = Validacion.validarTexto(tipo, "El tipo de equipo", 3, 50);
+            if (problema != "")
+                return problema;
+
+            problema = Validacion.validarTexto(marca, "La marca", 2, 50);
+            if (problema != "")
+                return problema;
+
+            return Validacion.validarTexto(modelo, "El modelo", 2, 50);
         }
 
         /// <summary>
@@ -525,26 +521,15 @@ namespace Codelex.AccesoDatos
             telefono = telefono.Trim();
             correo = correo.Trim();
 
-            if (nombre == "")
-                return "El nombre del proveedor es obligatorio.";
-            if (nombre.Length > 50)
-                return "El nombre no puede tener más de 50 caracteres.";
+            string problema = Validacion.validarEmpresa(nombre, "El nombre del proveedor", true);
+            if (problema != "")
+                return problema;
 
-            if (telefono == "")
-                return "El teléfono es obligatorio.";
-            if (!soloNumeros(telefono))
-                return "El teléfono solo puede tener números, sin guiones ni espacios.";
-            if (telefono.Length != 8)
-                return "El teléfono debe tener 8 dígitos. Tiene " + telefono.Length + ".";
+            problema = Validacion.validarTelefono(telefono, true);
+            if (problema != "")
+                return problema;
 
-            if (correo == "")
-                return "El correo es obligatorio.";
-            if (!correo.Contains("@") || !correo.Contains("."))
-                return "El correo no es válido. Ejemplo: ventas@proveedor.com";
-            if (correo.Length > 50)
-                return "El correo no puede tener más de 50 caracteres.";
-
-            return "";
+            return Validacion.validarCorreo(correo, true, 50);
         }
 
         /// <summary>

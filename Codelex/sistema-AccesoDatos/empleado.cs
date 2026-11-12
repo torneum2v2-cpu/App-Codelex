@@ -200,30 +200,27 @@ namespace Codelex.AccesoDatos
 
             if (cargoId <= 0)
                 return "Seleccione el cargo del empleado.";
-            if (nombre.Trim() == "")
-                return "El nombre es obligatorio.";
-            if (apellido.Trim() == "")
-                return "El apellido es obligatorio.";
+
+            string problema = Validacion.validarNombrePersona(nombre, "El nombre", true);
+            if (problema != "")
+                return problema;
+
+            problema = Validacion.validarNombrePersona(apellido, "El apellido", true);
+            if (problema != "")
+                return problema;
 
             if (identidad == "")
                 return "La identidad es obligatoria.";
-            if (!soloNumeros(identidad))
-                return "La identidad solo puede tener números, sin guiones ni espacios.";
-            if (identidad.Length != 13)
-                return "La identidad debe tener 13 dígitos. Tiene " + identidad.Length + ".";
 
-            if (telefono != "")
-            {
-                if (!soloNumeros(telefono))
-                    return "El teléfono solo puede tener números, sin guiones ni espacios.";
-                if (telefono.Length != 8)
-                    return "El teléfono debe tener 8 dígitos. Tiene " + telefono.Length + ".";
-            }
+            problema = Validacion.validarIdentidad(identidad, true);
+            if (problema != "")
+                return problema;
 
-            if (correo != "" && (!correo.Contains("@") || !correo.Contains(".")))
-                return "El correo no es válido. Ejemplo: nombre@empresa.com";
+            problema = Validacion.validarTelefono(telefono, false);
+            if (problema != "")
+                return problema;
 
-            return "";
+            return Validacion.validarCorreo(correo, false, 50);
         }
 
         /// <summary>
@@ -243,7 +240,7 @@ namespace Codelex.AccesoDatos
             comando.Parameters.AddWithValue("@nombre_empleado", nombre.Trim());
             comando.Parameters.AddWithValue("@apellido_empleado", apellido.Trim());
             comando.Parameters.AddWithValue("@identidad", Cliente.limpiarNumero(identidad));
-            comando.Parameters.AddWithValue("@telefono_empleado", telefono.Trim());
+            comando.Parameters.AddWithValue("@telefono_empleado", Validacion.normalizarTelefono(telefono));
             comando.Parameters.AddWithValue("@correo_empleado", correo.Trim());
         }
 

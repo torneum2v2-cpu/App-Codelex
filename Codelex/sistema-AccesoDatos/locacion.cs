@@ -105,18 +105,16 @@ namespace Codelex.AccesoDatos
             if (rtn.Trim() == "")
                 return "Seleccione un cliente.";
 
-            if (nombre.Trim() == "")
-                return "El nombre de la locación es obligatorio.";
-            if (nombre.Trim().Length > 60)
-                return "El nombre de la locación no puede tener más de 60 caracteres.";
+            string problema = Validacion.validarTexto(nombre, "El nombre de la locación", 3, 60);
+            if (problema != "")
+                return problema;
 
             if (tipo.Trim() == "")
                 return "Seleccione el tipo de locación.";
 
-            if (direccion.Trim() == "")
-                return "La dirección es obligatoria.";
-            if (direccion.Trim().Length > 80)
-                return "La dirección no puede tener más de 80 caracteres.";
+            problema = Validacion.validarDireccion(direccion, 80);
+            if (problema != "")
+                return problema;
 
             DataTable existentes = locacionesDeCliente(rtn);
 

@@ -99,7 +99,7 @@ namespace Codelex
             txtRTN.Text = clienteRtn;
             txtEmpresa.Text = "" + fila["nombre_empresa"];
             txtContacto.Text = fila["nombre_cliente"] + " " + fila["apellido_cliente"];
-            txtTelefono.Text = "" + fila["telefono_cliente"];
+            txtTelefono.Text = Validacion.formatoTelefono("" + fila["telefono_cliente"]);
 
             cargarLocaciones();
         }

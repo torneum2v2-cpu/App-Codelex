@@ -82,7 +82,10 @@ namespace Codelex.AccesoDatos
             if (numero.Length != largo)
                 return "El " + tipo + " debe tener " + largo + " dígitos. Tiene " + numero.Length + ".";
 
-            return "";
+            if (tipo == TIPO_RTN)
+                return Validacion.validarRtn(numero);
+
+            return Validacion.validarIdentidad(numero, false);
         }
 
         /// <summary>
@@ -237,26 +240,23 @@ namespace Codelex.AccesoDatos
             if (problema != "")
                 return problema;
 
-            if (empresa.Trim() == "")
-                return "La empresa es obligatoria.";
-            if (nombre.Trim() == "")
-                return "El nombre del contacto es obligatorio.";
-            if (apellido.Trim() == "")
-                return "El apellido del contacto es obligatorio.";
+            problema = Validacion.validarEmpresa(empresa, "La empresa", true);
+            if (problema != "")
+                return problema;
 
-            if (telefono == "")
-                return "El teléfono es obligatorio.";
-            if (!soloNumeros(telefono))
-                return "El teléfono solo puede tener números, sin guiones ni espacios.";
-            if (telefono.Length != 8)
-                return "El teléfono debe tener 8 dígitos. Tiene " + telefono.Length + ".";
+            problema = Validacion.validarNombrePersona(nombre, "El nombre del contacto", true);
+            if (problema != "")
+                return problema;
 
-            if (correo == "")
-                return "El correo es obligatorio.";
-            if (!correo.Contains("@") || !correo.Contains("."))
-                return "El correo no es válido. Ejemplo: nombre@empresa.com";
+            problema = Validacion.validarNombrePersona(apellido, "El apellido del contacto", true);
+            if (problema != "")
+                return problema;
 
-            return "";
+            problema = Validacion.validarTelefono(telefono, true);
+            if (problema != "")
+                return problema;
+
+            return Validacion.validarCorreo(correo, true, 50);
         }
 
         /// <summary>
@@ -290,7 +290,7 @@ namespace Codelex.AccesoDatos
             comando.Parameters.AddWithValue("@nombre_empresa", empresa.Trim());
             comando.Parameters.AddWithValue("@nombre_cliente", nombre.Trim());
             comando.Parameters.AddWithValue("@apellido_cliente", apellido.Trim());
-            comando.Parameters.AddWithValue("@telefono_cliente", telefono.Trim());
+            comando.Parameters.AddWithValue("@telefono_cliente", Validacion.normalizarTelefono(telefono));
             comando.Parameters.AddWithValue("@correo_cliente", correo.Trim());
 
             return ejecutar(comando, out mensaje);

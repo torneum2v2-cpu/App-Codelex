@@ -117,7 +117,7 @@ namespace Codelex
                 txtApellido.Text = fila["apellido_empleado"].ToString();
                 txtCargo.Text = fila["nombre_cargo"].ToString();
                 txtIdentidad.Text = fila["identidad"].ToString();
-                txtTelefono.Text = fila["telefono_empleado"].ToString();
+                txtTelefono.Text = Validacion.formatoTelefono("" + fila["telefono_empleado"]);
                 txtCorreo.Text = fila["correo_empleado"].ToString();
                 txtUsuario.Text = fila["usuario"].ToString();
                 txtEstado.Text = fila["estado"].ToString();

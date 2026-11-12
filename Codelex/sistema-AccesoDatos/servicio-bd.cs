@@ -111,12 +111,7 @@ namespace Codelex.AccesoDatos
         {
             nombre = nombre.Trim();
 
-            if (nombre == "")
-                return "El nombre del servicio es obligatorio.";
-            if (nombre.Length > 30)
-                return "El nombre del servicio no puede tener más de 30 caracteres.";
-
-            return "";
+            return Validacion.validarTexto(nombre, "El nombre del servicio", 3, 30);
         }
 
         /// <summary>
@@ -345,14 +340,14 @@ namespace Codelex.AccesoDatos
 
             if (datos.servicioId == 0)
                 return "Elija el servicio de la actividad.";
-            if (descripcion == "")
-                return "El nombre de la actividad es obligatorio.";
-            if (descripcion.Length > 50)
-                return "El nombre de la actividad no puede tener más de 50 caracteres.";
-            if (unidad == "")
-                return "La unidad de medida es obligatoria.";
-            if (unidad.Length > 20)
-                return "La unidad de medida no puede tener más de 20 caracteres.";
+
+            string problema = Validacion.validarTexto(descripcion, "El nombre de la actividad", 5, 50);
+            if (problema != "")
+                return problema;
+
+            problema = Validacion.validarTexto(unidad, "La unidad de medida", 1, 20);
+            if (problema != "")
+                return problema;
             if (datos.rendimiento <= 0)
                 return "El rendimiento debe ser mayor que cero.";
             if (datos.rangos.Rows.Count == 0)

@@ -254,7 +254,7 @@
 
                             <StackPanel Grid.Column="0">
                                 <TextBlock Text="Teléfono *" Style="{StaticResource Etiqueta}"/>
-                                <TextBox x:Name="txtTelefono" MaxLength="8" PreviewTextInput="soloNumeros"/>
+                                <TextBox x:Name="txtTelefono" MaxLength="8" PreviewTextInput="soloNumeros" ToolTip="Escriba los 8 dígitos, sin +504. Se mostrará como +504 XXXX-XXXX"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="2">

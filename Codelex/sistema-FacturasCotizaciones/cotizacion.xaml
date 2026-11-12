@@ -147,7 +147,7 @@
                                     <TextBox x:Name="txtApellido" Margin="0,0,0,8"/>
 
                                     <TextBlock Text="Teléfono:" Style="{StaticResource Etiqueta}"/>
-                                    <TextBox x:Name="txtTelefono" Margin="0,0,0,8"/>
+                                    <TextBox x:Name="txtTelefono" Margin="0,0,0,8" ToolTip="Escriba los 8 dígitos, sin +504. Se mostrará como +504 XXXX-XXXX"/>
 
                                     <TextBlock Text="Correo electrónico:" Style="{StaticResource Etiqueta}"/>
                                     <TextBox x:Name="txtCorreo" Margin="0,0,0,10"/>

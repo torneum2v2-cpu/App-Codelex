@@ -528,7 +528,7 @@ namespace Codelex.FacturasCotizaciones
             List<string> encabezado = new List<string>();
             encabezado.Add("Fecha: " + dpFecha.Text + "     Válida hasta: " + dpValidaHasta.Text);
             encabezado.Add("Cliente: " + datos.empresa + " (" + datos.rtn + ")");
-            encabezado.Add("Contacto: " + (datos.contacto + " " + datos.apellido).Trim() + "     Teléfono: " + datos.telefono);
+            encabezado.Add("Contacto: " + (datos.contacto + " " + datos.apellido).Trim() + "     Teléfono: " + Validacion.formatoTelefono(datos.telefono));
             encabezado.Add("Dirección: " + datos.direccion);
             if (datos.observaciones.Trim() != "")
                 encabezado.Add("Observaciones: " + datos.observaciones.Trim());

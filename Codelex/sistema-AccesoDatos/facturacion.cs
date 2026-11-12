@@ -526,28 +526,41 @@ namespace Codelex.AccesoDatos
         /// <returns>Texto resultante.</returns>
         private string validarCotizacion(DatosDocumento datos)
         {
-            if (datos.contacto.Trim() == "")
-                return "Escriba el nombre del contacto.";
+            string problema = Validacion.validarNombrePersona(datos.contacto, "El nombre del contacto", true);
+            if (problema != "")
+                return problema;
+
+            problema = Validacion.validarNombrePersona(datos.apellido, "El apellido del contacto", false);
+            if (problema != "")
+                return problema;
+
+            problema = Validacion.validarEmpresa(datos.empresa, "La empresa", false);
+            if (problema != "")
+                return problema;
+
             if (Cliente.limpiarNumero(datos.rtn) != "")
             {
                 Cliente clienteBD = new Cliente();
                 string rtn = Cliente.limpiarNumero(datos.rtn);
-                string problema = clienteBD.validarIdentificacion(clienteBD.tipoPorLongitud(rtn), rtn);
+                problema = clienteBD.validarIdentificacion(clienteBD.tipoPorLongitud(rtn), rtn);
 
                 if (problema != "")
                     return problema;
             }
-            if (datos.empresa.Trim().Length > 50 || datos.contacto.Trim().Length > 50
-                || datos.apellido.Trim().Length > 50)
-                return "La empresa y el nombre no pueden tener más de 50 caracteres.";
             if (datos.telefono.Trim() == "" && datos.correo.Trim() == "")
                 return "Escriba un teléfono o un correo del cliente.";
-            if (datos.telefono.Trim().Length > 50 || datos.correo.Trim().Length > 50)
-                return "El teléfono y el correo no pueden tener más de 50 caracteres.";
-            if (datos.direccion.Trim() == "")
-                return "Escriba la dirección del servicio.";
-            if (datos.direccion.Trim().Length > 80)
-                return "La dirección no puede tener más de 80 caracteres.";
+
+            problema = Validacion.validarTelefono(datos.telefono, false);
+            if (problema != "")
+                return problema;
+
+            problema = Validacion.validarCorreo(datos.correo, false, 50);
+            if (problema != "")
+                return problema;
+
+            problema = Validacion.validarDireccion(datos.direccion, 80);
+            if (problema != "")
+                return problema;
 
             if (!datos.fecha.HasValue)
                 return "Seleccione la fecha.";
@@ -632,7 +645,7 @@ namespace Codelex.AccesoDatos
             comando.Parameters.AddWithValue("@nombre_empresa", datos.empresa.Trim());
             comando.Parameters.AddWithValue("@nombre_cliente", datos.contacto.Trim());
             comando.Parameters.AddWithValue("@apellido_cliente", datos.apellido.Trim());
-            comando.Parameters.AddWithValue("@telefono_cliente", datos.telefono.Trim());
+            comando.Parameters.AddWithValue("@telefono_cliente", Validacion.normalizarTelefono(datos.telefono));
             comando.Parameters.AddWithValue("@correo_cliente", datos.correo.Trim());
 
             if (datos.locacionId > 0)

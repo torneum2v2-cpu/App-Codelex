@@ -6,6 +6,8 @@ namespace Codelex
 {
     public partial class VentanaPrincipal : Window
     {
+        private const string TELEFONO_SOPORTE = "32449022";
+
         /// <summary>
         /// Inicializa la ventana y prepara sus controles.
         /// </summary>
@@ -152,8 +154,10 @@ namespace Codelex
         /// <param name="e">Datos del evento.</param>
         private void solicitarAccesoClic(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Aquí puedes abrir tu formulario o contacto de soporte.",
-                            "Codelex", MessageBoxButton.OK, MessageBoxImage.Information);
+            string mensaje = "Para solicitar acceso comuníquese con el soporte de Codelex:\n\nTeléfono: "
+                             + Validacion.formatoTelefono(TELEFONO_SOPORTE);
+
+            MensajeCodelex.mostrar(this, "Solicitar acceso", mensaje, true);
         }
     }
 }

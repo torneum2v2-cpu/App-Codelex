@@ -109,24 +109,17 @@ namespace Codelex.AccesoDatos
             marca = marca.Trim();
             modelo = modelo.Trim();
 
-            if (placa == "")
-                return "La placa es obligatoria.";
-            if (!caracteresDePlaca(placa))
-                return "La placa solo puede tener letras, números y guion, sin espacios.";
-            if (placa.Length < 5)
-                return "La placa debe tener al menos 5 caracteres. Tiene " + placa.Length + ".";
-            if (placa.Length > 15)
-                return "La placa no puede tener más de 15 caracteres.";
+            string problema = Validacion.validarPlaca(placa);
+            if (problema != "")
+                return problema;
 
-            if (marca == "")
-                return "La marca es obligatoria.";
-            if (marca.Length > 20)
-                return "La marca no puede tener más de 20 caracteres.";
+            problema = Validacion.validarTexto(marca, "La marca", 2, 20);
+            if (problema != "")
+                return problema;
 
-            if (modelo == "")
-                return "El modelo es obligatorio.";
-            if (modelo.Length > 25)
-                return "El modelo no puede tener más de 25 caracteres.";
+            problema = Validacion.validarTexto(modelo, "El modelo", 2, 25);
+            if (problema != "")
+                return problema;
 
             return "";
         }
@@ -153,7 +146,7 @@ namespace Codelex.AccesoDatos
             if (vehiculoId > 0)
                 comando.Parameters.AddWithValue("@vehiculo_id", vehiculoId);
 
-            comando.Parameters.AddWithValue("@placa", placa.Trim().ToUpper());
+            comando.Parameters.AddWithValue("@placa", Validacion.normalizarPlaca(placa));
             comando.Parameters.AddWithValue("@marca_vehiculo", marca.Trim());
             comando.Parameters.AddWithValue("@modelo_vehiculo", modelo.Trim());
 

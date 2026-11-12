@@ -12,6 +12,7 @@
         FontFamily="Segoe UI"
         Loaded="ventanaCargada">
     <Window.Resources>
+        <local:FormatoTelefono x:Key="Telefono"/>
         <SolidColorBrush x:Key="Primary" Color="#2CC5B4"/>
         <SolidColorBrush x:Key="PrimaryLight" Color="#5FE0D2"/>
         <SolidColorBrush x:Key="Muted" Color="#8FC4BD"/>
@@ -585,7 +586,7 @@
                                         <DataGridTextColumn Header="Nombre" Binding="{Binding nombre_empleado}" Width="*"/>
                                         <DataGridTextColumn Header="Apellido" Binding="{Binding apellido_empleado}" Width="*"/>
                                         <DataGridTextColumn Header="Correo" Binding="{Binding correo_empleado}" Width="1.6*"/>
-                                        <DataGridTextColumn Header="Teléfono" Binding="{Binding telefono_empleado}" Width="*"/>
+                                        <DataGridTextColumn Header="Teléfono" Binding="{Binding telefono_empleado, Converter={StaticResource Telefono}}" Width="*"/>
                                         <DataGridTextColumn Header="Usuario" Binding="{Binding usuario}" Width="*"/>
                                         <DataGridTextColumn Header="Rol" Binding="{Binding rol}" Width="*"/>
                                         <DataGridTextColumn Header="Estado" Binding="{Binding estado}" Width="80"/>

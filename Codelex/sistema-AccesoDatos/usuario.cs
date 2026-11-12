@@ -357,14 +357,8 @@ namespace Codelex.AccesoDatos
         {
             if (contra != contra2)
                 return "Las contraseñas ingresadas deben de coincidir entre sí";
-            if (contra.Length < 8)
-                return "Tu contraseña debe tener al menos 8 caracteres";
-            if (!tieneMayuscula(contra))
-                return "Por favor utiliza al menos una mayúscula.";
-            if (!tieneNumero(contra))
-                return "Tu contraseña debe utilizar por lo menos un dígito";
 
-            return "";
+            return Validacion.validarContrasena(contra, "");
         }
 
         /// <summary>
@@ -410,34 +404,5 @@ namespace Codelex.AccesoDatos
             return Convert.ToInt32(resultado.Value) == 1;
         }
 
-        /// <summary>
-        /// Indica si tiene mayuscula.
-        /// </summary>
-        /// <param name="texto">Texto a usar.</param>
-        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
-        private bool tieneMayuscula(string texto)
-        {
-            foreach (char c in texto)
-            {
-                if (char.IsUpper(c))
-                    return true;
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Indica si tiene número.
-        /// </summary>
-        /// <param name="texto">Texto a usar.</param>
-        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
-        private bool tieneNumero(string texto)
-        {
-            foreach (char c in texto)
-            {
-                if (char.IsDigit(c))
-                    return true;
-            }
-            return false;
-        }
     }
 }

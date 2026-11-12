@@ -156,27 +156,45 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
+        /// Valida el nombre de usuario y la contraseña (la contraseña vacía solo se acepta si no es un usuario nuevo).
+        /// </summary>
+        /// <param name="usuario">Nombre de usuario.</param>
+        /// <param name="contrasena">Contraseña escrita.</param>
+        /// <param name="esNuevo">true si el usuario es nuevo.</param>
+        /// <returns>Texto del error, o texto vacío si es válido.</returns>
+        public string validarAcceso(string usuario, string contrasena, bool esNuevo)
+        {
+            string problema = Validacion.validarNombreUsuario(usuario);
+            if (problema != "")
+                return problema;
+
+            if (esNuevo && contrasena == "")
+                return "La contraseña es obligatoria.";
+
+            if (contrasena != "")
+                return Validacion.validarContrasena(contrasena, usuario.Trim());
+
+            return "";
+        }
+
+        /// <summary>
         /// Valida usuario.
         /// </summary>
         /// <param name="usuario">Nombre de usuario.</param>
-        /// <param name="contrasena">Contraseña.</param>
-        /// <param name="rolId">Identificador de rol.</param>
-        /// <param name="esNuevo">Es nuevo.</param>
+        /// <param name="contrasena">Contraseña escrita (vacía si no se cambia).</param>
+        /// <param name="rolId">Identificador del rol.</param>
+        /// <param name="esNuevo">true si el usuario es nuevo.</param>
         /// <returns>Texto resultante.</returns>
         private string validarUsuario(string usuario, string contrasena, int rolId, bool esNuevo)
         {
             usuario = usuario.Trim();
 
-            if (usuario == "")
-                return "El usuario es obligatorio.";
-            if (usuario.Contains(" "))
-                return "El usuario no puede llevar espacios.";
+            string problema = validarAcceso(usuario, contrasena, esNuevo);
+            if (problema != "")
+                return problema;
 
             if (rolId <= 0)
                 return "Seleccione un rol.";
-
-            if (esNuevo && contrasena == "")
-                return "La contraseña es obligatoria.";
 
             return "";
         }

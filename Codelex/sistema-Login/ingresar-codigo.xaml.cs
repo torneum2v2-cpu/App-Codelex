@@ -30,7 +30,7 @@ namespace Codelex
             correo = email;
 
             casillas = new[] { txtC1, txtC2, txtC3, txtC4, txtC5 };
-            foreach (var box in casillas)
+            foreach (TextBox box in casillas)
                 DataObject.AddPastingHandler(box, codigoPegado);
 
             temporizador.Tick += temporizadorTic;
@@ -98,15 +98,20 @@ namespace Codelex
         /// </summary>
         /// <param name="sender">Control que originó el evento.</param>
         /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e) =>
-         WindowState = WindowState.Minimized;
+        private void minimizarClic(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+        }
 
         /// <summary>
         /// Cierra la ventana.
         /// </summary>
         /// <param name="sender">Control que originó el evento.</param>
         /// <param name="e">Datos del evento.</param>
-        private void cerrarClic(object sender, RoutedEventArgs e) => Close();
+        private void cerrarClic(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
 
         /// <summary>
         /// Atiende el clic de cambiar correo.
@@ -213,8 +218,14 @@ namespace Codelex
         {
             bool waiting = segundos > 0;
             txtCountdown.Text = $"Podrás reenviar el código en {segundos} s";
-            txtCountdown.Visibility = waiting ? Visibility.Visible : Visibility.Collapsed;
-            tbResend.Visibility = waiting ? Visibility.Collapsed : Visibility.Visible;
+            if (waiting)
+                txtCountdown.Visibility = Visibility.Visible;
+            else
+                txtCountdown.Visibility = Visibility.Collapsed;
+            if (waiting)
+                tbResend.Visibility = Visibility.Collapsed;
+            else
+                tbResend.Visibility = Visibility.Visible;
         }
         /// <summary>
         /// Inicia espera.
@@ -250,7 +261,7 @@ namespace Codelex
         /// </summary>
         private void limpiarCodigo()
         {
-            foreach (var b in casillas) b.Clear();
+            foreach (TextBox b in casillas) b.Clear();
         }
 
         /// <summary>
@@ -340,7 +351,9 @@ namespace Codelex
             if (digits.Length == 0) return;
             if (digits.Length > LONGITUD_CODIGO) digits = digits[..LONGITUD_CODIGO];
 
-            int start = digits.Length == LONGITUD_CODIGO ? 0 : indiceDe(box);
+            int start = indiceDe(box);
+            if (digits.Length == LONGITUD_CODIGO)
+                start = 0;
             int last = start;
             for (int k = 0; k < digits.Length && start + k < LONGITUD_CODIGO; k++)
             {

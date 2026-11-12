@@ -28,7 +28,10 @@
                 if (partes.Length == 1)
                     return partes[0][0].ToString().ToUpper();
 
-                return NombreUsuario.Length > 0 ? NombreUsuario[0].ToString().ToUpper() : "?";
+                if (NombreUsuario.Length > 0)
+                    return NombreUsuario[0].ToString().ToUpper();
+
+                return "?";
             }
         }
 

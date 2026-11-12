@@ -429,7 +429,10 @@ namespace Codelex.FacturasCotizaciones
         /// <returns>El mismo texto, o un guion si estaba vacío.</returns>
         private static string vacio(string texto)
         {
-            return texto.Trim() == "" ? "—" : texto;
+            if (texto.Trim() == "")
+                return "—";
+
+            return texto;
         }
 
         /// <summary>

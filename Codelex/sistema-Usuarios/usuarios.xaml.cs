@@ -117,10 +117,16 @@ namespace Codelex
             btnBuscarEmpleado.IsEnabled = !editando;
             btnCambiarEstado.IsEnabled = editando;
 
-            btnCambiarEstado.Content = usuarioActivo ? "Desactivar" : "Activar";
+            if (usuarioActivo)
+                btnCambiarEstado.Content = "Desactivar";
+            else
+                btnCambiarEstado.Content = "Activar";
 
             if (editando)
-                txtEstado.Text = usuarioActivo ? "Activo" : "Inactivo";
+                if (usuarioActivo)
+                    txtEstado.Text = "Activo";
+                else
+                    txtEstado.Text = "Inactivo";
             else if (empleadoActual > 0)
                 txtEstado.Text = "Activo";
             else

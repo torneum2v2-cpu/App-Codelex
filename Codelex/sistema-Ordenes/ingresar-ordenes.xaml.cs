@@ -526,13 +526,31 @@ namespace Codelex
         {
             pasoActual = paso;
 
-            panelPaso1.Visibility = paso == 1 ? Visibility.Visible : Visibility.Collapsed;
-            panelPaso2.Visibility = paso == 2 ? Visibility.Visible : Visibility.Collapsed;
-            panelPaso3.Visibility = paso == 3 ? Visibility.Visible : Visibility.Collapsed;
+            if (paso == 1)
+                panelPaso1.Visibility = Visibility.Visible;
+            else
+                panelPaso1.Visibility = Visibility.Collapsed;
+            if (paso == 2)
+                panelPaso2.Visibility = Visibility.Visible;
+            else
+                panelPaso2.Visibility = Visibility.Collapsed;
+            if (paso == 3)
+                panelPaso3.Visibility = Visibility.Visible;
+            else
+                panelPaso3.Visibility = Visibility.Collapsed;
 
-            btnAtras.Visibility = paso > 1 ? Visibility.Visible : Visibility.Collapsed;
-            btnSiguiente.Visibility = paso < 3 ? Visibility.Visible : Visibility.Collapsed;
-            btnGuardarOrden.Visibility = paso == 3 ? Visibility.Visible : Visibility.Collapsed;
+            if (paso > 1)
+                btnAtras.Visibility = Visibility.Visible;
+            else
+                btnAtras.Visibility = Visibility.Collapsed;
+            if (paso < 3)
+                btnSiguiente.Visibility = Visibility.Visible;
+            else
+                btnSiguiente.Visibility = Visibility.Collapsed;
+            if (paso == 3)
+                btnGuardarOrden.Visibility = Visibility.Visible;
+            else
+                btnGuardarOrden.Visibility = Visibility.Collapsed;
 
             txtErrorPaso.Visibility = Visibility.Collapsed;
 

@@ -55,7 +55,10 @@ namespace Codelex
             }
 
             dgOrdenes.ItemsSource = tabla.DefaultView;
-            txtResumen.Text = tabla.Rows.Count + (tabla.Rows.Count == 1 ? " orden" : " órdenes");
+            if (tabla.Rows.Count == 1)
+                txtResumen.Text = tabla.Rows.Count + " orden";
+            else
+                txtResumen.Text = tabla.Rows.Count + " órdenes";
 
             if (tabla.Rows.Count == 0)
             {
@@ -141,7 +144,10 @@ namespace Codelex
             bordeEstado.Visibility = Visibility.Collapsed;
             lstCampos.ItemsSource = null;
             lstSecciones.ItemsSource = null;
-            txtSinOrdenes.Visibility = dgOrdenes.Items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            if (dgOrdenes.Items.Count == 0)
+                txtSinOrdenes.Visibility = Visibility.Visible;
+            else
+                txtSinOrdenes.Visibility = Visibility.Collapsed;
         }
 
         /// <summary>
@@ -153,7 +159,10 @@ namespace Codelex
         private static string texto(DataRow fila, string columna)
         {
             string valor = ("" + fila[columna]).Trim();
-            return valor == "" ? "—" : valor;
+            if (valor == "")
+                return "—";
+
+            return valor;
         }
 
         /// <summary>

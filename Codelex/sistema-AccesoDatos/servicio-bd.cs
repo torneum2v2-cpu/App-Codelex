@@ -490,7 +490,11 @@ namespace Codelex.AccesoDatos
                 vinculos.Rows.Add(fila["actividad_id"], cantidad);
             }
 
-            return validarVinculos(vinculos, conCantidad ? "el producto" : "el equipo");
+            string articulo = "el equipo";
+            if (conCantidad)
+                articulo = "el producto";
+
+            return validarVinculos(vinculos, articulo);
         }
 
         /// <summary>

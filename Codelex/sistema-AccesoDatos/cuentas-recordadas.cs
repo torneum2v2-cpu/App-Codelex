@@ -22,7 +22,10 @@ namespace Codelex.AccesoDatos
                     return (partes[0][0].ToString() + partes[1][0]).ToUpper();
                 if (partes.Length == 1)
                     return partes[0][0].ToString().ToUpper();
-                return Usuario.Length > 0 ? Usuario[0].ToString().ToUpper() : "?";
+                if (Usuario.Length > 0)
+                    return Usuario[0].ToString().ToUpper();
+
+                return "?";
             }
         }
     }

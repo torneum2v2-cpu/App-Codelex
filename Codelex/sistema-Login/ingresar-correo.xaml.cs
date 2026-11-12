@@ -38,15 +38,20 @@ namespace Codelex
         /// </summary>
         /// <param name="sender">Control que originó el evento.</param>
         /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e) =>
-         WindowState = WindowState.Minimized;
+        private void minimizarClic(object sender, RoutedEventArgs e)
+        {
+            WindowState = WindowState.Minimized;
+        }
 
         /// <summary>
         /// Cierra la ventana.
         /// </summary>
         /// <param name="sender">Control que originó el evento.</param>
         /// <param name="e">Datos del evento.</param>
-        private void cerrarClic(object sender, RoutedEventArgs e) => Close();
+        private void cerrarClic(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
 
         /// <summary>
         /// Atiende el clic de volver inicio.

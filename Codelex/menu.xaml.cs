@@ -80,7 +80,10 @@ namespace Codelex
             txtIniciales.Text = Sesion.Iniciales;
             txtInicialesGrande.Text = Sesion.Iniciales;
             txtPopupNombre.Text = Sesion.NombreCompleto;
-            txtPopupRol.Text = Sesion.Rol == "" ? "Sin rol asignado" : Sesion.Rol;
+            if (Sesion.Rol == "")
+                txtPopupRol.Text = "Sin rol asignado";
+            else
+                txtPopupRol.Text = Sesion.Rol;
 
             // Sirve para que un clic en el avatar con el panel abierto lo cierre en vez de reabrirlo.
             popupPerfil.Closed += (s, e) => ultimoCierrePerfil = DateTime.Now;
@@ -99,7 +102,10 @@ namespace Codelex
         /// <returns>Nombre de la sección de inicio.</returns>
         private static string inicioDelRol()
         {
-            return Sesion.Nivel == NivelAcceso.Basico ? "miperfil" : "inicio";
+            if (Sesion.Nivel == NivelAcceso.Basico)
+                return "miperfil";
+
+            return "inicio";
         }
 
         /// <summary>
@@ -130,7 +136,10 @@ namespace Codelex
         /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         private static bool puedeAbrir(string seccionActual, string destino)
         {
-            return seccionActual == "inicio" ? puedeSeccion(destino) : puedeDestino(destino);
+            if (seccionActual == "inicio")
+                return puedeSeccion(destino);
+
+            return puedeDestino(destino);
         }
 
         // Oculta del menú lateral las secciones que el rol no puede usar.
@@ -140,7 +149,10 @@ namespace Codelex
         private void aplicarRol()
         {
             foreach (RadioButton boton in panelNav.Children)
-                boton.Visibility = puedeSeccion("" + boton.Tag) ? Visibility.Visible : Visibility.Collapsed;
+                if (puedeSeccion("" + boton.Tag))
+                    boton.Visibility = Visibility.Visible;
+                else
+                    boton.Visibility = Visibility.Collapsed;
         }
 
         // ---------- Ventana ----------
@@ -232,7 +244,10 @@ namespace Codelex
             {
                 int usuarioId = Sesion.UsuarioId;
                 byte[]? datos = await Task.Run(() => fotoBD.obtener(usuarioId));
-                pintarAvatar(datos == null ? null : FotoPerfil.cargar(datos));
+                if (datos == null)
+                    pintarAvatar(null);
+                else
+                    pintarAvatar(FotoPerfil.cargar(datos));
             }
             catch
             {

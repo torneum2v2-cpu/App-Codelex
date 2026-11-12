@@ -33,15 +33,20 @@ namespace Codelex
         /// </summary>
         /// <param name="sender">Control que originó el evento.</param>
         /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e) =>
+        private void minimizarClic(object sender, RoutedEventArgs e)
+        {
             WindowState = WindowState.Minimized;
+        }
 
         /// <summary>
         /// Cierra la ventana.
         /// </summary>
         /// <param name="sender">Control que originó el evento.</param>
         /// <param name="e">Datos del evento.</param>
-        private void cerrarClic(object sender, RoutedEventArgs e) => Close();
+        private void cerrarClic(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
 
         /// <summary>
         /// Atiende el cambio de mostrar contraseña.
@@ -67,8 +72,17 @@ namespace Codelex
             }
         }
 
-        private string CurrentPassword =>
-            btnShowPassword.IsChecked == true ? txtPasswordVisible.Text : txtPassword.Password;
+        /// <summary>
+        /// Devuelve la contraseña que el usuario escribió, esté visible u oculta.
+        /// </summary>
+        /// <returns>Contraseña escrita.</returns>
+        private string contrasenaEscrita()
+        {
+            if (btnShowPassword.IsChecked == true)
+                return txtPasswordVisible.Text;
+
+            return txtPassword.Password;
+        }
 
         /// <summary>
         /// Atiende el clic de iniciar sesión.
@@ -80,7 +94,7 @@ namespace Codelex
             txtError.Visibility = Visibility.Collapsed;
 
             string usuario = txtUser.Text.Trim();
-            string password = CurrentPassword;
+            string password = contrasenaEscrita();
 
             if (string.IsNullOrWhiteSpace(usuario) || string.IsNullOrEmpty(password))
             {

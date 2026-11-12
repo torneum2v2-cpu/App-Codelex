@@ -161,7 +161,10 @@ namespace Codelex
             if (foto == null)
             {
                 avatarEmpleado.Background = (Brush)FindResource("ButtonGradient");
-                txtInicialesEmpleado.Text = iniciales.Length > 0 ? iniciales : "?";
+                if (iniciales.Length > 0)
+                    txtInicialesEmpleado.Text = iniciales;
+                else
+                    txtInicialesEmpleado.Text = "?";
                 txtInicialesEmpleado.Visibility = Visibility.Visible;
             }
             else

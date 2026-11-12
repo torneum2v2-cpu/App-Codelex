@@ -164,7 +164,13 @@ namespace Codelex
             {
                 codigo = RandomNumberGenerator.GetInt32(0, 100000).ToString("D5");
 
-                const string p = "vkds dwtb vmtk dldo";
+                string? p = Environment.GetEnvironmentVariable("CODELEX_CLAVE_CORREO");
+                if (string.IsNullOrEmpty(p))
+                {
+                    codigo = "";
+                    mostrarErrorCodigo("Falta configurar la variable de entorno CODELEX_CLAVE_CORREO.");
+                    return;
+                }
 
                 using (MailMessage message = new MailMessage())
                 using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))

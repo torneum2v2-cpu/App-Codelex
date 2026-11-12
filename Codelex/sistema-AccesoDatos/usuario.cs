@@ -49,10 +49,14 @@ namespace Codelex.AccesoDatos
 
             DataRow fila = tabla.Rows[0];
             string claveGuardada = "" + fila["contrasena_hash"];
-            if (claveGuardada != password)
+            if (!Contrasenas.verificar(password, claveGuardada))
                 return false;
 
-            UsuarioId = Convert.ToInt32(fila["usuario_id"]);
+            int idEncontrado = Convert.ToInt32(fila["usuario_id"]);
+            if (!Contrasenas.esHash(claveGuardada))
+                guardarHash(idEncontrado, password);
+
+            UsuarioId = idEncontrado;
             EmpleadoId = Convert.ToInt32(fila["empleado_id"]);
             Rol = "" + fila["rol"];
             NombreUsuario = "" + fila["usuario"];
@@ -66,6 +70,33 @@ namespace Codelex.AccesoDatos
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Cambia una contraseña antigua en texto plano por su hash (se hace al iniciar sesión).
+        /// </summary>
+        /// <param name="usuarioId">Id del usuario.</param>
+        /// <param name="password">Contraseña que escribió el usuario.</param>
+        private void guardarHash(int usuarioId, string password)
+        {
+            SqlParameter resultado = new SqlParameter("@resultado", SqlDbType.Int);
+            resultado.Direction = ParameterDirection.Output;
+
+            SqlParameter textoMensaje = new SqlParameter("@mensaje", SqlDbType.VarChar, 100);
+            textoMensaje.Direction = ParameterDirection.Output;
+
+            using (SqlConnection conexion = Conexion.obtenerConexion())
+            {
+                using (SqlCommand comando = new SqlCommand("sp_CambiarContrasena", conexion))
+                {
+                    comando.CommandType = CommandType.StoredProcedure;
+                    comando.Parameters.AddWithValue("@usuario_id", usuarioId);
+                    comando.Parameters.AddWithValue("@nuevo_hash", Contrasenas.hashear(password));
+                    comando.Parameters.Add(resultado);
+                    comando.Parameters.Add(textoMensaje);
+                    comando.ExecuteNonQuery();
+                }
+            }
         }
 
         /// <summary>
@@ -368,7 +399,7 @@ namespace Codelex.AccesoDatos
                 {
                     comando.CommandType = CommandType.StoredProcedure;
                     comando.Parameters.AddWithValue("@correo", correo.Trim());
-                    comando.Parameters.AddWithValue("@contrasena_hash", contra);
+                    comando.Parameters.AddWithValue("@contrasena_hash", Contrasenas.hashear(contra));
                     comando.Parameters.Add(resultado);
                     comando.Parameters.Add(textoMensaje);
                     comando.ExecuteNonQuery();

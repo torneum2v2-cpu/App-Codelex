@@ -5,7 +5,8 @@ namespace Codelex.AccesoDatos
 {
     public class Conexion
     {
-        private static string cadenaConexion = "Data Source=localhost;Initial Catalog=Codelex;Integrated Security=True;Encrypt=False;Connect Timeout=5";
+        private const string CONEXION_PREDETERMINADA = "Data Source=localhost;Initial Catalog=Codelex;Integrated Security=True;Encrypt=False;Connect Timeout=5";
+        private static string cadenaConexion = Environment.GetEnvironmentVariable("CODELEX_CONEXION") ?? CONEXION_PREDETERMINADA;
 
         /// <summary>
         /// Obtiene conexión.

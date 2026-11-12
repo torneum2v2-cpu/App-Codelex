@@ -1,4 +1,4 @@
-using Codelex.AccesoDatos;
+﻿using Codelex.AccesoDatos;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
@@ -189,7 +189,11 @@ namespace Codelex.AccesoDatos
         /// <returns>Texto resultante.</returns>
         private string prepararContrasena(string contrasena)
         {
-            return contrasena;
+            // Una contraseña vacía significa "no cambiarla": se deja vacía para que la base conserve la anterior.
+            if (contrasena == "")
+                return "";
+
+            return Contrasenas.hashear(contrasena);
         }
 
         /// <summary>

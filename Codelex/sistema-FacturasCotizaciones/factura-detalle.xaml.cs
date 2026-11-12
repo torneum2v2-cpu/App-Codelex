@@ -18,6 +18,8 @@ namespace Codelex.FacturasCotizaciones
         decimal saldoActual = 0;
         DataTable cuotasActuales = new DataTable();
         bool huboCambios = false;
+        DataRow? cabeceraActual = null;
+        DataTable lineasActuales = new DataTable();
 
         /// <summary>
         /// Inicializa la ventana y prepara sus controles.
@@ -75,12 +77,19 @@ namespace Codelex.FacturasCotizaciones
             if (("" + f["tipo_pago"]) == "Credito")
                 dTipoPago.Text = Facturacion.CREDITO;
 
+            cabeceraActual = f;
+
             string estadoPago = "" + f["estado_pago"];
             dEstadoPago.Text = estadoPago;
             if (estadoPago == "Pagada")
             {
                 pillPago.Background = pincel("#E3F7F4");
                 dEstadoPago.Foreground = pincel("#14837A");
+            }
+            else if (estadoPago == "Anulada")
+            {
+                pillPago.Background = pincel("#FDE4E4");
+                dEstadoPago.Foreground = pincel("#B3261E");
             }
             else
             {
@@ -100,6 +109,7 @@ namespace Codelex.FacturasCotizaciones
 
             // Detalle y totales
             DataTable lineas = facturaBD.detalleFactura(facturaId);
+            lineasActuales = lineas;
             dgLineas.ItemsSource = lineas.DefaultView;
 
             decimal subtotal = 0;
@@ -134,7 +144,7 @@ namespace Codelex.FacturasCotizaciones
 
                 btnAbono.Visibility = Visibility.Collapsed;
                 btnSaldar.Visibility = Visibility.Collapsed;
-                if (saldoActual > 0)
+                if (saldoActual > 0 && estadoPago != "Anulada")
                 {
                     btnAbono.Visibility = Visibility.Visible;
                     btnSaldar.Visibility = Visibility.Visible;
@@ -145,6 +155,119 @@ namespace Codelex.FacturasCotizaciones
             else
             {
                 pnlCuotas.Visibility = Visibility.Collapsed;
+            }
+
+            // Una factura anulada ya no se puede anular ni pagar; se muestra el motivo.
+            pnlAnular.Visibility = Visibility.Collapsed;
+            if (estadoPago == "Anulada")
+            {
+                btnAnular.Visibility = Visibility.Collapsed;
+                lblMotivoAnulada.Text = "Factura anulada. Motivo: " + f["motivo_anulacion"];
+                lblMotivoAnulada.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                btnAnular.Visibility = Visibility.Visible;
+                lblMotivoAnulada.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        /// <summary>
+        /// Atiende el clic de imprimir: arma el documento con los datos de la factura y abre el cuadro de impresión.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
+        private void imprimirClic(object sender, RoutedEventArgs e)
+        {
+            if (cabeceraActual == null)
+                return;
+
+            try
+            {
+                List<string> encabezado = new List<string>();
+                encabezado.Add("Fecha: " + dFecha.Text + "     Orden: " + dOrden.Text);
+                encabezado.Add("Forma de pago: " + dFormaPago.Text + "     Tipo: " + dTipoPago.Text + "     Estado: " + dEstadoPago.Text);
+                encabezado.Add("Cliente: " + dEmpresa.Text + " (" + dRtn.Text + ")");
+                encabezado.Add("Contacto: " + dContacto.Text + "     Teléfono: " + dTelefono.Text);
+                encabezado.Add("Locación: " + dLocacion.Text + " - " + dDireccion.Text);
+
+                DataTable lineas = ImpresionDocumento.crearLineas();
+                foreach (DataRow fila in lineasActuales.Rows)
+                {
+                    ImpresionDocumento.agregarLinea(lineas, "" + fila["concepto"], "" + fila["cantidad"],
+                        facturaBD.dinero(Convert.ToDecimal(fila["precio_unitario"])),
+                        facturaBD.dinero(Convert.ToDecimal(fila["subtotal"])));
+                }
+
+                List<string> totales = new List<string>();
+                totales.Add("Subtotal: " + lblSubtotal.Text);
+                totales.Add("ISV: " + lblIsv.Text);
+                totales.Add("Total: " + lblTotal.Text);
+
+                ImpresionDocumento.imprimir(this, "Factura", dNumero.Text, encabezado, lineas, totales);
+            }
+            catch (Exception ex)
+            {
+                MensajeCodelex.mostrar(this, "Factura", ex.Message, false);
+            }
+        }
+
+        /// <summary>
+        /// Atiende el clic de anular: muestra el cuadro para escribir el motivo.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
+        private void anularClic(object sender, RoutedEventArgs e)
+        {
+            txtMotivo.Text = "";
+            pnlAnular.Visibility = Visibility.Visible;
+            txtMotivo.Focus();
+        }
+
+        /// <summary>
+        /// Cierra el cuadro del motivo sin anular la factura.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
+        private void cancelarAnulacionClic(object sender, RoutedEventArgs e)
+        {
+            pnlAnular.Visibility = Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// Valida el motivo, pide confirmación y anula la factura.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
+        private void confirmarAnulacionClic(object sender, RoutedEventArgs e)
+        {
+            string error = facturaBD.validarAnulacion(txtMotivo.Text);
+            if (error != "")
+            {
+                MensajeCodelex.mostrar(this, "Factura", error, false);
+                return;
+            }
+
+            string pregunta = "¿Anular la factura " + dNumero.Text + "?\n\nEsta acción no se puede deshacer.";
+            if (!MensajeCodelex.preguntar(this, "Factura", pregunta))
+                return;
+
+            try
+            {
+                string mensaje;
+                bool anulada = facturaBD.anularFactura(facturaId, txtMotivo.Text, out mensaje);
+
+                MensajeCodelex.mostrar(this, "Factura", mensaje, anulada);
+
+                if (anulada)
+                {
+                    huboCambios = true;
+                    cargarFactura();
+                }
+            }
+            catch (Exception ex)
+            {
+                MensajeCodelex.mostrar(this, "Factura", ex.Message, false);
             }
         }
 

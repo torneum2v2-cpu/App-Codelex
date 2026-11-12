@@ -307,6 +307,44 @@ namespace Codelex.AccesoDatos
             return ejecutar(comando, out mensaje);
         }
 
+        /// <summary>
+        /// Valida el motivo con el que se anula una factura.
+        /// </summary>
+        /// <param name="motivo">Motivo escrito por el usuario.</param>
+        /// <returns>Texto del error, o texto vacío si es válido.</returns>
+        public string validarAnulacion(string motivo)
+        {
+            motivo = motivo.Trim();
+
+            if (motivo == "")
+                return "El motivo de la anulación es obligatorio.";
+            if (motivo.Length < 5)
+                return "El motivo debe tener al menos 5 caracteres.";
+            if (motivo.Length > 100)
+                return "El motivo no puede tener más de 100 caracteres.";
+
+            return "";
+        }
+
+        /// <summary>
+        /// Anula una factura con un motivo. La orden queda libre para facturarse otra vez.
+        /// </summary>
+        /// <param name="facturaId">Identificador de factura.</param>
+        /// <param name="motivo">Motivo escrito por el usuario.</param>
+        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
+        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
+        public bool anularFactura(int facturaId, string motivo, out string mensaje)
+        {
+            mensaje = validarAnulacion(motivo);
+            if (mensaje != "")
+                return false;
+
+            SqlCommand comando = procedimiento("sp_AnularFactura");
+            comando.Parameters.AddWithValue("@factura_id", facturaId);
+            comando.Parameters.AddWithValue("@motivo", motivo.Trim());
+            return ejecutar(comando, out mensaje);
+        }
+
         // Calcula el precio de cada actividad con la fórmula de costeo (la fórmula vive en la base de datos).
         // Las medidas vacías se ignoran; si alguna no es válida, mensaje dice cuál.
         /// <summary>

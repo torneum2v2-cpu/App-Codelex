@@ -1,4 +1,3 @@
 <Solution>
   <Project Path="Codelex/Codelex.csproj" />
-  <Project Path="Codelex.Pruebas/Codelex.Pruebas.csproj" />
 </Solution>

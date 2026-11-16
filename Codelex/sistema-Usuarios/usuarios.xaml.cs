@@ -240,28 +240,8 @@ namespace Codelex
         /// <returns>Texto resultante.</returns>
         private string validarFormulario(bool esNuevo)
         {
-            if (empleadoActual == 0)
-                return "Elija un empleado con el botón Buscar empleado.";
-
-            if (esNuevo && Validacion.validarCorreo(txtCorreo.Text, true, 50) != "")
-                return "El correo del empleado está vacío o no tiene un formato válido. " +
-                       "Corríjalo en el módulo de Empleados antes de continuar.";
-
-            string problema = usuarioBD.validarAcceso(txtUsuario.Text, pbContrasena.Password, esNuevo);
-            if (problema != "")
-                return problema;
-
-            if (rolActual == "")
-                return "El cargo del empleado no tiene un rol asignado.";
-
-            problema = usuarioBD.validarPermisoRol(rolActual);
-            if (problema != "")
-                return problema;
-
-            if (pbContrasena.Password != pbConfirmar.Password)
-                return "Las contraseñas no coinciden.";
-
-            return "";
+            return usuarioBD.validarFormulario(empleadoActual, txtCorreo.Text, txtUsuario.Text,
+                pbContrasena.Password, pbConfirmar.Password, rolActual, esNuevo);
         }
 
         /// <summary>

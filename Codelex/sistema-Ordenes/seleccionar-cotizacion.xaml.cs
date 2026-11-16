@@ -61,7 +61,7 @@ namespace Codelex
             {
                 DataTable tabla = ordenBD.listarCotizaciones(txtBuscar.Text, rtnCliente);
                 dgCotizaciones.ItemsSource = tabla.DefaultView;
-                txtResultado.Text = "Cotizaciones pendientes (" + tabla.Rows.Count + ")";
+                txtResultado.Text = "Cotizaciones vigentes (" + tabla.Rows.Count + ")";
             }
             catch (Exception ex)
             {
@@ -91,6 +91,31 @@ namespace Codelex
 
             cotizacionElegida = fila;
             DialogResult = true;
+        }
+
+        /// <summary>
+        /// Imprime la cotización seleccionada (o la guarda como PDF), esté disponible o no.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
+        private void imprimirClic(object sender, RoutedEventArgs e)
+        {
+            if (dgCotizaciones.SelectedItem == null)
+            {
+                MensajeCodelex.mostrar(this, "Imprimir cotización", "Seleccione la cotización que desea imprimir.", false);
+                return;
+            }
+
+            DataRowView fila = (DataRowView)dgCotizaciones.SelectedItem;
+
+            try
+            {
+                ImpresionCotizacion.imprimir(this, "" + fila["cotizacion_id"]);
+            }
+            catch (Exception ex)
+            {
+                MensajeCodelex.mostrar(this, "Imprimir cotización", ex.Message, false);
+            }
         }
 
         /// <summary>

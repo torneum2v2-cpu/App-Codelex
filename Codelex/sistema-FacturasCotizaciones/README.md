@@ -10,7 +10,8 @@ Crear cotizaciones por servicio y actividades (el precio sale de la fórmula de 
 |---|---|
 | `cotizacion.xaml(.cs)` | Cotización: cliente, servicio, actividades con su cantidad, descuento en porcentaje (opcional) y totales. El descuento se guarda como una línea negativa, así la orden y la factura lo heredan; el ISV se calcula después del descuento. |
 | `factura.xaml(.cs)` | Factura nueva de una orden completada; solo se elige la forma de pago. |
-| `factura-detalle.xaml(.cs)` | Ver factura: estado, cuotas, saldar cuota, registrar abono, imprimir/PDF, deshacer el último abono (con motivo; queda marcado como deshecho) y anular (con motivo y confirmación; no se anula una factura a crédito con abonos vigentes). |
+| `factura-detalle.xaml(.cs)` | Ver factura: estado, cuotas, saldar cuota, registrar abono, imprimir/PDF, deshacer el último abono (con motivo; queda marcado como deshecho) y anular (con motivo y confirmación; no se anula una factura a crédito con abonos vigentes). Deshacer abonos y anular facturas es solo del administrador. |
+| `impresion-cotizacion.cs` | Imprime una cotización (o la guarda como PDF) con los datos guardados en la base: cliente, contacto, locación, servicio, actividades con su medida, subtotal, descuento, ISV y total. Se usa al guardar la cotización y desde la pantalla de seleccionar cotización. |
 | `registrar-abono.xaml(.cs)` | Abono libre con vista previa de cómo quedan las cuotas. |
 | `linea-actividad.cs` | Línea de actividad de la cotización (medida, personas y precio). |
 | `estilos-documento.xaml` | Estilos compartidos por las pantallas de este módulo. |
@@ -18,7 +19,7 @@ Crear cotizaciones por servicio y actividades (el precio sale de la fórmula de 
 ## Dependencias
 
 - Clase `Facturacion` de `sistema-AccesoDatos`.
-- Procedimientos: `sp_CotizarLineas`, `sp_InsertarCotizacion`, `sp_ListarActividades`, `sp_InsertarFactura`, `sp_ObtenerFactura`, `sp_DetalleFactura`, `sp_CuotasFactura`, `sp_SaldarCuota`, `sp_RegistrarAbono`, `sp_SimularAbono`, `sp_ListarAbonosFactura`, `sp_AnularFactura`, `sp_AnularAbono`.
+- Procedimientos: `sp_CotizarLineas`, `sp_InsertarCotizacion`, `sp_ObtenerCotizacion`, `sp_DetalleCotizacion`, `sp_ListarActividades`, `sp_InsertarFactura`, `sp_ObtenerFactura`, `sp_DetalleFactura`, `sp_CuotasFactura`, `sp_SaldarCuota`, `sp_RegistrarAbono`, `sp_SimularAbono`, `sp_ListarAbonosFactura`, `sp_AnularFactura`, `sp_AnularAbono`.
 - Tablas: `cotizaciones`, `detalles_cotizacion`, `facturas`, `detalles_factura`, `cuentas_por_cobrar`, `cuotas`, `abonos`, `parametros_costeo`.
 - Módulos: `sistema-Clientes` (lupa de clientes), `sistema-Ordenes` (se abre desde ahí).
 

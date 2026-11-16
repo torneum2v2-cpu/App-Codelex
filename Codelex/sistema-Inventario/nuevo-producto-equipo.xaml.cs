@@ -233,41 +233,20 @@ namespace Codelex
         /// </summary>
         private void guardarDesdeActividad()
         {
-            string mensaje;
+            string mensaje = inventarioBD.validarArticuloDeActividad(tipoFijo, txtNombre.Text, txtTipo.Text, txtCantidad.Text);
+            if (mensaje != "")
+            {
+                MensajeCodelex.mostrar(this, "Servicios", mensaje, false);
+                return;
+            }
 
             if (tipoFijo == "producto")
             {
-                mensaje = inventarioBD.validarProducto(txtNombre.Text, txtTipo.Text);
-                if (mensaje != "")
-                {
-                    MensajeCodelex.mostrar(this, "Servicios", mensaje, false);
-                    return;
-                }
-
-                decimal valor;
-                if (!servicioBD.leerDecimal(txtCantidad.Text, out valor) || valor <= 0)
-                {
-                    MensajeCodelex.mostrar(this, "Servicios", "Escriba la cantidad por unidad (mayor que cero).", false);
-                    return;
-                }
-
                 tipo = txtTipo.Text.Trim();
                 cantidad = txtCantidad.Text.Trim();
             }
             else
             {
-                if (txtNombre.Text.Trim() == "")
-                {
-                    MensajeCodelex.mostrar(this, "Servicios", "El nombre del equipo es obligatorio.", false);
-                    return;
-                }
-
-                if (txtNombre.Text.Trim().Length > 50)
-                {
-                    MensajeCodelex.mostrar(this, "Servicios", "El nombre no puede tener más de 50 caracteres.", false);
-                    return;
-                }
-
                 esEquipo = true;
             }
 

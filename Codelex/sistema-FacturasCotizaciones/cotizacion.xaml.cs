@@ -507,7 +507,7 @@ namespace Codelex.FacturasCotizaciones
                 if (guardado)
                 {
                     if (MensajeCodelex.preguntar(this, "Cotizaciones", "¿Desea imprimir la cotización o guardarla como PDF?"))
-                        imprimirCotizacion(datos, id);
+                        ImpresionCotizacion.imprimir(this, id);
 
                     nuevaCotizacion();
                 }
@@ -516,37 +516,6 @@ namespace Codelex.FacturasCotizaciones
             {
                 mostrarError(ex);
             }
-        }
-
-        /// <summary>
-        /// Arma la cotización con los datos de la pantalla y abre el cuadro de impresión.
-        /// </summary>
-        /// <param name="datos">Datos de la cotización que se guardó.</param>
-        /// <param name="numero">Número que se le asignó a la cotización.</param>
-        private void imprimirCotizacion(DatosDocumento datos, string numero)
-        {
-            List<string> encabezado = new List<string>();
-            encabezado.Add("Fecha: " + dpFecha.Text + "     Válida hasta: " + dpValidaHasta.Text);
-            encabezado.Add("Cliente: " + datos.empresa + " (" + datos.rtn + ")");
-            encabezado.Add("Contacto: " + (datos.contacto + " " + datos.apellido).Trim() + "     Teléfono: " + Validacion.formatoTelefono(datos.telefono));
-            encabezado.Add("Dirección: " + datos.direccion);
-            if (datos.observaciones.Trim() != "")
-                encabezado.Add("Observaciones: " + datos.observaciones.Trim());
-
-            DataTable detalle = ImpresionDocumento.crearLineas();
-            foreach (LineaActividad linea in lineas)
-            {
-                ImpresionDocumento.agregarLinea(detalle, linea.Nombre, linea.Medida + " " + linea.Unidad,
-                    "", facturaBD.dinero(linea.Precio));
-            }
-
-            List<string> totales = new List<string>();
-            totales.Add("Subtotal: " + lblSubtotal.Text);
-            totales.Add("Descuento: " + lblDescuento.Text);
-            totales.Add("ISV: " + lblIsv.Text);
-            totales.Add("Total: " + lblTotal.Text);
-
-            ImpresionDocumento.imprimir(this, "Cotización", numero, encabezado, detalle, totales);
         }
 
         /// <summary>

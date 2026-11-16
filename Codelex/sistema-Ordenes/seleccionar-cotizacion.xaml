@@ -297,7 +297,7 @@
 
                     <Border Grid.Row="1" Style="{StaticResource Card}" Margin="0,16,0,0">
                         <DockPanel>
-                            <TextBlock x:Name="txtResultado" DockPanel.Dock="Top" Text="Cotizaciones pendientes"
+                            <TextBlock x:Name="txtResultado" DockPanel.Dock="Top" Text="Cotizaciones vigentes"
                                        Style="{StaticResource TituloCard}" Margin="0,0,0,12"/>
                             <DataGrid x:Name="dgCotizaciones" Style="{StaticResource Tabla}"
                                       AutoGenerateColumns="False" IsReadOnly="True"
@@ -317,10 +317,13 @@
                     </Border>
 
                     <Grid Grid.Row="2" Margin="0,14,0,0">
-                        <TextBlock Text="Solo aparecen cotizaciones que todavía no tienen orden. Doble clic para elegir."
-                                   Style="{StaticResource Nota}" VerticalAlignment="Center" Width="360"
+                        <TextBlock Text="Solo aparecen cotizaciones vigentes y sin orden; primero las disponibles. Doble clic para elegir."
+                                   Style="{StaticResource Nota}" VerticalAlignment="Center" Width="300"
                                    HorizontalAlignment="Left"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button x:Name="btnImprimir" Content="Imprimir / PDF" Width="140" Margin="0,0,10,0"
+                                    Style="{StaticResource SecondaryButton}" Click="imprimirClic"
+                                    ToolTip="Imprime la cotización seleccionada o la guarda como PDF"/>
                             <Button x:Name="btnAgregarCotizacion" Content="Agregar cotización" Width="160" Margin="0,0,10,0"
                                     Style="{StaticResource SecondaryButton}" Click="agregarCotizacionClic"
                                     ToolTip="¿No encuentra la cotización? Créela aquí"/>

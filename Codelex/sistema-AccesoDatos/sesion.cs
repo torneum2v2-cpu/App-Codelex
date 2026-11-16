@@ -74,6 +74,29 @@
         }
 
         /// <summary>
+        /// Indica si el usuario es administrador (rol avanzado): ve y gestiona todo el sistema.
+        /// </summary>
+        /// <returns>true si es administrador.</returns>
+        public static bool esAdministrador()
+        {
+            return Nivel == NivelAcceso.Avanzado;
+        }
+
+        /// <summary>
+        /// Indica si el usuario puede ver y gestionar una orden.
+        /// El administrador puede con todas; el supervisor solo con las que tiene asignadas.
+        /// </summary>
+        /// <param name="supervisorId">Empleado que supervisa la orden.</param>
+        /// <returns>true si la orden es del usuario o si es administrador.</returns>
+        public static bool puedeGestionarOrden(int supervisorId)
+        {
+            if (esAdministrador())
+                return true;
+
+            return Nivel == NivelAcceso.Medio && EmpleadoId > 0 && supervisorId == EmpleadoId;
+        }
+
+        /// <summary>
         /// Devuelve el nivel de acceso que corresponde a un rol.
         /// </summary>
         /// <param name="rol">Nombre del rol.</param>

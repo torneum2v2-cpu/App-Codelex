@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Reportes de órdenes, asistencia y empleados con filtros, gráficos y exportación a CSV.
+Reportes de órdenes, asistencia y empleados con filtros, gráficos, exportación a CSV e impresión (o PDF) del resumen y el detalle.
 
 ## Archivos
 

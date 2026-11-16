@@ -31,7 +31,7 @@ namespace Codelex
             Height = Math.Min(Height, SystemParameters.WorkArea.Height - 10);
 
 
-            if (Sesion.Nivel == NivelAcceso.Basico)
+            if (!Sesion.esAdministrador())
                 empleadoId = Sesion.EmpleadoId;
 
             empleadoInicial = empleadoId;
@@ -52,7 +52,7 @@ namespace Codelex
             {
                 DataTable empleados = empleadoBD.buscarEmpleados("", "", "TODOS");
 
-                if (Sesion.Nivel == NivelAcceso.Basico)
+                if (!Sesion.esAdministrador())
                 {
                     empleados.DefaultView.RowFilter = "empleado_id = " + empleadoInicial;
                     cmbEmpleado.IsEnabled = false;
@@ -193,20 +193,15 @@ namespace Codelex
             if (id == 0)
                 return;
 
-            if (dpDesde.SelectedDate == null || dpHasta.SelectedDate == null)
+            string problema = Validacion.validarRangoFechas(dpDesde.SelectedDate, dpHasta.SelectedDate);
+            if (problema != "")
             {
-                MensajeCodelex.mostrar(this, "Reporte del empleado", "Seleccione las fechas Desde y Hasta.", false);
+                MensajeCodelex.mostrar(this, "Reporte del empleado", problema, false);
                 return;
             }
 
             DateTime desde = dpDesde.SelectedDate.Value;
             DateTime hasta = dpHasta.SelectedDate.Value;
-
-            if (desde > hasta)
-            {
-                MensajeCodelex.mostrar(this, "Reporte del empleado", "La fecha Desde no puede ser mayor que la fecha Hasta.", false);
-                return;
-            }
 
             try
             {
@@ -301,8 +296,35 @@ namespace Codelex
         private void imprimirClic(object sender, RoutedEventArgs e)
         {
             PrintDialog dialogo = new PrintDialog();
-            if (dialogo.ShowDialog() == true)
+            if (dialogo.ShowDialog() != true)
+                return;
+
+            // Si el reporte es más grande que la hoja, se achica para que salga completo.
+            Transform transformacionAnterior = areaReporte.LayoutTransform;
+            double escalaAncho = dialogo.PrintableAreaWidth / areaReporte.ActualWidth;
+            double escalaAlto = dialogo.PrintableAreaHeight / areaReporte.ActualHeight;
+            double escala = Math.Min(escalaAncho, escalaAlto);
+
+            try
+            {
+                if (escala < 1)
+                {
+                    areaReporte.LayoutTransform = new ScaleTransform(escala, escala);
+                    areaReporte.UpdateLayout();
+                }
+
                 dialogo.PrintVisual(areaReporte, "Reporte del empleado");
+                MensajeCodelex.mostrar(this, "Reporte del empleado", "El reporte se envió a la impresora.", true);
+            }
+            catch (Exception ex)
+            {
+                mostrarError(ex);
+            }
+            finally
+            {
+                areaReporte.LayoutTransform = transformacionAnterior;
+                areaReporte.UpdateLayout();
+            }
         }
 
         /// <summary>

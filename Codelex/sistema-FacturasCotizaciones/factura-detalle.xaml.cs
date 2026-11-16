@@ -153,7 +153,8 @@ namespace Codelex.FacturasCotizaciones
 
                 btnDeshacer.Visibility = Visibility.Collapsed;
                 pnlDeshacer.Visibility = Visibility.Collapsed;
-                if (abonoPorDeshacer > 0 && estadoPago != "Anulada")
+                // Deshacer abonos y anular facturas es solo del administrador.
+                if (abonoPorDeshacer > 0 && estadoPago != "Anulada" && Sesion.esAdministrador())
                     btnDeshacer.Visibility = Visibility.Visible;
 
                 btnAbono.Visibility = Visibility.Collapsed;
@@ -181,7 +182,11 @@ namespace Codelex.FacturasCotizaciones
             }
             else
             {
-                btnAnular.Visibility = Visibility.Visible;
+                if (Sesion.esAdministrador())
+                    btnAnular.Visibility = Visibility.Visible;
+                else
+                    btnAnular.Visibility = Visibility.Collapsed;
+
                 lblMotivoAnulada.Visibility = Visibility.Collapsed;
             }
         }

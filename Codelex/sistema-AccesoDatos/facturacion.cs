@@ -326,6 +326,12 @@ namespace Codelex.AccesoDatos
         /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool deshacerAbono(int abonoId, string motivo, out string mensaje)
         {
+            if (!Sesion.esAdministrador())
+            {
+                mensaje = "Solo el administrador puede deshacer abonos.";
+                return false;
+            }
+
             mensaje = Validacion.validarMotivo(motivo);
             if (mensaje != "")
                 return false;
@@ -345,6 +351,12 @@ namespace Codelex.AccesoDatos
         /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         public bool anularFactura(int facturaId, string motivo, out string mensaje)
         {
+            if (!Sesion.esAdministrador())
+            {
+                mensaje = "Solo el administrador puede anular facturas.";
+                return false;
+            }
+
             mensaje = validarAnulacion(motivo);
             if (mensaje != "")
                 return false;
@@ -697,6 +709,10 @@ namespace Codelex.AccesoDatos
         public bool guardarFactura(DatosFactura datos, out string mensaje, out int facturaId)
         {
             facturaId = 0;
+
+            mensaje = new GestionOrdenesBD().validarAcceso(datos.ordenId);
+            if (mensaje != "")
+                return false;
 
             mensaje = validarFactura(datos);
             if (mensaje != "")

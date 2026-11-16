@@ -4,7 +4,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Codelex.AccesoDatos;
-using Codelex.AccesoDatos;
 using Microsoft.Win32;
 using Codelex.Ordenes;
 
@@ -31,15 +30,17 @@ namespace Codelex
         {
             { "miperfil", NivelAcceso.Basico },
 
+            // Supervisor (medio): sus órdenes y los clientes con los que trabaja.
             { "inicio", NivelAcceso.Medio },
             { "ordenes", NivelAcceso.Medio },
-            { "vehiculos", NivelAcceso.Medio },
             { "clientes", NivelAcceso.Medio },
-            { "empleados", NivelAcceso.Medio },
-            { "inventario", NivelAcceso.Medio },
-            { "servicios", NivelAcceso.Medio },
-            { "usuarios", NivelAcceso.Medio },
 
+            // Administrador (avanzado): todo el sistema.
+            { "vehiculos", NivelAcceso.Avanzado },
+            { "empleados", NivelAcceso.Avanzado },
+            { "inventario", NivelAcceso.Avanzado },
+            { "servicios", NivelAcceso.Avanzado },
+            { "usuarios", NivelAcceso.Avanzado },
             { "reportes", NivelAcceso.Avanzado }
         };
 
@@ -51,15 +52,15 @@ namespace Codelex
 
             { "IngresarOrden", NivelAcceso.Medio },
             { "GestionOrdenes", NivelAcceso.Medio },
-            { "Vehiculos", NivelAcceso.Medio },
-            { "GestionVehiculos", NivelAcceso.Medio },
             { "Clientes", NivelAcceso.Medio },
             { "Locaciones", NivelAcceso.Medio },
-            { "Empleados", NivelAcceso.Medio },
-            { "Inventario", NivelAcceso.Medio },
-            { "Servicios", NivelAcceso.Medio },
-            { "Usuarios", NivelAcceso.Medio },
 
+            { "Vehiculos", NivelAcceso.Avanzado },
+            { "GestionVehiculos", NivelAcceso.Avanzado },
+            { "Empleados", NivelAcceso.Avanzado },
+            { "Inventario", NivelAcceso.Avanzado },
+            { "Servicios", NivelAcceso.Avanzado },
+            { "Usuarios", NivelAcceso.Avanzado },
             { "Reportes", NivelAcceso.Avanzado }
         };
 

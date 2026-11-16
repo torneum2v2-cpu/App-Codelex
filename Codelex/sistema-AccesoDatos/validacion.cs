@@ -446,6 +446,23 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
+        /// Valida un rango de fechas de un reporte: las dos son obligatorias y Desde no puede ser mayor que Hasta.
+        /// </summary>
+        /// <param name="desde">Fecha inicial.</param>
+        /// <param name="hasta">Fecha final.</param>
+        /// <returns>Texto del error, o texto vacío si el rango es válido.</returns>
+        public static string validarRangoFechas(DateTime? desde, DateTime? hasta)
+        {
+            if (!desde.HasValue || !hasta.HasValue)
+                return "Seleccione las fechas Desde y Hasta.";
+
+            if (desde.Value.Date > hasta.Value.Date)
+                return "La fecha Desde no puede ser mayor que la fecha Hasta.";
+
+            return "";
+        }
+
+        /// <summary>
         /// Valida el motivo que se escribe al anular o deshacer algo.
         /// </summary>
         /// <param name="motivo">Motivo escrito por el usuario.</param>

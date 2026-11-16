@@ -96,6 +96,37 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
+        /// Valida un producto o equipo que se agrega desde una actividad (se guarda junto con la actividad).
+        /// </summary>
+        /// <param name="tipoFijo">"producto" o "equipo".</param>
+        /// <param name="nombre">Nombre escrito.</param>
+        /// <param name="tipo">Tipo de producto (solo productos).</param>
+        /// <param name="cantidadTexto">Cantidad por unidad (solo productos).</param>
+        /// <returns>Texto del error, o texto vacío si es válido.</returns>
+        public string validarArticuloDeActividad(string tipoFijo, string nombre, string tipo, string cantidadTexto)
+        {
+            if (tipoFijo == "producto")
+            {
+                string problema = validarProducto(nombre, tipo);
+                if (problema != "")
+                    return problema;
+
+                decimal valor;
+                if (!new ServicioBD().leerDecimal(cantidadTexto, out valor) || valor <= 0)
+                    return "Escriba la cantidad por unidad (mayor que cero).";
+
+                return "";
+            }
+
+            if (nombre.Trim() == "")
+                return "El nombre del equipo es obligatorio.";
+            if (nombre.Trim().Length > 50)
+                return "El nombre no puede tener más de 50 caracteres.";
+
+            return "";
+        }
+
+        /// <summary>
         /// Valida producto.
         /// </summary>
         /// <param name="nombre">Nombre.</param>

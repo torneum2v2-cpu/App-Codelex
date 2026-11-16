@@ -414,6 +414,7 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0" Margin="0,0,14,0">
@@ -506,6 +507,9 @@
                                     <Button Grid.Column="4" Content="Exportar CSV" Width="130"
                                             VerticalAlignment="Bottom" Style="{StaticResource SecondaryButton}"
                                             Click="exportarClic"/>
+                                    <Button Grid.Column="5" Content="Imprimir / PDF" Width="130" Margin="10,0,0,0"
+                                            VerticalAlignment="Bottom" Style="{StaticResource SecondaryButton}"
+                                            Click="imprimirClic"/>
                                 </Grid>
                             </StackPanel>
                         </Border>

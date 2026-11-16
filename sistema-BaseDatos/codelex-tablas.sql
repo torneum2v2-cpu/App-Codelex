@@ -521,6 +521,16 @@ IF OBJECT_ID('FK_COTIZACION_DETALLE_ACTIVIDADES') IS NULL
 	ADD CONSTRAINT FK_COTIZACION_DETALLE_ACTIVIDADES FOREIGN KEY (actividad_id) REFERENCES actividades(actividad_id);
 GO
 
+-- Usuario que hizo la cotizacion: el supervisor solo ve las suyas (las anteriores quedan sin usuario y solo las ve el administrador).
+IF COL_LENGTH('cotizaciones', 'usuario_id') IS NULL
+	ALTER TABLE cotizaciones ADD usuario_id INT NULL;
+GO
+
+IF OBJECT_ID('FK_COTIZACIONES_USUARIOS') IS NULL
+	ALTER TABLE cotizaciones
+	ADD CONSTRAINT FK_COTIZACIONES_USUARIOS FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id);
+GO
+
 IF OBJECT_ID('abonos') IS NULL
 CREATE TABLE abonos
 (
@@ -741,6 +751,13 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ORDENES_cotizacion' AND object_id = OBJECT_ID('ordenes'))
 	CREATE INDEX IX_ORDENES_cotizacion ON ordenes(cotizacion_id);
+GO
+
+-- Una cotizacion solo puede dar una orden (si ya hay datos repetidos, no se crea para no fallar).
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_ORDENES_cotizacion' AND object_id = OBJECT_ID('ordenes'))
+   AND NOT EXISTS (SELECT cotizacion_id FROM ordenes WHERE cotizacion_id IS NOT NULL
+				   GROUP BY cotizacion_id HAVING COUNT(1) > 1)
+	CREATE UNIQUE INDEX UX_ORDENES_cotizacion ON ordenes(cotizacion_id) WHERE cotizacion_id IS NOT NULL;
 GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ORDENES_vehiculo' AND object_id = OBJECT_ID('ordenes'))

@@ -106,7 +106,7 @@ namespace Codelex
             servicios = ordenBD.listarServicios();
 
             empleados = ordenBD.listarEmpleados();
-            llenarCombo(cmbSupervisor, empleados, "empleado_id", "nombre_completo");
+            llenarCombo(cmbSupervisor, ordenBD.listarSupervisores(), "empleado_id", "nombre_completo");
 
             cmbTurno.Items.Clear();
             cmbTurno.Items.Add("Mañana");
@@ -244,6 +244,16 @@ namespace Codelex
 
             seleccionarPorTexto(cmbEstado, "Pendiente");
             cmbSupervisor.SelectedIndex = -1;
+
+            // Un supervisor solo puede crear órdenes a su nombre.
+            if (!Sesion.esAdministrador())
+            {
+                if (cmbSupervisor.Items.Count > 0)
+                    cmbSupervisor.SelectedIndex = 0;
+
+                cmbSupervisor.IsEnabled = false;
+            }
+
             cmbVehiculo.SelectedIndex = -1;
             cmbTurno.SelectedIndex = -1;
 
@@ -460,25 +470,7 @@ namespace Codelex
                 }
             }
 
-            DatosOrden datos = new DatosOrden();
-
-            datos.cotizacionId = cotizacionId;
-            datos.rtn = clienteRtn;
-            datos.locacionId = idSeleccionado(cmbLocacion);
-            datos.supervisorId = idSeleccionado(cmbSupervisor);
-            datos.vehiculoId = idSeleccionado(cmbVehiculo);
-            datos.fechaSolicitud = dpFechaSolicitud.SelectedDate;
-            datos.fechaServicio = dpFechaLimpieza.SelectedDate;
-            datos.estadoId = idSeleccionado(cmbEstado);
-            datos.observaciones = txtDescripcionLimpieza.Text;
-            datos.turno = "" + cmbTurno.SelectedItem;
-            datos.pisoArea = txtPisoArea.Text;
-            datos.personasNecesarias = personasNecesarias;
-
-            foreach (ItemLista item in lstEmpleadosAsignados.Items)
-            {
-                datos.empleados.Add(item.id);
-            }
+            DatosOrden datos = armarDatos();
 
             try
             {
@@ -622,51 +614,43 @@ namespace Codelex
         }
 
         /// <summary>
-        /// Valida paso.
+        /// Junta los datos escritos en el asistente.
         /// </summary>
-        /// <param name="paso">Número del paso.</param>
-        /// <returns>Texto resultante.</returns>
-        private string validarPaso(int paso)
+        /// <returns>Datos de la orden.</returns>
+        private DatosOrden armarDatos()
         {
-            if (paso == 1)
+            DatosOrden datos = new DatosOrden();
+
+            datos.cotizacionId = cotizacionId;
+            datos.rtn = clienteRtn;
+            datos.locacionId = idSeleccionado(cmbLocacion);
+            datos.supervisorId = idSeleccionado(cmbSupervisor);
+            datos.vehiculoId = idSeleccionado(cmbVehiculo);
+            datos.fechaSolicitud = dpFechaSolicitud.SelectedDate;
+            datos.fechaServicio = dpFechaLimpieza.SelectedDate;
+            datos.estadoId = idSeleccionado(cmbEstado);
+            datos.observaciones = txtDescripcionLimpieza.Text;
+            datos.turno = "" + cmbTurno.SelectedItem;
+            datos.pisoArea = txtPisoArea.Text;
+            datos.personasNecesarias = personasNecesarias;
+            datos.cantidadActividades = lstActividadesOrden.Items.Count;
+
+            foreach (ItemLista item in lstEmpleadosAsignados.Items)
             {
-                if (cotizacionId == "")
-                    return "Seleccione una cotización.";
-                if (clienteRtn == "")
-                    return "La cotización no tiene un cliente registrado.";
-            }
-            else if (paso == 2)
-            {
-                if (lstActividadesOrden.Items.Count == 0)
-                    return "La orden necesita al menos una actividad.";
-                if (dpFechaSolicitud.SelectedDate == null)
-                    return "Seleccione la fecha de solicitud.";
-                if (dpFechaLimpieza.SelectedDate == null)
-                    return "Seleccione la fecha de limpieza.";
-                if (dpFechaLimpieza.SelectedDate < dpFechaSolicitud.SelectedDate)
-                    return "La fecha de limpieza no puede ser anterior a la fecha de solicitud.";
-                if (idSeleccionado(cmbEstado) == 0)
-                    return "Seleccione el estado de la orden.";
-                if (idSeleccionado(cmbSupervisor) == 0)
-                    return "Seleccione el supervisor.";
-                if (idSeleccionado(cmbLocacion) == 0)
-                    return "Seleccione la locación.";
-            }
-            else if (paso == 3)
-            {
-                if (lstEmpleadosAsignados.Items.Count == 0)
-                    return "Asigne al menos un empleado.";
-                if (lstEmpleadosAsignados.Items.Count < personasNecesarias)
-                    return "La cotización necesita " + personasNecesarias + " empleados. Asigne más.";
-                if (cmbTurno.SelectedItem == null)
-                    return "Seleccione el turno.";
-                if (txtPisoArea.Text.Trim() == "")
-                    return "Escriba el piso o área.";
-                if (idSeleccionado(cmbVehiculo) == 0)
-                    return "Seleccione el vehículo.";
+                datos.empleados.Add(item.id);
             }
 
-            return "";
+            return datos;
+        }
+
+        /// <summary>
+        /// Valida un paso del asistente con las reglas de la clase Orden.
+        /// </summary>
+        /// <param name="paso">Número del paso.</param>
+        /// <returns>Mensaje de error, o vacío si el paso está bien.</returns>
+        private string validarPaso(int paso)
+        {
+            return ordenBD.validarPaso(armarDatos(), paso);
         }
 
         /// <summary>

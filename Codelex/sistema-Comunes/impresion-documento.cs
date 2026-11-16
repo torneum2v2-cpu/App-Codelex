@@ -66,6 +66,93 @@ namespace Codelex
         }
 
         /// <summary>
+        /// Muestra el cuadro de impresión y manda un reporte con cualquier cantidad de columnas.
+        /// </summary>
+        /// <param name="dueno">Ventana dueña del cuadro.</param>
+        /// <param name="titulo">Título del reporte.</param>
+        /// <param name="encabezado">Líneas de texto con el periodo y el resumen.</param>
+        /// <param name="columnas">Títulos de las columnas.</param>
+        /// <param name="filas">Filas del reporte; cada fila tiene un texto por columna.</param>
+        public static void imprimirReporte(Window dueno, string titulo, List<string> encabezado, List<string> columnas, List<List<string>> filas)
+        {
+            PrintDialog dialogo = new PrintDialog();
+            if (dialogo.ShowDialog() != true)
+                return;
+
+            FlowDocument documento = new FlowDocument();
+            documento.FontFamily = new FontFamily("Segoe UI");
+            documento.FontSize = 10;
+            documento.PagePadding = new Thickness(40);
+            documento.PageWidth = dialogo.PrintableAreaWidth;
+            documento.PageHeight = dialogo.PrintableAreaHeight;
+            documento.ColumnWidth = dialogo.PrintableAreaWidth;
+
+            Paragraph nombre = new Paragraph(new Run("Codelex"));
+            nombre.FontSize = 20;
+            nombre.FontWeight = FontWeights.Bold;
+            nombre.Foreground = new SolidColorBrush(Color.FromRgb(0x14, 0x83, 0x7A));
+            nombre.Margin = new Thickness(0, 0, 0, 2);
+            documento.Blocks.Add(nombre);
+
+            Paragraph tituloDoc = new Paragraph(new Run(titulo));
+            tituloDoc.FontSize = 15;
+            tituloDoc.FontWeight = FontWeights.SemiBold;
+            tituloDoc.Margin = new Thickness(0, 0, 0, 10);
+            documento.Blocks.Add(tituloDoc);
+
+            foreach (string linea in encabezado)
+            {
+                Paragraph parrafo = new Paragraph(new Run(linea));
+                parrafo.Margin = new Thickness(0, 0, 0, 2);
+                documento.Blocks.Add(parrafo);
+            }
+
+            Table tabla = new Table();
+            tabla.CellSpacing = 0;
+            tabla.Margin = new Thickness(0, 12, 0, 0);
+            foreach (string columna in columnas)
+            {
+                TableColumn columnaTabla = new TableColumn();
+                columnaTabla.Width = new GridLength(1, GridUnitType.Star);
+                tabla.Columns.Add(columnaTabla);
+            }
+
+            TableRowGroup grupo = new TableRowGroup();
+
+            TableRow titulos = new TableRow();
+            titulos.FontWeight = FontWeights.Bold;
+            titulos.Background = new SolidColorBrush(Color.FromRgb(0xE3, 0xF7, 0xF4));
+            foreach (string columna in columnas)
+            {
+                titulos.Cells.Add(crearCelda(columna, TextAlignment.Left));
+            }
+            grupo.Rows.Add(titulos);
+
+            foreach (List<string> fila in filas)
+            {
+                TableRow filaTabla = new TableRow();
+                foreach (string valor in fila)
+                {
+                    filaTabla.Cells.Add(crearCelda(valor, TextAlignment.Left));
+                }
+                grupo.Rows.Add(filaTabla);
+            }
+
+            tabla.RowGroups.Add(grupo);
+            documento.Blocks.Add(tabla);
+
+            Paragraph pie = new Paragraph(new Run("Impreso el " + DateTime.Now.ToString("dd/MM/yyyy HH:mm") + "  -  " + filas.Count + " registros"));
+            pie.Margin = new Thickness(0, 10, 0, 0);
+            pie.Foreground = new SolidColorBrush(Color.FromRgb(0x5B, 0x7C, 0x78));
+            documento.Blocks.Add(pie);
+
+            IDocumentPaginatorSource fuente = documento;
+            dialogo.PrintDocument(fuente.DocumentPaginator, titulo);
+
+            MensajeCodelex.mostrar(dueno, titulo, "El reporte se envió a la impresora.", true);
+        }
+
+        /// <summary>
         /// Arma el documento con el encabezado, la tabla de líneas y los totales.
         /// </summary>
         /// <param name="titulo">Título del documento.</param>

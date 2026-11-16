@@ -170,20 +170,15 @@ namespace Codelex
             if (generando)
                 return;
 
-            if (dpDesde.SelectedDate == null || dpHasta.SelectedDate == null)
+            string problema = Validacion.validarRangoFechas(dpDesde.SelectedDate, dpHasta.SelectedDate);
+            if (problema != "")
             {
-                MensajeCodelex.mostrar(this, "Reportes", "Seleccione las fechas Desde y Hasta.", false);
+                MensajeCodelex.mostrar(this, "Reportes", problema, false);
                 return;
             }
 
             DateTime desde = dpDesde.SelectedDate.Value.Date;
             DateTime hasta = dpHasta.SelectedDate.Value.Date;
-
-            if (desde > hasta)
-            {
-                MensajeCodelex.mostrar(this, "Reportes", "La fecha Desde no puede ser mayor que la fecha Hasta.", false);
-                return;
-            }
 
             TipoReporte tipoConsulta = tipo;
             int estadoOrdenId = seleccionado(cmbEstadoOrden);
@@ -726,6 +721,68 @@ namespace Codelex
             {
                 mostrarError(ex);
             }
+        }
+
+        /// <summary>
+        /// Imprime el reporte mostrado (resumen y detalle) o lo guarda como PDF.
+        /// </summary>
+        /// <param name="sender">Control que originó el evento.</param>
+        /// <param name="e">Datos del evento.</param>
+        private void imprimirClic(object sender, RoutedEventArgs e)
+        {
+            if (datos.Rows.Count == 0)
+            {
+                MensajeCodelex.mostrar(this, "Reportes", "No hay datos para imprimir. Genera un reporte con resultados primero.", false);
+                return;
+            }
+
+            try
+            {
+                List<string> encabezado = new List<string>();
+                encabezado.Add("Periodo: " + desdeUsado.ToString("dd/MM/yyyy") + " al " + hastaUsado.ToString("dd/MM/yyyy"));
+                foreach (Indicador indicador in indicadores)
+                {
+                    encabezado.Add(indicador.Titulo + ": " + indicador.Valor + "  (" + indicador.Detalle + ")");
+                }
+
+                List<string> columnas = new List<string>();
+                foreach ((string Encabezado, string Columna) columna in obtenerColumnasCsv(tipoMostrado))
+                {
+                    columnas.Add(columna.Encabezado);
+                }
+
+                List<List<string>> filas = new List<List<string>>();
+                foreach (DataRow fila in datos.Rows)
+                {
+                    List<string> valores = new List<string>();
+                    foreach ((string Encabezado, string Columna) columna in obtenerColumnasCsv(tipoMostrado))
+                    {
+                        valores.Add(textoImpresion(fila[columna.Columna]));
+                    }
+                    filas.Add(valores);
+                }
+
+                ImpresionDocumento.imprimirReporte(this, "Reporte de " + nombreReporte(tipoMostrado).ToLower(), encabezado, columnas, filas);
+            }
+            catch (Exception ex)
+            {
+                mostrarError(ex);
+            }
+        }
+
+        /// <summary>
+        /// Convierte un valor de la base en texto para imprimirlo.
+        /// </summary>
+        /// <param name="valor">Valor a usar.</param>
+        /// <returns>Texto resultante.</returns>
+        private static string textoImpresion(object valor)
+        {
+            if (valor is DateTime fecha)
+                return fecha.ToString("dd/MM/yyyy");
+            if (valor is decimal numero)
+                return numero.ToString("N2", CultureInfo.InvariantCulture);
+
+            return "" + valor;
         }
 
         /// <summary>

@@ -159,6 +159,44 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
+        /// Valida todos los datos de la pantalla de usuarios antes de crear o actualizar la cuenta.
+        /// </summary>
+        /// <param name="empleadoId">Empleado elegido (0 si no hay).</param>
+        /// <param name="correo">Correo del empleado.</param>
+        /// <param name="usuario">Nombre de usuario.</param>
+        /// <param name="contrasena">Contraseña escrita.</param>
+        /// <param name="confirmar">Confirmación de la contraseña.</param>
+        /// <param name="rol">Rol que le toca al empleado por su cargo.</param>
+        /// <param name="esNuevo">true si el usuario es nuevo.</param>
+        /// <returns>Texto del error, o texto vacío si todo está bien.</returns>
+        public string validarFormulario(int empleadoId, string correo, string usuario, string contrasena,
+                                        string confirmar, string rol, bool esNuevo)
+        {
+            if (empleadoId == 0)
+                return "Elija un empleado con el botón Buscar empleado.";
+
+            if (esNuevo && Validacion.validarCorreo(correo, true, 50) != "")
+                return "El correo del empleado está vacío o no tiene un formato válido. " +
+                       "Corríjalo en el módulo de Empleados antes de continuar.";
+
+            string problema = validarAcceso(usuario, contrasena, esNuevo);
+            if (problema != "")
+                return problema;
+
+            if (rol == "")
+                return "El cargo del empleado no tiene un rol asignado.";
+
+            problema = validarPermisoRol(rol);
+            if (problema != "")
+                return problema;
+
+            if (contrasena != confirmar)
+                return "Las contraseñas no coinciden.";
+
+            return "";
+        }
+
+        /// <summary>
         /// Valida el nombre de usuario y la contraseña (la contraseña vacía solo se acepta si no es un usuario nuevo).
         /// </summary>
         /// <param name="usuario">Nombre de usuario.</param>
@@ -194,9 +232,8 @@ namespace Codelex.AccesoDatos
             return validarAcceso(usuario, contrasena, esNuevo);
         }
 
-        // Hoy el login compara la contrasena tal cual. Si el equipo usa hash, se cambia aqui y en ValidarLogin.
         /// <summary>
-        /// Prepara contraseña.
+        /// Prepara la contraseña para guardarla: la convierte en hash (PBKDF2).
         /// </summary>
         /// <param name="contrasena">Contraseña.</param>
         /// <returns>Texto resultante.</returns>

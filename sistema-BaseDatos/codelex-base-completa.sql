@@ -935,6 +935,16 @@ IF OBJECT_ID('FK_COTIZACION_DETALLE_ACTIVIDADES') IS NULL
 	ADD CONSTRAINT FK_COTIZACION_DETALLE_ACTIVIDADES FOREIGN KEY (actividad_id) REFERENCES actividades(actividad_id);
 GO
 
+-- Usuario que hizo la cotizacion: el supervisor solo ve las suyas (las anteriores quedan sin usuario y solo las ve el administrador).
+IF COL_LENGTH('cotizaciones', 'usuario_id') IS NULL
+	ALTER TABLE cotizaciones ADD usuario_id INT NULL;
+GO
+
+IF OBJECT_ID('FK_COTIZACIONES_USUARIOS') IS NULL
+	ALTER TABLE cotizaciones
+	ADD CONSTRAINT FK_COTIZACIONES_USUARIOS FOREIGN KEY (usuario_id) REFERENCES usuarios(usuario_id);
+GO
+
 IF OBJECT_ID('abonos') IS NULL
 CREATE TABLE abonos
 (
@@ -1155,6 +1165,13 @@ GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ORDENES_cotizacion' AND object_id = OBJECT_ID('ordenes'))
 	CREATE INDEX IX_ORDENES_cotizacion ON ordenes(cotizacion_id);
+GO
+
+-- Una cotizacion solo puede dar una orden (si ya hay datos repetidos, no se crea para no fallar).
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_ORDENES_cotizacion' AND object_id = OBJECT_ID('ordenes'))
+   AND NOT EXISTS (SELECT cotizacion_id FROM ordenes WHERE cotizacion_id IS NOT NULL
+				   GROUP BY cotizacion_id HAVING COUNT(1) > 1)
+	CREATE UNIQUE INDEX UX_ORDENES_cotizacion ON ordenes(cotizacion_id) WHERE cotizacion_id IS NOT NULL;
 GO
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ORDENES_vehiculo' AND object_id = OBJECT_ID('ordenes'))
@@ -2640,6 +2657,14 @@ BEGIN
 		RETURN;
 	END
 
+	IF EXISTS (SELECT 1 FROM locaciones
+			   WHERE identificacion_cliente = @identificacion_cliente
+				 AND LTRIM(RTRIM(nombre_locacion)) = LTRIM(RTRIM(@nombre_locacion)))
+	BEGIN
+		SET @mensaje = 'El cliente ya tiene una locacion con ese nombre.';
+		RETURN;
+	END
+
 	INSERT INTO locaciones (identificacion_cliente, nombre_locacion, direccion, tipo_locacion)
 	VALUES (@identificacion_cliente, @nombre_locacion, @direccion, @tipo_locacion);
 
@@ -2673,6 +2698,15 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM clientes WHERE identificacion_cliente = @identificacion_cliente)
 	BEGIN
 		SET @mensaje = 'El cliente de la locacion no existe.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM locaciones
+			   WHERE identificacion_cliente = @identificacion_cliente
+				 AND LTRIM(RTRIM(nombre_locacion)) = LTRIM(RTRIM(@nombre_locacion))
+				 AND locacion_id <> @locacion_id)
+	BEGIN
+		SET @mensaje = 'El cliente ya tiene otra locacion con ese nombre.';
 		RETURN;
 	END
 
@@ -3461,6 +3495,24 @@ BEGIN
 END
 GO
 
+-- Empleados que pueden supervisar una orden: activos, libres y con cargo de rol Medio o Avanzado.
+CREATE OR ALTER PROCEDURE sp_ListarSupervisoresOrden
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT e.empleado_id,
+		   LTRIM(ISNULL(e.nombre_empleado, '') + ' ' + ISNULL(e.apellido_empleado, '')) AS nombre_completo
+	FROM empleados e
+	INNER JOIN cargos ca ON ca.cargo_id = e.cargo_id
+	INNER JOIN roles r ON r.rol_id = ca.rol_id
+	WHERE e.estado_empleado = 1
+	  AND r.nombre_rol IN ('Usuario Medio', 'Usuario Avanzado')
+	  AND dbo.fn_EmpleadoEnProceso(e.empleado_id, '') = 0
+	ORDER BY e.nombre_empleado, e.apellido_empleado;
+END
+GO
+
 CREATE OR ALTER PROCEDURE sp_ListarEmpleadosOrden
 AS
 BEGIN
@@ -3663,9 +3715,11 @@ BEGIN
 END
 GO
 
+-- @usuario_id NULL = todas (administrador); con valor = solo las que hizo ese usuario.
 CREATE OR ALTER PROCEDURE sp_ListarCotizacionesOrden
 	@texto VARCHAR(50) = '',
-	@identificacion_cliente VARCHAR(30) = ''
+	@identificacion_cliente VARCHAR(30) = '',
+	@usuario_id INT = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -3706,13 +3760,22 @@ BEGIN
 	FROM cotizaciones q
 	LEFT JOIN clientes c ON c.identificacion_cliente = q.identificacion_cliente
 	WHERE NOT EXISTS (SELECT 1 FROM ordenes o WHERE o.cotizacion_id = q.cotizacion_id)
+	  -- Las vencidas ya no se muestran: no sirven para crear una orden.
+	  AND q.valida_hasta >= CAST(GETDATE() AS DATE)
+	  AND (@usuario_id IS NULL OR q.usuario_id = @usuario_id)
 	  AND (@identificacion_cliente = '' OR q.identificacion_cliente = @identificacion_cliente)
 	  AND (@texto = ''
 		   OR q.cotizacion_id LIKE '%' + @texto + '%'
 		   OR q.identificacion_cliente LIKE '%' + @texto + '%'
 		   OR q.nombre_empresa LIKE '%' + @texto + '%'
 		   OR ISNULL(q.nombre_cliente, '') + ' ' + ISNULL(q.apellido_cliente, '') LIKE '%' + @texto + '%')
-	ORDER BY q.fecha_cotizacion DESC, q.cotizacion_id DESC;
+	-- Primero las disponibles; dentro de cada grupo, las que vencen antes.
+	ORDER BY CASE WHEN c.identificacion_cliente IS NOT NULL AND c.estado_cliente = 1
+					   AND q.servicio_id IS NOT NULL
+					   AND EXISTS (SELECT 1 FROM detalles_cotizacion d
+								   WHERE d.cotizacion_id = q.cotizacion_id AND d.actividad_id IS NOT NULL)
+				  THEN 0 ELSE 1 END,
+			 q.valida_hasta, q.cotizacion_id;
 END
 GO
 
@@ -3722,14 +3785,45 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	SELECT linea, concepto, cantidad, precio_unitario,
-		   CAST(cantidad * precio_unitario AS MONEY) AS subtotal,
-		   ISNULL(actividad_id, 0) AS actividad_id,
-		   ISNULL(medida, 0) AS medida,
-		   ISNULL(cantidad_personas, 0) AS cantidad_personas
-	FROM detalles_cotizacion
-	WHERE cotizacion_id = @cotizacion_id
-	ORDER BY linea;
+	SELECT d.linea, d.concepto, d.cantidad, d.precio_unitario,
+		   CAST(d.cantidad * d.precio_unitario AS MONEY) AS subtotal,
+		   ISNULL(d.actividad_id, 0) AS actividad_id,
+		   ISNULL(d.medida, 0) AS medida,
+		   ISNULL(a.unidad, '') AS unidad,
+		   ISNULL(d.cantidad_personas, 0) AS cantidad_personas
+	FROM detalles_cotizacion d
+	LEFT JOIN actividades a ON a.actividad_id = d.actividad_id
+	WHERE d.cotizacion_id = @cotizacion_id
+	ORDER BY d.linea;
+END
+GO
+
+-- Encabezado de una cotizacion para imprimirla.
+CREATE OR ALTER PROCEDURE sp_ObtenerCotizacion
+	@cotizacion_id VARCHAR(50)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT q.cotizacion_id,
+		   q.fecha_cotizacion,
+		   q.valida_hasta,
+		   ISNULL(q.identificacion_cliente, '') AS identificacion_cliente,
+		   ISNULL(q.nombre_empresa, '') AS nombre_empresa,
+		   LTRIM(RTRIM(ISNULL(q.nombre_cliente, '') + ' ' + ISNULL(q.apellido_cliente, ''))) AS contacto,
+		   ISNULL(q.telefono_cliente, '') AS telefono_cliente,
+		   ISNULL(q.correo_cliente, '') AS correo_cliente,
+		   ISNULL(l.nombre_locacion, '') AS locacion,
+		   ISNULL(q.direccion, '') AS direccion,
+		   ISNULL(s.nombre_servicio, '') AS servicio,
+		   ISNULL(q.observacion, '') AS observacion,
+		   ISNULL(q.precio_cotizado, 0) AS precio_cotizado,
+		   ISNULL((SELECT MAX(d.cantidad_personas) FROM detalles_cotizacion d
+				   WHERE d.cotizacion_id = q.cotizacion_id), 0) AS cantidad_personas
+	FROM cotizaciones q
+	LEFT JOIN locaciones l ON l.locacion_id = q.locacion_id
+	LEFT JOIN servicios s ON s.servicio_id = q.servicio_id
+	WHERE q.cotizacion_id = @cotizacion_id;
 END
 GO
 
@@ -3821,6 +3915,16 @@ BEGIN
 	IF NOT EXISTS (SELECT 1 FROM empleados WHERE empleado_id = @supervisor_id AND estado_empleado = 1)
 	BEGIN
 		SET @mensaje = 'El supervisor no existe o esta inactivo.';
+		RETURN;
+	END
+
+	IF NOT EXISTS (SELECT 1 FROM empleados e
+				   INNER JOIN cargos ca ON ca.cargo_id = e.cargo_id
+				   INNER JOIN roles r ON r.rol_id = ca.rol_id
+				   WHERE e.empleado_id = @supervisor_id
+					 AND r.nombre_rol IN ('Usuario Medio', 'Usuario Avanzado'))
+	BEGIN
+		SET @mensaje = 'El empleado elegido no tiene cargo de supervisor.';
 		RETURN;
 	END
 
@@ -3961,7 +4065,9 @@ GO
 
 -- Gestión de órdenes
 
+-- @supervisor_id NULL = todas (administrador); con valor = solo las de ese supervisor.
 CREATE OR ALTER PROCEDURE sp_ListarOrdenesGestion
+	@supervisor_id INT = NULL
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -3982,6 +4088,7 @@ BEGIN
 	LEFT JOIN servicios s ON s.servicio_id = o.servicio_id
 	LEFT JOIN empleados sup ON sup.empleado_id = o.supervisor_id
 	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
+	WHERE @supervisor_id IS NULL OR o.supervisor_id = @supervisor_id
 	ORDER BY o.fecha_servicio DESC, o.orden_id DESC;
 END
 GO
@@ -3993,6 +4100,7 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT o.orden_id,
+		   ISNULL(o.supervisor_id, 0) AS supervisor_id,
 		   o.identificacion_cliente,
 		   ISNULL(c.nombre_empresa, '') AS nombre_empresa,
 		   LTRIM(RTRIM(ISNULL(c.nombre_cliente, '') + ' ' + ISNULL(c.apellido_cliente, ''))) AS contacto,
@@ -5713,11 +5821,12 @@ BEGIN
 
 		INSERT INTO cotizaciones (cotizacion_id, identificacion_cliente, nombre_empresa, nombre_cliente,
 								  apellido_cliente, telefono_cliente, correo_cliente, locacion_id, direccion,
-								  fecha_cotizacion, valida_hasta, observacion, precio_cotizado, servicio_id)
+								  fecha_cotizacion, valida_hasta, observacion, precio_cotizado, servicio_id, usuario_id)
 		VALUES (@cotizacion_id, NULLIF(LTRIM(RTRIM(@identificacion_cliente)), ''), NULLIF(@nombre_empresa, ''),
 				@nombre_cliente, NULLIF(@apellido_cliente, ''), NULLIF(@telefono_cliente, ''),
 				NULLIF(@correo_cliente, ''), @locacion_id, @direccion,
-				@fecha_cotizacion, @valida_hasta, NULLIF(@observacion, ''), @total, @servicio_id);
+				@fecha_cotizacion, @valida_hasta, NULLIF(@observacion, ''), @total, @servicio_id,
+				TRY_CAST(SESSION_CONTEXT(N'usuario_id') AS INT));
 
 		INSERT INTO detalles_cotizacion (cotizacion_id, linea, concepto, cantidad, precio_unitario,
 										actividad_id, medida, cantidad_personas)

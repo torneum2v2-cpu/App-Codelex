@@ -6,16 +6,22 @@ namespace Codelex.AccesoDatos
     class GestionOrdenesBD : BaseDatos
     {
         /// <summary>
-        /// Lista órdenes.
+        /// Lista órdenes. El administrador ve todas; el supervisor solo las que tiene asignadas.
         /// </summary>
         /// <returns>Tabla con los datos consultados.</returns>
         public DataTable listarOrdenes()
         {
-            return consultar(procedimiento("sp_ListarOrdenesGestion"));
+            SqlCommand comando = procedimiento("sp_ListarOrdenesGestion");
+
+            if (!Sesion.esAdministrador())
+                comando.Parameters.AddWithValue("@supervisor_id", Sesion.EmpleadoId);
+
+            return consultar(comando);
         }
 
         /// <summary>
-        /// Obtiene detalle.
+        /// Obtiene el detalle de una orden. Si la orden no es del supervisor que inició sesión,
+        /// devuelve la tabla vacía (como si no existiera).
         /// </summary>
         /// <param name="ordenId">Identificador de orden.</param>
         /// <returns>Tabla con los datos consultados.</returns>
@@ -23,7 +29,28 @@ namespace Codelex.AccesoDatos
         {
             SqlCommand comando = procedimiento("sp_DetalleOrdenGestion");
             comando.Parameters.AddWithValue("@orden_id", ordenId);
-            return consultar(comando);
+            DataTable detalle = consultar(comando);
+
+            if (detalle.Rows.Count > 0 && !Sesion.puedeGestionarOrden(Convert.ToInt32(detalle.Rows[0]["supervisor_id"])))
+                return detalle.Clone();
+
+            return detalle;
+        }
+
+        /// <summary>
+        /// Revisa que el usuario pueda gestionar la orden: el administrador todas, el supervisor solo las suyas.
+        /// </summary>
+        /// <param name="ordenId">Identificador de orden.</param>
+        /// <returns>Mensaje de error, o vacío si puede gestionarla.</returns>
+        public string validarAcceso(string ordenId)
+        {
+            if (ordenId.Trim() == "")
+                return "Seleccione una orden.";
+
+            if (obtenerDetalle(ordenId).Rows.Count == 0)
+                return "No tiene permiso para gestionar la orden " + ordenId + " o la orden ya no existe.";
+
+            return "";
         }
 
         // Columnas: seccion (1 actividades, 2 empleados, 3 productos, 4 equipos) y texto.
@@ -66,6 +93,10 @@ namespace Codelex.AccesoDatos
                 mensaje = "Seleccione una actividad.";
                 return false;
             }
+
+            mensaje = validarAcceso(ordenId);
+            if (mensaje != "")
+                return false;
 
             SqlCommand comando = procedimiento("sp_MarcarActividadOrden");
             comando.Parameters.AddWithValue("@orden_id", ordenId);
@@ -128,6 +159,10 @@ namespace Codelex.AccesoDatos
             if (mensaje != "")
                 return false;
 
+            mensaje = validarAcceso(ordenId);
+            if (mensaje != "")
+                return false;
+
             SqlCommand comando = procedimiento("sp_CompletarOrdenConControl");
             comando.Parameters.AddWithValue("@orden_id", ordenId);
             comando.Parameters.AddWithValue("@nota", nota.Trim());
@@ -149,6 +184,10 @@ namespace Codelex.AccesoDatos
                 mensaje = "Seleccione una orden.";
                 return false;
             }
+
+            mensaje = validarAcceso(ordenId);
+            if (mensaje != "")
+                return false;
 
             SqlCommand comando = procedimiento("sp_RegistrarConformidadOrden");
             comando.Parameters.AddWithValue("@orden_id", ordenId);
@@ -176,6 +215,10 @@ namespace Codelex.AccesoDatos
                 mensaje = "Seleccione el estado.";
                 return false;
             }
+
+            mensaje = validarAcceso(ordenId);
+            if (mensaje != "")
+                return false;
 
             SqlCommand comando = procedimiento("sp_CambiarEstadoOrden");
             comando.Parameters.AddWithValue("@orden_id", ordenId);

@@ -2,7 +2,9 @@
 
 ## Propósito
 
-Crear órdenes de limpieza a partir de una cotización (personal, vehículo, fechas y turno), ver y administrar el estado de las órdenes, y facturar las completadas. Los productos se descuentan del inventario, los equipos se asignan solos y los empleados en una orden "En proceso" no se pueden asignar a otra. Una orden solo se completa con el **control de calidad**: se revisan una por una todas sus actividades y, hasta que todas estén marcadas, la orden sigue en proceso. Al aprobarlo queda guardado quién lo revisó, cuándo y una nota opcional. Después se registra si el cliente quedó conforme. Una orden en proceso no vuelve a pendiente. Al cancelar una orden pendiente, los productos vuelven al inventario; si ya estaba en proceso, no vuelven porque ya se usaron.
+Crear órdenes de limpieza a partir de una cotización (personal, vehículo, fechas y turno), ver y administrar el estado de las órdenes, y facturar las completadas. Los productos se descuentan del inventario, los equipos se asignan solos y los empleados en una orden "En proceso" no se pueden asignar a otra. Una orden solo se completa con el **control de calidad**: se revisan una por una todas sus actividades y, hasta que todas estén marcadas, la orden sigue en proceso. Al aprobarlo queda guardado quién lo revisó, cuándo y una nota opcional. Después se registra si el cliente quedó conforme. Una orden en proceso no vuelve a pendiente. Una cotización solo puede dar una orden.
+
+**Permisos:** el administrador ve y gestiona todas las órdenes y cotizaciones. El supervisor solo ve y gestiona las órdenes donde él es el supervisor y las cotizaciones que él hizo, y solo puede crear órdenes a su nombre. Al cancelar una orden pendiente, los productos vuelven al inventario; si ya estaba en proceso, no vuelven porque ya se usaron.
 
 ## Archivos
 
@@ -11,12 +13,12 @@ Crear órdenes de limpieza a partir de una cotización (personal, vehículo, fec
 | `ingresar-ordenes.xaml(.cs)` | Asistente de 3 pasos para crear una orden. Se abre directo desde el menú; la cotización se elige con la lupa. |
 | `control-calidad.xaml(.cs)` | Lista de revisión de las actividades de una orden en proceso; el botón para aprobar y completar la orden se activa solo cuando todo está revisado. |
 | `gestion-ordenes.xaml(.cs)` | Tabla de órdenes, detalle, actividades hechas, cambio de estado, factura y conformidad. |
-| `seleccionar-cotizacion.xaml(.cs)` | Cuadro para elegir (o crear) la cotización de la orden. |
+| `seleccionar-cotizacion.xaml(.cs)` | Cuadro para elegir, crear o imprimir la cotización de la orden. Solo muestra cotizaciones vigentes y sin orden, primero las disponibles; las vencidas ya no aparecen. |
 
 ## Dependencias
 
 - Clases `Orden`, `DatosOrden`, `GestionOrdenesBD`, `Cliente` y `Vehiculo` de `sistema-AccesoDatos`.
-- Procedimientos: `sp_ListarCotizacionesOrden`, `sp_DetalleCotizacion`, `sp_ResumenCotizacion`, `sp_ListarEmpleadosOrden`, `sp_InsertarOrden`, `sp_ListarOrdenesGestion`, `sp_DetalleOrdenGestion`, `sp_ListasOrdenGestion`, `sp_CambiarEstadoOrden`, `sp_ListarActividadesPorOrden`, `sp_MarcarActividadOrden`, `sp_CompletarOrdenConControl`, `sp_RegistrarConformidadOrden`.
+- Procedimientos: `sp_ListarCotizacionesOrden`, `sp_DetalleCotizacion`, `sp_ResumenCotizacion`, `sp_ListarEmpleadosOrden`, `sp_ListarSupervisoresOrden`, `sp_InsertarOrden`, `sp_ListarOrdenesGestion`, `sp_DetalleOrdenGestion`, `sp_ListasOrdenGestion`, `sp_CambiarEstadoOrden`, `sp_ListarActividadesPorOrden`, `sp_MarcarActividadOrden`, `sp_CompletarOrdenConControl`, `sp_RegistrarConformidadOrden`.
 - Tablas: `ordenes`, `orden_empleados`, `orden_productos`, `orden_equipos`, `orden_actividades`, `estados_orden`.
 - Módulos: `sistema-FacturasCotizaciones`, `sistema-Clientes`, `sistema-Vehiculos`.
 

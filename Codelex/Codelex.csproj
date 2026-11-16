@@ -11,6 +11,8 @@
   <ItemGroup>
     <PackageReference Include="DSInternals.Win32.WebAuthn" Version="3.4.0" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.1" />
+    <!-- Version corregida: la 10.0.8 que trae DSInternals tiene una vulnerabilidad (GHSA-vmv3-wvjp-wqpj) -->
+    <PackageReference Include="System.Formats.Cbor" Version="10.0.15" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
 	<PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.0" />
   </ItemGroup>

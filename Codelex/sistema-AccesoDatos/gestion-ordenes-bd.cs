@@ -38,6 +38,30 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
+        /// Estados a los que puede pasar una orden. Avanza paso a paso:
+        /// Pendiente → En proceso → Completada (solo con el control de calidad). Se puede cancelar mientras no esté cerrada.
+        /// </summary>
+        /// <param name="estadoActual">Estado actual de la orden.</param>
+        /// <returns>Nombres de los estados permitidos (vacía si la orden ya está cerrada).</returns>
+        public List<string> estadosSiguientes(string estadoActual)
+        {
+            List<string> siguientes = new List<string>();
+
+            if (estadoActual == "Pendiente")
+            {
+                siguientes.Add("En proceso");
+                siguientes.Add("Cancelada");
+            }
+            else if (estadoActual == "En proceso")
+            {
+                siguientes.Add("Completada");
+                siguientes.Add("Cancelada");
+            }
+
+            return siguientes;
+        }
+
+        /// <summary>
         /// Revisa que el usuario pueda gestionar la orden: el administrador todas, el supervisor solo las suyas.
         /// </summary>
         /// <param name="ordenId">Identificador de orden.</param>

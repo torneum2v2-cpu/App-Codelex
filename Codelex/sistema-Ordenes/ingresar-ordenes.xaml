@@ -501,12 +501,9 @@
                                             <TextBlock Text="Fecha de limpieza:" Style="{StaticResource Etiqueta}"/>
                                             <DatePicker x:Name="dpFechaLimpieza" Margin="0,0,0,8"/>
 
-                                            <TextBlock Text="Estado:" Style="{StaticResource Etiqueta}"/>
-                                            <ComboBox x:Name="cmbEstado" SelectedIndex="0" Margin="0,0,0,8">
-                                                <ComboBoxItem Content="Pendiente"/>
-                                                <ComboBoxItem Content="En proceso"/>
-                                                <ComboBoxItem Content="Completada"/>
-                                            </ComboBox>
+                                            <TextBlock Text="Estado (automático):" Style="{StaticResource Etiqueta}"/>
+                                            <ComboBox x:Name="cmbEstado" IsEnabled="False" Margin="0,0,0,8"
+                                                      ToolTip="Toda orden nueva nace en Pendiente. Después se cambia en Gestión de órdenes."/>
 
                                             <TextBlock Text="Supervisor:" Style="{StaticResource Etiqueta}"/>
                                             <ComboBox x:Name="cmbSupervisor"/>

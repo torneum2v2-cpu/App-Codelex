@@ -146,6 +146,8 @@ namespace Codelex.Ordenes
             Orden ordenBD = new Orden();
 
             List<FilaOrden> todas = new List<FilaOrden>();
+            // Todos los estados de la base; la lista de cambio solo muestra los que siguen.
+            List<OpcionFiltro> estadosOrden = new List<OpcionFiltro>();
 
             // Evita reaccionar a los eventos mientras se llenan los controles.
             bool listo = false;
@@ -196,7 +198,7 @@ namespace Codelex.Ordenes
 
                 cmbFiltroEstado.Items.Clear();
                 cmbFiltroEstado.Items.Add(new OpcionFiltro(0, "Todos"));
-                cmbCambiarEstado.Items.Clear();
+                estadosOrden = new List<OpcionFiltro>();
 
                 foreach (DataRow fila in estados.Rows)
                 {
@@ -204,7 +206,7 @@ namespace Codelex.Ordenes
                     string nombre = "" + fila["nombre_estado_orden"];
 
                     cmbFiltroEstado.Items.Add(new OpcionFiltro(id, nombre));
-                    cmbCambiarEstado.Items.Add(new OpcionFiltro(id, nombre));
+                    estadosOrden.Add(new OpcionFiltro(id, nombre));
                 }
 
                 cmbFiltroEstado.SelectedIndex = 0;
@@ -727,13 +729,13 @@ namespace Codelex.Ordenes
                 btnCrearFactura.Visibility = completada && facturaIdActual == 0 ? Visibility.Visible : Visibility.Collapsed;
                 btnVerFactura.Visibility = completada && facturaIdActual > 0 ? Visibility.Visible : Visibility.Collapsed;
 
+                llenarEstadosPermitidos(fila);
+
                 cmbCambiarEstado.IsEnabled = !fila.EsFinal;
-                cmbCambiarEstado.ToolTip = fila.EsFinal
-                    ? "Una orden completada o cancelada ya no puede cambiar de estado."
-                    : null;
-                cmbCambiarEstado.SelectedItem = cmbCambiarEstado.Items
-                    .OfType<OpcionFiltro>()
-                    .FirstOrDefault(o => o.id == fila.EstadoId);
+                if (fila.EsFinal)
+                    cmbCambiarEstado.ToolTip = "Una orden completada o cancelada ya no puede cambiar de estado.";
+                else
+                    cmbCambiarEstado.ToolTip = "La orden avanza paso a paso: Pendiente → En proceso → Completada (con el control de calidad).";
 
                 btnCancelarOrden.IsEnabled = !fila.EsFinal;
                 actualizarBotonAplicar();
@@ -817,6 +819,28 @@ namespace Codelex.Ordenes
             }
 
             /// <summary>
+            /// Llena la lista de cambio de estado con el estado actual y solo los estados que siguen.
+            /// </summary>
+            /// <param name="fila">Orden seleccionada.</param>
+            private void llenarEstadosPermitidos(FilaOrden fila)
+            {
+                List<string> permitidos = gestionBD.estadosSiguientes(fila.Estado);
+
+                cmbCambiarEstado.Items.Clear();
+                foreach (OpcionFiltro estado in estadosOrden)
+                {
+                    if (estado.id == fila.EstadoId || permitidos.Contains(estado.texto))
+                        cmbCambiarEstado.Items.Add(estado);
+                }
+
+                foreach (OpcionFiltro item in cmbCambiarEstado.Items)
+                {
+                    if (item.id == fila.EstadoId)
+                        cmbCambiarEstado.SelectedItem = item;
+                }
+            }
+
+            /// <summary>
             /// Actualiza boton aplicar.
             /// </summary>
             private void actualizarBotonAplicar()
@@ -881,7 +905,7 @@ namespace Codelex.Ordenes
                     return;
 
                 int canceladaId = 0;
-                foreach (OpcionFiltro item in cmbCambiarEstado.Items)
+                foreach (OpcionFiltro item in estadosOrden)
                 {
                     if (item.texto == "Cancelada")
                         canceladaId = item.id;

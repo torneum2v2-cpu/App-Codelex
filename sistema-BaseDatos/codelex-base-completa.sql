@@ -1174,6 +1174,14 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_ORDENES_cotizacion' AN
 	CREATE UNIQUE INDEX UX_ORDENES_cotizacion ON ordenes(cotizacion_id) WHERE cotizacion_id IS NOT NULL;
 GO
 
+-- La conformidad se evalua al completar la orden: las que no estan completadas quedan "Sin evaluar".
+UPDATE o
+SET o.conformidad_cliente = NULL
+FROM ordenes o
+INNER JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
+WHERE eo.nombre_estado_orden <> 'Completada' AND o.conformidad_cliente IS NOT NULL;
+GO
+
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ORDENES_vehiculo' AND object_id = OBJECT_ID('ordenes'))
 	CREATE INDEX IX_ORDENES_vehiculo ON ordenes(vehiculo_id);
 GO
@@ -2614,7 +2622,9 @@ BEGIN
 		   l.direccion,
 		   l.tipo_locacion,
 		   l.identificacion_cliente,
-		   ISNULL(c.nombre_empresa, l.identificacion_cliente) AS cliente,
+		   COALESCE(NULLIF(c.nombre_empresa, ''),
+					NULLIF(LTRIM(RTRIM(ISNULL(c.nombre_cliente, '') + ' ' + ISNULL(c.apellido_cliente, ''))), ''),
+					l.identificacion_cliente) AS cliente,
 		   l.estado_locacion,
 		   CASE WHEN l.estado_locacion = 1 THEN 'Activa' ELSE 'Inactiva' END AS estado
 	FROM locaciones l
@@ -3018,7 +3028,9 @@ BEGIN
 	SET NOCOUNT ON;
 
 	SELECT o.orden_id,
-		   ISNULL(c.nombre_empresa, o.identificacion_cliente) AS cliente,
+		   COALESCE(NULLIF(c.nombre_empresa, ''),
+					NULLIF(LTRIM(RTRIM(ISNULL(c.nombre_cliente, '') + ' ' + ISNULL(c.apellido_cliente, ''))), ''),
+					o.identificacion_cliente) AS cliente,
 		   s.nombre_servicio,
 		   CONVERT(VARCHAR(10), o.fecha_servicio, 103) AS fecha_servicio,
 		   oe.turno, oe.piso_area
@@ -3855,6 +3867,9 @@ BEGIN
 	SET @identificacion_cliente = LTRIM(RTRIM(ISNULL(@identificacion_cliente, '')));
 	SET @cotizacion_id = LTRIM(RTRIM(ISNULL(@cotizacion_id, '')));
 
+	-- Toda orden nueva nace en Pendiente; despues avanza paso a paso en la gestion de ordenes.
+	SET @estado_orden_id = (SELECT estado_orden_id FROM estados_orden WHERE nombre_estado_orden = 'Pendiente');
+
 	DECLARE @servicio_id INT, @cantidad_personas INT, @nombre VARCHAR(100);
 
 	IF @cotizacion_id = ''
@@ -4016,7 +4031,7 @@ BEGIN
 							 conformidad_cliente, identificacion_cliente, cotizacion_id)
 		VALUES (@orden_id, @locacion_id, @servicio_id, @supervisor_id, @vehiculo_id,
 				@fecha_solicitud, @fecha_servicio, @estado_orden_id, @observacion,
-				0, @identificacion_cliente, @cotizacion_id);
+				NULL, @identificacion_cliente, @cotizacion_id);
 
 		INSERT INTO orden_actividades (orden_id, actividad_id, estado, duracion_min)
 		SELECT DISTINCT @orden_id, actividad_id, 0, NULL
@@ -4205,7 +4220,9 @@ BEGIN
 
 	SELECT o.orden_id,
 		   o.identificacion_cliente,
-		   ISNULL(c.nombre_empresa, o.identificacion_cliente) AS cliente,
+		   COALESCE(NULLIF(c.nombre_empresa, ''),
+					NULLIF(LTRIM(RTRIM(ISNULL(c.nombre_cliente, '') + ' ' + ISNULL(c.apellido_cliente, ''))), ''),
+					o.identificacion_cliente) AS cliente,
 		   s.nombre_servicio,
 		   l.nombre_locacion,
 		   v.placa,
@@ -4247,7 +4264,9 @@ BEGIN
 
 	SELECT o.orden_id,
 		   o.identificacion_cliente,
-		   ISNULL(c.nombre_empresa, o.identificacion_cliente) AS cliente,
+		   COALESCE(NULLIF(c.nombre_empresa, ''),
+					NULLIF(LTRIM(RTRIM(ISNULL(c.nombre_cliente, '') + ' ' + ISNULL(c.apellido_cliente, ''))), ''),
+					o.identificacion_cliente) AS cliente,
 		   o.locacion_id,
 		   l.nombre_locacion,
 		   o.servicio_id,
@@ -4511,6 +4530,13 @@ BEGIN
 	IF @nuevo = 'Pendiente' AND ISNULL(@actual, '') = 'En proceso'
 	BEGIN
 		SET @mensaje = 'Una orden en proceso no puede volver a pendiente.';
+		RETURN;
+	END
+
+	-- La orden avanza paso a paso: Pendiente -> En proceso -> Completada
+	IF @nuevo = 'Completada' AND ISNULL(@actual, '') <> 'En proceso'
+	BEGIN
+		SET @mensaje = 'Primero pase la orden a En proceso.';
 		RETURN;
 	END
 
@@ -5986,7 +6012,9 @@ BEGIN
 	SELECT f.factura_id,
 		   f.orden_id,
 		   o.identificacion_cliente,
-		   ISNULL(c.nombre_empresa, o.identificacion_cliente) AS cliente,
+		   COALESCE(NULLIF(c.nombre_empresa, ''),
+					NULLIF(LTRIM(RTRIM(ISNULL(c.nombre_cliente, '') + ' ' + ISNULL(c.apellido_cliente, ''))), ''),
+					o.identificacion_cliente) AS cliente,
 		   f.fecha_factura,
 		   f.tipo_pago,
 		   f.estado_pago,
@@ -6638,7 +6666,9 @@ BEGIN
 	SELECT cc.cuenta_id,
 		   cc.factura_id,
 		   f.orden_id,
-		   ISNULL(c.nombre_empresa, o.identificacion_cliente) AS cliente,
+		   COALESCE(NULLIF(c.nombre_empresa, ''),
+					NULLIF(LTRIM(RTRIM(ISNULL(c.nombre_cliente, '') + ' ' + ISNULL(c.apellido_cliente, ''))), ''),
+					o.identificacion_cliente) AS cliente,
 		   cc.monto_total,
 		   ISNULL(cc.prima, 0) AS prima,
 		   cc.numero_cuotas,
@@ -6701,7 +6731,9 @@ BEGIN
 	SET @cliente = LTRIM(RTRIM(ISNULL(@cliente, '')));
 
 	SELECT o.orden_id,
-		   ISNULL(c.nombre_empresa, o.identificacion_cliente) AS cliente,
+		   COALESCE(NULLIF(c.nombre_empresa, ''),
+					NULLIF(LTRIM(RTRIM(ISNULL(c.nombre_cliente, '') + ' ' + ISNULL(c.apellido_cliente, ''))), ''),
+					o.identificacion_cliente) AS cliente,
 		   ISNULL(s.nombre_servicio, 'Sin servicio') AS nombre_servicio,
 		   LTRIM(ISNULL(sup.nombre_empleado, '') + ' ' + ISNULL(sup.apellido_empleado, '')) AS supervisor,
 		   COALESCE(o.fecha_servicio, o.fecha_solicitud) AS fecha,

@@ -760,6 +760,14 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_ORDENES_cotizacion' AN
 	CREATE UNIQUE INDEX UX_ORDENES_cotizacion ON ordenes(cotizacion_id) WHERE cotizacion_id IS NOT NULL;
 GO
 
+-- La conformidad se evalua al completar la orden: las que no estan completadas quedan "Sin evaluar".
+UPDATE o
+SET o.conformidad_cliente = NULL
+FROM ordenes o
+INNER JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
+WHERE eo.nombre_estado_orden <> 'Completada' AND o.conformidad_cliente IS NOT NULL;
+GO
+
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_ORDENES_vehiculo' AND object_id = OBJECT_ID('ordenes'))
 	CREATE INDEX IX_ORDENES_vehiculo ON ordenes(vehiculo_id);
 GO

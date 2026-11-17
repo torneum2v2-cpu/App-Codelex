@@ -1842,6 +1842,29 @@ WHERE kc.parent_object_id = OBJECT_ID('facturas') AND kc.type = 'UQ' AND c.name 
 EXEC sp_executesql @sql;
 GO
 
+-- Procedimientos que ya no se usan (se borran si la base es de una version anterior)
+DROP PROCEDURE IF EXISTS sp_BuscarUsuarioRecuperacion;
+DROP PROCEDURE IF EXISTS sp_EliminarPasskey;
+DROP PROCEDURE IF EXISTS sp_EliminarUsuario;
+DROP PROCEDURE IF EXISTS sp_ListarLocaciones;
+DROP PROCEDURE IF EXISTS sp_EliminarEmpleado;
+DROP PROCEDURE IF EXISTS sp_RegistrarAsistencia;
+DROP PROCEDURE IF EXISTS sp_BuscarOrdenes;
+DROP PROCEDURE IF EXISTS sp_ObtenerOrden;
+DROP PROCEDURE IF EXISTS sp_ListarEmpleadosPorOrden;
+DROP PROCEDURE IF EXISTS sp_ListarProductosPorOrden;
+DROP PROCEDURE IF EXISTS sp_ListarEquiposPorOrden;
+DROP PROCEDURE IF EXISTS sp_ActualizarOrden;
+DROP PROCEDURE IF EXISTS sp_DevolverEquipoOrden;
+DROP PROCEDURE IF EXISTS sp_BuscarFacturas;
+DROP PROCEDURE IF EXISTS sp_PagarFactura;
+DROP PROCEDURE IF EXISTS sp_ListarCuotasPorFactura;
+DROP PROCEDURE IF EXISTS sp_ListarCuentasPorCobrar;
+DROP PROCEDURE IF EXISTS sp_ListarBitacora;
+DROP PROCEDURE IF EXISTS sp_ReporteFacturacion;
+DROP PROCEDURE IF EXISTS sp_ReporteInventarioBajo;
+GO
+
 -- Login y recuperación de contraseña
 
 CREATE OR ALTER PROCEDURE sp_ObtenerUsuarioLogin
@@ -1864,21 +1887,6 @@ BEGIN
 	INNER JOIN empleados e ON e.empleado_id = u.empleado_id
 	LEFT JOIN cargos c ON c.cargo_id = e.cargo_id
 	LEFT JOIN roles r ON r.rol_id = u.rol_id
-	WHERE u.usuario = @usuario;
-END
-GO
-
-CREATE OR ALTER PROCEDURE sp_BuscarUsuarioRecuperacion
-	@usuario VARCHAR(50)
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SELECT u.usuario_id,
-		   e.nombre_empleado,
-		   e.correo_empleado
-	FROM usuarios u
-	INNER JOIN empleados e ON e.empleado_id = u.empleado_id
 	WHERE u.usuario = @usuario;
 END
 GO
@@ -1991,33 +1999,6 @@ BEGIN
 
 	SET @resultado = 1;
 	SET @mensaje = 'Teléfono registrado correctamente.';
-END
-GO
-
-CREATE OR ALTER PROCEDURE sp_EliminarPasskey
-	@usuario VARCHAR(50),
-	@resultado INT OUTPUT,
-	@mensaje VARCHAR(100) OUTPUT
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SET @resultado = 0;
-	SET @mensaje = '';
-
-	IF NOT EXISTS (SELECT 1 FROM usuarios WHERE usuario = @usuario)
-	BEGIN
-		SET @mensaje = 'El usuario no existe.';
-		RETURN;
-	END
-
-	UPDATE usuarios
-	SET passkey_id = NULL,
-		passkey_clave = NULL
-	WHERE usuario = @usuario;
-
-	SET @resultado = 1;
-	SET @mensaje = 'Teléfono eliminado. Al entrar deberá registrar uno nuevo.';
 END
 GO
 
@@ -2264,43 +2245,6 @@ BEGIN
 	SET @mensaje = CASE WHEN @estado_usuario = 1
 						THEN 'Usuario activado correctamente.'
 						ELSE 'Usuario desactivado correctamente.' END;
-END
-GO
-
-CREATE OR ALTER PROCEDURE sp_EliminarUsuario
-	@usuario_id INT,
-	@resultado INT OUTPUT,
-	@mensaje VARCHAR(100) OUTPUT
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SET @resultado = 0;
-	SET @mensaje = '';
-
-	IF NOT EXISTS (SELECT 1 FROM usuarios WHERE usuario_id = @usuario_id)
-	BEGIN
-		SET @mensaje = 'El usuario no existe.';
-		RETURN;
-	END
-
-	IF EXISTS (SELECT 1 FROM bitacoras WHERE usuario_id = @usuario_id)
-	BEGIN
-		SET @mensaje = 'No se puede eliminar: tiene registros en la bitácora. Desactívelo en su lugar.';
-		RETURN;
-	END
-
-	BEGIN TRY
-		DELETE FROM usuarios
-		WHERE usuario_id = @usuario_id;
-
-		SET @resultado = 1;
-		SET @mensaje = 'Usuario eliminado correctamente.';
-	END TRY
-	BEGIN CATCH
-		SET @resultado = 0;
-		SET @mensaje = 'No se puede eliminar: tiene registros asociados. Desactívelo en su lugar.';
-	END CATCH
 END
 GO
 
@@ -2591,18 +2535,6 @@ BEGIN
 	FROM locaciones
 	WHERE identificacion_cliente = @identificacion_cliente
 	  AND estado_locacion = 1
-	ORDER BY nombre_locacion;
-END
-GO
-
-CREATE OR ALTER PROCEDURE sp_ListarLocaciones
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SELECT locacion_id, nombre_locacion, direccion, tipo_locacion, identificacion_cliente
-	FROM locaciones
-	WHERE estado_locacion = 1
 	ORDER BY nombre_locacion;
 END
 GO
@@ -3041,136 +2973,6 @@ BEGIN
 	WHERE oe.empleado_id = @empleado_id
 	  AND o.fecha_servicio BETWEEN @desde AND @hasta
 	ORDER BY o.fecha_servicio, o.orden_id;
-END
-GO
-
-CREATE OR ALTER PROCEDURE sp_EliminarEmpleado
-	@empleado_id INT,
-	@resultado INT OUTPUT,
-	@mensaje VARCHAR(100) OUTPUT
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SET @resultado = 0;
-	SET @mensaje = '';
-
-	IF NOT EXISTS (SELECT 1 FROM empleados WHERE empleado_id = @empleado_id)
-	BEGIN
-		SET @mensaje = 'El empleado no existe.';
-		RETURN;
-	END
-
-	IF EXISTS (SELECT 1 FROM orden_empleados WHERE empleado_id = @empleado_id)
-	BEGIN
-		SET @mensaje = 'No se puede eliminar: esta asignado a ordenes. Desactivelo.';
-		RETURN;
-	END
-
-	IF EXISTS (SELECT 1 FROM ordenes WHERE supervisor_id = @empleado_id)
-	BEGIN
-		SET @mensaje = 'No se puede eliminar: es supervisor de ordenes. Desactivelo.';
-		RETURN;
-	END
-
-	IF EXISTS (SELECT 1 FROM asistencias WHERE empleado_id = @empleado_id)
-	BEGIN
-		SET @mensaje = 'No se puede eliminar: tiene asistencias registradas. Desactivelo.';
-		RETURN;
-	END
-
-	IF EXISTS (SELECT 1 FROM compras WHERE firma_empleado_id = @empleado_id)
-	BEGIN
-		SET @mensaje = 'No se puede eliminar: firmo ingresos de inventario. Desactivelo.';
-		RETURN;
-	END
-
-	IF EXISTS (SELECT 1 FROM usuarios WHERE empleado_id = @empleado_id)
-	BEGIN
-		SET @mensaje = 'No se puede eliminar: tiene un usuario del sistema. Desactivelo.';
-		RETURN;
-	END
-
-	BEGIN TRY
-		DELETE FROM empleados WHERE empleado_id = @empleado_id;
-
-		SET @resultado = 1;
-		SET @mensaje = 'Empleado eliminado correctamente.';
-	END TRY
-	BEGIN CATCH
-		-- Cualquier otra tabla ligada al empleado: la llave foranea lo impide
-		SET @resultado = 0;
-		SET @mensaje = 'No se puede eliminar: tiene registros asociados. Desactivelo.';
-	END CATCH
-END
-GO
-
--- Asistencia
-
-CREATE OR ALTER PROCEDURE sp_RegistrarAsistencia
-	@identidad VARCHAR(30),
-	@tipo VARCHAR(10) OUTPUT,
-	@resultado INT OUTPUT,
-	@mensaje VARCHAR(100) OUTPUT
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SET @tipo = '';
-	SET @resultado = 0;
-	SET @mensaje = '';
-
-	SET @identidad = REPLACE(REPLACE(LTRIM(RTRIM(ISNULL(@identidad, ''))), '-', ''), ' ', '');
-
-	DECLARE @empleado_id INT, @activo BIT;
-
-	SELECT @empleado_id = empleado_id, @activo = estado_empleado
-	FROM empleados
-	WHERE identidad = @identidad;
-
-	IF @empleado_id IS NULL
-	BEGIN
-		SET @mensaje = 'La identidad no esta registrada.';
-		RETURN;
-	END
-
-	IF @activo = 0
-	BEGIN
-		SET @mensaje = 'El empleado esta inactivo.';
-		RETURN;
-	END
-
-	DECLARE @hoy DATE = CAST(GETDATE() AS DATE),
-			@ahora TIME(0) = CAST(GETDATE() AS TIME(0)),
-			@asistencia_id INT,
-			@salida TIME;
-
-	SELECT TOP 1 @asistencia_id = asistencia_id, @salida = hora_salida
-	FROM asistencias
-	WHERE empleado_id = @empleado_id AND fecha_asistencia = @hoy
-	ORDER BY asistencia_id DESC;
-
-	IF @asistencia_id IS NULL
-	BEGIN
-		INSERT INTO asistencias (empleado_id, fecha_asistencia, hora_entrada, hora_salida)
-		VALUES (@empleado_id, @hoy, @ahora, NULL);
-
-		SET @tipo = 'ENTRADA';
-		SET @resultado = 1;
-		SET @mensaje = 'Entrada registrada.';
-	END
-	ELSE IF @salida IS NULL
-	BEGIN
-		UPDATE asistencias SET hora_salida = @ahora WHERE asistencia_id = @asistencia_id;
-
-		SET @tipo = 'SALIDA';
-		SET @resultado = 1;
-		SET @mensaje = 'Salida registrada.';
-	END
-	ELSE
-	BEGIN
-		SET @mensaje = 'Ya registro entrada y salida hoy.';
-	END
 END
 GO
 
@@ -4207,93 +4009,6 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE sp_BuscarOrdenes
-	@texto VARCHAR(50) = NULL,
-	@estado_orden_id INT = NULL,
-	@desde DATE = NULL,
-	@hasta DATE = NULL
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
-
-	SELECT o.orden_id,
-		   o.identificacion_cliente,
-		   COALESCE(NULLIF(c.nombre_empresa, ''),
-					NULLIF(LTRIM(RTRIM(ISNULL(c.nombre_cliente, '') + ' ' + ISNULL(c.apellido_cliente, ''))), ''),
-					o.identificacion_cliente) AS cliente,
-		   s.nombre_servicio,
-		   l.nombre_locacion,
-		   v.placa,
-		   LTRIM(RTRIM(ISNULL(sup.nombre_empleado, '') + ' ' + ISNULL(sup.apellido_empleado, ''))) AS supervisor,
-		   o.fecha_solicitud,
-		   o.fecha_servicio,
-		   o.estado_orden_id,
-		   eo.nombre_estado_orden AS estado,
-		   o.observacion,
-		   o.conformidad_cliente,
-		   c.nombre_empresa,
-		   c.nombre_cliente,
-		   c.apellido_cliente,
-		   l.direccion,
-		   v.marca_vehiculo,
-		   v.modelo_vehiculo
-	FROM ordenes o
-	LEFT JOIN clientes c ON c.identificacion_cliente = o.identificacion_cliente
-	LEFT JOIN servicios s ON s.servicio_id = o.servicio_id
-	LEFT JOIN locaciones l ON l.locacion_id = o.locacion_id
-	LEFT JOIN vehiculos v ON v.vehiculo_id = o.vehiculo_id
-	LEFT JOIN empleados sup ON sup.empleado_id = o.supervisor_id
-	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
-	WHERE (@texto = '' OR o.orden_id LIKE '%' + @texto + '%'
-		   OR o.identificacion_cliente LIKE '%' + @texto + '%'
-		   OR c.nombre_empresa LIKE '%' + @texto + '%')
-	  AND (@estado_orden_id IS NULL OR o.estado_orden_id = @estado_orden_id)
-	  AND (@desde IS NULL OR o.fecha_servicio >= @desde)
-	  AND (@hasta IS NULL OR o.fecha_servicio <= @hasta)
-	ORDER BY o.fecha_servicio DESC, o.orden_id DESC;
-END
-GO
-
-CREATE OR ALTER PROCEDURE sp_ObtenerOrden
-	@orden_id VARCHAR(50)
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SELECT o.orden_id,
-		   o.identificacion_cliente,
-		   COALESCE(NULLIF(c.nombre_empresa, ''),
-					NULLIF(LTRIM(RTRIM(ISNULL(c.nombre_cliente, '') + ' ' + ISNULL(c.apellido_cliente, ''))), ''),
-					o.identificacion_cliente) AS cliente,
-		   o.locacion_id,
-		   l.nombre_locacion,
-		   o.servicio_id,
-		   s.nombre_servicio,
-		   o.supervisor_id,
-		   LTRIM(RTRIM(ISNULL(sup.nombre_empleado, '') + ' ' + ISNULL(sup.apellido_empleado, ''))) AS supervisor,
-		   o.vehiculo_id,
-		   v.placa,
-		   o.fecha_solicitud,
-		   o.fecha_servicio,
-		   o.estado_orden_id,
-		   eo.nombre_estado_orden AS estado,
-		   o.observacion,
-		   ISNULL(o.conformidad_cliente, 0) AS conformidad_cliente,
-		   (SELECT TOP 1 oe.turno FROM orden_empleados oe WHERE oe.orden_id = o.orden_id) AS turno,
-		   (SELECT TOP 1 oe.piso_area FROM orden_empleados oe WHERE oe.orden_id = o.orden_id) AS piso_area
-	FROM ordenes o
-	LEFT JOIN clientes c ON c.identificacion_cliente = o.identificacion_cliente
-	LEFT JOIN locaciones l ON l.locacion_id = o.locacion_id
-	LEFT JOIN servicios s ON s.servicio_id = o.servicio_id
-	LEFT JOIN empleados sup ON sup.empleado_id = o.supervisor_id
-	LEFT JOIN vehiculos v ON v.vehiculo_id = o.vehiculo_id
-	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
-	WHERE o.orden_id = @orden_id;
-END
-GO
-
 CREATE OR ALTER PROCEDURE sp_ListarActividadesPorOrden
 	@orden_id VARCHAR(50)
 AS
@@ -4313,174 +4028,6 @@ BEGIN
 	LEFT JOIN usuarios u ON u.usuario_id = oa.usuario_id
 	WHERE oa.orden_id = @orden_id
 	ORDER BY a.descripcion;
-END
-GO
-
-CREATE OR ALTER PROCEDURE sp_ListarEmpleadosPorOrden
-	@orden_id VARCHAR(50)
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SELECT e.empleado_id,
-		   LTRIM(RTRIM(ISNULL(e.nombre_empleado, '') + ' ' + ISNULL(e.apellido_empleado, ''))) AS nombre_completo,
-		   ca.nombre_cargo,
-		   oe.turno,
-		   oe.piso_area
-	FROM orden_empleados oe
-	INNER JOIN empleados e ON e.empleado_id = oe.empleado_id
-	LEFT JOIN cargos ca ON ca.cargo_id = e.cargo_id
-	WHERE oe.orden_id = @orden_id
-	ORDER BY e.nombre_empleado, e.apellido_empleado;
-END
-GO
-
-CREATE OR ALTER PROCEDURE sp_ListarProductosPorOrden
-	@orden_id VARCHAR(50)
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SELECT p.producto_id,
-		   p.nombre_producto,
-		   p.tipo_producto,
-		   op.cantidad
-	FROM orden_productos op
-	INNER JOIN productos p ON p.producto_id = op.producto_id
-	WHERE op.orden_id = @orden_id
-	ORDER BY p.nombre_producto;
-END
-GO
-
-CREATE OR ALTER PROCEDURE sp_ListarEquiposPorOrden
-	@orden_id VARCHAR(50)
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SELECT e.equipo_id,
-		   e.nombre_equipo,
-		   e.tipo_equipo,
-		   e.marca_equipo,
-		   e.modelo_equipo,
-		   oe.fecha_asignacion,
-		   ISNULL(oe.devuelto, 0) AS devuelto
-	FROM orden_equipos oe
-	INNER JOIN equipos e ON e.equipo_id = oe.equipo_id
-	WHERE oe.orden_id = @orden_id
-	ORDER BY e.nombre_equipo, e.equipo_id;
-END
-GO
-
-CREATE OR ALTER PROCEDURE sp_ActualizarOrden
-	@orden_id VARCHAR(50),
-	@locacion_id INT,
-	@servicio_id INT,
-	@supervisor_id INT,
-	@vehiculo_id INT,
-	@fecha_solicitud DATE,
-	@fecha_servicio DATE,
-	@observacion VARCHAR(200),
-	@turno VARCHAR(20),
-	@piso_area VARCHAR(20),
-	@resultado INT OUTPUT,
-	@mensaje VARCHAR(100) OUTPUT
-AS
-BEGIN
-	SET NOCOUNT ON;
-	SET XACT_ABORT ON;
-
-	SET @resultado = 0;
-	SET @mensaje = '';
-
-	DECLARE @cliente VARCHAR(30), @estado VARCHAR(25);
-
-	SELECT @cliente = o.identificacion_cliente, @estado = eo.nombre_estado_orden
-	FROM ordenes o
-	LEFT JOIN estados_orden eo ON eo.estado_orden_id = o.estado_orden_id
-	WHERE o.orden_id = @orden_id;
-
-	IF @cliente IS NULL
-	BEGIN
-		SET @mensaje = 'La orden no existe.';
-		RETURN;
-	END
-
-	IF ISNULL(@estado, '') <> 'Pendiente'
-	BEGIN
-		SET @mensaje = 'Solo se pueden editar ordenes pendientes.';
-		RETURN;
-	END
-
-	IF NOT EXISTS (SELECT 1 FROM locaciones WHERE locacion_id = @locacion_id AND identificacion_cliente = @cliente)
-	BEGIN
-		SET @mensaje = 'La locacion no pertenece al cliente.';
-		RETURN;
-	END
-
-	IF NOT EXISTS (SELECT 1 FROM servicios WHERE servicio_id = @servicio_id)
-	BEGIN
-		SET @mensaje = 'El servicio no existe.';
-		RETURN;
-	END
-
-	IF NOT EXISTS (SELECT 1 FROM empleados WHERE empleado_id = @supervisor_id AND estado_empleado = 1)
-	BEGIN
-		SET @mensaje = 'El supervisor no existe o esta inactivo.';
-		RETURN;
-	END
-
-	IF dbo.fn_EmpleadoEnProceso(@supervisor_id, @orden_id) = 1
-	BEGIN
-		SET @mensaje = 'El supervisor esta en una orden en proceso.';
-		RETURN;
-	END
-
-	IF NOT EXISTS (SELECT 1 FROM vehiculos WHERE vehiculo_id = @vehiculo_id AND estado_vehiculo = 1)
-	BEGIN
-		SET @mensaje = 'El vehiculo no existe o esta inactivo.';
-		RETURN;
-	END
-
-	IF @fecha_servicio < @fecha_solicitud
-	BEGIN
-		SET @mensaje = 'La fecha de limpieza no puede ser anterior a la solicitud.';
-		RETURN;
-	END
-
-	BEGIN TRY
-		BEGIN TRANSACTION;
-
-		UPDATE ordenes
-		SET locacion_id = @locacion_id,
-			servicio_id = @servicio_id,
-			supervisor_id = @supervisor_id,
-			vehiculo_id = @vehiculo_id,
-			fecha_solicitud = @fecha_solicitud,
-			fecha_servicio = @fecha_servicio,
-			observacion = LTRIM(RTRIM(ISNULL(@observacion, '')))
-		WHERE orden_id = @orden_id;
-
-		UPDATE orden_empleados
-		SET turno = LTRIM(RTRIM(ISNULL(@turno, ''))),
-			piso_area = LTRIM(RTRIM(ISNULL(@piso_area, '')))
-		WHERE orden_id = @orden_id;
-
-		UPDATE orden_equipos
-		SET fecha_asignacion = @fecha_servicio
-		WHERE orden_id = @orden_id AND ISNULL(devuelto, 0) = 0;
-
-		COMMIT TRANSACTION;
-
-		SET @resultado = 1;
-		SET @mensaje = 'La orden se actualizo correctamente.';
-	END TRY
-	BEGIN CATCH
-		IF @@TRANCOUNT > 0
-			ROLLBACK TRANSACTION;
-
-		SET @mensaje = LEFT(ERROR_MESSAGE(), 100);
-	END CATCH
 END
 GO
 
@@ -4750,38 +4297,6 @@ BEGIN
 
 	SET @resultado = 1;
 	SET @mensaje = 'La actividad se actualizo correctamente.';
-END
-GO
-
-CREATE OR ALTER PROCEDURE sp_DevolverEquipoOrden
-	@orden_id VARCHAR(50),
-	@equipo_id INT,
-	@resultado INT OUTPUT,
-	@mensaje VARCHAR(100) OUTPUT
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SET @resultado = 0;
-	SET @mensaje = '';
-
-	IF NOT EXISTS (SELECT 1 FROM orden_equipos WHERE orden_id = @orden_id AND equipo_id = @equipo_id)
-	BEGIN
-		SET @mensaje = 'El equipo no esta asignado a la orden.';
-		RETURN;
-	END
-
-	IF EXISTS (SELECT 1 FROM orden_equipos
-			   WHERE orden_id = @orden_id AND equipo_id = @equipo_id AND ISNULL(devuelto, 0) = 1)
-	BEGIN
-		SET @mensaje = 'El equipo ya fue devuelto.';
-		RETURN;
-	END
-
-	UPDATE orden_equipos SET devuelto = 1 WHERE orden_id = @orden_id AND equipo_id = @equipo_id;
-
-	SET @resultado = 1;
-	SET @mensaje = 'El equipo se devolvio correctamente.';
 END
 GO
 
@@ -5997,45 +5512,6 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE sp_BuscarFacturas
-	@texto VARCHAR(50) = NULL,
-	@estado_pago VARCHAR(50) = NULL,
-	@desde DATE = NULL,
-	@hasta DATE = NULL
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
-	SET @estado_pago = LTRIM(RTRIM(ISNULL(@estado_pago, '')));
-
-	SELECT f.factura_id,
-		   f.orden_id,
-		   o.identificacion_cliente,
-		   COALESCE(NULLIF(c.nombre_empresa, ''),
-					NULLIF(LTRIM(RTRIM(ISNULL(c.nombre_cliente, '') + ' ' + ISNULL(c.apellido_cliente, ''))), ''),
-					o.identificacion_cliente) AS cliente,
-		   f.fecha_factura,
-		   f.tipo_pago,
-		   f.estado_pago,
-		   f.fecha_pago,
-		   fp.nombre_forma_pago,
-		   f.precio_facturado
-	FROM facturas f
-	INNER JOIN ordenes o ON o.orden_id = f.orden_id
-	LEFT JOIN clientes c ON c.identificacion_cliente = o.identificacion_cliente
-	LEFT JOIN formas_pago fp ON fp.forma_pago_id = f.forma_pago_id
-	WHERE (@texto = '' OR CAST(f.factura_id AS VARCHAR(10)) = @texto
-		   OR f.orden_id LIKE '%' + @texto + '%'
-		   OR o.identificacion_cliente LIKE '%' + @texto + '%'
-		   OR c.nombre_empresa LIKE '%' + @texto + '%')
-	  AND (@estado_pago = '' OR f.estado_pago = @estado_pago)
-	  AND (@desde IS NULL OR f.fecha_factura >= @desde)
-	  AND (@hasta IS NULL OR f.fecha_factura <= @hasta)
-	ORDER BY f.fecha_factura DESC, f.factura_id DESC;
-END
-GO
-
 CREATE OR ALTER PROCEDURE sp_ObtenerFactura
 	@factura_id INT
 AS
@@ -6549,89 +6025,7 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE sp_PagarFactura
-	@factura_id INT,
-	@forma_pago_id INT,
-	@fecha_pago DATE = NULL,
-	@resultado INT OUTPUT,
-	@mensaje VARCHAR(100) OUTPUT
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SET @resultado = 0;
-	SET @mensaje = '';
-	SET @fecha_pago = ISNULL(@fecha_pago, CAST(GETDATE() AS DATE));
-
-	DECLARE @tipo VARCHAR(10), @estado VARCHAR(50);
-
-	SELECT @tipo = tipo_pago, @estado = estado_pago FROM facturas WHERE factura_id = @factura_id;
-
-	IF @tipo IS NULL
-	BEGIN
-		SET @mensaje = 'La factura no existe.';
-		RETURN;
-	END
-
-	IF @tipo = 'Credito'
-	BEGIN
-		SET @mensaje = 'Las facturas a credito se pagan por cuotas.';
-		RETURN;
-	END
-
-	IF @estado = 'Anulada'
-	BEGIN
-		SET @mensaje = 'La factura esta anulada.';
-		RETURN;
-	END
-
-	IF @estado = 'Pagada'
-	BEGIN
-		SET @mensaje = 'La factura ya esta pagada.';
-		RETURN;
-	END
-
-	IF NOT EXISTS (SELECT 1 FROM formas_pago WHERE forma_pago_id = @forma_pago_id)
-	BEGIN
-		SET @mensaje = 'La forma de pago no existe.';
-		RETURN;
-	END
-
-	UPDATE facturas
-	SET estado_pago = 'Pagada',
-		fecha_pago = @fecha_pago,
-		forma_pago_id = @forma_pago_id
-	WHERE factura_id = @factura_id;
-
-	SET @resultado = 1;
-	SET @mensaje = 'El pago se registro correctamente.';
-END
-GO
-
 -- Cuentas por cobrar y cuotas
-
-CREATE OR ALTER PROCEDURE sp_ListarCuotasPorFactura
-	@factura_id INT
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SELECT q.cuota_id,
-		   q.numero_cuota,
-		   q.fecha_vencimiento,
-		   q.monto_cuota,
-		   ISNULL(q.monto_pagado, 0) AS monto_pagado,
-		   q.monto_cuota - ISNULL(q.monto_pagado, 0) AS saldo,
-		   q.fecha_pago,
-		   fp.nombre_forma_pago,
-		   q.estado_cuota
-	FROM cuotas q
-	INNER JOIN cuentas_por_cobrar cc ON cc.cuenta_id = q.cuenta_id
-	LEFT JOIN formas_pago fp ON fp.forma_pago_id = q.forma_pago_id
-	WHERE cc.factura_id = @factura_id
-	ORDER BY q.numero_cuota;
-END
-GO
 
 CREATE OR ALTER PROCEDURE sp_ActualizarCuotasVencidas
 AS
@@ -6650,69 +6044,6 @@ BEGIN
 	WHERE estado_cuenta = 'Vigente'
 	  AND EXISTS (SELECT 1 FROM cuotas q WHERE q.cuenta_id = cuentas_por_cobrar.cuenta_id
 				  AND q.estado_cuota = 'Vencida');
-END
-GO
-
-CREATE OR ALTER PROCEDURE sp_ListarCuentasPorCobrar
-	@texto VARCHAR(50) = NULL,
-	@estado_cuenta VARCHAR(20) = NULL
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SET @texto = LTRIM(RTRIM(ISNULL(@texto, '')));
-	SET @estado_cuenta = LTRIM(RTRIM(ISNULL(@estado_cuenta, '')));
-
-	SELECT cc.cuenta_id,
-		   cc.factura_id,
-		   f.orden_id,
-		   COALESCE(NULLIF(c.nombre_empresa, ''),
-					NULLIF(LTRIM(RTRIM(ISNULL(c.nombre_cliente, '') + ' ' + ISNULL(c.apellido_cliente, ''))), ''),
-					o.identificacion_cliente) AS cliente,
-		   cc.monto_total,
-		   ISNULL(cc.prima, 0) AS prima,
-		   cc.numero_cuotas,
-		   cc.frecuencia,
-		   cc.estado_cuenta,
-		   ISNULL((SELECT SUM(q.monto_pagado) FROM cuotas q WHERE q.cuenta_id = cc.cuenta_id), 0) AS pagado_cuotas,
-		   (SELECT SUM(q.monto_cuota - ISNULL(q.monto_pagado, 0)) FROM cuotas q WHERE q.cuenta_id = cc.cuenta_id) AS saldo,
-		   (SELECT MIN(q.fecha_vencimiento) FROM cuotas q
-			WHERE q.cuenta_id = cc.cuenta_id AND q.estado_cuota <> 'Pagada') AS proximo_vencimiento
-	FROM cuentas_por_cobrar cc
-	INNER JOIN facturas f ON f.factura_id = cc.factura_id
-	INNER JOIN ordenes o ON o.orden_id = f.orden_id
-	LEFT JOIN clientes c ON c.identificacion_cliente = o.identificacion_cliente
-	WHERE f.estado_pago <> 'Anulada'
-	  AND (@texto = '' OR f.orden_id LIKE '%' + @texto + '%'
-		   OR o.identificacion_cliente LIKE '%' + @texto + '%'
-		   OR c.nombre_empresa LIKE '%' + @texto + '%')
-	  AND (@estado_cuenta = '' OR cc.estado_cuenta = @estado_cuenta)
-	ORDER BY cc.cuenta_id DESC;
-END
-GO
-
--- Bitácora
-
-CREATE OR ALTER PROCEDURE sp_ListarBitacora
-	@desde DATE = NULL,
-	@hasta DATE = NULL,
-	@usuario_id INT = NULL
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SELECT b.bitacora_id,
-		   b.fecha_bitacora,
-		   u.usuario,
-		   b.accion,
-		   b.tabla,
-		   b.equipo_sistema
-	FROM bitacoras b
-	LEFT JOIN usuarios u ON u.usuario_id = b.usuario_id
-	WHERE (@desde IS NULL OR b.fecha_bitacora >= @desde)
-	  AND (@hasta IS NULL OR b.fecha_bitacora < DATEADD(DAY, 1, @hasta))
-	  AND (@usuario_id IS NULL OR b.usuario_id = @usuario_id)
-	ORDER BY b.fecha_bitacora DESC, b.bitacora_id DESC;
 END
 GO
 
@@ -6817,37 +6148,6 @@ BEGIN
 	WHERE (@cargo_id IS NULL OR e.cargo_id = @cargo_id)
 	  AND (@estado IS NULL OR e.estado_empleado = @estado)
 	ORDER BY e.nombre_empleado, e.apellido_empleado;
-END
-GO
-
-CREATE OR ALTER PROCEDURE sp_ReporteFacturacion
-	@desde DATE,
-	@hasta DATE
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SELECT f.tipo_pago,
-		   f.estado_pago,
-		   COUNT(1) AS facturas,
-		   ISNULL(SUM(f.precio_facturado), 0) AS total
-	FROM facturas f
-	WHERE f.fecha_factura BETWEEN @desde AND @hasta
-	GROUP BY f.tipo_pago, f.estado_pago
-	ORDER BY f.tipo_pago, f.estado_pago;
-END
-GO
-
-CREATE OR ALTER PROCEDURE sp_ReporteInventarioBajo
-	@minimo INT = 5
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	SELECT producto_id, nombre_producto, tipo_producto, ISNULL(stock, 0) AS stock
-	FROM productos
-	WHERE ISNULL(stock, 0) <= @minimo
-	ORDER BY stock, nombre_producto;
 END
 GO
 

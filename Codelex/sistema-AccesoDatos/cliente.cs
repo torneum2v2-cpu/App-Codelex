@@ -4,7 +4,7 @@ using System.Data;
 
 namespace Codelex.AccesoDatos
 {
-    class Cliente
+    class Cliente : BaseDatos
     {
         public const string TIPO_RTN = "RTN";
         public const string TIPO_IDENTIDAD = "Identidad";
@@ -73,7 +73,7 @@ namespace Codelex.AccesoDatos
                 return "El RTN / identidad es obligatorio.";
             if (tipo != TIPO_RTN && tipo != TIPO_IDENTIDAD)
                 return "Seleccione si es RTN o identidad.";
-            if (!soloNumeros(numero))
+            if (!Validacion.soloNumeros(numero))
                 return "El " + tipo + " solo puede tener números, sin guiones ni espacios.";
             if (numero.Trim('0') == "")
                 return "El " + tipo + " no puede ser todo ceros.";
@@ -204,22 +204,6 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
-        /// Impide escribir caracteres que no sean números.
-        /// </summary>
-        /// <param name="texto">Texto a usar.</param>
-        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
-        public bool soloNumeros(string texto)
-        {
-            foreach (char c in texto)
-            {
-                if (!char.IsDigit(c))
-                    return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Valida cliente.
         /// </summary>
         /// <param name="tipo">Tipo de dato.</param>
@@ -297,18 +281,6 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
-        /// Crea un comando listo para llamar a un procedimiento almacenado.
-        /// </summary>
-        /// <param name="nombre">Nombre.</param>
-        /// <returns>Comando listo para ejecutar.</returns>
-        private SqlCommand procedimiento(string nombre)
-        {
-            SqlCommand comando = new SqlCommand(nombre);
-            comando.CommandType = CommandType.StoredProcedure;
-            return comando;
-        }
-
-        /// <summary>
         /// Consulta por cliente.
         /// </summary>
         /// <param name="nombreProcedimiento">Nombre del procedimiento almacenado.</param>
@@ -321,49 +293,5 @@ namespace Codelex.AccesoDatos
             return consultar(comando);
         }
 
-        /// <summary>
-        /// Ejecuta un procedimiento almacenado y devuelve el resultado en una tabla.
-        /// </summary>
-        /// <param name="comando">Comando de SQL Server.</param>
-        /// <returns>Tabla con los datos consultados.</returns>
-        private DataTable consultar(SqlCommand comando)
-        {
-            DataTable tabla = new DataTable();
-
-            using (SqlConnection conexion = Conexion.obtenerConexion())
-            {
-                comando.Connection = conexion;
-                SqlDataAdapter adaptador = new SqlDataAdapter(comando);
-                adaptador.Fill(tabla);
-            }
-
-            return tabla;
-        }
-
-        /// <summary>
-        /// Ejecuta un procedimiento almacenado que responde con un resultado y un mensaje.
-        /// </summary>
-        /// <param name="comando">Comando de SQL Server.</param>
-        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
-        /// <returns>true si el procedimiento respondió resultado 1; false en caso contrario.</returns>
-        private bool ejecutar(SqlCommand comando, out string mensaje)
-        {
-            SqlParameter resultado = new SqlParameter("@resultado", SqlDbType.Int);
-            resultado.Direction = ParameterDirection.Output;
-            comando.Parameters.Add(resultado);
-
-            SqlParameter textoMensaje = new SqlParameter("@mensaje", SqlDbType.VarChar, 100);
-            textoMensaje.Direction = ParameterDirection.Output;
-            comando.Parameters.Add(textoMensaje);
-
-            using (SqlConnection conexion = Conexion.obtenerConexion())
-            {
-                comando.Connection = conexion;
-                comando.ExecuteNonQuery();
-            }
-
-            mensaje = "" + textoMensaje.Value;
-            return Convert.ToInt32(resultado.Value) == 1;
-        }
     }
 }

@@ -8,7 +8,7 @@ using System.Windows.Threading;
 
 namespace Codelex
 {
-    public partial class IngresarCodigo : Window
+    public partial class IngresarCodigo : VentanaCodelex
     {
         private const int LONGITUD_CODIGO = 5;
         private const int SEGUNDOS_REENVIO = 30;
@@ -81,36 +81,6 @@ namespace Codelex
         {
             txtError2.Text = message;
             txtError2.Visibility = Visibility.Visible;
-        }
-
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void cerrarClic(object sender, RoutedEventArgs e)
-        {
-            Close();
         }
 
         /// <summary>

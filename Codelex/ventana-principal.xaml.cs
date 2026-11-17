@@ -4,7 +4,7 @@ using System.Windows.Input;
 
 namespace Codelex
 {
-    public partial class VentanaPrincipal : Window
+    public partial class VentanaPrincipal : VentanaCodelex
     {
         private const string TELEFONO_SOPORTE = "32449022";
 
@@ -15,37 +15,6 @@ namespace Codelex
         {
             InitializeComponent();
             Loaded += (_, _) => txtUser.Focus();
-        }
-
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void cerrarClic(object sender, RoutedEventArgs e)
-        {
-            Close();
         }
 
         /// <summary>

@@ -230,22 +230,6 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
-        /// Impide escribir caracteres que no sean números.
-        /// </summary>
-        /// <param name="texto">Texto a usar.</param>
-        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
-        public bool soloNumeros(string texto)
-        {
-            foreach (char c in texto)
-            {
-                if (!char.IsDigit(c))
-                    return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Valida empleado.
         /// </summary>
         /// <param name="cargoId">Identificador del cargo.</param>

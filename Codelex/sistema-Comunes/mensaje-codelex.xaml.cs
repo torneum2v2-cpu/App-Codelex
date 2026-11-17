@@ -4,7 +4,7 @@ using System.Windows.Media;
 
 namespace Codelex
 {
-    public partial class MensajeCodelex : Window
+    public partial class MensajeCodelex : VentanaCodelex
     {
         private bool confirmado = false;
 
@@ -87,17 +87,6 @@ namespace Codelex
 
             ventana.ShowDialog();
             return ventana.confirmado;
-        }
-
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
         }
 
         /// <summary>

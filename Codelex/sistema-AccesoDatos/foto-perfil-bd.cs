@@ -37,11 +37,7 @@ namespace Codelex.AccesoDatos
             SqlParameter parametro = comando.Parameters.Add("@foto", SqlDbType.VarBinary, -1);
             parametro.Value = (object?)foto ?? DBNull.Value;
 
-            using (SqlConnection conexion = Conexion.obtenerConexion())
-            {
-                comando.Connection = conexion;
-                comando.ExecuteNonQuery();
-            }
+            ejecutarSinRespuesta(comando);
         }
     }
 }

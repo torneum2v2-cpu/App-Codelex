@@ -1,6 +1,7 @@
-﻿<Window x:Class="Codelex.AgregarInventario"
+﻿<comunes:VentanaCodelex x:Class="Codelex.AgregarInventario"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:comunes="clr-namespace:Codelex"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Codelex"
@@ -518,7 +519,7 @@
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
                                         <TextBlock Text="Precio unitario (L)" Style="{StaticResource Etiqueta}"/>
-                                        <TextBox x:Name="txtPrecio" MaxLength="12" PreviewTextInput="soloPrecio"/>
+                                        <TextBox x:Name="txtPrecio" MaxLength="12" PreviewTextInput="soloDecimales"/>
                                     </StackPanel>
                                     <Button x:Name="btnAgregarLista" Grid.Column="4" Content="Agregar a la lista  ›"
                                             Style="{StaticResource PrimaryButton}" VerticalAlignment="Bottom"
@@ -595,4 +596,4 @@
             </Grid>
         </Border>
     </Grid>
-</Window>
+</comunes:VentanaCodelex>

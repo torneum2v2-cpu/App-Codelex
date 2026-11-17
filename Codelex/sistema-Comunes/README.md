@@ -8,6 +8,8 @@ Ventanas y utilidades que usan todos los módulos: cuadro de mensajes y de confi
 
 | Archivo | Para qué sirve |
 |---|---|
+| `ventana-codelex.cs` | Ventana base: todas las pantallas heredan de ella y reciben ya hechos arrastrar, minimizar, cerrar, mensajes (`aviso`, `mostrarError`, `mostrarMensaje`), teclas permitidas (`soloNumeros`, `soloDecimales`) y ayudas como `idSeleccionado`. |
+| `item-lista.cs` | Elemento de las listas desplegables (identificador + texto). |
 | `mensaje-codelex.xaml(.cs)` | Cuadro de mensaje de éxito o error, y de pregunta Sí/No (`preguntar`), con el estilo de la aplicación. |
 | `formato-telefono.cs` | Muestra el teléfono guardado (8 dígitos) como `+504 XXXX-XXXX` en las tablas. |
 | `impresion-documento.cs` | Arma facturas y cotizaciones para imprimir; con "Microsoft Print to PDF" se guardan como PDF. |

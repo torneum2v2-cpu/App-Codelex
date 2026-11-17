@@ -11,7 +11,7 @@ using System.Windows.Shapes;
 
 namespace Codelex
 {
-    public partial class Reportes : Window
+    public partial class Reportes : VentanaCodelex
     {
         private const double ANCHO_MAXIMO_BARRA = 330;
         private const int MAXIMO_BARRAS = 6;
@@ -43,6 +43,7 @@ namespace Codelex
         public Reportes()
         {
             InitializeComponent();
+            tituloMensajes = "Reportes";
             Height = Math.Min(Height, SystemParameters.WorkArea.Height - 10);
         }
 
@@ -858,45 +859,6 @@ namespace Codelex
 
         // ---------- Ventana ----------
 
-        /// <summary>
-        /// Muestra un mensaje con el error ocurrido.
-        /// </summary>
-        /// <param name="ex">Excepción que se produjo.</param>
-        private void mostrarError(Exception ex)
-        {
-            MensajeCodelex.mostrar(this, "Reportes", ex.Message, false);
-        }
-
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void cerrarClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
     }
 
     public record OpcionFiltro(int Id, string Nombre);

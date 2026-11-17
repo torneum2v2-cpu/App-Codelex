@@ -12,7 +12,7 @@ namespace Codelex.FacturasCotizaciones
     /// <summary>
     /// Lógica de interacción para cotizacion.xaml
     /// </summary>
-    public partial class Cotizacion : Window
+    public partial class Cotizacion : VentanaCodelex
     {
         Cliente clienteBD = new Cliente();
         Facturacion facturaBD = new Facturacion();
@@ -30,6 +30,7 @@ namespace Codelex.FacturasCotizaciones
         public Cotizacion()
         {
             InitializeComponent();
+            tituloMensajes = "Cotizaciones";
 
             cmbTipoLocacion.IsEnabled = false;
 
@@ -77,7 +78,7 @@ namespace Codelex.FacturasCotizaciones
         {
             cmbServicio.Items.Clear();
 
-            DataTable servicios = facturaBD.listarServicios();
+            DataTable servicios = facturaBD.listarServiciosConActividades();
             foreach (DataRow fila in servicios.Rows)
             {
                 cmbServicio.Items.Add(new ItemLista(Convert.ToInt32(fila["servicio_id"]), "" + fila["nombre_servicio"], ""));
@@ -101,21 +102,6 @@ namespace Codelex.FacturasCotizaciones
 
             if (locacionesCliente.Rows.Count == 0)
                 aviso("Este cliente no tiene locaciones registradas. Escriba la dirección del servicio.");
-        }
-
-        /// <summary>
-        /// Obtiene el identificador del elemento elegido en la lista desplegable.
-        /// </summary>
-        /// <param name="combo">Lista desplegable.</param>
-        /// <returns>Identificador elegido, o 0 si no hay selección.</returns>
-        private int idSeleccionado(ComboBox combo)
-        {
-            ItemLista item = combo.SelectedItem as ItemLista;
-
-            if (item == null)
-                return 0;
-
-            return item.id;
         }
 
         // ---------- Cotización nueva ----------
@@ -442,16 +428,6 @@ namespace Codelex.FacturasCotizaciones
             mostrarTotales();
         }
 
-        /// <summary>
-        /// Impide escribir caracteres que no sean números o punto decimal.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void soloDecimales(object sender, TextCompositionEventArgs e)
-        {
-            e.Handled = !facturaBD.caracteresDePrecio(e.Text);
-        }
-
         // ---------- Botones ----------
 
         /// <summary>
@@ -538,53 +514,5 @@ namespace Codelex.FacturasCotizaciones
 
         // ---------- Ventana ----------
 
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void salirClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        /// <summary>
-        /// Muestra un mensaje de aviso al usuario.
-        /// </summary>
-        /// <param name="mensaje">Mensaje con el resultado.</param>
-        private void aviso(string mensaje)
-        {
-            MensajeCodelex.mostrar(this, "Cotizaciones", mensaje, false);
-        }
-
-        /// <summary>
-        /// Muestra un mensaje con el error ocurrido.
-        /// </summary>
-        /// <param name="ex">Excepción que se produjo.</param>
-        private void mostrarError(Exception ex)
-        {
-            MensajeCodelex.mostrar(this, "Cotizaciones", ex.Message, false);
-        }
     }
 }

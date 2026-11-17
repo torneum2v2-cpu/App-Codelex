@@ -5,7 +5,7 @@ using System.Windows.Input;
 
 namespace Codelex
 {
-    public partial class ClienteDetalle : Window
+    public partial class ClienteDetalle : VentanaCodelex
     {
         Cliente clienteBD = new Cliente();
         string rtn;
@@ -19,6 +19,7 @@ namespace Codelex
         public ClienteDetalle(string rtn)
         {
             InitializeComponent();
+            tituloMensajes = "Detalle del cliente";
             this.rtn = rtn;
         }
 
@@ -204,15 +205,6 @@ namespace Codelex
         }
 
         /// <summary>
-        /// Muestra un mensaje con el error ocurrido.
-        /// </summary>
-        /// <param name="ex">Excepción que se produjo.</param>
-        private void mostrarError(Exception ex)
-        {
-            MensajeCodelex.mostrar(this, "Detalle del cliente", ex.Message, false);
-        }
-
-        /// <summary>
         /// Atiende el clic de editar.
         /// </summary>
         /// <param name="sender">Control que originó el evento.</param>
@@ -223,25 +215,5 @@ namespace Codelex
             Close();
         }
 
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void cerrarClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
     }
 }

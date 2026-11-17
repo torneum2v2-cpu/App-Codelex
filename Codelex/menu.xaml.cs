@@ -9,7 +9,7 @@ using Codelex.Ordenes;
 
 namespace Codelex
 {
-    public partial class Menu : Window
+    public partial class Menu : VentanaCodelex
     {
         private const string ICONO_LOCACIONES = "M21,10 C21,17 12,23 12,23 C12,23 3,17 3,10 A9,9 0 0 1 21,10 Z M9,10 A3,3 0 1 0 15,10 A3,3 0 1 0 9,10";
         private const string ICONO_INGRESAR_ORDEN = "M14,2 H6 A2,2 0 0 0 4,4 V20 A2,2 0 0 0 6,22 H18 A2,2 0 0 0 20,20 V8 Z M14,2 V8 H20 M12,18 V12 M9,15 H15";
@@ -157,37 +157,6 @@ namespace Codelex
         }
 
         // ---------- Ventana ----------
-
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void cerrarClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
 
         // ---------- Perfil y foto ----------
 

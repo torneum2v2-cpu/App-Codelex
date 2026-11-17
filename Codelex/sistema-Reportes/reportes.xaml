@@ -1,6 +1,7 @@
-﻿<Window x:Class="Codelex.Reportes"
+﻿<comunes:VentanaCodelex x:Class="Codelex.Reportes"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:comunes="clr-namespace:Codelex"
         Title="Codelex - Reportes" Width="1280" Height="900"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
@@ -669,4 +670,4 @@
             </Grid>
         </Border>
     </Grid>
-</Window>
+</comunes:VentanaCodelex>

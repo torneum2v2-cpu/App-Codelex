@@ -1,5 +1,4 @@
 ﻿using Codelex.AccesoDatos;
-using global::Codelex.AccesoDatos;
 using global::Codelex.FacturasCotizaciones;
 using System.Data;
 using System.Globalization;
@@ -92,24 +91,24 @@ namespace Codelex.Ordenes
                 switch (Estado)
                 {
                     case "Pendiente":
-                        EstadoFondo = pincel("#FFF3D6");
-                        EstadoTexto = pincel("#9A6B00");
+                        EstadoFondo = VentanaCodelex.pincel("#FFF3D6");
+                        EstadoTexto = VentanaCodelex.pincel("#9A6B00");
                         break;
                     case "En proceso":
-                        EstadoFondo = pincel("#E3F0FA");
-                        EstadoTexto = pincel("#1F6FB2");
+                        EstadoFondo = VentanaCodelex.pincel("#E3F0FA");
+                        EstadoTexto = VentanaCodelex.pincel("#1F6FB2");
                         break;
                     case "Completada":
-                        EstadoFondo = pincel("#E3F7F4");
-                        EstadoTexto = pincel("#14837A");
+                        EstadoFondo = VentanaCodelex.pincel("#E3F7F4");
+                        EstadoTexto = VentanaCodelex.pincel("#14837A");
                         break;
                     case "Cancelada":
-                        EstadoFondo = pincel("#FBE6E6");
-                        EstadoTexto = pincel("#B03A3A");
+                        EstadoFondo = VentanaCodelex.pincel("#FBE6E6");
+                        EstadoTexto = VentanaCodelex.pincel("#B03A3A");
                         break;
                     default:
-                        EstadoFondo = pincel("#EEF2F2");
-                        EstadoTexto = pincel("#5B7C78");
+                        EstadoFondo = VentanaCodelex.pincel("#EEF2F2");
+                        EstadoTexto = VentanaCodelex.pincel("#5B7C78");
                         break;
                 }
             }
@@ -127,20 +126,9 @@ namespace Codelex.Ordenes
                 return null;
             }
 
-            /// <summary>
-            /// Crea un pincel a partir de un color en formato hexadecimal.
-            /// </summary>
-            /// <param name="color">Color en formato hexadecimal.</param>
-            /// <returns>Pincel con el color pedido.</returns>
-            private static Brush pincel(string color)
-            {
-                SolidColorBrush pincel = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
-                pincel.Freeze();
-                return pincel;
-            }
         }
 
-        public partial class GestionOrdenes : Window
+        public partial class GestionOrdenes : VentanaCodelex
         {
             GestionOrdenesBD gestionBD = new GestionOrdenesBD();
             Orden ordenBD = new Orden();
@@ -163,6 +151,7 @@ namespace Codelex.Ordenes
         public GestionOrdenes()
             {
                 InitializeComponent();
+                tituloMensajes = "Gestión de órdenes";
                 cmbCambiarEstado.SelectionChanged += cambiarEstadoSeleccionCambiada;
             }
 
@@ -1028,44 +1017,5 @@ namespace Codelex.Ordenes
 
             // ---------- Ventana ----------
 
-            /// <summary>
-            /// Permite mover la ventana arrastrando la barra superior con el mouse.
-            /// </summary>
-            /// <param name="sender">Control que originó el evento.</param>
-            /// <param name="e">Datos del evento.</param>
-            private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-            {
-                if (e.ButtonState == MouseButtonState.Pressed)
-                    DragMove();
-            }
-
-            /// <summary>
-            /// Minimiza la ventana.
-            /// </summary>
-            /// <param name="sender">Control que originó el evento.</param>
-            /// <param name="e">Datos del evento.</param>
-            private void minimizarClic(object sender, RoutedEventArgs e)
-            {
-                WindowState = WindowState.Minimized;
-            }
-
-            /// <summary>
-            /// Cierra la ventana.
-            /// </summary>
-            /// <param name="sender">Control que originó el evento.</param>
-            /// <param name="e">Datos del evento.</param>
-            private void salirClic(object sender, RoutedEventArgs e)
-            {
-                Close();
-            }
-
-            /// <summary>
-            /// Muestra un mensaje con el error ocurrido.
-            /// </summary>
-            /// <param name="ex">Excepción que se produjo.</param>
-            private void mostrarError(Exception ex)
-            {
-                MensajeCodelex.mostrar(this, "Gestión de órdenes", ex.Message, false);
-            }
         }
 }

@@ -43,15 +43,6 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
-        /// Lista servicios.
-        /// </summary>
-        /// <returns>Tabla con los datos consultados.</returns>
-        public DataTable listarServicios()
-        {
-            return consultar(procedimiento("sp_ListarServicios"));
-        }
-
-        /// <summary>
         /// Lista empleados.
         /// </summary>
         /// <returns>Tabla con los datos consultados.</returns>
@@ -323,20 +314,6 @@ namespace Codelex.AccesoDatos
             }
 
             return "";
-        }
-
-        /// <summary>
-        /// Agrega lista.
-        /// </summary>
-        /// <param name="comando">Comando de SQL Server.</param>
-        /// <param name="nombre">Nombre.</param>
-        /// <param name="tipo">Tipo de dato.</param>
-        /// <param name="tabla">Tabla de datos.</param>
-        private void agregarLista(SqlCommand comando, string nombre, string tipo, DataTable tabla)
-        {
-            SqlParameter parametro = comando.Parameters.AddWithValue(nombre, tabla);
-            parametro.SqlDbType = SqlDbType.Structured;
-            parametro.TypeName = tipo;
         }
 
         /// <summary>

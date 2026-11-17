@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Codelex.AccesoDatos
 {
-    class UsuarioBD
+    class UsuarioBD : BaseDatos
     {
 
 
@@ -126,20 +126,6 @@ namespace Codelex.AccesoDatos
             SqlCommand comando = procedimiento("sp_CambiarEstadoUsuario");
             comando.Parameters.AddWithValue("@usuario_id", usuarioId);
             comando.Parameters.AddWithValue("@estado_usuario", activo);
-
-            return ejecutar(comando, out mensaje);
-        }
-
-        /// <summary>
-        /// Elimina usuario.
-        /// </summary>
-        /// <param name="usuarioId">Identificador del usuario.</param>
-        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
-        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
-        public bool eliminarUsuario(int usuarioId, out string mensaje)
-        {
-            SqlCommand comando = procedimiento("sp_EliminarUsuario");
-            comando.Parameters.AddWithValue("@usuario_id", usuarioId);
 
             return ejecutar(comando, out mensaje);
         }
@@ -280,61 +266,5 @@ namespace Codelex.AccesoDatos
             return ejecutar(comando, out mensaje);
         }
 
-        /// <summary>
-        /// Crea un comando listo para llamar a un procedimiento almacenado.
-        /// </summary>
-        /// <param name="nombre">Nombre.</param>
-        /// <returns>Comando listo para ejecutar.</returns>
-        private SqlCommand procedimiento(string nombre)
-        {
-            SqlCommand comando = new SqlCommand(nombre);
-            comando.CommandType = CommandType.StoredProcedure;
-            return comando;
-        }
-
-        /// <summary>
-        /// Ejecuta un procedimiento almacenado y devuelve el resultado en una tabla.
-        /// </summary>
-        /// <param name="comando">Comando de SQL Server.</param>
-        /// <returns>Tabla con los datos consultados.</returns>
-        private DataTable consultar(SqlCommand comando)
-        {
-            DataTable tabla = new DataTable();
-
-            using (SqlConnection conexion = Conexion.obtenerConexion())
-            {
-                comando.Connection = conexion;
-                SqlDataAdapter adaptador = new SqlDataAdapter(comando);
-                adaptador.Fill(tabla);
-            }
-
-            return tabla;
-        }
-
-        /// <summary>
-        /// Ejecuta un procedimiento almacenado que responde con un resultado y un mensaje.
-        /// </summary>
-        /// <param name="comando">Comando de SQL Server.</param>
-        /// <param name="mensaje">(salida) Mensaje con el resultado.</param>
-        /// <returns>true si el procedimiento respondió resultado 1; false en caso contrario.</returns>
-        private bool ejecutar(SqlCommand comando, out string mensaje)
-        {
-            SqlParameter resultado = new SqlParameter("@resultado", SqlDbType.Int);
-            resultado.Direction = ParameterDirection.Output;
-            comando.Parameters.Add(resultado);
-
-            SqlParameter textoMensaje = new SqlParameter("@mensaje", SqlDbType.VarChar, 100);
-            textoMensaje.Direction = ParameterDirection.Output;
-            comando.Parameters.Add(textoMensaje);
-
-            using (SqlConnection conexion = Conexion.obtenerConexion())
-            {
-                comando.Connection = conexion;
-                comando.ExecuteNonQuery();
-            }
-
-            mensaje = "" + textoMensaje.Value;
-            return Convert.ToInt32(resultado.Value) == 1;
-        }
     }
 }

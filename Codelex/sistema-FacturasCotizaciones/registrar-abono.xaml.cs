@@ -10,7 +10,7 @@ namespace Codelex.FacturasCotizaciones
     /// Lógica de interacción para registrar-abono.xaml
     /// El abono cubre primero las cuotas más antiguas; aquí se ve cómo quedarían antes de confirmar.
     /// </summary>
-    public partial class RegistrarAbono : Window
+    public partial class RegistrarAbono : VentanaCodelex
     {
         Facturacion facturaBD = new Facturacion();
 
@@ -25,6 +25,7 @@ namespace Codelex.FacturasCotizaciones
         public RegistrarAbono(int facturaId, decimal saldo)
         {
             InitializeComponent();
+            tituloMensajes = "Abonos";
 
             this.facturaId = facturaId;
             this.saldo = saldo;
@@ -114,53 +115,15 @@ namespace Codelex.FacturasCotizaciones
         // ---------- Ventana ----------
 
         /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
         /// Cierra la ventana.
         /// </summary>
         /// <param name="sender">Control que originó el evento.</param>
         /// <param name="e">Datos del evento.</param>
-        private void salirClic(object sender, RoutedEventArgs e)
+        protected override void salirClic(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
             Close();
         }
 
-        /// <summary>
-        /// Muestra un mensaje de aviso al usuario.
-        /// </summary>
-        /// <param name="mensaje">Mensaje con el resultado.</param>
-        private void aviso(string mensaje)
-        {
-            MensajeCodelex.mostrar(this, "Abonos", mensaje, false);
-        }
-
-        /// <summary>
-        /// Muestra un mensaje con el error ocurrido.
-        /// </summary>
-        /// <param name="ex">Excepción que se produjo.</param>
-        private void mostrarError(Exception ex)
-        {
-            MensajeCodelex.mostrar(this, "Abonos", ex.Message, false);
-        }
     }
 }

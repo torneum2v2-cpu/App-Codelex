@@ -5,7 +5,7 @@ using System.Windows.Threading;
 
 namespace Codelex
 {
-    public partial class Cargando : Window
+    public partial class Cargando : VentanaCodelex
     {
         private const int TIEMPO_MINIMO = 300;
 

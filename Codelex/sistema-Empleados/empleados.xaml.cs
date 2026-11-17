@@ -6,7 +6,7 @@ using System.Windows.Input;
 
 namespace Codelex
 {
-    public partial class Empleados : Window
+    public partial class Empleados : VentanaCodelex
     {
         Empleado empleadoBD = new Empleado();
 
@@ -23,6 +23,7 @@ namespace Codelex
         public Empleados()
         {
             InitializeComponent();
+            tituloMensajes = "Empleados";
             Height = Math.Min(Height, SystemParameters.WorkArea.Height - 10);
         }
 
@@ -186,17 +187,6 @@ namespace Codelex
                 return 0;
 
             return Convert.ToInt32(cmbCargo.SelectedValue);
-        }
-
-        /// <summary>
-        /// Impide escribir caracteres que no sean números.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void soloNumeros(object sender, TextCompositionEventArgs e)
-        {
-            if (!empleadoBD.soloNumeros(e.Text))
-                e.Handled = true;
         }
 
         /// <summary>
@@ -454,54 +444,5 @@ namespace Codelex
                 buscar("");
         }
 
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void salirClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        /// <summary>
-        /// Muestra mensaje.
-        /// </summary>
-        /// <param name="correcto">Correcto.</param>
-        /// <param name="mensaje">Mensaje con el resultado.</param>
-        private void mostrarMensaje(bool correcto, string mensaje)
-        {
-            MensajeCodelex.mostrar(this, "Empleados", mensaje, correcto);
-        }
-
-        /// <summary>
-        /// Muestra un mensaje con el error ocurrido.
-        /// </summary>
-        /// <param name="ex">Excepción que se produjo.</param>
-        private void mostrarError(Exception ex)
-        {
-            MensajeCodelex.mostrar(this, "Empleados", ex.Message, false);
-        }
     }
 }

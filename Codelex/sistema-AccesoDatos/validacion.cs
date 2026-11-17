@@ -36,6 +36,38 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
+        /// Indica si el texto tiene solo dígitos (sirve para impedir otras teclas).
+        /// </summary>
+        /// <param name="texto">Texto a revisar.</param>
+        /// <returns>true si todos los caracteres son dígitos; false en caso contrario.</returns>
+        public static bool soloNumeros(string texto)
+        {
+            foreach (char c in texto)
+            {
+                if (!char.IsDigit(c))
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Indica si el texto solo tiene dígitos y separador decimal (sirve para impedir otras teclas).
+        /// </summary>
+        /// <param name="texto">Texto a revisar.</param>
+        /// <returns>true si todos los caracteres son válidos; false en caso contrario.</returns>
+        public static bool soloDecimales(string texto)
+        {
+            foreach (char c in texto)
+            {
+                if (!char.IsDigit(c) && c != '.' && c != ',')
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Indica si todos los caracteres son dígitos de 0 a 9.
         /// </summary>
         /// <param name="texto">Texto a revisar.</param>

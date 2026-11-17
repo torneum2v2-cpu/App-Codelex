@@ -6,7 +6,7 @@ using System.Windows.Input;
 
 namespace Codelex
 {
-    public partial class IngresarLocacion : Window
+    public partial class IngresarLocacion : VentanaCodelex
     {
         Cliente clienteBD = new Cliente();
         Locacion locacionBD = new Locacion();
@@ -22,6 +22,7 @@ namespace Codelex
         public IngresarLocacion()
         {
             InitializeComponent();
+            tituloMensajes = "Locaciones";
         }
 
         /// <summary>
@@ -292,53 +293,5 @@ namespace Codelex
             }
         }
 
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void salirClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        /// <summary>
-        /// Muestra un mensaje de aviso al usuario.
-        /// </summary>
-        /// <param name="mensaje">Mensaje con el resultado.</param>
-        private void aviso(string mensaje)
-        {
-            MensajeCodelex.mostrar(this, "Locaciones", mensaje, false);
-        }
-
-        /// <summary>
-        /// Muestra un mensaje con el error ocurrido.
-        /// </summary>
-        /// <param name="ex">Excepción que se produjo.</param>
-        private void mostrarError(Exception ex)
-        {
-            MensajeCodelex.mostrar(this, "Locaciones", ex.Message, false);
-        }
     }
 }

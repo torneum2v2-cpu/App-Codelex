@@ -218,7 +218,7 @@ namespace Codelex.AccesoDatos
 
             if (cantidadTexto == "")
                 return "La cantidad es obligatoria.";
-            if (!soloNumeros(cantidadTexto))
+            if (!Validacion.soloNumeros(cantidadTexto))
                 return "La cantidad solo puede tener números enteros.";
             if (cantidadTexto.Length > 7)
                 return "La cantidad no puede tener más de 7 dígitos.";
@@ -274,22 +274,6 @@ namespace Codelex.AccesoDatos
                 comando.Parameters.AddWithValue("@producto_id", productoId);
 
             return consultar(comando);
-        }
-
-        /// <summary>
-        /// Impide escribir caracteres que no sean números.
-        /// </summary>
-        /// <param name="texto">Texto a usar.</param>
-        /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
-        public bool soloNumeros(string texto)
-        {
-            foreach (char c in texto)
-            {
-                if (!char.IsDigit(c))
-                    return false;
-            }
-
-            return true;
         }
 
         /// <summary>

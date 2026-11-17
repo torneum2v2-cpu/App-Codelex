@@ -11,7 +11,7 @@ namespace Codelex.FacturasCotizaciones
     /// Lógica de interacción para factura-detalle.xaml
     /// Muestra (solo lectura) una factura ya emitida.
     /// </summary>
-    public partial class FacturaDetalle : Window
+    public partial class FacturaDetalle : VentanaCodelex
     {
         Facturacion facturaBD = new Facturacion();
         int facturaId;
@@ -427,60 +427,14 @@ namespace Codelex.FacturasCotizaciones
             return "—";
         }
 
-        /// <summary>
-        /// Devuelve un guion cuando el texto está vacío.
-        /// </summary>
-        /// <param name="texto">Texto a usar.</param>
-        /// <returns>El mismo texto, o un guion si estaba vacío.</returns>
-        private static string vacio(string texto)
-        {
-            if (texto.Trim() == "")
-                return "—";
-
-            return texto;
-        }
-
-        /// <summary>
-        /// Crea un pincel a partir de un color en formato hexadecimal.
-        /// </summary>
-        /// <param name="color">Color en formato hexadecimal.</param>
-        /// <returns>Pincel con el color pedido.</returns>
-        private static Brush pincel(string color)
-        {
-            SolidColorBrush pincel = new SolidColorBrush((Color)ColorConverter.ConvertFromString(color));
-            pincel.Freeze();
-            return pincel;
-        }
-
         // ---------- Ventana ----------
-
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
 
         /// <summary>
         /// Cierra la ventana.
         /// </summary>
         /// <param name="sender">Control que originó el evento.</param>
         /// <param name="e">Datos del evento.</param>
-        private void salirClic(object sender, RoutedEventArgs e)
+        protected override void salirClic(object sender, RoutedEventArgs e)
         {
             DialogResult = huboCambios;
             Close();

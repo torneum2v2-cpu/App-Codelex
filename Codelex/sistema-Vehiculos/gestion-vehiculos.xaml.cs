@@ -5,7 +5,7 @@ using System.Windows.Input;
 
 namespace Codelex
 {
-    public partial class GestionVehiculos : Window
+    public partial class GestionVehiculos : VentanaCodelex
     {
         Vehiculo vehiculoBD = new Vehiculo();
 
@@ -22,6 +22,7 @@ namespace Codelex
         public GestionVehiculos()
         {
             InitializeComponent();
+            tituloMensajes = "Vehículos";
         }
 
         /// <summary>
@@ -328,44 +329,5 @@ namespace Codelex
             cargarVehiculos();
         }
 
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void salirClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        /// <summary>
-        /// Muestra un mensaje con el error ocurrido.
-        /// </summary>
-        /// <param name="ex">Excepción que se produjo.</param>
-        private void mostrarError(Exception ex)
-        {
-            MensajeCodelex.mostrar(this, "Vehículos", ex.Message, false);
-        }
     }
 }

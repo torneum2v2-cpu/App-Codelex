@@ -7,36 +7,7 @@ using System.Windows.Media;
 
 namespace Codelex
 {
-    class ItemLista
-    {
-        public int id;
-        public string texto;
-        public string tipo;
-
-        /// <summary>
-        /// Crea el objeto con sus valores iniciales.
-        /// </summary>
-        /// <param name="id">Identificador.</param>
-        /// <param name="texto">Texto a usar.</param>
-        /// <param name="tipo">Tipo de dato.</param>
-        public ItemLista(int id, string texto, string tipo)
-        {
-            this.id = id;
-            this.texto = texto;
-            this.tipo = tipo;
-        }
-
-        /// <summary>
-        /// Devuelve el texto que se muestra en las listas.
-        /// </summary>
-        /// <returns>Texto resultante.</returns>
-        public override string ToString()
-        {
-            return texto;
-        }
-    }
-
-    public partial class IngresarOrden : Window
+    public partial class IngresarOrden : VentanaCodelex
     {
         Orden ordenBD = new Orden();
         Cliente clienteBD = new Cliente();
@@ -57,6 +28,7 @@ namespace Codelex
         public IngresarOrden()
         {
             InitializeComponent();
+            tituloMensajes = "Órdenes";
 
             txtDescripcionLimpieza.MaxLength = 200;
             txtPisoArea.MaxLength = 20;
@@ -180,21 +152,6 @@ namespace Codelex
 
             if (locacionesCliente.Rows.Count == 0)
                 aviso("Este cliente no tiene locaciones registradas. Regístrelas desde Clientes.");
-        }
-
-        /// <summary>
-        /// Obtiene el identificador del elemento elegido en la lista desplegable.
-        /// </summary>
-        /// <param name="combo">Lista desplegable.</param>
-        /// <returns>Identificador elegido, o 0 si no hay selección.</returns>
-        private int idSeleccionado(ComboBox combo)
-        {
-            ItemLista item = combo.SelectedItem as ItemLista;
-
-            if (item == null)
-                return 0;
-
-            return item.id;
         }
 
         /// <summary>
@@ -717,53 +674,5 @@ namespace Codelex
                 irAPaso(pasoActual - 1);
         }
 
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void salirClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        /// <summary>
-        /// Muestra un mensaje de aviso al usuario.
-        /// </summary>
-        /// <param name="mensaje">Mensaje con el resultado.</param>
-        private void aviso(string mensaje)
-        {
-            MensajeCodelex.mostrar(this, "Órdenes", mensaje, false);
-        }
-
-        /// <summary>
-        /// Muestra un mensaje con el error ocurrido.
-        /// </summary>
-        /// <param name="ex">Excepción que se produjo.</param>
-        private void mostrarError(Exception ex)
-        {
-            MensajeCodelex.mostrar(this, "Órdenes", ex.Message, false);
-        }
     }
 }

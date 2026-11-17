@@ -11,7 +11,7 @@ namespace Codelex.FacturasCotizaciones
     /// Lógica de interacción para factura.xaml
     /// Todo viene de la orden y su cotización; solo se elige cómo se paga.
     /// </summary>
-    public partial class Factura : Window
+    public partial class Factura : VentanaCodelex
     {
         Facturacion facturaBD = new Facturacion();
 
@@ -25,6 +25,7 @@ namespace Codelex.FacturasCotizaciones
         public Factura(string ordenId)
         {
             InitializeComponent();
+            tituloMensajes = "Facturas";
 
             this.ordenId = ordenId;
 
@@ -138,19 +139,6 @@ namespace Codelex.FacturasCotizaciones
             return true;
         }
 
-        /// <summary>
-        /// Devuelve un guion cuando el texto está vacío.
-        /// </summary>
-        /// <param name="texto">Texto a usar.</param>
-        /// <returns>El mismo texto, o un guion si estaba vacío.</returns>
-        private static string vacio(string texto)
-        {
-            if (texto.Trim() == "")
-                return "—";
-
-            return texto;
-        }
-
         // ---------- Forma de pago ----------
 
         /// <summary>
@@ -223,53 +211,5 @@ namespace Codelex.FacturasCotizaciones
 
         // ---------- Ventana ----------
 
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void salirClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        /// <summary>
-        /// Muestra un mensaje de aviso al usuario.
-        /// </summary>
-        /// <param name="mensaje">Mensaje con el resultado.</param>
-        private void aviso(string mensaje)
-        {
-            MensajeCodelex.mostrar(this, "Facturas", mensaje, false);
-        }
-
-        /// <summary>
-        /// Muestra un mensaje con el error ocurrido.
-        /// </summary>
-        /// <param name="ex">Excepción que se produjo.</param>
-        private void mostrarError(Exception ex)
-        {
-            MensajeCodelex.mostrar(this, "Facturas", ex.Message, false);
-        }
     }
 }

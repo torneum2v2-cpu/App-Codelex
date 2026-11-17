@@ -4,7 +4,7 @@ using System.Windows.Input;
 
 namespace Codelex
 {
-    public partial class NuevoProveedor : Window
+    public partial class NuevoProveedor : VentanaCodelex
     {
         InventarioBD inventarioBD = new InventarioBD();
 
@@ -37,17 +37,6 @@ namespace Codelex
             txtTelefono.Text = "";
             txtCorreo.Text = "";
             txtNombre.Focus();
-        }
-
-        /// <summary>
-        /// Impide escribir caracteres que no sean números.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void soloNumeros(object sender, TextCompositionEventArgs e)
-        {
-            if (!inventarioBD.soloNumeros(e.Text))
-                e.Handled = true;
         }
 
         /// <summary>
@@ -89,25 +78,5 @@ namespace Codelex
             limpiarFormulario();
         }
 
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void salirClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
     }
 }

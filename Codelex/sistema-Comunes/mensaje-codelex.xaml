@@ -1,6 +1,7 @@
-﻿<Window x:Class="Codelex.MensajeCodelex"
+﻿<comunes:VentanaCodelex x:Class="Codelex.MensajeCodelex"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:comunes="clr-namespace:Codelex"
         Title="Codelex"
         Width="440" SizeToContent="Height"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
@@ -141,4 +142,4 @@
             </UniformGrid>
         </StackPanel>
     </Border>
-</Window>
+</comunes:VentanaCodelex>

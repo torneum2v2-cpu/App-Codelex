@@ -6,7 +6,7 @@ using System.Windows.Input;
 
 namespace Codelex
 {
-    public partial class Clientes : Window
+    public partial class Clientes : VentanaCodelex
     {
         Cliente clienteBD = new Cliente();
 
@@ -24,6 +24,7 @@ namespace Codelex
         public Clientes()
         {
             InitializeComponent();
+            tituloMensajes = "Clientes";
         }
 
         /// <summary>
@@ -162,17 +163,6 @@ namespace Codelex
                     txtEstado.Text = "Inactivo";
                 }
             }
-        }
-
-        /// <summary>
-        /// Impide escribir caracteres que no sean números.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void soloNumeros(object sender, TextCompositionEventArgs e)
-        {
-            if (!clienteBD.soloNumeros(e.Text))
-                e.Handled = true;
         }
 
         /// <summary>
@@ -410,57 +400,5 @@ namespace Codelex
             }
         }
 
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void salirClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        /// <summary>
-        /// Muestra mensaje.
-        /// </summary>
-        /// <param name="correcto">Correcto.</param>
-        /// <param name="mensaje">Mensaje con el resultado.</param>
-        private void mostrarMensaje(bool correcto, string mensaje)
-        {
-            if (correcto)
-               MensajeCodelex.mostrar(this,"Clientes", mensaje, true);
-            else
-                MensajeCodelex.mostrar(this, "Clientes", mensaje, false);
-        }
-
-        /// <summary>
-        /// Muestra un mensaje con el error ocurrido.
-        /// </summary>
-        /// <param name="ex">Excepción que se produjo.</param>
-        private void mostrarError(Exception ex)
-        {
-            MensajeCodelex.mostrar(this, "Clientes", ex.Message, false);
-        }
     }
 }

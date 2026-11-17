@@ -1,6 +1,7 @@
-﻿<Window x:Class="Codelex.FacturasCotizaciones.RegistrarAbono"
+﻿<comunes:VentanaCodelex x:Class="Codelex.FacturasCotizaciones.RegistrarAbono"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:comunes="clr-namespace:Codelex"
         Title="Registrar abono" Height="720" Width="900"
         WindowStartupLocation="CenterOwner"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
@@ -137,4 +138,4 @@
             </Grid>
         </Border>
     </Grid>
-</Window>
+</comunes:VentanaCodelex>

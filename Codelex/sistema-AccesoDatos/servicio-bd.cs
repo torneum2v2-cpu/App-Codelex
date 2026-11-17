@@ -29,7 +29,7 @@ namespace Codelex.AccesoDatos
         /// Lista los servicios con la cantidad de actividades de cada uno.
         /// </summary>
         /// <returns>Tabla con los datos consultados.</returns>
-        public DataTable listarServicios()
+        public DataTable listarServiciosGestion()
         {
             return consultar(procedimiento("sp_ListarServiciosGestion"));
         }
@@ -580,20 +580,6 @@ namespace Codelex.AccesoDatos
         }
 
         // ---------- Listas para los procedimientos ----------
-
-        /// <summary>
-        /// Envía una tabla como parámetro de tipo tabla.
-        /// </summary>
-        /// <param name="comando">Comando de SQL Server.</param>
-        /// <param name="nombre">Nombre del parámetro.</param>
-        /// <param name="tipo">Nombre del tipo de tabla en SQL Server.</param>
-        /// <param name="tabla">Tabla de datos.</param>
-        private void agregarLista(SqlCommand comando, string nombre, string tipo, DataTable tabla)
-        {
-            SqlParameter parametro = comando.Parameters.AddWithValue(nombre, tabla);
-            parametro.SqlDbType = SqlDbType.Structured;
-            parametro.TypeName = tipo;
-        }
 
         /// <summary>
         /// Separa los productos de la actividad en la tabla que recibe el procedimiento:

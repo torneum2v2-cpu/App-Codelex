@@ -15,15 +15,6 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
-        /// Lista servicios.
-        /// </summary>
-        /// <returns>Tabla con los datos consultados.</returns>
-        public DataTable listarServicios()
-        {
-            return consultar(procedimiento("sp_ListarServicios"));
-        }
-
-        /// <summary>
         /// Genera el reporte de órdenes según los filtros indicados.
         /// </summary>
         /// <param name="desde">Fecha inicial.</param>

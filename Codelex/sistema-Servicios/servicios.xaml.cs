@@ -5,7 +5,7 @@ using System.Windows.Input;
 
 namespace Codelex
 {
-    public partial class Servicios : Window
+    public partial class Servicios : VentanaCodelex
     {
         ServicioBD servicioBD = new ServicioBD();
 
@@ -40,7 +40,7 @@ namespace Codelex
             {
                 cargando = true;
 
-                DataTable tabla = servicioBD.listarServicios();
+                DataTable tabla = servicioBD.listarServiciosGestion();
                 dgServicios.ItemsSource = tabla.DefaultView;
 
                 servicioActual = 0;
@@ -290,35 +290,5 @@ namespace Codelex
             }
         }
 
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void salirClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
     }
 }

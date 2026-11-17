@@ -10,7 +10,7 @@ using System.Windows.Media;
 
 namespace Codelex
 {
-    public partial class EmpleadoReporte : Window
+    public partial class EmpleadoReporte : VentanaCodelex
     {
         Empleado empleadoBD = new Empleado();
         FotoPerfilBD fotoBD = new FotoPerfilBD();
@@ -28,6 +28,7 @@ namespace Codelex
         public EmpleadoReporte(int empleadoId)
         {
             InitializeComponent();
+            tituloMensajes = "Reporte del empleado";
             Height = Math.Min(Height, SystemParameters.WorkArea.Height - 10);
 
 
@@ -327,44 +328,5 @@ namespace Codelex
             }
         }
 
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void cerrarClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        /// <summary>
-        /// Muestra un mensaje con el error ocurrido.
-        /// </summary>
-        /// <param name="ex">Excepción que se produjo.</param>
-        private void mostrarError(Exception ex)
-        {
-            MensajeCodelex.mostrar(this, "Reporte del empleado", ex.Message, false);
-        }
     }
 }

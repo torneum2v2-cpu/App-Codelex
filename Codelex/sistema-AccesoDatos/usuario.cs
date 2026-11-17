@@ -9,7 +9,7 @@ using System.Text;
 
 namespace Codelex.AccesoDatos
 {
-    public class Usuario
+    public class Usuario : BaseDatos
     {
         private const string SITIO_CODELEX = "codelex.hn";
         public int EmpleadoId { get; set; }
@@ -30,19 +30,9 @@ namespace Codelex.AccesoDatos
         /// <returns>true si todo es válido; false si hay algun problema.</returns>
         public bool validarLogin(string usuario, string password)
         {
-            DataTable tabla = new DataTable();
-
-            using (SqlConnection conexion = Conexion.obtenerConexion())
-            {
-                using (SqlCommand comando = new SqlCommand("sp_ObtenerUsuarioLogin", conexion))
-                {
-                    comando.CommandType = CommandType.StoredProcedure;
-                    comando.Parameters.AddWithValue("@usuario", usuario);
-
-                    SqlDataAdapter adaptador = new SqlDataAdapter(comando);
-                    adaptador.Fill(tabla);
-                }
-            }
+            SqlCommand comando = procedimiento("sp_ObtenerUsuarioLogin");
+            comando.Parameters.AddWithValue("@usuario", usuario);
+            DataTable tabla = consultar(comando);
 
             if (tabla.Rows.Count == 0)
                 return false;
@@ -79,24 +69,12 @@ namespace Codelex.AccesoDatos
         /// <param name="password">Contraseña que escribió el usuario.</param>
         private void guardarHash(int usuarioId, string password)
         {
-            SqlParameter resultado = new SqlParameter("@resultado", SqlDbType.Int);
-            resultado.Direction = ParameterDirection.Output;
+            SqlCommand comando = procedimiento("sp_CambiarContrasena");
+            comando.Parameters.AddWithValue("@usuario_id", usuarioId);
+            comando.Parameters.AddWithValue("@nuevo_hash", Contrasenas.hashear(password));
 
-            SqlParameter textoMensaje = new SqlParameter("@mensaje", SqlDbType.VarChar, 100);
-            textoMensaje.Direction = ParameterDirection.Output;
-
-            using (SqlConnection conexion = Conexion.obtenerConexion())
-            {
-                using (SqlCommand comando = new SqlCommand("sp_CambiarContrasena", conexion))
-                {
-                    comando.CommandType = CommandType.StoredProcedure;
-                    comando.Parameters.AddWithValue("@usuario_id", usuarioId);
-                    comando.Parameters.AddWithValue("@nuevo_hash", Contrasenas.hashear(password));
-                    comando.Parameters.Add(resultado);
-                    comando.Parameters.Add(textoMensaje);
-                    comando.ExecuteNonQuery();
-                }
-            }
+            string mensajeIgnorado;
+            ejecutar(comando, out mensajeIgnorado);
         }
 
         /// <summary>
@@ -317,28 +295,12 @@ namespace Codelex.AccesoDatos
         /// <returns>true si la operación fue correcta; false en caso contrario.</returns>
         private bool guardarLlave(byte[] llaveId, byte[] llavePublica, out string mensaje)
         {
-            SqlParameter resultado = new SqlParameter("@resultado", SqlDbType.Int);
-            resultado.Direction = ParameterDirection.Output;
+            SqlCommand comando = procedimiento("sp_GuardarPasskey");
+            comando.Parameters.AddWithValue("@usuario_id", UsuarioId);
+            comando.Parameters.AddWithValue("@passkey_id", llaveId);
+            comando.Parameters.AddWithValue("@passkey_clave", llavePublica);
 
-            SqlParameter textoMensaje = new SqlParameter("@mensaje", SqlDbType.VarChar, 100);
-            textoMensaje.Direction = ParameterDirection.Output;
-
-            using (SqlConnection conexion = Conexion.obtenerConexion())
-            {
-                using (SqlCommand comando = new SqlCommand("sp_GuardarPasskey", conexion))
-                {
-                    comando.CommandType = CommandType.StoredProcedure;
-                    comando.Parameters.AddWithValue("@usuario_id", UsuarioId);
-                    comando.Parameters.AddWithValue("@passkey_id", llaveId);
-                    comando.Parameters.AddWithValue("@passkey_clave", llavePublica);
-                    comando.Parameters.Add(resultado);
-                    comando.Parameters.Add(textoMensaje);
-                    comando.ExecuteNonQuery();
-                }
-            }
-
-            mensaje = "" + textoMensaje.Value;
-            if (Convert.ToInt32(resultado.Value) != 1)
+            if (!ejecutar(comando, out mensaje))
                 return false;
 
             TieneLlave = true;
@@ -381,27 +343,11 @@ namespace Codelex.AccesoDatos
                 return false;
             }
 
-            SqlParameter resultado = new SqlParameter("@resultado", SqlDbType.Int);
-            resultado.Direction = ParameterDirection.Output;
+            SqlCommand comando = procedimiento("sp_CambiarContrasenaPorCorreo");
+            comando.Parameters.AddWithValue("@correo", correo.Trim());
+            comando.Parameters.AddWithValue("@contrasena_hash", Contrasenas.hashear(contra));
 
-            SqlParameter textoMensaje = new SqlParameter("@mensaje", SqlDbType.VarChar, 100);
-            textoMensaje.Direction = ParameterDirection.Output;
-
-            using (SqlConnection conexion = Conexion.obtenerConexion())
-            {
-                using (SqlCommand comando = new SqlCommand("sp_CambiarContrasenaPorCorreo", conexion))
-                {
-                    comando.CommandType = CommandType.StoredProcedure;
-                    comando.Parameters.AddWithValue("@correo", correo.Trim());
-                    comando.Parameters.AddWithValue("@contrasena_hash", Contrasenas.hashear(contra));
-                    comando.Parameters.Add(resultado);
-                    comando.Parameters.Add(textoMensaje);
-                    comando.ExecuteNonQuery();
-                }
-            }
-
-            mensaje = "" + textoMensaje.Value;
-            return Convert.ToInt32(resultado.Value) == 1;
+            return ejecutar(comando, out mensaje);
         }
 
     }

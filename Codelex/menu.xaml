@@ -1,6 +1,7 @@
-﻿<Window x:Class="Codelex.Menu"
+﻿<comunes:VentanaCodelex x:Class="Codelex.Menu"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:comunes="clr-namespace:Codelex"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:local="clr-namespace:Codelex"
         Title="Codelex - Menú" Width="992" Height="652"
@@ -429,4 +430,4 @@
             </Grid>
         </Border>
     </Grid>
-</Window>
+</comunes:VentanaCodelex>

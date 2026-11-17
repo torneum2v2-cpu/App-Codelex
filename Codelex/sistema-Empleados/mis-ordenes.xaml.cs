@@ -1,5 +1,4 @@
 ﻿using Codelex.AccesoDatos;
-using Codelex.AccesoDatos;
 using System.Data;
 using System.Windows;
 using System.Windows.Controls;
@@ -7,7 +6,7 @@ using System.Windows.Input;
 
 namespace Codelex
 {
-    public partial class MisOrdenes : Window
+    public partial class MisOrdenes : VentanaCodelex
     {
         private readonly MiTrabajoBD trabajoBD = new MiTrabajoBD();
 
@@ -179,36 +178,6 @@ namespace Codelex
             return Convert.ToDateTime(fila[columna]).ToString("dd/MM/yyyy");
         }
 
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void cerrarClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
     }
 
     public record CampoDetalle(string Etiqueta, string Valor);

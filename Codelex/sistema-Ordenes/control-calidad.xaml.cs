@@ -21,7 +21,7 @@ namespace Codelex
     /// <summary>
     /// Control de calidad de una orden: se revisa cada actividad y solo cuando todas están marcadas se puede completar la orden.
     /// </summary>
-    public partial class ControlCalidad : Window
+    public partial class ControlCalidad : VentanaCodelex
     {
         GestionOrdenesBD gestionBD = new GestionOrdenesBD();
         ObservableCollection<ItemControl> items = new ObservableCollection<ItemControl>();
@@ -40,6 +40,7 @@ namespace Codelex
         public ControlCalidad(string ordenId)
         {
             InitializeComponent();
+            tituloMensajes = "Control de calidad";
 
             this.ordenId = ordenId;
             lblTitulo.Text = "Control de calidad - " + ordenId;
@@ -184,44 +185,5 @@ namespace Codelex
             }
         }
 
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void salirClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        /// <summary>
-        /// Muestra un mensaje con el error ocurrido.
-        /// </summary>
-        /// <param name="ex">Excepción que se produjo.</param>
-        private void mostrarError(Exception ex)
-        {
-            MensajeCodelex.mostrar(this, "Control de calidad", ex.Message, false);
-        }
     }
 }

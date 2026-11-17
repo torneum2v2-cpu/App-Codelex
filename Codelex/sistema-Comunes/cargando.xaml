@@ -1,6 +1,7 @@
-﻿<Window x:Class="Codelex.Cargando"
+﻿<comunes:VentanaCodelex x:Class="Codelex.Cargando"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:comunes="clr-namespace:Codelex"
         Title="Codelex"
         Width="260" SizeToContent="Height"
         WindowStartupLocation="CenterScreen"
@@ -40,4 +41,4 @@
                        HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
         </StackPanel>
     </Border>
-</Window>
+</comunes:VentanaCodelex>

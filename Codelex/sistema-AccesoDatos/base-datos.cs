@@ -4,7 +4,7 @@ using System.Data;
 
 namespace Codelex.AccesoDatos
 {
-    class BaseDatos
+    public class BaseDatos
     {
         /// <summary>
         /// Crea un comando listo para llamar a un procedimiento almacenado.
@@ -64,19 +64,39 @@ namespace Codelex.AccesoDatos
         }
 
         /// <summary>
-        /// Indica si el texto solo tiene dígitos y punto decimal.
+        /// Ejecuta un procedimiento almacenado que no devuelve datos ni mensaje.
         /// </summary>
-        /// <param name="texto">Texto a usar.</param>
-        /// <returns>true si todos los caracteres son válidos; false en caso contrario.</returns>
-        public bool caracteresDePrecio(string texto)
+        /// <param name="comando">Comando de SQL Server.</param>
+        protected void ejecutarSinRespuesta(SqlCommand comando)
         {
-            foreach (char c in texto)
+            using (SqlConnection conexion = Conexion.obtenerConexion())
             {
-                if (!char.IsDigit(c) && c != '.' && c != ',')
-                    return false;
+                comando.Connection = conexion;
+                comando.ExecuteNonQuery();
             }
+        }
 
-            return true;
+        /// <summary>
+        /// Envía una tabla como parámetro de tipo tabla.
+        /// </summary>
+        /// <param name="comando">Comando de SQL Server.</param>
+        /// <param name="nombre">Nombre del parámetro.</param>
+        /// <param name="tipo">Nombre del tipo de tabla en SQL Server.</param>
+        /// <param name="tabla">Tabla de datos.</param>
+        protected void agregarLista(SqlCommand comando, string nombre, string tipo, DataTable tabla)
+        {
+            SqlParameter parametro = comando.Parameters.AddWithValue(nombre, tabla);
+            parametro.SqlDbType = SqlDbType.Structured;
+            parametro.TypeName = tipo;
+        }
+
+        /// <summary>
+        /// Lista los servicios activos (sirve para llenar los filtros y listas de elegir servicio).
+        /// </summary>
+        /// <returns>Tabla con los datos consultados.</returns>
+        public DataTable listarServicios()
+        {
+            return consultar(procedimiento("sp_ListarServicios"));
         }
     }
 }

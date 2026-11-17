@@ -6,7 +6,7 @@ using System.Windows.Input;
 
 namespace Codelex
 {
-    public partial class AjustarInventario : Window
+    public partial class AjustarInventario : VentanaCodelex
     {
         InventarioBD inventarioBD = new InventarioBD();
 
@@ -19,6 +19,7 @@ namespace Codelex
         public AjustarInventario()
         {
             InitializeComponent();
+            tituloMensajes = "Ajustar inventario";
         }
 
         /// <summary>
@@ -137,17 +138,6 @@ namespace Codelex
         }
 
         /// <summary>
-        /// Impide escribir caracteres que no sean números.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void soloNumeros(object sender, TextCompositionEventArgs e)
-        {
-            if (!inventarioBD.soloNumeros(e.Text))
-                e.Handled = true;
-        }
-
-        /// <summary>
         /// Limpia los datos del formulario.
         /// </summary>
         /// <param name="sender">Control que originó el evento.</param>
@@ -198,44 +188,5 @@ namespace Codelex
             }
         }
 
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void salirClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        /// <summary>
-        /// Muestra un mensaje con el error ocurrido.
-        /// </summary>
-        /// <param name="ex">Excepción que se produjo.</param>
-        private void mostrarError(Exception ex)
-        {
-            MensajeCodelex.mostrar(this, "Ajustar inventario", ex.Message, false);
-        }
     }
 }

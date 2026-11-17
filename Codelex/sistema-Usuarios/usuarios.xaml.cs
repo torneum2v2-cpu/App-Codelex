@@ -1,5 +1,4 @@
 ﻿using Codelex.AccesoDatos;
-using Codelex.AccesoDatos;
 using System.Data;
 using System.Globalization;
 using System.Text;
@@ -8,7 +7,7 @@ using System.Windows.Input;
 
 namespace Codelex
 {
-    public partial class Usuarios : Window
+    public partial class Usuarios : VentanaCodelex
     {
         UsuarioBD usuarioBD = new UsuarioBD();
 
@@ -27,6 +26,7 @@ namespace Codelex
         public Usuarios()
         {
             InitializeComponent();
+            tituloMensajes = "Usuarios";
         }
 
         /// <summary>
@@ -483,57 +483,5 @@ namespace Codelex
             }
         }
 
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Minimiza la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void minimizarClic(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState.Minimized;
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void salirClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
-
-        /// <summary>
-        /// Muestra mensaje.
-        /// </summary>
-        /// <param name="correcto">Correcto.</param>
-        /// <param name="mensaje">Mensaje con el resultado.</param>
-        private void mostrarMensaje(bool correcto, string mensaje)
-        {
-            if (correcto)
-                MensajeCodelex.mostrar(this, "Usuarios", mensaje, true);
-            else
-                MensajeCodelex.mostrar(this, "Usuarios", mensaje, false);
-        }
-
-        /// <summary>
-        /// Muestra un mensaje con el error ocurrido.
-        /// </summary>
-        /// <param name="ex">Excepción que se produjo.</param>
-        private void mostrarError(Exception ex)
-        {
-            MensajeCodelex.mostrar(this, "Usuarios", ex.Message, false);
-        }
     }
 }

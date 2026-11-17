@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace Codelex
 {
-    public partial class ActividadEditar : Window
+    public partial class ActividadEditar : VentanaCodelex
     {
         ServicioBD servicioBD = new ServicioBD();
         InventarioBD inventarioBD = new InventarioBD();
@@ -67,7 +67,7 @@ namespace Codelex
         {
             cmbServicio.Items.Clear();
 
-            foreach (DataRow fila in servicioBD.listarServicios().Rows)
+            foreach (DataRow fila in servicioBD.listarServiciosGestion().Rows)
             {
                 ItemLista item = new ItemLista(Convert.ToInt32(fila["servicio_id"]), "" + fila["nombre_servicio"], "");
                 cmbServicio.Items.Add(item);
@@ -141,21 +141,6 @@ namespace Codelex
 
             foreach (DataRow fila in servicioBD.listarEquiposActividad(actividadId).Rows)
                 datos.equipos.Rows.Add(fila["nombre_equipo"]);
-        }
-
-        /// <summary>
-        /// Obtiene el identificador del elemento elegido en una lista desplegable.
-        /// </summary>
-        /// <param name="combo">Lista desplegable.</param>
-        /// <returns>Identificador elegido, o 0 si no hay selección.</returns>
-        private int idSeleccionado(ComboBox combo)
-        {
-            ItemLista? item = combo.SelectedItem as ItemLista;
-
-            if (item == null)
-                return 0;
-
-            return item.id;
         }
 
         // ---------- Rangos ----------
@@ -380,45 +365,5 @@ namespace Codelex
 
         // ---------- Entrada de datos ----------
 
-        /// <summary>
-        /// Impide escribir caracteres que no sean números.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void soloNumeros(object sender, TextCompositionEventArgs e)
-        {
-            e.Handled = !inventarioBD.soloNumeros(e.Text);
-        }
-
-        /// <summary>
-        /// Impide escribir caracteres que no sean números o punto decimal.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void soloDecimales(object sender, TextCompositionEventArgs e)
-        {
-            e.Handled = !inventarioBD.caracteresDePrecio(e.Text);
-        }
-
-        /// <summary>
-        /// Permite mover la ventana arrastrando la barra superior con el mouse.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void arrastrarVentana(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ButtonState == MouseButtonState.Pressed)
-                DragMove();
-        }
-
-        /// <summary>
-        /// Cierra la ventana.
-        /// </summary>
-        /// <param name="sender">Control que originó el evento.</param>
-        /// <param name="e">Datos del evento.</param>
-        private void salirClic(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
     }
 }
